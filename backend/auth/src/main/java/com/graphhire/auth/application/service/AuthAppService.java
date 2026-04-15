@@ -9,7 +9,7 @@ import com.graphhire.auth.domain.repository.UserRepository;
 import com.graphhire.auth.domain.service.PasswordEncoder;
 import com.graphhire.auth.domain.vo.AuthStatus;
 import com.graphhire.auth.domain.vo.UserType;
-import com.graphhire.auth.interface.dto.response.LoginResponse;
+import com.graphhire.auth.iface.dto.response.LoginResponse;
 import com.graphhire.common.vo.Exceptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
