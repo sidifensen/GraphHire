@@ -1,5 +1,6 @@
 package com.graphhire.resume.domain.event;
 
+import com.graphhire.common.model.BaseAggregateRoot.DomainEvent;
 import com.graphhire.resume.domain.model.Resume;
 
 public class ResumeUploadedEvent extends DomainEvent {
