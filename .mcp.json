@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "postgres": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "enhanced-postgres-mcp-server",
+        "postgresql://postgres:postgres@localhost:5432/graphhire"
+      ]
+    }
+  }
+}
