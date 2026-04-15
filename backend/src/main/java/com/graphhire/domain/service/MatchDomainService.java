@@ -89,20 +89,39 @@ public class MatchDomainService {
             return new BigDecimal("50");
         }
 
-        int effectiveMin = salaryMin != null ? salaryMin : salaryMax;
-        int effectiveMax = salaryMax != null ? salaryMax : salaryMin;
-
-        if (expectedSalary >= effectiveMin && expectedSalary <= effectiveMax) {
-            return new BigDecimal("100");
-        }
-
-        if (expectedSalary < effectiveMin) {
+        // Handle cases where only one bound is set
+        if (salaryMin != null && salaryMax == null) {
+            // Only minimum set - no upper limit
+            if (expectedSalary >= salaryMin) {
+                return new BigDecimal("100");
+            }
             return BigDecimal.valueOf(expectedSalary)
-                    .divide(BigDecimal.valueOf(effectiveMin), 4, RoundingMode.HALF_UP)
+                    .divide(BigDecimal.valueOf(salaryMin), 4, RoundingMode.HALF_UP)
                     .multiply(new BigDecimal("100"));
         }
 
-        return BigDecimal.valueOf(effectiveMax)
+        if (salaryMax != null && salaryMin == null) {
+            // Only maximum set - no lower limit
+            if (expectedSalary <= salaryMax) {
+                return new BigDecimal("100");
+            }
+            return BigDecimal.valueOf(salaryMax)
+                    .divide(BigDecimal.valueOf(expectedSalary), 4, RoundingMode.HALF_UP)
+                    .multiply(new BigDecimal("100"));
+        }
+
+        // Both bounds are set
+        if (expectedSalary >= salaryMin && expectedSalary <= salaryMax) {
+            return new BigDecimal("100");
+        }
+
+        if (expectedSalary < salaryMin) {
+            return BigDecimal.valueOf(expectedSalary)
+                    .divide(BigDecimal.valueOf(salaryMin), 4, RoundingMode.HALF_UP)
+                    .multiply(new BigDecimal("100"));
+        }
+
+        return BigDecimal.valueOf(salaryMax)
                 .divide(BigDecimal.valueOf(expectedSalary), 4, RoundingMode.HALF_UP)
                 .multiply(new BigDecimal("100"));
     }
