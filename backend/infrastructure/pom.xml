@@ -8,4 +8,46 @@
     </parent>
     <artifactId>infrastructure</artifactId>
     <packaging>jar</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.graphhire</groupId>
+            <artifactId>common</artifactId>
+        </dependency>
+        <!-- Redis -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <!-- RocketMQ -->
+        <dependency>
+            <groupId>org.apache.rocketmq</groupId>
+            <artifactId>rocketmq-spring-boot-starter</artifactId>
+            <version>5.5.0</version>
+        </dependency>
+        <!-- Dgraph -->
+        <dependency>
+            <groupId>io.dgraph</groupId>
+            <artifactId>dgraph4j</artifactId>
+            <version>23.1.0</version>
+        </dependency>
+        <!-- MyBatis-Plus -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+            <version>3.5.10</version>
+        </dependency>
+        <!-- sa-token -->
+        <dependency>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-spring-boot3-starter</artifactId>
+            <version>1.45.0</version>
+        </dependency>
+        <!-- Apache Tika -->
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-core</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+    </dependencies>
 </project>
