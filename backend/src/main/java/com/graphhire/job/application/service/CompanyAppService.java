@@ -1,8 +1,11 @@
 package com.graphhire.job.application.service;
 
 import com.graphhire.job.domain.model.Company;
+import com.graphhire.job.domain.model.CompanyStaff;
 import com.graphhire.job.domain.repository.CompanyRepository;
+import com.graphhire.job.domain.repository.CompanyStaffRepository;
 import com.graphhire.auth.domain.vo.AuthStatus;
+import com.graphhire.common.vo.Exceptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +17,9 @@ public class CompanyAppService {
 
     @Autowired
     private CompanyRepository companyRepository;
+
+    @Autowired
+    private CompanyStaffRepository companyStaffRepository;
 
     @Transactional
     public Company createCompany(String name, String unifiedSocialCreditCode,
@@ -67,5 +73,17 @@ public class CompanyAppService {
 
     public List<Company> getPendingCompanies() {
         return companyRepository.findByAuthStatus(AuthStatus.PENDING_VERIFY);
+    }
+
+    public Long getCompanyIdByUserId(Long userId) {
+        CompanyStaff staff = companyStaffRepository.findByUserId(userId)
+                .orElseThrow(() -> Exceptions.BusinessException.of("用户未绑定企业"));
+        return staff.getCompanyId();
+    }
+
+    public Company getCompanyByUserId(Long userId) {
+        Long companyId = getCompanyIdByUserId(userId);
+        return companyRepository.findById(companyId)
+                .orElseThrow(() -> Exceptions.BusinessException.of("企业不存在"));
     }
 }

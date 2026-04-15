@@ -14,6 +14,8 @@ public class Notification extends BaseAggregateRoot {
     private Boolean isRead = false;
     private LocalDateTime readTime;
     private String metadata; // JSON string for additional data
+    private Long referenceId; // maps to related_id in database
+    private LocalDateTime createdAt; // maps to create_time in database
 
     public Notification() {
     }
@@ -106,5 +108,21 @@ public class Notification extends BaseAggregateRoot {
 
     public void setReadTime(LocalDateTime readTime) {
         this.readTime = readTime;
+    }
+
+    public Long getReferenceId() {
+        return referenceId;
+    }
+
+    public void setReferenceId(Long referenceId) {
+        this.referenceId = referenceId;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }

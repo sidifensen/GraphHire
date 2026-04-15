@@ -1,12 +1,10 @@
 package com.graphhire.match.infrastructure.persistence.repository;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.graphhire.match.domain.model.MatchRecord;
 import com.graphhire.match.domain.repository.MatchRecordRepository;
-import com.graphhire.match.domain.vo.MatchLevel;
 import com.graphhire.match.domain.vo.MatchScore;
-import com.graphhire.match.domain.vo.MatchLevel;
+import com.graphhire.match.infrastructure.persistence.mapper.MatchRecordMapper;
 import com.graphhire.match.infrastructure.persistence.po.MatchRecordPO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -63,7 +61,7 @@ public class MatchRecordRepositoryImpl implements MatchRecordRepository {
         } else {
             matchRecordMapper.updateById(po);
         }
-        return matchRecord;
+        return toDomain(po);
     }
 
     @Override
@@ -80,14 +78,24 @@ public class MatchRecordRepositoryImpl implements MatchRecordRepository {
         if (po == null) return null;
         MatchRecord record = new MatchRecord();
         record.setId(po.getId());
-        record.setMatchReason(po.getMatchReason());
-        MatchScore score = MatchScore.of(
-            po.getSkillScore().doubleValue(),
-            po.getExpScore().doubleValue(),
-            po.getCityScore().doubleValue(),
-            po.getEduScore().doubleValue(),
-            po.getSalScore().doubleValue()
-        );
+        record.setResumeId(po.getResumeId());
+        record.setJobId(po.getJobId());
+        record.setMatchReason(po.getMatchReport());
+
+        if (po.getSkillScore() != null || po.getExperienceScore() != null ||
+            po.getCityScore() != null || po.getEducationScore() != null ||
+            po.getSalaryScore() != null) {
+            double skill = po.getSkillScore() != null ? po.getSkillScore().doubleValue() : 0;
+            double exp = po.getExperienceScore() != null ? po.getExperienceScore().doubleValue() : 0;
+            double city = po.getCityScore() != null ? po.getCityScore().doubleValue() : 0;
+            double edu = po.getEducationScore() != null ? po.getEducationScore().doubleValue() : 0;
+            double sal = po.getSalaryScore() != null ? po.getSalaryScore().doubleValue() : 0;
+            record.setScore(MatchScore.of(skill, exp, city, edu, sal));
+        }
+
+        // status: 0=pending(not read), 1=viewed(read)
+        record.setIsRead(po.getStatus() != null && po.getStatus() == 1);
+
         return record;
     }
 
@@ -96,15 +104,20 @@ public class MatchRecordRepositoryImpl implements MatchRecordRepository {
         po.setId(record.getId());
         po.setResumeId(record.getResumeId());
         po.setJobId(record.getJobId());
+        po.setMatchReport(record.getMatchReason());
+
         if (record.getScore() != null) {
+            po.setOverallScore(BigDecimal.valueOf(record.getScore().getTotal()));
             po.setSkillScore(BigDecimal.valueOf(record.getScore().getSkillScore()));
-            po.setExpScore(BigDecimal.valueOf(record.getScore().getExpScore()));
+            po.setExperienceScore(BigDecimal.valueOf(record.getScore().getExpScore()));
             po.setCityScore(BigDecimal.valueOf(record.getScore().getCityScore()));
-            po.setEduScore(BigDecimal.valueOf(record.getScore().getEduScore()));
-            po.setSalScore(BigDecimal.valueOf(record.getScore().getSalScore()));
+            po.setEducationScore(BigDecimal.valueOf(record.getScore().getEduScore()));
+            po.setSalaryScore(BigDecimal.valueOf(record.getScore().getSalScore()));
         }
-        po.setMatchReason(record.getMatchReason());
-        po.setIsRead(record.getIsRead());
+
+        // isRead: false=0(pending), true=1(viewed)
+        po.setStatus(record.getIsRead() != null && record.getIsRead() ? 1 : 0);
+
         return po;
     }
 }

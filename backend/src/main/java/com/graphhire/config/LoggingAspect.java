@@ -1,4 +1,4 @@
-package com.graphhire.infrastructure.logging;
+package com.graphhire.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;

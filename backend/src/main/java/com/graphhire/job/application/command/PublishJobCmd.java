@@ -14,6 +14,7 @@ public class PublishJobCmd {
     private List<String> requiredSkills;
     private List<String> preferredSkills;
     private String description;
+    private String filePath;
 
     public PublishJobCmd() {
     }
@@ -94,5 +95,13 @@ public class PublishJobCmd {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
     }
 }

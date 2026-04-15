@@ -38,13 +38,12 @@ public class ParseAppService {
         try {
             // Parse document
             String rawText = documentParser.extractText(resume.getFilePath());
-            task.setRawText(rawText);
 
             // Perform parsing (AI extraction would go here)
             String parseResult = documentParser.parse(rawText);
 
             // Mark success
-            task.markSuccess(parseResult);
+            task.markSuccess();
             parseTaskRepository.save(task);
 
             resume.parsed(parseResult);

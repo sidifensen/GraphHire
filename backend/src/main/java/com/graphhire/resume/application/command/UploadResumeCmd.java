@@ -2,6 +2,8 @@ package com.graphhire.resume.application.command;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 public class UploadResumeCmd {
     private MultipartFile file;
     private Long userId;
@@ -26,7 +28,7 @@ public class UploadResumeCmd {
         this.userId = userId;
     }
 
-    public byte[] getFileBytes() {
+    public byte[] getFileBytes() throws IOException {
         return file.getBytes();
     }
 

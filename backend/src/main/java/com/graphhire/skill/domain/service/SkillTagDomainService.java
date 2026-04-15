@@ -3,14 +3,14 @@ package com.graphhire.skill.domain.service;
 import com.graphhire.skill.domain.model.SkillTag;
 import com.graphhire.skill.domain.repository.SkillTagRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.DomainService;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@DomainService
+@Service
 public class SkillTagDomainService {
 
     private final SkillTagRepository repository;

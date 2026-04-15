@@ -3,6 +3,7 @@ package com.graphhire.resume.infrastructure.persistence.po;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @TableName("resume")
@@ -12,12 +13,15 @@ public class ResumePO {
     private Long userId;
     private String fileName;
     private String filePath;
-    private String status;
+    private String fileType;
+    private Long fileSize;
+    private Integer parseStatus;
     private String parseResult;
-    private Integer retryCount;
-    private LocalDateTime createTime;
-    private LocalDateTime updateTime;
-    private Boolean deleted;
+    private String parseError;
+    private BigDecimal confidence;
+    private Boolean isDefault;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     public Long getId() {
         return id;
@@ -51,12 +55,28 @@ public class ResumePO {
         this.filePath = filePath;
     }
 
-    public String getStatus() {
-        return status;
+    public String getFileType() {
+        return fileType;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setFileType(String fileType) {
+        this.fileType = fileType;
+    }
+
+    public Long getFileSize() {
+        return fileSize;
+    }
+
+    public void setFileSize(Long fileSize) {
+        this.fileSize = fileSize;
+    }
+
+    public Integer getParseStatus() {
+        return parseStatus;
+    }
+
+    public void setParseStatus(Integer parseStatus) {
+        this.parseStatus = parseStatus;
     }
 
     public String getParseResult() {
@@ -67,35 +87,43 @@ public class ResumePO {
         this.parseResult = parseResult;
     }
 
-    public Integer getRetryCount() {
-        return retryCount;
+    public String getParseError() {
+        return parseError;
     }
 
-    public void setRetryCount(Integer retryCount) {
-        this.retryCount = retryCount;
+    public void setParseError(String parseError) {
+        this.parseError = parseError;
     }
 
-    public LocalDateTime getCreateTime() {
-        return createTime;
+    public BigDecimal getConfidence() {
+        return confidence;
     }
 
-    public void setCreateTime(LocalDateTime createTime) {
-        this.createTime = createTime;
+    public void setConfidence(BigDecimal confidence) {
+        this.confidence = confidence;
     }
 
-    public LocalDateTime getUpdateTime() {
-        return updateTime;
+    public Boolean getIsDefault() {
+        return isDefault;
     }
 
-    public void setUpdateTime(LocalDateTime updateTime) {
-        this.updateTime = updateTime;
+    public void setIsDefault(Boolean isDefault) {
+        this.isDefault = isDefault;
     }
 
-    public Boolean getDeleted() {
-        return deleted;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setDeleted(Boolean deleted) {
-        this.deleted = deleted;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

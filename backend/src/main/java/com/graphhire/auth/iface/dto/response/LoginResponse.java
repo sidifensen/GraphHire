@@ -3,20 +3,54 @@ package com.graphhire.auth.iface.dto.response;
 import com.graphhire.auth.domain.vo.UserType;
 
 public class LoginResponse {
-    private String token;
+    private String accessToken;
+    private String refreshToken;
+    private Long expiresIn;
     private UserType userType;
+    private Long userId;
 
-    public LoginResponse(String token, UserType userType) {
-        this.token = token;
+    public LoginResponse() {
+    }
+
+    public LoginResponse(String accessToken, String refreshToken, Long expiresIn, UserType userType, Long userId) {
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
+        this.expiresIn = expiresIn;
         this.userType = userType;
+        this.userId = userId;
     }
 
-    public String getToken() {
-        return token;
+    // Legacy constructor for backward compatibility
+    public LoginResponse(String token, UserType userType) {
+        this.accessToken = token;
+        this.refreshToken = null;
+        this.expiresIn = 7200L;
+        this.userType = userType;
+        this.userId = null;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public String getAccessToken() {
+        return accessToken;
+    }
+
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+
+    public Long getExpiresIn() {
+        return expiresIn;
+    }
+
+    public void setExpiresIn(Long expiresIn) {
+        this.expiresIn = expiresIn;
     }
 
     public UserType getUserType() {
@@ -25,5 +59,13 @@ public class LoginResponse {
 
     public void setUserType(UserType userType) {
         this.userType = userType;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 }

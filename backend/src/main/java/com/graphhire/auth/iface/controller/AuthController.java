@@ -32,7 +32,13 @@ public class AuthController {
 
     @PostMapping("/send-verify-code")
     public Result<Void> sendVerifyCode(@RequestParam String email) {
-        authService.sendVerifyCode(new com.graphhire.auth.application.command.SendVerifyCodeCmd(email));
+        authService.sendVerifyCode(email, "default");
+        return Result.success();
+    }
+
+    @PostMapping("/forgot-password")
+    public Result<Void> forgotPassword(@RequestParam String email) {
+        authService.forgotPassword(email);
         return Result.success();
     }
 
@@ -42,5 +48,16 @@ public class AuthController {
                                       @RequestParam String newPassword) {
         authService.resetPassword(email, code, newPassword);
         return Result.success();
+    }
+
+    @PostMapping("/logout")
+    public Result<Void> logout(@RequestParam Long userId) {
+        authService.logout(userId);
+        return Result.success();
+    }
+
+    @PostMapping("/refresh-token")
+    public Result<LoginResponse> refreshToken(@RequestParam String refreshToken) {
+        return Result.success(authService.refreshToken(refreshToken));
     }
 }

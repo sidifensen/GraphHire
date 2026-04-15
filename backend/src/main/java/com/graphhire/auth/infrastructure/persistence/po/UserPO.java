@@ -5,19 +5,21 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
 
-@TableName("t_user")
+@TableName("sys_user")
 public class UserPO {
     @TableId(type = IdType.AUTO)
     private Long id;
     private String username;
     private String password;
-    private String userType;
-    private String status;
-    private Integer failedLoginCount;
-    private LocalDateTime lockedUntil;
-    private LocalDateTime createTime;
-    private LocalDateTime updateTime;
-    private Boolean deleted;
+    private String email;
+    private Integer userType;        // SMALLINT: 1=person, 2=company, 3=admin
+    private Integer status;          // SMALLINT: 0=disabled, 1=normal
+    private LocalDateTime lastLoginTime;
+    private String lastLoginIp;
+    private Integer failedAttempts;
+    private LocalDateTime lockUntil;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     public Long getId() {
         return id;
@@ -43,59 +45,75 @@ public class UserPO {
         this.password = password;
     }
 
-    public String getUserType() {
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public Integer getUserType() {
         return userType;
     }
 
-    public void setUserType(String userType) {
+    public void setUserType(Integer userType) {
         this.userType = userType;
     }
 
-    public String getStatus() {
+    public Integer getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(Integer status) {
         this.status = status;
     }
 
-    public Integer getFailedLoginCount() {
-        return failedLoginCount;
+    public LocalDateTime getLastLoginTime() {
+        return lastLoginTime;
     }
 
-    public void setFailedLoginCount(Integer failedLoginCount) {
-        this.failedLoginCount = failedLoginCount;
+    public void setLastLoginTime(LocalDateTime lastLoginTime) {
+        this.lastLoginTime = lastLoginTime;
     }
 
-    public LocalDateTime getLockedUntil() {
-        return lockedUntil;
+    public String getLastLoginIp() {
+        return lastLoginIp;
     }
 
-    public void setLockedUntil(LocalDateTime lockedUntil) {
-        this.lockedUntil = lockedUntil;
+    public void setLastLoginIp(String lastLoginIp) {
+        this.lastLoginIp = lastLoginIp;
     }
 
-    public LocalDateTime getCreateTime() {
-        return createTime;
+    public Integer getFailedAttempts() {
+        return failedAttempts;
     }
 
-    public void setCreateTime(LocalDateTime createTime) {
-        this.createTime = createTime;
+    public void setFailedAttempts(Integer failedAttempts) {
+        this.failedAttempts = failedAttempts;
     }
 
-    public LocalDateTime getUpdateTime() {
-        return updateTime;
+    public LocalDateTime getLockUntil() {
+        return lockUntil;
     }
 
-    public void setUpdateTime(LocalDateTime updateTime) {
-        this.updateTime = updateTime;
+    public void setLockUntil(LocalDateTime lockUntil) {
+        this.lockUntil = lockUntil;
     }
 
-    public Boolean getDeleted() {
-        return deleted;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setDeleted(Boolean deleted) {
-        this.deleted = deleted;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

@@ -9,7 +9,7 @@ public class ResumeDomainService {
 
     public boolean isParsable(Resume resume) {
         return resume.getStatus() == ParseStatus.PENDING ||
-               (resume.getStatus() == ParseStatus.FAILED && resume.canRetry());
+               resume.getStatus() == ParseStatus.FAILED;
     }
 
     public boolean shouldTriggerMatch(Resume resume) {

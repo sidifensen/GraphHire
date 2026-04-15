@@ -5,14 +5,20 @@ import com.graphhire.resume.domain.event.ResumeParsedEvent;
 import com.graphhire.resume.domain.event.ResumeUploadedEvent;
 import com.graphhire.resume.domain.vo.ParseStatus;
 
+import java.math.BigDecimal;
+
 public class Resume extends BaseAggregateRoot {
     private Long id;
     private Long userId;
     private String fileName;
     private String filePath;
+    private String fileType;
+    private Long fileSize;
     private ParseStatus status;
     private String parseResult;
-    private Integer retryCount = 0;
+    private String parseError;
+    private BigDecimal confidence;
+    private Boolean isDefault;
 
     public void upload(String filePath, String fileName) {
         this.filePath = filePath;
@@ -33,14 +39,7 @@ public class Resume extends BaseAggregateRoot {
 
     public void parseFailed(String errorMessage) {
         this.status = ParseStatus.FAILED;
-        this.retryCount++;
-        if (this.retryCount >= 3) {
-            throw new RuntimeException("重试次数已达上限");
-        }
-    }
-
-    public boolean canRetry() {
-        return this.retryCount < 3;
+        this.parseError = errorMessage;
     }
 
     public Long getId() {
@@ -75,6 +74,22 @@ public class Resume extends BaseAggregateRoot {
         this.filePath = filePath;
     }
 
+    public String getFileType() {
+        return fileType;
+    }
+
+    public void setFileType(String fileType) {
+        this.fileType = fileType;
+    }
+
+    public Long getFileSize() {
+        return fileSize;
+    }
+
+    public void setFileSize(Long fileSize) {
+        this.fileSize = fileSize;
+    }
+
     public ParseStatus getStatus() {
         return status;
     }
@@ -91,11 +106,27 @@ public class Resume extends BaseAggregateRoot {
         this.parseResult = parseResult;
     }
 
-    public Integer getRetryCount() {
-        return retryCount;
+    public String getParseError() {
+        return parseError;
     }
 
-    public void setRetryCount(Integer retryCount) {
-        this.retryCount = retryCount;
+    public void setParseError(String parseError) {
+        this.parseError = parseError;
+    }
+
+    public BigDecimal getConfidence() {
+        return confidence;
+    }
+
+    public void setConfidence(BigDecimal confidence) {
+        this.confidence = confidence;
+    }
+
+    public Boolean getIsDefault() {
+        return isDefault;
+    }
+
+    public void setIsDefault(Boolean isDefault) {
+        this.isDefault = isDefault;
     }
 }

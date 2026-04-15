@@ -4,8 +4,11 @@ import com.graphhire.common.model.BaseAggregateRoot;
 import com.graphhire.job.domain.event.JobPublishedEvent;
 import com.graphhire.job.domain.vo.JobStatus;
 import com.graphhire.job.domain.vo.Location;
+import com.graphhire.job.domain.vo.ParseStatus;
 import com.graphhire.job.domain.vo.SalaryRange;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +24,12 @@ public class Job extends BaseAggregateRoot {
     private List<String> preferredSkills = new ArrayList<>();
     private JobStatus status = JobStatus.DRAFT;
     private String description;
+    private String filePath;
+    private ParseStatus parseStatus = ParseStatus.PENDING;
+    private String parseResult;
+    private String parseError;
+    private BigDecimal confidence;
+    private LocalDateTime publishedAt;
 
     public void publish() {
         if (this.status != JobStatus.DRAFT && this.status != JobStatus.CLOSED) {
@@ -143,5 +152,53 @@ public class Job extends BaseAggregateRoot {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
+    }
+
+    public ParseStatus getParseStatus() {
+        return parseStatus;
+    }
+
+    public void setParseStatus(ParseStatus parseStatus) {
+        this.parseStatus = parseStatus;
+    }
+
+    public String getParseResult() {
+        return parseResult;
+    }
+
+    public void setParseResult(String parseResult) {
+        this.parseResult = parseResult;
+    }
+
+    public String getParseError() {
+        return parseError;
+    }
+
+    public void setParseError(String parseError) {
+        this.parseError = parseError;
+    }
+
+    public BigDecimal getConfidence() {
+        return confidence;
+    }
+
+    public void setConfidence(BigDecimal confidence) {
+        this.confidence = confidence;
+    }
+
+    public LocalDateTime getPublishedAt() {
+        return publishedAt;
+    }
+
+    public void setPublishedAt(LocalDateTime publishedAt) {
+        this.publishedAt = publishedAt;
     }
 }

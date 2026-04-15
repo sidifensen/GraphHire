@@ -1,19 +1,18 @@
 package com.graphhire.resume.domain.model;
 
 import com.graphhire.common.model.BaseEntity;
-import java.time.LocalDateTime;
 
 public class PersonInfo extends BaseEntity {
     private Long id;
     private Long userId;
-    private String name;
-    private String email;
+    private String realName;
+    private Integer gender;
+    private Integer age;
     private String phone;
-    private String city;
     private String education;
-    private Integer workYears;
-    private String currentCompany;
-    private String currentPosition;
+    private String city;
+    private String targetCity;
+    private Integer expectedSalary;
 
     public Long getId() {
         return id;
@@ -31,20 +30,28 @@ public class PersonInfo extends BaseEntity {
         this.userId = userId;
     }
 
-    public String getName() {
-        return name;
+    public String getRealName() {
+        return realName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setRealName(String realName) {
+        this.realName = realName;
     }
 
-    public String getEmail() {
-        return email;
+    public Integer getGender() {
+        return gender;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setGender(Integer gender) {
+        this.gender = gender;
+    }
+
+    public Integer getAge() {
+        return age;
+    }
+
+    public void setAge(Integer age) {
+        this.age = age;
     }
 
     public String getPhone() {
@@ -55,14 +62,6 @@ public class PersonInfo extends BaseEntity {
         this.phone = phone;
     }
 
-    public String getCity() {
-        return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
     public String getEducation() {
         return education;
     }
@@ -71,27 +70,27 @@ public class PersonInfo extends BaseEntity {
         this.education = education;
     }
 
-    public Integer getWorkYears() {
-        return workYears;
+    public String getCity() {
+        return city;
     }
 
-    public void setWorkYears(Integer workYears) {
-        this.workYears = workYears;
+    public void setCity(String city) {
+        this.city = city;
     }
 
-    public String getCurrentCompany() {
-        return currentCompany;
+    public String getTargetCity() {
+        return targetCity;
     }
 
-    public void setCurrentCompany(String currentCompany) {
-        this.currentCompany = currentCompany;
+    public void setTargetCity(String targetCity) {
+        this.targetCity = targetCity;
     }
 
-    public String getCurrentPosition() {
-        return currentPosition;
+    public Integer getExpectedSalary() {
+        return expectedSalary;
     }
 
-    public void setCurrentPosition(String currentPosition) {
-        this.currentPosition = currentPosition;
+    public void setExpectedSalary(Integer expectedSalary) {
+        this.expectedSalary = expectedSalary;
     }
 }

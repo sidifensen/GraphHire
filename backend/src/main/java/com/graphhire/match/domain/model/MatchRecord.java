@@ -6,6 +6,9 @@ import com.graphhire.match.domain.vo.MatchLevel;
 import com.graphhire.match.domain.vo.MatchScore;
 
 public class MatchRecord extends BaseAggregateRoot {
+    public static final int DIRECTION_PERSON_APPLIES = 1;  // Person applies to job
+    public static final int DIRECTION_COMPANY_RECOMMENDS = 2;  // Company recommends candidate to person
+
     private Long id;
     private Long resumeId;
     private Long jobId;
@@ -13,6 +16,7 @@ public class MatchRecord extends BaseAggregateRoot {
     private MatchLevel level;
     private String matchReason;
     private Boolean isRead = false;
+    private Integer matchDirection; // 1=person applies to job, 2=company recommends candidate
 
     public static MatchRecord create(Long resumeId, Long jobId, MatchScore score) {
         MatchRecord record = new MatchRecord();
@@ -40,12 +44,24 @@ public class MatchRecord extends BaseAggregateRoot {
         return resumeId;
     }
 
+    public void setResumeId(Long resumeId) {
+        this.resumeId = resumeId;
+    }
+
     public Long getJobId() {
         return jobId;
     }
 
+    public void setJobId(Long jobId) {
+        this.jobId = jobId;
+    }
+
     public MatchScore getScore() {
         return score;
+    }
+
+    public void setScore(MatchScore score) {
+        this.score = score;
     }
 
     public MatchLevel getLevel() {
@@ -62,5 +78,17 @@ public class MatchRecord extends BaseAggregateRoot {
 
     public Boolean getIsRead() {
         return isRead;
+    }
+
+    public void setIsRead(Boolean isRead) {
+        this.isRead = isRead;
+    }
+
+    public Integer getMatchDirection() {
+        return matchDirection;
+    }
+
+    public void setMatchDirection(Integer matchDirection) {
+        this.matchDirection = matchDirection;
     }
 }

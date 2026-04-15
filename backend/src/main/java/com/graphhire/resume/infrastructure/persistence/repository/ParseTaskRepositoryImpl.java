@@ -51,11 +51,16 @@ public class ParseTaskRepositoryImpl implements ParseTaskRepository {
         ParseTask task = new ParseTask();
         task.setId(po.getId());
         task.setResumeId(po.getResumeId());
-        task.setStatus(ParseTask.TaskStatus.valueOf(po.getStatus()));
-        task.setErrorMessage(po.getErrorMessage());
+        task.setJobId(po.getJobId());
+        task.setTaskType(po.getTaskType());
+        if (po.getStatus() != null) {
+            task.setStatus(ParseTask.TaskStatus.values()[po.getStatus()]);
+        }
         task.setRetryCount(po.getRetryCount());
-        task.setRawText(po.getRawText());
-        task.setParseResult(po.getParseResult());
+        task.setErrorMessage(po.getErrorMessage());
+        task.setCreatedAt(po.getCreatedAt());
+        task.setStartedAt(po.getStartedAt());
+        task.setCompletedAt(po.getCompletedAt());
         return task;
     }
 
@@ -63,11 +68,16 @@ public class ParseTaskRepositoryImpl implements ParseTaskRepository {
         ParseTaskPO po = new ParseTaskPO();
         po.setId(task.getId());
         po.setResumeId(task.getResumeId());
-        po.setStatus(task.getStatus().name());
-        po.setErrorMessage(task.getErrorMessage());
+        po.setJobId(task.getJobId());
+        po.setTaskType(task.getTaskType());
+        if (task.getStatus() != null) {
+            po.setStatus(task.getStatus().ordinal());
+        }
         po.setRetryCount(task.getRetryCount());
-        po.setRawText(task.getRawText());
-        po.setParseResult(task.getParseResult());
+        po.setErrorMessage(task.getErrorMessage());
+        po.setCreatedAt(task.getCreatedAt());
+        po.setStartedAt(task.getStartedAt());
+        po.setCompletedAt(task.getCompletedAt());
         return po;
     }
 }

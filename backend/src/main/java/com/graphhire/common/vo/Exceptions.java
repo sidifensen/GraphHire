@@ -14,6 +14,14 @@ public class Exceptions {
             this.code = code;
         }
 
+        public static BusinessException of(String message) {
+            return new BusinessException(message);
+        }
+
+        public static BusinessException of(int code, String message) {
+            return new BusinessException(code, message);
+        }
+
         public int getCode() {
             return code;
         }

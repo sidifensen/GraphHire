@@ -2,18 +2,23 @@ package com.graphhire.resume.domain.model;
 
 import com.graphhire.common.model.BaseEntity;
 
+import java.time.LocalDateTime;
+
 public class ParseTask extends BaseEntity {
     private Long id;
     private Long resumeId;
+    private Long jobId;
+    private String taskType;
     private TaskStatus status;
+    private Integer retryCount;
     private String errorMessage;
-    private Integer retryCount = 0;
-    private String rawText;
-    private String parseResult;
+    private LocalDateTime createdAt;
+    private LocalDateTime startedAt;
+    private LocalDateTime completedAt;
 
     public enum TaskStatus {
         PENDING,
-        PROCESSING,
+        RUNNING,
         SUCCESS,
         FAILED
     }
@@ -22,19 +27,20 @@ public class ParseTask extends BaseEntity {
         this.status = TaskStatus.PENDING;
     }
 
-    public void markProcessing() {
-        this.status = TaskStatus.PROCESSING;
+    public void markRunning() {
+        this.status = TaskStatus.RUNNING;
     }
 
-    public void markSuccess(String result) {
-        this.parseResult = result;
+    public void markSuccess() {
         this.status = TaskStatus.SUCCESS;
+        this.completedAt = LocalDateTime.now();
     }
 
     public void markFailed(String error) {
         this.errorMessage = error;
         this.status = TaskStatus.FAILED;
         this.retryCount++;
+        this.completedAt = LocalDateTime.now();
     }
 
     public Long getId() {
@@ -53,20 +59,28 @@ public class ParseTask extends BaseEntity {
         this.resumeId = resumeId;
     }
 
+    public Long getJobId() {
+        return jobId;
+    }
+
+    public void setJobId(Long jobId) {
+        this.jobId = jobId;
+    }
+
+    public String getTaskType() {
+        return taskType;
+    }
+
+    public void setTaskType(String taskType) {
+        this.taskType = taskType;
+    }
+
     public TaskStatus getStatus() {
         return status;
     }
 
     public void setStatus(TaskStatus status) {
         this.status = status;
-    }
-
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
     }
 
     public Integer getRetryCount() {
@@ -77,19 +91,35 @@ public class ParseTask extends BaseEntity {
         this.retryCount = retryCount;
     }
 
-    public String getRawText() {
-        return rawText;
+    public String getErrorMessage() {
+        return errorMessage;
     }
 
-    public void setRawText(String rawText) {
-        this.rawText = rawText;
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
     }
 
-    public String getParseResult() {
-        return parseResult;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setParseResult(String parseResult) {
-        this.parseResult = parseResult;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getStartedAt() {
+        return startedAt;
+    }
+
+    public void setStartedAt(LocalDateTime startedAt) {
+        this.startedAt = startedAt;
+    }
+
+    public LocalDateTime getCompletedAt() {
+        return completedAt;
+    }
+
+    public void setCompletedAt(LocalDateTime completedAt) {
+        this.completedAt = completedAt;
     }
 }

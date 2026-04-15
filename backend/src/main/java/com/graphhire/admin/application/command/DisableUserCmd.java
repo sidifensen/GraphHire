@@ -6,14 +6,14 @@ package com.graphhire.admin.application.command;
 public class DisableUserCmd {
 
     private Long userId;
-    private String reason;
+    private Boolean disabled;
 
     public DisableUserCmd() {
     }
 
-    public DisableUserCmd(Long userId, String reason) {
+    public DisableUserCmd(Long userId, Boolean disabled) {
         this.userId = userId;
-        this.reason = reason;
+        this.disabled = disabled;
     }
 
     public Long getUserId() {
@@ -24,11 +24,11 @@ public class DisableUserCmd {
         this.userId = userId;
     }
 
-    public String getReason() {
-        return reason;
+    public Boolean getDisabled() {
+        return disabled;
     }
 
-    public void setReason(String reason) {
-        this.reason = reason;
+    public void setDisabled(Boolean disabled) {
+        this.disabled = disabled;
     }
 }

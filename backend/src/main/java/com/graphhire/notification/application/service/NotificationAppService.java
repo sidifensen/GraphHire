@@ -39,6 +39,13 @@ public class NotificationAppService {
     }
 
     @Transactional
+    public Notification create(Long userId, NotificationType type, String title, String content, Long referenceId) {
+        Notification notification = new Notification(userId, type, title, content);
+        notification.setReferenceId(referenceId);
+        return repository.save(notification);
+    }
+
+    @Transactional
     public void markAsRead(Long notificationId) {
         Notification notification = repository.findById(notificationId)
             .orElseThrow(() -> new Exceptions.BusinessException("Notification not found: " + notificationId));

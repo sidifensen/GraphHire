@@ -5,22 +5,21 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
 
-@TableName("person_info")
+@TableName("person_profile")
 public class PersonInfoPO {
     @TableId(type = IdType.AUTO)
     private Long id;
     private Long userId;
-    private String name;
-    private String email;
+    private String realName;
+    private Integer gender;
+    private Integer age;
     private String phone;
-    private String city;
     private String education;
-    private Integer workYears;
-    private String currentCompany;
-    private String currentPosition;
-    private LocalDateTime createTime;
-    private LocalDateTime updateTime;
-    private Boolean deleted;
+    private String city;
+    private String targetCity;
+    private Integer expectedSalary;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     public Long getId() {
         return id;
@@ -38,20 +37,28 @@ public class PersonInfoPO {
         this.userId = userId;
     }
 
-    public String getName() {
-        return name;
+    public String getRealName() {
+        return realName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setRealName(String realName) {
+        this.realName = realName;
     }
 
-    public String getEmail() {
-        return email;
+    public Integer getGender() {
+        return gender;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setGender(Integer gender) {
+        this.gender = gender;
+    }
+
+    public Integer getAge() {
+        return age;
+    }
+
+    public void setAge(Integer age) {
+        this.age = age;
     }
 
     public String getPhone() {
@@ -62,14 +69,6 @@ public class PersonInfoPO {
         this.phone = phone;
     }
 
-    public String getCity() {
-        return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
     public String getEducation() {
         return education;
     }
@@ -78,51 +77,43 @@ public class PersonInfoPO {
         this.education = education;
     }
 
-    public Integer getWorkYears() {
-        return workYears;
+    public String getCity() {
+        return city;
     }
 
-    public void setWorkYears(Integer workYears) {
-        this.workYears = workYears;
+    public void setCity(String city) {
+        this.city = city;
     }
 
-    public String getCurrentCompany() {
-        return currentCompany;
+    public String getTargetCity() {
+        return targetCity;
     }
 
-    public void setCurrentCompany(String currentCompany) {
-        this.currentCompany = currentCompany;
+    public void setTargetCity(String targetCity) {
+        this.targetCity = targetCity;
     }
 
-    public String getCurrentPosition() {
-        return currentPosition;
+    public Integer getExpectedSalary() {
+        return expectedSalary;
     }
 
-    public void setCurrentPosition(String currentPosition) {
-        this.currentPosition = currentPosition;
+    public void setExpectedSalary(Integer expectedSalary) {
+        this.expectedSalary = expectedSalary;
     }
 
-    public LocalDateTime getCreateTime() {
-        return createTime;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setCreateTime(LocalDateTime createTime) {
-        this.createTime = createTime;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
-    public LocalDateTime getUpdateTime() {
-        return updateTime;
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 
-    public void setUpdateTime(LocalDateTime updateTime) {
-        this.updateTime = updateTime;
-    }
-
-    public Boolean getDeleted() {
-        return deleted;
-    }
-
-    public void setDeleted(Boolean deleted) {
-        this.deleted = deleted;
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

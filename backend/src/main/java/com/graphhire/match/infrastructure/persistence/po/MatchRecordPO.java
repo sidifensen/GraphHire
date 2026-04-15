@@ -13,17 +13,15 @@ public class MatchRecordPO {
     private Long id;
     private Long resumeId;
     private Long jobId;
-    private BigDecimal totalScore;
+    private BigDecimal overallScore;
     private BigDecimal skillScore;
-    private BigDecimal expScore;
+    private BigDecimal experienceScore;
     private BigDecimal cityScore;
-    private BigDecimal eduScore;
-    private BigDecimal salScore;
-    private String level;
-    private String matchReason;
-    private Boolean isRead;
-    private LocalDateTime createTime;
-    private LocalDateTime updateTime;
+    private BigDecimal educationScore;
+    private BigDecimal salaryScore;
+    private String matchReport;  // JSONB
+    private Integer status;       // 0=pending, 1=viewed
+    private LocalDateTime createdAt;
 
     public Long getId() {
         return id;
@@ -49,12 +47,12 @@ public class MatchRecordPO {
         this.jobId = jobId;
     }
 
-    public BigDecimal getTotalScore() {
-        return totalScore;
+    public BigDecimal getOverallScore() {
+        return overallScore;
     }
 
-    public void setTotalScore(BigDecimal totalScore) {
-        this.totalScore = totalScore;
+    public void setOverallScore(BigDecimal overallScore) {
+        this.overallScore = overallScore;
     }
 
     public BigDecimal getSkillScore() {
@@ -65,12 +63,12 @@ public class MatchRecordPO {
         this.skillScore = skillScore;
     }
 
-    public BigDecimal getExpScore() {
-        return expScore;
+    public BigDecimal getExperienceScore() {
+        return experienceScore;
     }
 
-    public void setExpScore(BigDecimal expScore) {
-        this.expScore = expScore;
+    public void setExperienceScore(BigDecimal experienceScore) {
+        this.experienceScore = experienceScore;
     }
 
     public BigDecimal getCityScore() {
@@ -81,59 +79,43 @@ public class MatchRecordPO {
         this.cityScore = cityScore;
     }
 
-    public BigDecimal getEduScore() {
-        return eduScore;
+    public BigDecimal getEducationScore() {
+        return educationScore;
     }
 
-    public void setEduScore(BigDecimal eduScore) {
-        this.eduScore = eduScore;
+    public void setEducationScore(BigDecimal educationScore) {
+        this.educationScore = educationScore;
     }
 
-    public BigDecimal getSalScore() {
-        return salScore;
+    public BigDecimal getSalaryScore() {
+        return salaryScore;
     }
 
-    public void setSalScore(BigDecimal salScore) {
-        this.salScore = salScore;
+    public void setSalaryScore(BigDecimal salaryScore) {
+        this.salaryScore = salaryScore;
     }
 
-    public String getLevel() {
-        return level;
+    public String getMatchReport() {
+        return matchReport;
     }
 
-    public void setLevel(String level) {
-        this.level = level;
+    public void setMatchReport(String matchReport) {
+        this.matchReport = matchReport;
     }
 
-    public String getMatchReason() {
-        return matchReason;
+    public Integer getStatus() {
+        return status;
     }
 
-    public void setMatchReason(String matchReason) {
-        this.matchReason = matchReason;
+    public void setStatus(Integer status) {
+        this.status = status;
     }
 
-    public Boolean getIsRead() {
-        return isRead;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setIsRead(Boolean isRead) {
-        this.isRead = isRead;
-    }
-
-    public LocalDateTime getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(LocalDateTime createTime) {
-        this.createTime = createTime;
-    }
-
-    public LocalDateTime getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(LocalDateTime updateTime) {
-        this.updateTime = updateTime;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }

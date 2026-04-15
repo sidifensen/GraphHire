@@ -10,14 +10,14 @@ public class ParseTaskPO {
     @TableId(type = IdType.AUTO)
     private Long id;
     private Long resumeId;
-    private String status;
-    private String errorMessage;
+    private Long jobId;
+    private String taskType;
+    private Integer status;
     private Integer retryCount;
-    private String rawText;
-    private String parseResult;
-    private LocalDateTime createTime;
-    private LocalDateTime updateTime;
-    private Boolean deleted;
+    private String errorMessage;
+    private LocalDateTime createdAt;
+    private LocalDateTime startedAt;
+    private LocalDateTime completedAt;
 
     public Long getId() {
         return id;
@@ -35,20 +35,28 @@ public class ParseTaskPO {
         this.resumeId = resumeId;
     }
 
-    public String getStatus() {
+    public Long getJobId() {
+        return jobId;
+    }
+
+    public void setJobId(Long jobId) {
+        this.jobId = jobId;
+    }
+
+    public String getTaskType() {
+        return taskType;
+    }
+
+    public void setTaskType(String taskType) {
+        this.taskType = taskType;
+    }
+
+    public Integer getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(Integer status) {
         this.status = status;
-    }
-
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
     }
 
     public Integer getRetryCount() {
@@ -59,43 +67,35 @@ public class ParseTaskPO {
         this.retryCount = retryCount;
     }
 
-    public String getRawText() {
-        return rawText;
+    public String getErrorMessage() {
+        return errorMessage;
     }
 
-    public void setRawText(String rawText) {
-        this.rawText = rawText;
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
     }
 
-    public String getParseResult() {
-        return parseResult;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setParseResult(String parseResult) {
-        this.parseResult = parseResult;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
-    public LocalDateTime getCreateTime() {
-        return createTime;
+    public LocalDateTime getStartedAt() {
+        return startedAt;
     }
 
-    public void setCreateTime(LocalDateTime createTime) {
-        this.createTime = createTime;
+    public void setStartedAt(LocalDateTime startedAt) {
+        this.startedAt = startedAt;
     }
 
-    public LocalDateTime getUpdateTime() {
-        return updateTime;
+    public LocalDateTime getCompletedAt() {
+        return completedAt;
     }
 
-    public void setUpdateTime(LocalDateTime updateTime) {
-        this.updateTime = updateTime;
-    }
-
-    public Boolean getDeleted() {
-        return deleted;
-    }
-
-    public void setDeleted(Boolean deleted) {
-        this.deleted = deleted;
+    public void setCompletedAt(LocalDateTime completedAt) {
+        this.completedAt = completedAt;
     }
 }

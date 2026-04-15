@@ -1,28 +1,35 @@
 package com.graphhire.notification.domain.vo;
 
 public enum NotificationType {
-    RESUME_PARSED("Resume Parsed", "Your resume has been successfully parsed"),
-    MATCH_COMPLETED("Match Completed", "A new candidate/job match has been completed"),
-    NEW_CANDIDATE("New Candidate", "You have a new candidate matching your job"),
-    JOB_APPLIED("Job Applied", "Your application has been submitted"),
-    APPLICATION_VIEWED("Application Viewed", "Your application has been viewed by the employer"),
-    INTERVIEW_INVITATION("Interview Invitation", "You have received an interview invitation"),
-    SYSTEM_NOTIFICATION("System Notification", "System notification"),
-    ACCOUNT_UPDATE("Account Update", "Your account information has been updated");
+    RESUME_PARSED(1, "Resume Parsed"),
+    JOB_RECOMMENDATION(2, "Job Recommendation"),
+    CANDIDATE_RECOMMENDATION(3, "Candidate Recommendation"),
+    COMPANY_AUTH_RESULT(4, "Company Auth Result"),
+    RESUME_VIEWED(5, "Resume Viewed"),
+    SYSTEM_NOTIFICATION(99, "System Notification");
 
+    private final int value;
     private final String title;
-    private final String description;
 
-    NotificationType(String title, String description) {
+    NotificationType(int value, String title) {
+        this.value = value;
         this.title = title;
-        this.description = description;
+    }
+
+    public int getValue() {
+        return value;
     }
 
     public String getTitle() {
         return title;
     }
 
-    public String getDescription() {
-        return description;
+    public static NotificationType fromValue(int value) {
+        for (NotificationType type : values()) {
+            if (type.value == value) {
+                return type;
+            }
+        }
+        throw new IllegalArgumentException("Unknown notification type value: " + value);
     }
 }
