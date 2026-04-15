@@ -8,4 +8,31 @@
     </parent>
     <artifactId>match</artifactId>
     <packaging>jar</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.graphhire</groupId>
+            <artifactId>common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.graphhire</groupId>
+            <artifactId>infrastructure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.graphhire</groupId>
+            <artifactId>auth</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.graphhire</groupId>
+            <artifactId>resume</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.graphhire</groupId>
+            <artifactId>job</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.graphhire</groupId>
+            <artifactId>skill</artifactId>
+        </dependency>
+    </dependencies>
 </project>

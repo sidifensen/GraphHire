@@ -8,4 +8,15 @@
     </parent>
     <artifactId>notification</artifactId>
     <packaging>jar</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.graphhire</groupId>
+            <artifactId>common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.graphhire</groupId>
+            <artifactId>infrastructure</artifactId>
+        </dependency>
+    </dependencies>
 </project>
