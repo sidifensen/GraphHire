@@ -1,4 +1,4 @@
-package com.graphhire.match.iface.dto.response;
+package com.graphhire.match.interfaces.dto.response;
 
 import com.graphhire.job.domain.model.Job;
 import com.graphhire.match.domain.model.MatchRecord;

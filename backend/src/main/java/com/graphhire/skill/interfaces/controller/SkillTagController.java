@@ -1,4 +1,4 @@
-package com.graphhire.skill.iface.controller;
+package com.graphhire.skill.interfaces.controller;
 
 import com.graphhire.common.vo.PageQuery;
 import com.graphhire.common.vo.Result;

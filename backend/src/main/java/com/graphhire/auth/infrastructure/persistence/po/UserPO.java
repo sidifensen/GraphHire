@@ -11,7 +11,6 @@ public class UserPO {
     private Long id;
     private String username;
     private String password;
-    private String email;
     private Integer userType;        // SMALLINT: 1=person, 2=company, 3=admin
     private Integer status;          // SMALLINT: 0=disabled, 1=normal
     private LocalDateTime lastLoginTime;
@@ -43,14 +42,6 @@ public class UserPO {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public Integer getUserType() {

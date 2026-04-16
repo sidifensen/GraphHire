@@ -1,4 +1,4 @@
-package com.graphhire.resume.iface.dto.request;
+package com.graphhire.resume.interfaces.dto.request;
 
 public class PersonUpdateRequest {
     private String realName;

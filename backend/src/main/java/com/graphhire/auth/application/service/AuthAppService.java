@@ -10,6 +10,7 @@ import com.graphhire.auth.domain.service.PasswordEncoder;
 import com.graphhire.auth.domain.vo.AuthStatus;
 import com.graphhire.auth.domain.vo.UserType;
 import com.graphhire.auth.interfaces.dto.response.LoginResponse;
+import cn.dev33.satoken.stp.StpUtil;
 import com.graphhire.common.vo.Exceptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -73,30 +74,30 @@ public class AuthAppService {
     }
 
     public void sendVerifyCode(SendVerifyCodeCmd cmd) {
-        sendVerifyCode(cmd.getEmail(), "default");
+        sendVerifyCode(cmd.getUsername(), "default");
     }
 
-    public void sendVerifyCode(String email, String type) {
+    public void sendVerifyCode(String username, String type) {
         // Generate 6-digit code
         String code = String.format("%06d", new Random().nextInt(999999));
-        // Store in Redis: email_code:{email}:{type} with 15 min TTL
-        String key = "email_code:" + email + ":" + type;
+        // Store in Redis: email_code:{username}:{type} with 15 min TTL
+        String key = "email_code:" + username + ":" + type;
         redisTemplate.opsForValue().set(key, code, 15, TimeUnit.MINUTES);
         // TODO: Send email via email service (log for now if not implemented)
-        System.out.println("Sending verification code " + code + " to " + email);
+        System.out.println("Sending verification code " + code + " to " + username);
     }
 
-    public void forgotPassword(String email) {
-        // Find user by email (username)
-        User user = userRepository.findByUsername(email)
+    public void forgotPassword(String username) {
+        // Find user by username
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> Exceptions.BusinessException.of("用户不存在"));
         // Send verification code
-        sendVerifyCode(email, "forgot_password");
+        sendVerifyCode(username, "forgot_password");
     }
 
-    public void resetPassword(String email, String code, String newPassword) {
+    public void resetPassword(String username, String code, String newPassword) {
         // Verify the code first
-        String key = "email_code:" + email + ":forgot_password";
+        String key = "email_code:" + username + ":forgot_password";
         String storedCode = redisTemplate.opsForValue().get(key);
         if (storedCode == null || !storedCode.equals(code)) {
             throw Exceptions.BusinessException.of("验证码错误或已过期");
@@ -104,7 +105,7 @@ public class AuthAppService {
         // Delete the used code
         redisTemplate.delete(key);
         // Update password
-        User user = userRepository.findByUsername(email)
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> Exceptions.BusinessException.of("用户不存在"));
         user.setPassword(com.graphhire.auth.domain.vo.EncryptedPassword.encode(newPassword));
         userRepository.save(user);
@@ -163,6 +164,10 @@ public class AuthAppService {
     }
 
     private LoginResponse generateTokenPair(User user) {
+        // Sa-Token 登录：建立会话并存储角色
+        StpUtil.login(user.getId());
+        StpUtil.getSession().set("role", user.getUserType().name());
+
         String accessToken = generateAccessToken(user);
         String refreshToken = generateRefreshToken(user);
         return new LoginResponse(accessToken, refreshToken, ACCESS_TOKEN_EXPIRE_SECONDS, user.getUserType(), user.getId());

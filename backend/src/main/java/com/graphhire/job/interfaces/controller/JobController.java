@@ -1,4 +1,4 @@
-package com.graphhire.job.iface.controller;
+package com.graphhire.job.interfaces.controller;
 
 import com.graphhire.common.vo.Result;
 import com.graphhire.job.application.command.PublishJobCmd;

@@ -10,7 +10,6 @@ public class AdminPO {
     @TableId(type = IdType.AUTO)
     private Long id;
     private String username;
-    private String email;
     private Integer userType;
     private Integer status;
     private LocalDateTime createdAt;
@@ -29,14 +28,6 @@ public class AdminPO {
 
     public void setUsername(String username) {
         this.username = username;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public Integer getUserType() {

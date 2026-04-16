@@ -1,4 +1,4 @@
-package com.graphhire.notification.iface.controller;
+package com.graphhire.notification.interfaces.controller;
 
 import com.graphhire.common.vo.Result;
 import com.graphhire.notification.application.service.NotificationAppService;

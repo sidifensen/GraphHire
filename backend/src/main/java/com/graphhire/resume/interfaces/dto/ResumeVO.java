@@ -1,4 +1,4 @@
-package com.graphhire.resume.iface.dto;
+package com.graphhire.resume.interfaces.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

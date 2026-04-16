@@ -1,4 +1,4 @@
-package com.graphhire.admin.iface.dto.response;
+package com.graphhire.admin.interfaces.dto.response;
 
 /**
  * Dashboard statistics response DTO.

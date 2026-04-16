@@ -1,4 +1,4 @@
-package com.graphhire.auth.iface.dto.request;
+package com.graphhire.auth.interfaces.dto.request;
 
 public class LoginRequest {
     private String username;

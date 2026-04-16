@@ -1,4 +1,4 @@
-package com.graphhire.resume.iface.dto;
+package com.graphhire.resume.interfaces.dto;
 
 public class PersonInfoResponse {
     private Long id;

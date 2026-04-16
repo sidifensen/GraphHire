@@ -1,4 +1,4 @@
-package com.graphhire.auth.iface.dto.response;
+package com.graphhire.auth.interfaces.dto.response;
 
 import com.graphhire.auth.domain.vo.UserType;
 

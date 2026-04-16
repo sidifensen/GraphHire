@@ -1,4 +1,4 @@
-package com.graphhire.job.iface.dto.request;
+package com.graphhire.job.interfaces.dto.request;
 
 public class CreateStaffRequest {
     private String username;
