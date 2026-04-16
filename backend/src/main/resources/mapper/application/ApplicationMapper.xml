@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.graphhire.application.domain.repository.ApplicationRepository">
+
+    <resultMap id="BaseResultMap" type="com.graphhire.application.domain.model.Application">
+        <id column="id" property="id"/>
+        <result column="resume_id" property="resumeId"/>
+        <result column="job_id" property="jobId"/>
+        <result column="user_id" property="userId"/>
+        <result column="company_id" property="companyId"/>
+        <result column="status" property="status"/>
+        <result column="applied_at" property="appliedAt"/>
+        <result column="updated_at" property="updatedAt"/>
+        <result column="note" property="note"/>
+    </resultMap>
+
+    <insert id="save" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO application (resume_id, job_id, user_id, company_id, status, applied_at, updated_at, note)
+        VALUES (#{resumeId}, #{jobId}, #{userId}, #{companyId}, #{status}, #{appliedAt}, #{updatedAt}, #{note})
+    </insert>
+
+    <select id="findById" resultMap="BaseResultMap">
+        SELECT * FROM application WHERE id = #{id}
+    </select>
+
+    <select id="findByUserId" resultMap="BaseResultMap">
+        SELECT * FROM application WHERE user_id = #{userId} ORDER BY applied_at DESC
+    </select>
+
+    <select id="findByJobId" resultMap="BaseResultMap">
+        SELECT * FROM application WHERE job_id = #{jobId} ORDER BY applied_at DESC
+    </select>
+
+    <select id="findByCompanyId" resultMap="BaseResultMap">
+        SELECT * FROM application WHERE company_id = #{companyId} ORDER BY applied_at DESC
+    </select>
+
+    <select id="findByCompanyIdAndStatus" resultMap="BaseResultMap">
+        SELECT * FROM application WHERE company_id = #{companyId} AND status = #{status} ORDER BY applied_at DESC
+    </select>
+
+    <select id="findByResumeIdAndJobId" resultMap="BaseResultMap">
+        SELECT * FROM application WHERE resume_id = #{resumeId} AND job_id = #{jobId}
+    </select>
+
+    <select id="existsByResumeIdAndJobId" resultType="boolean">
+        SELECT EXISTS(SELECT 1 FROM application WHERE resume_id = #{resumeId} AND job_id = #{jobId})
+    </select>
+
+    <update id="update">
+        UPDATE application SET status = #{status}, updated_at = #{updatedAt}, note = #{note} WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM application WHERE id = #{id}
+    </delete>
+
+</mapper>
