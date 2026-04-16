@@ -1,6 +1,7 @@
 package com.graphhire.job.infrastructure.persistence.po;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
@@ -21,35 +22,68 @@ public class JobPO {
     private Long companyId;
     /** 职位名称 */
     private String title;
-    /** 所属部门 */
+    /** 所属部门（数据库中不存在） */
+    @TableField(exist = false)
     private String department;
-    /** 招聘人数 */
+    /** 招聘人数（数据库中不存在） */
+    @TableField(exist = false)
     private Integer headcount;
     /** 工作城市 */
+    @TableField("city")
     private String locationCity;
-    /** 工作区县 */
+    /** 工作区县（数据库中不存在） */
+    @TableField(exist = false)
     private String locationDistrict;
-    /** 工作详细地址 */
+    /** 工作详细地址（数据库中不存在） */
+    @TableField(exist = false)
     private String locationDetail;
     /** 最低薪资 */
+    @TableField("salary_min")
     private Integer salaryMin;
     /** 最高薪资 */
+    @TableField("salary_max")
     private Integer salaryMax;
     /** 薪资单位：月/小时/年 */
+    @TableField("salary_unit")
     private String salaryUnit;
-    /** 必填技能（JSON数组字符串） */
+    /** 必填技能（JSON数组字符串，数据库中不存在） */
+    @TableField(exist = false)
     private String requiredSkills;
-    /** 优先技能（JSON数组字符串） */
+    /** 优先技能（JSON数组字符串，数据库中不存在） */
+    @TableField(exist = false)
     private String preferredSkills;
-    /** 职位状态：DRAFT/PUBLISHED/CLOSED */
-    private String status;
-    /** 职位描述 */
+    /** 职位状态：0=下架 1=上架 */
+    @TableField("status")
+    private Integer status;
+    /** 职位描述（数据库中不存在） */
+    @TableField(exist = false)
     private String description;
+    /** 文件路径 */
+    @TableField("file_path")
+    private String filePath;
+    /** 解析状态 */
+    @TableField("parse_status")
+    private Integer parseStatus;
+    /** AI解析结果 */
+    @TableField("parse_result")
+    private String parseResult;
+    /** 经验要求 */
+    @TableField("experience")
+    private String experience;
+    /** 学历要求 */
+    @TableField("education")
+    private String education;
+    /** 工作类型 */
+    @TableField("job_type")
+    private Integer jobType;
     /** 创建时间 */
+    @TableField("create_time")
     private LocalDateTime createTime;
     /** 更新时间 */
+    @TableField("update_time")
     private LocalDateTime updateTime;
     /** 逻辑删除标记 */
+    @TableField("deleted")
     private Boolean deleted;
 
     public Long getId() {
@@ -156,11 +190,11 @@ public class JobPO {
         this.preferredSkills = preferredSkills;
     }
 
-    public String getStatus() {
+    public Integer getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(Integer status) {
         this.status = status;
     }
 

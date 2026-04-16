@@ -56,7 +56,7 @@ public class JobRepositoryImpl implements JobRepository {
     /** 根据状态查询职位 */
     public List<Job> findByStatus(JobStatus status) {
         LambdaQueryWrapper<JobPO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(JobPO::getStatus, status.name());
+        wrapper.eq(JobPO::getStatus, status.toCode());
         return jobMapper.selectList(wrapper).stream()
                 .map(this::toDomain)
                 .toList();
@@ -95,7 +95,7 @@ public class JobRepositoryImpl implements JobRepository {
     /** 统计各状态职位数量 */
     public long countByStatus(JobStatus status) {
         LambdaQueryWrapper<JobPO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(JobPO::getStatus, status.name());
+        wrapper.eq(JobPO::getStatus, status.toCode());
         return jobMapper.selectCount(wrapper);
     }
 
@@ -105,7 +105,7 @@ public class JobRepositoryImpl implements JobRepository {
         Job job = new Job();
         // 使用 BeanUtil 复制基础字段，status 枚举单独转换
         BeanUtil.copyProperties(po, job);
-        job.setStatus(JobStatus.valueOf(po.getStatus()));
+        job.setStatus(JobStatus.fromCode(po.getStatus()));
         return job;
     }
 
@@ -113,7 +113,7 @@ public class JobRepositoryImpl implements JobRepository {
     private JobPO toPO(Job job) {
         JobPO po = new JobPO();
         BeanUtil.copyProperties(job, po);
-        po.setStatus(job.getStatus().name());
+        po.setStatus(job.getStatus().toCode());
         return po;
     }
 }

@@ -14,5 +14,20 @@ public enum JobStatus {
     /** 已发布 */
     PUBLISHED,
     /** 已关闭 */
-    CLOSED
+    CLOSED;
+
+    /** 从数据库 smallint 值转换 */
+    public static JobStatus fromCode(int code) {
+        return switch (code) {
+            case 0 -> DRAFT;
+            case 1 -> PUBLISHED;
+            case 2 -> CLOSED;
+            default -> DRAFT;
+        };
+    }
+
+    /** 转换为数据库 smallint 值 */
+    public int toCode() {
+        return ordinal();
+    }
 }
