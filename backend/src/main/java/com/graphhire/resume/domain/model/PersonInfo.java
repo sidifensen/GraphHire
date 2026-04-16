@@ -27,6 +27,8 @@ public class PersonInfo extends BaseEntity {
     private String targetCity;
     /** 期望薪资 */
     private Integer expectedSalary;
+    /** 头像URL */
+    private String avatarUrl;
 
     public Long getId() {
         return id;
@@ -106,5 +108,13 @@ public class PersonInfo extends BaseEntity {
 
     public void setExpectedSalary(Integer expectedSalary) {
         this.expectedSalary = expectedSalary;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 }
