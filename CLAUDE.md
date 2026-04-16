@@ -34,54 +34,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **强制要求：所有手写工具类代码必须优先使用 Hutool 替代，禁止重复造轮子。**
 
-#### 工具模块速查表
-
 | 场景 | 必须使用 | 禁止使用 |
 |------|---------|---------|
-| JSON 解析/构建 | `cn.hutool.json.JSONUtil` / `JSONObject` / `JSONArray` | 手写 `substring` + `split` |
-| HTTP 请求 | `cn.hutool.http.HttpRequest` / `HttpUtil` | `RestTemplate`（新建场景）|
-| 日期创建/格式化 | `cn.hutool.core.date.DateUtil` | `new Date()` |
-| 字符串判空/格式化 | `cn.hutool.core.text.StrUtil` | `str == null` / `str.isEmpty()` |
-| 对象属性拷贝 | `cn.hutool.core.bean.BeanUtil.copyProperties()` | 逐字段 `setXxx()` |
-| 集合空安全 | `cn.hutool.core.collection.CollUtil` | `list == null ? new ArrayList<>() : list` |
-| 验证码/随机数 | `cn.hutool.core.util.RandomUtil` / `SecureUtil.randomNumbers()` | `new Random()` |
-| 日志打印 | `cn.hutool.log.StaticLog` | `System.out.println()` |
-| 异常消息提取 | `cn.hutool.core.exceptions.ExceptionUtil.getMessage()` | `e.getMessage()` 直接透出 |
-| 邮箱/手机号验证 | `cn.hutool.core.lang.Validator.isEmail()` / `isMobile()` | 手写正则 |
-| 文件读写/判断 | `cn.hutool.core.io.FileUtil` / `NioUtil` | `Files.newInputStream()` / `Paths.get()` |
-| 类型转换 | `cn.hutool.core.convert.Convert` | 手写 `Integer.parseInt()` |
-| ID 生成 | `cn.hutool.core.util.IdUtil.simpleUUID()` | 拼接字符串作为 ID |
-| Base64 编解码 | `cn.hutool.core.codec.Base64` | 手写 Base64 |
-| 加密摘要 | `cn.hutool.crypto.SecureUtil` / `DigestUtil` / `BCrypt` | 手写 MD5/SHA |
+| JSON 解析 | `JSONUtil.parseObj()` | 手写 `substring`+`split` |
+| HTTP 请求 | `HttpRequest` / `HttpUtil` | `RestTemplate`（新场景）|
+| 日期 | `DateUtil.date()` / `format()` | `new Date()` |
+| 字符串 | `StrUtil.isBlank()` / `format()` | `== null` / `isEmpty()` |
+| Bean拷贝 | `BeanUtil.copyProperties()` | 逐字段 `setXxx()` |
+| 集合空安全 | `CollUtil.emptyIfNull()` | `list == null ? [] : list` |
+| 随机数/验证码 | `RandomUtil` / `SecureUtil.randomNumbers()` | `new Random()` |
+| 日志 | `StaticLog.info()` / `error()` | `System.out.println()` |
+| 异常消息 | `ExceptionUtil.getMessage()` | `e.getMessage()` 直接透出 |
+| 格式验证 | `Validator.isEmail()` / `isMobile()` | 手写正则 |
+| 文件操作 | `FileUtil` / `NioUtil` | `Files`/`Paths` 手写流 |
+| ID生成 | `IdUtil.simpleUUID()` | 拼接字符串作ID |
+| Base64 | `Base64` | 手写Base64 |
 
-#### 特殊情况豁免
-
-- MyBatis-Plus 查询（`LambdaQueryWrapper`）— 已是成熟方案，保持不变
-- Sa-Token 认证 — 专用认证框架，保持不变
-- Spring Data Redis 操作（`StringRedisTemplate`）— 已是标准，保持不变
-- `Result<T>` / `PageQuery` / `PageResult` — 项目基础设施类，保持不变
-- PO/Domain 转换中**枚举字段映射** — 需手动转换，不得用 BeanUtil 跳过
-
-#### 新增 import 规范
-
-```java
-// 严格按以下路径引入，禁止从其他包路径引入同名类
-import cn.hutool.json.JSONUtil;          // JSON
-import cn.hutool.http.HttpRequest;        // HTTP
-import cn.hutool.core.date.DateUtil;      // 日期
-import cn.hutool.core.text.StrUtil;      // 字符串
-import cn.hutool.core.bean.BeanUtil;     // Bean操作
-import cn.hutool.core.collection.CollUtil; // 集合
-import cn.hutool.core.util.RandomUtil;    // 随机数
-import cn.hutool.core.util.SecureUtil;    // 安全工具
-import cn.hutool.log.StaticLog;          // 日志
-import cn.hutool.core.exceptions.ExceptionUtil; // 异常
-import cn.hutool.core.lang.Validator;     // 验证器
-import cn.hutool.core.io.FileUtil;       // 文件
-import cn.hutool.core.convert.Convert;     // 转换
-import cn.hutool.core.util.IdUtil;        // ID生成
-import cn.hutool.core.codec.Base64;       // Base64
-```
+**豁免：** MyBatis-Plus / Sa-Token / Redis / Result / PageQuery/Result / 枚举映射
 
 ---
 
