@@ -1,0 +1,85 @@
+package com.graphhire.resume.interfaces.controller.it;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.graphhire.BaseControllerIT;
+import org.junit.jupiter.api.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@TestMethodOrder(MethodOrderer.DisplayName.class)
+class PersonControllerIT extends BaseControllerIT {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @BeforeAll
+    static void beforeAll(@Autowired MockMvc mockMvc, @Autowired ObjectMapper objectMapper) throws Exception {
+        BaseControllerIT.initTokens(mockMvc, objectMapper);
+    }
+
+    @BeforeEach
+    void setUp() {
+        setupHeaders();
+    }
+
+    @Test
+    @DisplayName("01 - 获取个人信息（新建）")
+    void getPersonInfo_NewUser() throws Exception {
+        mockMvc.perform(get("/person/info")
+                .headers(personHeaders))
+            .andExpect(jsonPath("$.code").value(200));
+    }
+
+    @Test
+    @DisplayName("02 - 更新个人信息")
+    void updatePersonInfo_Success() throws Exception {
+        String json = "{\"realName\":\"TestUser\",\"gender\":\"MALE\",\"age\":25,\"phone\":\"13800138000\"," +
+            "\"education\":\"BACHELOR\",\"city\":\"Beijing\",\"targetCity\":\"Shanghai\",\"expectedSalary\":30000}";
+
+        mockMvc.perform(put("/person/info")
+                .headers(personHeaders)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+            .andExpect(jsonPath("$.code").value(200));
+
+        // 验证更新成功
+        mockMvc.perform(get("/person/info")
+                .headers(personHeaders))
+            .andExpect(jsonPath("$.code").value(200))
+            .andExpect(jsonPath("$.data.realName").value("TestUser"));
+    }
+
+    @Test
+    @DisplayName("03 - 获取个人能力图谱")
+    void getPersonGraph_Success() throws Exception {
+        mockMvc.perform(get("/person/graph")
+                .headers(personHeaders))
+            .andExpect(jsonPath("$.code").value(200));
+    }
+
+    @Test
+    @DisplayName("04 - 获取推荐职位列表")
+    void getRecommendedJobs_Success() throws Exception {
+        mockMvc.perform(get("/person/recommend/jobs")
+                .headers(personHeaders))
+            .andExpect(jsonPath("$.code").value(200));
+    }
+
+    @Test
+    @DisplayName("05 - 获取匹配详情")
+    void getMatchDetail_NoData() throws Exception {
+        mockMvc.perform(get("/person/recommend/jobs")
+                .headers(personHeaders))
+            .andExpect(jsonPath("$.code").value(200));
+    }
+}
