@@ -1,6 +1,6 @@
 package com.graphhire.auth.domain.vo;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import cn.hutool.crypto.digest.BCrypt;
 
 public final class EncryptedPassword {
     private final String value;
@@ -10,11 +10,11 @@ public final class EncryptedPassword {
     }
 
     public static EncryptedPassword encode(String raw) {
-        return new EncryptedPassword(new BCryptPasswordEncoder().encode(raw));
+        return new EncryptedPassword(BCrypt.hashpw(raw, BCrypt.gensalt()));
     }
 
     public boolean matches(String raw) {
-        return new BCryptPasswordEncoder().matches(raw, this.value);
+        return BCrypt.checkpw(raw, this.value);
     }
 
     public String getValue() {
