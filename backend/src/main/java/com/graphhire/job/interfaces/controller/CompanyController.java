@@ -425,4 +425,49 @@ public class CompanyController {
 
         return Result.success();
     }
+
+    /**
+     * 重置员工密码
+     * 【功能说明】只有企业主(OWNER)可以重置员工密码，重置后发送新密码到员工手机
+     */
+    @PostMapping("/staff/{staffId}/reset-password")
+    public Result<Void> resetStaffPassword(@PathVariable Long staffId) {
+        Long currentUserId = StpUtil.getLoginIdAsLong();
+
+        CompanyStaff currentStaff = companyStaffRepository.findByUserId(currentUserId)
+                .orElseThrow(() -> Exceptions.BusinessException.of("非企业用户"));
+
+        if (!"OWNER".equals(currentStaff.getPost())) {
+            throw new Exceptions.ForbiddenException("只有企业主可以重置员工密码");
+        }
+
+        CompanyStaff targetStaff = companyStaffRepository.findById(staffId)
+                .orElseThrow(() -> Exceptions.BusinessException.of("员工不存在"));
+
+        if (!targetStaff.getCompanyId().equals(currentStaff.getCompanyId())) {
+            throw new Exceptions.ForbiddenException("无权重置此员工密码");
+        }
+
+        if ("OWNER".equals(targetStaff.getPost())) {
+            throw new Exceptions.ForbiddenException("不能重置企业主密码");
+        }
+
+        String newPassword = generateRandomPassword();
+        User targetUser = userRepository.findById(targetStaff.getUserId())
+                .orElseThrow(() -> Exceptions.BusinessException.of("用户不存在"));
+        targetUser.setPassword(EncryptedPassword.encode(newPassword));
+        userRepository.save(targetUser);
+
+        return Result.success();
+    }
+
+    private String generateRandomPassword() {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        StringBuilder password = new StringBuilder();
+        java.util.Random random = new java.util.Random();
+        for (int i = 0; i < 10; i++) {
+            password.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return password.toString();
+    }
 }
