@@ -328,4 +328,65 @@ public class AdminAppService {
     public List<Company> getCompaniesByAuthStatus(Integer authStatus) {
         return companyAppService.getCompaniesByAuthStatus(AuthStatus.values()[authStatus]);
     }
+
+    /**
+     * 批量审批通过公司
+     * 【功能说明】管理员批量审批通过多个公司申请，将公司认证状态更新为已认证
+     * @param ids 公司ID列表
+     */
+    @Transactional
+    public void batchApproveCompany(List<Long> ids) {
+        for (Long id : ids) {
+            companyAppService.approveCompany(id);
+        }
+    }
+
+    /**
+     * 批量拒绝公司
+     * 【功能说明】管理员批量拒绝多个公司申请，将公司认证状态更新为已拒绝
+     * @param ids 公司ID列表
+     */
+    @Transactional
+    public void batchRejectCompany(List<Long> ids) {
+        for (Long id : ids) {
+            companyAppService.rejectCompany(id);
+        }
+    }
+
+    /**
+     * 批量禁用用户
+     * 【功能说明】管理员批量禁用多个用户账号
+     * @param userIds 用户ID列表
+     */
+    @Transactional
+    public void batchDisableUser(List<Long> userIds) {
+        for (Long userId : userIds) {
+            Optional<User> userOpt = userRepository.findById(userId);
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                user.setStatus(AuthStatus.DISABLED);
+                userRepository.save(user);
+            }
+        }
+    }
+
+    /**
+     * 批量重试任务
+     * 【功能说明】批量重试多个失败的任务，将任务状态重置为PENDING
+     * @param taskIds 任务ID列表
+     */
+    @Transactional
+    public void batchRetryTask(List<Long> taskIds) {
+        for (Long taskId : taskIds) {
+            Optional<ParseTask> taskOpt = parseTaskRepository.findById(taskId);
+            if (taskOpt.isPresent()) {
+                ParseTask task = taskOpt.get();
+                if (task.getStatus() == ParseTask.TaskStatus.FAILED) {
+                    task.setStatus(ParseTask.TaskStatus.PENDING);
+                    task.setErrorMessage(null);
+                    parseTaskRepository.save(task);
+                }
+            }
+        }
+    }
 }
