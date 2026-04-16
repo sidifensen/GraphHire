@@ -1,11 +1,11 @@
-package com.graphhire.match.iface.controller;
+package com.graphhire.match.interfaces.controller;
 
 import com.graphhire.common.vo.Result;
 import com.graphhire.match.application.command.TriggerMatchCmd;
 import com.graphhire.match.application.query.MatchDetailQuery;
 import com.graphhire.match.application.service.MatchAppService;
 import com.graphhire.match.domain.model.MatchRecord;
-import com.graphhire.match.iface.dto.response.MatchDetailResponse;
+import com.graphhire.match.interfaces.dto.response.MatchDetailResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

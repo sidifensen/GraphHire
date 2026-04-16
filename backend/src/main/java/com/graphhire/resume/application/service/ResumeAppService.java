@@ -10,7 +10,7 @@ import com.graphhire.resume.domain.repository.ResumeRepository;
 import com.graphhire.resume.domain.vo.ParseStatus;
 
 import java.io.IOException;
-import com.graphhire.resume.iface.dto.ResumeVO;
+import com.graphhire.resume.interfaces.dto.ResumeVO;
 import com.graphhire.resume.infrastructure.file.RustFSClient;
 import com.graphhire.resume.infrastructure.mq.ResumeMQProducer;
 import org.springframework.beans.factory.annotation.Autowired;

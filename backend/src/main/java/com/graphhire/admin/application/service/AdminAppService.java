@@ -17,7 +17,7 @@ import com.graphhire.job.domain.repository.JobRepository;
 import com.graphhire.notification.domain.model.Notification;
 import com.graphhire.notification.domain.repository.NotificationRepository;
 import com.graphhire.notification.domain.vo.NotificationType;
-import com.graphhire.admin.iface.dto.response.DashboardStatsResponse;
+import com.graphhire.admin.interfaces.dto.response.DashboardStatsResponse;
 import com.graphhire.resume.application.service.ResumeAppService;
 import com.graphhire.resume.domain.model.ParseTask;
 import com.graphhire.resume.domain.repository.ParseTaskRepository;

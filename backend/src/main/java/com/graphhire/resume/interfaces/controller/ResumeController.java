@@ -1,11 +1,11 @@
-package com.graphhire.resume.iface.controller;
+package com.graphhire.resume.interfaces.controller;
 
 import com.graphhire.common.vo.PageResult;
 import com.graphhire.common.vo.Result;
 import com.graphhire.resume.application.command.UploadResumeCmd;
 import com.graphhire.resume.application.service.ResumeAppService;
 import com.graphhire.resume.domain.model.Resume;
-import com.graphhire.resume.iface.dto.ResumeVO;
+import com.graphhire.resume.interfaces.dto.ResumeVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;

@@ -5,7 +5,7 @@ import com.graphhire.admin.application.command.DisableUserCmd;
 import com.graphhire.admin.application.query.UserListQuery;
 import com.graphhire.admin.domain.repository.AdminRepository;
 import com.graphhire.admin.domain.service.AdminDomainService;
-import com.graphhire.admin.iface.dto.response.DashboardStatsResponse;
+import com.graphhire.admin.interfaces.dto.response.DashboardStatsResponse;
 import com.graphhire.auth.domain.model.User;
 import com.graphhire.auth.domain.repository.UserRepository;
 import com.graphhire.auth.domain.vo.AuthStatus;

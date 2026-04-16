@@ -1,13 +1,13 @@
-package com.graphhire.admin.iface.controller;
+package com.graphhire.admin.interfaces.controller;
 
 import com.graphhire.admin.application.command.AuthCompanyCmd;
 import com.graphhire.admin.application.command.DisableUserCmd;
 import com.graphhire.admin.application.query.UserListQuery;
 import com.graphhire.admin.application.service.AdminAppService;
-import com.graphhire.admin.iface.dto.response.DashboardStatsResponse;
+import com.graphhire.admin.interfaces.dto.response.DashboardStatsResponse;
 import com.graphhire.auth.application.service.AuthAppService;
-import com.graphhire.auth.iface.dto.request.LoginRequest;
-import com.graphhire.auth.iface.dto.response.LoginResponse;
+import com.graphhire.auth.interfaces.dto.request.LoginRequest;
+import com.graphhire.auth.interfaces.dto.response.LoginResponse;
 import com.graphhire.common.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

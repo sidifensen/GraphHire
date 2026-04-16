@@ -1,10 +1,10 @@
-package com.graphhire.auth.iface.controller;
+package com.graphhire.auth.interfaces.controller;
 
 import com.graphhire.auth.application.service.AuthAppService;
-import com.graphhire.auth.iface.dto.request.CompanyRegisterRequest;
-import com.graphhire.auth.iface.dto.request.LoginRequest;
-import com.graphhire.auth.iface.dto.request.PersonRegisterRequest;
-import com.graphhire.auth.iface.dto.response.LoginResponse;
+import com.graphhire.auth.interfaces.dto.request.CompanyRegisterRequest;
+import com.graphhire.auth.interfaces.dto.request.LoginRequest;
+import com.graphhire.auth.interfaces.dto.request.PersonRegisterRequest;
+import com.graphhire.auth.interfaces.dto.response.LoginResponse;
 import com.graphhire.common.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

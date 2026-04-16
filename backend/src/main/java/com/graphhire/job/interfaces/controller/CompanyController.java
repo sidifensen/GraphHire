@@ -1,4 +1,4 @@
-package com.graphhire.job.iface.controller;
+package com.graphhire.job.interfaces.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.graphhire.auth.domain.model.User;
@@ -19,10 +19,10 @@ import com.graphhire.job.domain.repository.CompanyStaffRepository;
 import com.graphhire.job.domain.repository.JobRepository;
 import com.graphhire.job.domain.vo.Location;
 import com.graphhire.job.domain.vo.SalaryRange;
-import com.graphhire.job.iface.dto.request.CreateStaffRequest;
-import com.graphhire.job.iface.dto.request.StatusChangeRequest;
+import com.graphhire.job.interfaces.dto.request.CreateStaffRequest;
+import com.graphhire.job.interfaces.dto.request.StatusChangeRequest;
 import com.graphhire.match.application.service.MatchAppService;
-import com.graphhire.match.iface.dto.response.MatchDetailResponse;
+import com.graphhire.match.interfaces.dto.response.MatchDetailResponse;
 import com.graphhire.skill.infrastructure.graph.SkillGraphClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

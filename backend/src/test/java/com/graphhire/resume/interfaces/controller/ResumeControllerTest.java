@@ -1,11 +1,11 @@
-package com.graphhire.resume.iface.controller;
+package com.graphhire.resume.interfaces.controller;
 
 import com.graphhire.common.vo.PageResult;
 import com.graphhire.common.vo.Result;
 import com.graphhire.resume.application.service.ResumeAppService;
 import com.graphhire.resume.domain.model.Resume;
 import com.graphhire.resume.domain.vo.ParseStatus;
-import com.graphhire.resume.iface.dto.ResumeVO;
+import com.graphhire.resume.interfaces.dto.ResumeVO;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

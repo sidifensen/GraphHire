@@ -8,7 +8,7 @@ import com.graphhire.match.application.query.MatchDetailQuery;
 import com.graphhire.match.domain.model.MatchRecord;
 import com.graphhire.match.domain.repository.MatchRecordRepository;
 import com.graphhire.match.domain.service.MatchDomainService;
-import com.graphhire.match.iface.dto.response.MatchDetailResponse;
+import com.graphhire.match.interfaces.dto.response.MatchDetailResponse;
 import com.graphhire.notification.application.service.NotificationAppService;
 import com.graphhire.notification.domain.model.Notification;
 import com.graphhire.notification.domain.vo.NotificationType;

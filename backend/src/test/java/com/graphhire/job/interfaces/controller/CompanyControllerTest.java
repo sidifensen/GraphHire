@@ -1,4 +1,4 @@
-package com.graphhire.job.iface.controller;
+package com.graphhire.job.interfaces.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.graphhire.auth.domain.model.User;
@@ -16,8 +16,8 @@ import com.graphhire.job.domain.repository.JobRepository;
 import com.graphhire.job.domain.vo.JobStatus;
 import com.graphhire.job.domain.vo.Location;
 import com.graphhire.job.domain.vo.SalaryRange;
-import com.graphhire.job.iface.dto.request.CreateStaffRequest;
-import com.graphhire.job.iface.dto.request.StatusChangeRequest;
+import com.graphhire.job.interfaces.dto.request.CreateStaffRequest;
+import com.graphhire.job.interfaces.dto.request.StatusChangeRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

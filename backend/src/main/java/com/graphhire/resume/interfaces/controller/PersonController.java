@@ -1,16 +1,16 @@
-package com.graphhire.resume.iface.controller;
+package com.graphhire.resume.interfaces.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.graphhire.common.vo.Result;
 import com.graphhire.match.application.service.MatchAppService;
-import com.graphhire.match.iface.dto.response.MatchDetailResponse;
+import com.graphhire.match.interfaces.dto.response.MatchDetailResponse;
 import com.graphhire.resume.application.command.UploadResumeCmd;
 import com.graphhire.resume.application.service.ResumeAppService;
 import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.model.Resume;
 import com.graphhire.resume.domain.repository.PersonInfoRepository;
-import com.graphhire.resume.iface.dto.PersonInfoResponse;
-import com.graphhire.resume.iface.dto.request.PersonUpdateRequest;
+import com.graphhire.resume.interfaces.dto.PersonInfoResponse;
+import com.graphhire.resume.interfaces.dto.request.PersonUpdateRequest;
 import com.graphhire.skill.infrastructure.graph.SkillGraphClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
