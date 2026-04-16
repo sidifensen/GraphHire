@@ -1,5 +1,6 @@
 package com.graphhire.skill.infrastructure.persistence.repository;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.graphhire.skill.domain.model.SkillTag;
 import com.graphhire.skill.domain.repository.SkillTagRepository;
@@ -131,8 +132,8 @@ public class SkillTagRepositoryImpl implements SkillTagRepository {
     private SkillTag toDomain(SkillTagPO po) {
         if (po == null) return null;
         SkillTag tag = new SkillTag();
-        tag.setId(po.getId());
-        tag.setName(po.getName());
+        // 使用 BeanUtil 复制基础字段，category 枚举单独转换
+        BeanUtil.copyProperties(po, tag);
         if (po.getCategory() != null) {
             tag.updateCategory(SkillCategory.valueOf(po.getCategory()));
         }
@@ -144,8 +145,7 @@ public class SkillTagRepositoryImpl implements SkillTagRepository {
      */
     private SkillTagPO toPO(SkillTag tag) {
         SkillTagPO po = new SkillTagPO();
-        po.setId(tag.getId());
-        po.setName(tag.getName());
+        BeanUtil.copyProperties(tag, po);
         po.setCategory(tag.getCategory() != null ? tag.getCategory().name() : null);
         return po;
     }

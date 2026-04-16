@@ -1,5 +1,8 @@
 package com.graphhire.auth.application.service;
 
+import cn.hutool.core.lang.Validator;
+import cn.hutool.core.util.RandomUtil;
+import cn.hutool.log.StaticLog;
 import cn.dev33.satoken.stp.StpUtil;
 import com.graphhire.auth.application.command.CompanyRegisterCmd;
 import com.graphhire.auth.application.command.PersonRegisterCmd;
@@ -17,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -247,7 +249,7 @@ public class AuthAppService {
      */
     public void sendVerifyCode(String username, String type) {
         // 步骤1：生成6位随机验证码
-        String code = String.format("%06d", new Random().nextInt(999999));
+        String code = RandomUtil.randomNumbers(6);
 
         // 步骤2：存储到 Redis（15分钟过期）
         String key = "email_code:" + username + ":" + type;
@@ -257,6 +259,9 @@ public class AuthAppService {
         String subject = "【GraphHire】您的验证码";
         String content = "您的验证码是：" + code + "，15分钟内有效，请勿泄露给他人。";
         mailService.sendVerifyCodeMail(username, subject, content);
+
+        // 步骤4：记录验证码发送日志
+        StaticLog.info("发送验证码: code={}, to={}", code, username);
     }
 
     /**
@@ -267,6 +272,10 @@ public class AuthAppService {
      * 步骤2：查询用户并更新密码
      */
     public void forgotPassword(String username, String verifyCode, String newPassword) {
+        // 步骤0：校验邮箱格式
+        if (!Validator.isEmail(username)) {
+            throw com.graphhire.common.vo.Exceptions.BusinessException.of("邮箱格式不正确");
+        }
         // 步骤1：校验验证码
         validateVerifyCode(username, verifyCode, "forgot_password");
 

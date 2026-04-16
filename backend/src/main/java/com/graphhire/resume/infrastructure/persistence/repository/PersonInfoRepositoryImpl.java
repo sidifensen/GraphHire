@@ -1,5 +1,6 @@
 package com.graphhire.resume.infrastructure.persistence.repository;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.repository.PersonInfoRepository;
@@ -52,16 +53,7 @@ public class PersonInfoRepositoryImpl implements PersonInfoRepository {
      */
     private PersonInfo toDomain(PersonInfoPO po) {
         PersonInfo personInfo = new PersonInfo();
-        personInfo.setId(po.getId());
-        personInfo.setUserId(po.getUserId());
-        personInfo.setRealName(po.getRealName());
-        personInfo.setGender(po.getGender());
-        personInfo.setAge(po.getAge());
-        personInfo.setPhone(po.getPhone());
-        personInfo.setEducation(po.getEducation());
-        personInfo.setCity(po.getCity());
-        personInfo.setTargetCity(po.getTargetCity());
-        personInfo.setExpectedSalary(po.getExpectedSalary());
+        BeanUtil.copyProperties(po, personInfo);
         return personInfo;
     }
 
@@ -70,16 +62,7 @@ public class PersonInfoRepositoryImpl implements PersonInfoRepository {
      */
     private PersonInfoPO toPO(PersonInfo personInfo) {
         PersonInfoPO po = new PersonInfoPO();
-        po.setId(personInfo.getId());
-        po.setUserId(personInfo.getUserId());
-        po.setRealName(personInfo.getRealName());
-        po.setGender(personInfo.getGender());
-        po.setAge(personInfo.getAge());
-        po.setPhone(personInfo.getPhone());
-        po.setEducation(personInfo.getEducation());
-        po.setCity(personInfo.getCity());
-        po.setTargetCity(personInfo.getTargetCity());
-        po.setExpectedSalary(personInfo.getExpectedSalary());
+        BeanUtil.copyProperties(personInfo, po);
         return po;
     }
 }

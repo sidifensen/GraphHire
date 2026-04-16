@@ -1,5 +1,6 @@
 package com.graphhire.job.infrastructure.persistence.repository;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.graphhire.job.domain.model.Job;
 import com.graphhire.job.domain.repository.JobRepository;
@@ -102,12 +103,8 @@ public class JobRepositoryImpl implements JobRepository {
     private Job toDomain(JobPO po) {
         if (po == null) return null;
         Job job = new Job();
-        job.setId(po.getId());
-        job.setCompanyId(po.getCompanyId());
-        job.setTitle(po.getTitle());
-        job.setDepartment(po.getDepartment());
-        job.setHeadcount(po.getHeadcount());
-        job.setDescription(po.getDescription());
+        // 使用 BeanUtil 复制基础字段，status 枚举单独转换
+        BeanUtil.copyProperties(po, job);
         job.setStatus(JobStatus.valueOf(po.getStatus()));
         return job;
     }
@@ -115,12 +112,7 @@ public class JobRepositoryImpl implements JobRepository {
     /** Domain 转 PO */
     private JobPO toPO(Job job) {
         JobPO po = new JobPO();
-        po.setId(job.getId());
-        po.setCompanyId(job.getCompanyId());
-        po.setTitle(job.getTitle());
-        po.setDepartment(job.getDepartment());
-        po.setHeadcount(job.getHeadcount());
-        po.setDescription(job.getDescription());
+        BeanUtil.copyProperties(job, po);
         po.setStatus(job.getStatus().name());
         return po;
     }

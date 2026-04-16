@@ -5,6 +5,8 @@ import com.graphhire.resume.domain.model.Resume;
 import com.graphhire.resume.domain.repository.ParseTaskRepository;
 import com.graphhire.resume.domain.repository.ResumeRepository;
 import com.graphhire.resume.infrastructure.ai.DocumentParser;
+import cn.hutool.log.StaticLog;
+import cn.hutool.core.exceptions.ExceptionUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -74,12 +76,12 @@ public class ParseAppService {
 
             resume.parsed(parseResult);
             resumeRepository.save(resume);
-        } catch (Exception e) {
-            // 步骤7：标记失败
-            task.markFailed(e.getMessage());
+        } catch (RuntimeException e) {
+            StaticLog.error("简历解析失败: resumeId={}, error={}", resumeId, ExceptionUtil.getMessage(e));
+            task.markFailed(ExceptionUtil.getMessage(e));
             parseTaskRepository.save(task);
 
-            resume.parseFailed(e.getMessage());
+            resume.parseFailed(ExceptionUtil.getMessage(e));
             resumeRepository.save(resume);
         }
     }

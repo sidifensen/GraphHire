@@ -1,6 +1,7 @@
 package com.graphhire.job.infrastructure.persistence.repository;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import cn.hutool.core.bean.BeanUtil;
 import com.graphhire.job.domain.model.JobSkill;
 import com.graphhire.job.domain.repository.JobSkillRepository;
 import com.graphhire.job.infrastructure.persistence.mapper.JobSkillMapper;
@@ -81,22 +82,14 @@ public class JobSkillRepositoryImpl implements JobSkillRepository {
     private JobSkill toDomain(JobSkillPO po) {
         if (po == null) return null;
         JobSkill jobSkill = new JobSkill();
-        jobSkill.setId(po.getId());
-        jobSkill.setJobId(po.getJobId());
-        jobSkill.setSkillTagId(po.getSkillTagId());
-        jobSkill.setIsRequired(po.getIsRequired());
-        jobSkill.setWeight(po.getWeight());
+        BeanUtil.copyProperties(po, jobSkill);
         return jobSkill;
     }
 
     /** Domain转PO持久化对象 */
     private JobSkillPO toPO(JobSkill jobSkill) {
         JobSkillPO po = new JobSkillPO();
-        po.setId(jobSkill.getId());
-        po.setJobId(jobSkill.getJobId());
-        po.setSkillTagId(jobSkill.getSkillTagId());
-        po.setIsRequired(jobSkill.getIsRequired());
-        po.setWeight(jobSkill.getWeight());
+        BeanUtil.copyProperties(jobSkill, po);
         return po;
     }
 }

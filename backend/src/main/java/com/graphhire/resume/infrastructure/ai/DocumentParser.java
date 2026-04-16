@@ -8,10 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+
+import cn.hutool.core.io.FileUtil;
 
 /**
  * 文档解析基础设施服务
@@ -50,11 +48,9 @@ public class DocumentParser {
     public String extractText(String filePath) {
         try {
             // 步骤1：尝试作为本地文件读取（用于开发/测试）
-            Path path = Paths.get(filePath);
-            if (Files.exists(path)) {
-                try (InputStream stream = Files.newInputStream(path)) {
-                    return tika.parseToString(stream);
-                }
+            if (FileUtil.exist(filePath)) {
+                byte[] bytes = FileUtil.readBytes(filePath);
+                return tika.parseToString(new java.io.ByteArrayInputStream(bytes));
             }
 
             // 步骤2：若为S3路径，从RustFS下载后解析

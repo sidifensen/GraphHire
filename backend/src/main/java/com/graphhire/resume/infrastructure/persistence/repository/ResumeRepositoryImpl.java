@@ -1,5 +1,6 @@
 package com.graphhire.resume.infrastructure.persistence.repository;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.graphhire.resume.domain.model.Resume;
 import com.graphhire.resume.domain.repository.ResumeRepository;
 import com.graphhire.resume.domain.vo.ParseStatus;
@@ -106,19 +107,11 @@ public class ResumeRepositoryImpl implements ResumeRepository {
      */
     private Resume toDomain(ResumePO po) {
         Resume resume = new Resume();
-        resume.setId(po.getId());
-        resume.setUserId(po.getUserId());
-        resume.setFileName(po.getFileName());
-        resume.setFilePath(po.getFilePath());
-        resume.setFileType(po.getFileType());
-        resume.setFileSize(po.getFileSize());
+        // 使用 BeanUtil 复制基础字段，parseStatus 枚举单独转换
+        BeanUtil.copyProperties(po, resume);
         if (po.getParseStatus() != null) {
             resume.setStatus(ParseStatus.values()[po.getParseStatus()]);
         }
-        resume.setParseResult(po.getParseResult());
-        resume.setParseError(po.getParseError());
-        resume.setConfidence(po.getConfidence());
-        resume.setIsDefault(po.getIsDefault());
         return resume;
     }
 
@@ -127,19 +120,10 @@ public class ResumeRepositoryImpl implements ResumeRepository {
      */
     private ResumePO toPO(Resume resume) {
         ResumePO po = new ResumePO();
-        po.setId(resume.getId());
-        po.setUserId(resume.getUserId());
-        po.setFileName(resume.getFileName());
-        po.setFilePath(resume.getFilePath());
-        po.setFileType(resume.getFileType());
-        po.setFileSize(resume.getFileSize());
+        BeanUtil.copyProperties(resume, po);
         if (resume.getStatus() != null) {
             po.setParseStatus(resume.getStatus().ordinal());
         }
-        po.setParseResult(resume.getParseResult());
-        po.setParseError(resume.getParseError());
-        po.setConfidence(resume.getConfidence());
-        po.setIsDefault(resume.getIsDefault());
         return po;
     }
 }

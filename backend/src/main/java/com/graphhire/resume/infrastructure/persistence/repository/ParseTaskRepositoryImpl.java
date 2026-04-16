@@ -1,5 +1,6 @@
 package com.graphhire.resume.infrastructure.persistence.repository;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.graphhire.resume.domain.model.ParseTask;
 import com.graphhire.resume.domain.repository.ParseTaskRepository;
@@ -77,15 +78,12 @@ public class ParseTaskRepositoryImpl implements ParseTaskRepository {
     /** PO 转 Domain */
     private ParseTask toDomain(ParseTaskPO po) {
         ParseTask task = new ParseTask();
-        task.setId(po.getId());
-        task.setResumeId(po.getResumeId());
-        task.setJobId(po.getJobId());
-        task.setTaskType(po.getTaskType());
+        // 使用BeanUtil复制基础字段，保留日期字段手动赋值以保持对象引用语义
+        BeanUtil.copyProperties(po, task);
         if (po.getStatus() != null) {
             task.setStatus(ParseTask.TaskStatus.values()[po.getStatus()]);
         }
-        task.setRetryCount(po.getRetryCount());
-        task.setErrorMessage(po.getErrorMessage());
+        // 手动复制日期字段，保持对象引用语义
         task.setCreatedAt(po.getCreatedAt());
         task.setStartedAt(po.getStartedAt());
         task.setCompletedAt(po.getCompletedAt());
@@ -95,15 +93,12 @@ public class ParseTaskRepositoryImpl implements ParseTaskRepository {
     /** Domain 转 PO */
     private ParseTaskPO toPO(ParseTask task) {
         ParseTaskPO po = new ParseTaskPO();
-        po.setId(task.getId());
-        po.setResumeId(task.getResumeId());
-        po.setJobId(task.getJobId());
-        po.setTaskType(task.getTaskType());
+        // 使用BeanUtil复制基础字段，保留日期字段手动赋值以保持对象引用语义
+        BeanUtil.copyProperties(task, po);
         if (task.getStatus() != null) {
             po.setStatus(task.getStatus().ordinal());
         }
-        po.setRetryCount(task.getRetryCount());
-        po.setErrorMessage(task.getErrorMessage());
+        // 手动复制日期字段，保持对象引用语义
         po.setCreatedAt(task.getCreatedAt());
         po.setStartedAt(task.getStartedAt());
         po.setCompletedAt(task.getCompletedAt());

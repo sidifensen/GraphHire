@@ -1,6 +1,7 @@
 package com.graphhire.notification.infrastructure.persistence.repository;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import cn.hutool.core.bean.BeanUtil;
 import com.graphhire.notification.domain.model.Notification;
 import com.graphhire.notification.domain.repository.NotificationRepository;
 import com.graphhire.notification.domain.vo.NotificationType;
@@ -136,14 +137,9 @@ public class NotificationRepositoryImpl implements NotificationRepository {
     private Notification toDomain(NotificationPO po) {
         if (po == null) return null;
         Notification n = new Notification();
-        n.setId(po.getId());
-        n.setUserId(po.getUserId());
+        BeanUtil.copyProperties(po, n);
+        // 枚举类型需要单独转换
         n.setType(NotificationType.fromValue(po.getType()));
-        n.setTitle(po.getTitle());
-        n.setContent(po.getContent());
-        n.setReferenceId(po.getReferenceId());
-        n.setIsRead(po.getIsRead());
-        n.setCreatedAt(po.getCreatedAt());
         return n;
     }
 
@@ -154,14 +150,9 @@ public class NotificationRepositoryImpl implements NotificationRepository {
      */
     private NotificationPO toPO(Notification n) {
         NotificationPO po = new NotificationPO();
-        po.setId(n.getId());
-        po.setUserId(n.getUserId());
+        BeanUtil.copyProperties(n, po);
+        // 枚举类型需要单独转换
         po.setType(n.getType() != null ? n.getType().getValue() : null);
-        po.setTitle(n.getTitle());
-        po.setContent(n.getContent());
-        po.setReferenceId(n.getReferenceId());
-        po.setIsRead(n.getIsRead());
-        po.setCreatedAt(n.getCreatedAt());
         return po;
     }
 }

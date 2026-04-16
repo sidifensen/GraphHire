@@ -1,5 +1,6 @@
 package com.graphhire.job.infrastructure.persistence.repository;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.graphhire.auth.domain.vo.AuthStatus;
 import com.graphhire.job.domain.model.Company;
@@ -111,9 +112,9 @@ public class CompanyRepositoryImpl implements CompanyRepository {
     private Company toDomain(CompanyPO po) {
         if (po == null) return null;
         Company company = new Company();
-        company.setId(po.getId());
+        // 复制同名属性，手动处理不同名属性：companyName->name, licensePath->licenseUrl
+        BeanUtil.copyProperties(po, company);
         company.setName(po.getCompanyName());
-        company.setUnifiedSocialCreditCode(po.getUnifiedSocialCreditCode());
         company.setLicenseUrl(po.getLicensePath());
         company.setAuthStatus(toDomainStatus(po.getAuthStatus()));
         return company;
@@ -122,9 +123,9 @@ public class CompanyRepositoryImpl implements CompanyRepository {
     /** Domain转PO持久化对象 */
     private CompanyPO toPO(Company company) {
         CompanyPO po = new CompanyPO();
-        po.setId(company.getId());
+        // 复制同名属性，手动处理不同名属性：name->companyName, licenseUrl->licensePath
+        BeanUtil.copyProperties(company, po);
         po.setCompanyName(company.getName());
-        po.setUnifiedSocialCreditCode(company.getUnifiedSocialCreditCode());
         po.setLicensePath(company.getLicenseUrl());
         po.setAuthStatus(toDbStatus(company.getAuthStatus()));
         return po;

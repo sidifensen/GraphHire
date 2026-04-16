@@ -2,7 +2,12 @@ package com.graphhire.match.infrastructure.ai;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
+
+import cn.hutool.http.HttpRequest;
+import cn.hutool.http.HttpResponse;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
+import cn.hutool.core.util.StrUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,8 +33,7 @@ public class DeepSeekClient {
     @Value("${ai.deepseek.url:https://api.deepseek.com/v1}")
     private String baseUrl;
 
-    private final RestTemplate restTemplate = new RestTemplate();
-
+    
     // =====================================================
     // 【第一部分】匹配计算
     // =====================================================
@@ -55,8 +59,14 @@ public class DeepSeekClient {
         );
 
         try {
-            String response = restTemplate.postForObject(endpoint, requestBody, String.class);
-            return response;
+            String response = HttpRequest.post(endpoint)
+                .header("Content-Type", "application/json")
+                .body(JSONUtil.toJsonStr(requestBody))
+                .timeout(30000)
+                .execute()
+                .body();
+            JSONObject jsonObj = JSONUtil.parseObj(response);
+            return jsonObj.getJSONArray("choices").getJSONObject(0).getJSONObject("message").getStr("content");
         } catch (Exception e) {
             return "Based on skill and experience matching";
         }
@@ -103,7 +113,12 @@ public class DeepSeekClient {
         );
 
         try {
-            String response = restTemplate.postForObject(endpoint, requestBody, String.class);
+            String response = HttpRequest.post(endpoint)
+                .header("Content-Type", "application/json")
+                .body(JSONUtil.toJsonStr(requestBody))
+                .timeout(30000)
+                .execute()
+                .body();
             return parseDeepSeekResponse(response);
         } catch (Exception e) {
             return fallbackCalculateMatch(userInfo, jobInfo);
@@ -151,7 +166,7 @@ public class DeepSeekClient {
             "education_score", eduScore,
             "salary_score", salScore,
             "overall_score", overallScore,
-            "match_reasons", String.format("Skills match: %.0f%%. Experience match: %.0f%%.", skillScore, expScore),
+            "match_reasons", StrUtil.format("Skills match: {:.0f}%. Experience match: {:.0f}%.", skillScore, expScore),
             "gaps", java.util.Collections.emptyList(),
             "suggestions", java.util.Collections.emptyList()
         );
@@ -239,12 +254,28 @@ public class DeepSeekClient {
     @SuppressWarnings("unchecked")
     private Map<String, Object> parseDeepSeekResponse(String response) {
         try {
-            int start = response.indexOf("{");
-            int end = response.lastIndexOf("}");
-            if (start >= 0 && end > start) {
-                String json = response.substring(start, end + 1);
-                return parseSimpleJson(json);
+            JSONObject jsonObj = JSONUtil.parseObj(response);
+            Map<String, Object> result = new HashMap<>();
+            result.put("skill_score", jsonObj.getDouble("skill_score", 75.0));
+            result.put("experience_score", jsonObj.getDouble("experience_score", 75.0));
+            result.put("city_score", jsonObj.getDouble("city_score", 75.0));
+            result.put("education_score", jsonObj.getDouble("education_score", 75.0));
+            result.put("salary_score", jsonObj.getDouble("salary_score", 75.0));
+            result.put("match_reasons", jsonObj.getStr("match_reasons", "Based on profile matching"));
+            result.put("gaps", jsonObj.containsKey("gaps") ? jsonObj.getJSONArray("gaps") : java.util.Collections.emptyList());
+            result.put("suggestions", jsonObj.containsKey("suggestions") ? jsonObj.getJSONArray("suggestions") : java.util.Collections.emptyList());
+
+            // 如果没有overall_score，使用加权计算
+            if (!result.containsKey("overall_score")) {
+                double overall = 0;
+                overall += (Double) result.getOrDefault("skill_score", 75.0) * 0.5;
+                overall += (Double) result.getOrDefault("experience_score", 75.0) * 0.2;
+                overall += (Double) result.getOrDefault("city_score", 75.0) * 0.15;
+                overall += (Double) result.getOrDefault("education_score", 75.0) * 0.1;
+                overall += (Double) result.getOrDefault("salary_score", 75.0) * 0.05;
+                result.put("overall_score", overall);
             }
+            return result;
         } catch (Exception e) {
             // 降级到默认分数
         }
@@ -259,37 +290,6 @@ public class DeepSeekClient {
             "gaps", java.util.Collections.emptyList(),
             "suggestions", java.util.Collections.emptyList()
         );
-    }
-
-    /** 简单JSON解析，提取键值对 */
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> parseSimpleJson(String json) {
-        java.util.Map<String, Object> result = new java.util.HashMap<>();
-        json = json.replace("{", "").replace("}", "");
-        String[] pairs = json.split(",");
-        for (String pair : pairs) {
-            String[] kv = pair.split(":");
-            if (kv.length == 2) {
-                String key = kv[0].trim().replace("\"", "");
-                String value = kv[1].trim().replace("\"", "");
-                if (value.matches("-?\\d+(\\.\\d+)?")) {
-                    result.put(key, Double.parseDouble(value));
-                } else {
-                    result.put(key, value);
-                }
-            }
-        }
-        // 如果没有overall_score，使用加权计算
-        if (!result.containsKey("overall_score")) {
-            double overall = 0;
-            overall += (Double) result.getOrDefault("skill_score", 75.0) * 0.5;
-            overall += (Double) result.getOrDefault("experience_score", 75.0) * 0.2;
-            overall += (Double) result.getOrDefault("city_score", 75.0) * 0.15;
-            overall += (Double) result.getOrDefault("education_score", 75.0) * 0.1;
-            overall += (Double) result.getOrDefault("salary_score", 75.0) * 0.05;
-            result.put("overall_score", overall);
-        }
-        return result;
     }
 
     // =====================================================
@@ -331,7 +331,12 @@ public class DeepSeekClient {
         );
 
         try {
-            String response = restTemplate.postForObject(endpoint, requestBody, String.class);
+            String response = HttpRequest.post(endpoint)
+                .header("Content-Type", "application/json")
+                .body(JSONUtil.toJsonStr(requestBody))
+                .timeout(30000)
+                .execute()
+                .body();
             return parseJsonResponse(response);
         } catch (Exception e) {
             return getMockParseResult(text);
@@ -402,7 +407,12 @@ public class DeepSeekClient {
         );
 
         try {
-            String response = restTemplate.postForObject(endpoint, requestBody, String.class);
+            String response = HttpRequest.post(endpoint)
+                .header("Content-Type", "application/json")
+                .body(JSONUtil.toJsonStr(requestBody))
+                .timeout(30000)
+                .execute()
+                .body();
             return parseJobJsonResponse(response);
         } catch (Exception e) {
             return getMockJobParseResult(text, jobTitle);
@@ -411,6 +421,18 @@ public class DeepSeekClient {
 
     /** 解析职位API响应为结构化Map */
     private Map<String, Object> parseJobJsonResponse(String response) {
+        try {
+            JSONObject jsonObj = JSONUtil.parseObj(response);
+            Map<String, Object> result = new HashMap<>();
+            result.put("raw_response", response);
+            result.put("skills", jsonObj.getJSONArray("skills"));
+            result.put("requiredExperience", jsonObj.getStr("requiredExperience"));
+            result.put("education", jsonObj.getStr("education"));
+            result.put("summary", jsonObj.getStr("summary"));
+            return result;
+        } catch (Exception e) {
+            // 降级到默认结果
+        }
         Map<String, Object> result = new HashMap<>();
         result.put("raw_response", response);
         result.put("skills", new String[]{"Java", "Spring Boot", "MySQL"});
