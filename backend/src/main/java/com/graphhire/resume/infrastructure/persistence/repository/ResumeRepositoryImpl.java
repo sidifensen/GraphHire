@@ -14,18 +14,39 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * 简历仓储实现
+ *
+ * 【模块说明】提供简历数据的持久化操作，包括 CRUD 和状态管理。
+ *
+ * 【数据来源】resume 表
+ *
+ * 【方法概览】
+ * - findById：根据ID查询简历
+ * - findByUserId：根据用户ID查询简历列表
+ * - findByParseStatus：根据解析状态查询简历
+ * - findPage：分页查询简历
+ * - save：保存简历
+ * - delete：删除简历
+ */
 @Repository
 public class ResumeRepositoryImpl implements ResumeRepository {
 
     @Autowired
     private ResumeMapper resumeMapper;
 
+    /**
+     * 根据ID查询简历
+     */
     @Override
     public Optional<Resume> findById(Long id) {
         ResumePO po = resumeMapper.selectById(id);
         return Optional.ofNullable(po).map(this::toDomain);
     }
 
+    /**
+     * 根据用户ID查询简历列表
+     */
     @Override
     public List<Resume> findByUserId(Long userId) {
         LambdaQueryWrapper<ResumePO> wrapper = new LambdaQueryWrapper<>();
@@ -34,6 +55,9 @@ public class ResumeRepositoryImpl implements ResumeRepository {
         return pos.stream().map(this::toDomain).toList();
     }
 
+    /**
+     * 根据解析状态查询简历
+     */
     @Override
     public List<Resume> findByParseStatus(ParseStatus parseStatus) {
         LambdaQueryWrapper<ResumePO> wrapper = new LambdaQueryWrapper<>();
@@ -44,6 +68,9 @@ public class ResumeRepositoryImpl implements ResumeRepository {
         return pos.stream().map(this::toDomain).toList();
     }
 
+    /**
+     * 分页查询简历
+     */
     @Override
     public IPage<Resume> findPage(int page, int size) {
         Page<ResumePO> pageObj = new Page<>(page, size);
@@ -51,6 +78,9 @@ public class ResumeRepositoryImpl implements ResumeRepository {
         return pageResult.convert(this::toDomain);
     }
 
+    /**
+     * 保存简历
+     */
     @Override
     public Resume save(Resume resume) {
         ResumePO po = toPO(resume);
@@ -63,11 +93,17 @@ public class ResumeRepositoryImpl implements ResumeRepository {
         return resume;
     }
 
+    /**
+     * 删除简历
+     */
     @Override
     public void delete(Resume resume) {
         resumeMapper.deleteById(resume.getId());
     }
 
+    /**
+     * PO 转 Domain
+     */
     private Resume toDomain(ResumePO po) {
         Resume resume = new Resume();
         resume.setId(po.getId());
@@ -86,6 +122,9 @@ public class ResumeRepositoryImpl implements ResumeRepository {
         return resume;
     }
 
+    /**
+     * Domain 转 PO
+     */
     private ResumePO toPO(Resume resume) {
         ResumePO po = new ResumePO();
         po.setId(resume.getId());
