@@ -163,4 +163,19 @@ public abstract class BaseControllerIT {
         JsonNode node = objectMapper.readTree(response);
         return node.path("data").path("accessToken").asText();
     }
+
+    /**
+     * Cleanup test users created by ensureTokensInitialized.
+     * Call this from subclass @AfterAll (static context).
+     */
+    protected static void cleanupTestUsers(JdbcTemplate jdbcTemplate) {
+        // Delete in reverse order of creation to handle foreign key constraints
+        // company_staff -> company -> sys_user
+        jdbcTemplate.update("DELETE FROM company_staff WHERE user_id IN (?, ?, ?)",
+            personUserId, companyUserId, adminUserId);
+        jdbcTemplate.update("DELETE FROM company WHERE user_id IN (?, ?, ?)",
+            personUserId, companyUserId, adminUserId);
+        jdbcTemplate.update("DELETE FROM sys_user WHERE id IN (?, ?, ?)",
+            personUserId, companyUserId, adminUserId);
+    }
 }

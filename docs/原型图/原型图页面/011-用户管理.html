@@ -1,0 +1,450 @@
+<!-- 用户管理 - 图谱智聘管理端 -->
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GraphHire - 用户管理</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline-variant": "#a8b3bb",
+                        "on-tertiary-fixed": "#3f3a54",
+                        "error-dim": "#4e0309",
+                        "surface": "#f7f9fc",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-on-surface": "#9a9da0",
+                        "primary": "#0059c7",
+                        "inverse-primary": "#528dff",
+                        "primary-fixed-dim": "#c4d4ff",
+                        "on-secondary": "#f8f8ff",
+                        "surface-dim": "#cfdce5",
+                        "on-primary-fixed": "#003b8a",
+                        "surface-container": "#e8eff4",
+                        "error-container": "#fe8983",
+                        "surface-variant": "#d9e4ec",
+                        "tertiary": "#615b77",
+                        "on-primary-container": "#004dae",
+                        "secondary-container": "#d6e3fb",
+                        "secondary-fixed": "#d6e3fb",
+                        "error": "#9f403d",
+                        "primary-container": "#d9e2ff",
+                        "primary-dim": "#004eaf",
+                        "on-primary": "#f7f7ff",
+                        "background": "#f7f9fc",
+                        "secondary-dim": "#475467",
+                        "surface-container-highest": "#d9e4ec",
+                        "on-secondary-fixed-variant": "#4f5c70",
+                        "on-secondary-container": "#465365",
+                        "surface-container-high": "#e1e9f0",
+                        "secondary": "#536073",
+                        "surface-container-low": "#f0f4f8",
+                        "outline": "#717c84",
+                        "surface-tint": "#0059c7",
+                        "tertiary-fixed": "#e3dbfd",
+                        "on-tertiary-container": "#524c68",
+                        "on-tertiary-fixed-variant": "#5c5672",
+                        "on-surface-variant": "#566168",
+                        "inverse-surface": "#0b0f11",
+                        "on-tertiary": "#fcf7ff",
+                        "on-background": "#29343a",
+                        "on-surface": "#29343a",
+                        "on-primary-fixed-variant": "#0056c1",
+                        "secondary-fixed-dim": "#c8d5ec",
+                        "tertiary-container": "#e3dbfd",
+                        "on-error-container": "#752121",
+                        "primary-fixed": "#d9e2ff",
+                        "surface-bright": "#f7f9fc",
+                        "tertiary-fixed-dim": "#d5cdee",
+                        "tertiary-dim": "#554f6b",
+                        "on-error": "#fff7f6",
+                        "on-secondary-fixed": "#334052"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: #f7f9fc; }
+        .font-headline { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="text-on-surface">
+<!-- SideNavBar Shell -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-slate-50 dark:bg-slate-900 flex flex-col border-r border-slate-200/20 z-50">
+<div class="p-6">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary flex items-center justify-center rounded-xl overflow-hidden">
+<img alt="GraphHire Admin Logo" class="w-full h-full" data-alt="Abstract geometric tech logo with blue and white minimalist patterns for professional recruitment platform" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBt7o3v055miiX2q4Pxp2Om1rtW2NmvIaZSB8i7Z0iB-vQFrafmiaosP1xNmHUEQW73IxfvEck3mTerXNgDyRgtxR-tGqm0HRfkXeOTBLzGwhHakv1N8Sk9HXowJBO7mtKx9UXA6_10ATDNRO1wiHIftpi6jSEs4E5sLB5DyI0lVwANfMLcvMwB5IzqtuuziSWbxaibS_IY3FTYMAuIo7MeVk9WH0J6SLoRQxiYxDjzfCEQejHGnIny3N1UQsUKtAPGIOkHGvk3KuU"/>
+</div>
+<div>
+<h1 class="text-xl font-black tracking-tight text-blue-700 dark:text-blue-400 font-headline">GraphHire</h1>
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Management Engine</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 mt-4">
+<ul class="space-y-1 px-4">
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-medium">Dashboard</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">verified_user</span>
+<span class="font-medium">Enterprise Audit</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-blue-700 dark:text-blue-400 font-semibold border-r-4 border-blue-700 bg-blue-50/50 dark:bg-blue-900/10" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-medium">User Management</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">label</span>
+<span class="font-medium">Skill Labels</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="font-medium">Task Monitoring</span>
+</a>
+</li>
+</ul>
+</nav>
+<div class="p-6 mt-auto border-t border-slate-200/20">
+<div class="flex items-center gap-3">
+<img alt="Admin Avatar" class="w-10 h-10 rounded-full bg-slate-200" data-alt="Professional male avatar with glasses and a blazer, clean vector art style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAetyoKeqiAnUzrpUaHJ-r7j1bKpsjhfvKuOQrg9AZAotcS5Iq3rYWrKrCNuNbWX_LZtjdnzmdrI2m4OJCKeGkyVXps0Q2llOGPvvJhNmfGsP9YtSg6hY6a2KNEjvu9bOjjB9gZCB3MKGRnxaRQDfJC9tcri5ye5wlWStoGCU7aLD7c4m4kNEGjc-YR09aX6wIS0etAOu9LyimjoJzuZsXbOnGVsz3kLccrcZHH7KdH1rq6lMXUdHT2nWIzWyILyxdmFRaxGaZlgJI"/>
+<div class="overflow-hidden">
+<p class="text-sm font-bold truncate">系统管理员</p>
+<p class="text-xs text-on-surface-variant truncate">admin@graphhire.com</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- TopNavBar Shell -->
+<header class="flex justify-between items-center w-full px-8 h-16 ml-64 fixed top-0 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl z-40 shadow-sm dark:shadow-none">
+<div class="flex items-center gap-4 flex-1 max-w-xl">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container border-none focus:ring-2 focus:ring-blue-500/20 rounded-xl text-sm transition-all outline-none" placeholder="全局搜索用户、企业或任务..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="relative text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full border-2 border-white"></span>
+</button>
+<button class="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 pt-16 min-h-screen">
+<div class="p-8 space-y-8">
+<!-- Page Header -->
+<div class="flex items-end justify-between">
+<div>
+<h2 class="text-3xl font-black font-headline tracking-tight text-on-surface">用户管理</h2>
+<p class="text-on-surface-variant mt-1">管理平台全量候选人与雇主账户，维护系统准入权限。</p>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 px-6 py-2.5 bg-surface-container-lowest text-on-surface font-semibold rounded-xl hover:bg-surface-container-low transition-all border border-outline-variant/10">
+<span class="material-symbols-outlined text-[20px]">file_download</span>
+<span>导出数据</span>
+</button>
+<button class="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-br from-primary to-primary-dim text-on-primary font-semibold rounded-xl hover:opacity-90 shadow-lg shadow-primary/20 transition-all">
+<span class="material-symbols-outlined text-[20px]">person_add</span>
+<span>新增用户</span>
+</button>
+</div>
+</div>
+<!-- Bento Filter Section -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Filter Group 1: User Type -->
+<div class="md:col-span-5 bg-surface-container-low rounded-2xl p-6 flex flex-col justify-between space-y-4">
+<div class="flex items-center justify-between">
+<h3 class="font-semibold text-on-surface-variant uppercase text-xs tracking-wider">用户类型</h3>
+<span class="material-symbols-outlined text-outline-variant">category</span>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 py-3 px-4 bg-primary-container text-on-primary-container rounded-xl font-bold text-sm transition-all">全部</button>
+<button class="flex-1 py-3 px-4 bg-surface-container-lowest text-on-surface-variant hover:text-primary rounded-xl font-semibold text-sm transition-all">候选人</button>
+<button class="flex-1 py-3 px-4 bg-surface-container-lowest text-on-surface-variant hover:text-primary rounded-xl font-semibold text-sm transition-all">雇主账户</button>
+</div>
+</div>
+<!-- Filter Group 2: Status -->
+<div class="md:col-span-5 bg-surface-container-low rounded-2xl p-6 flex flex-col justify-between space-y-4">
+<div class="flex items-center justify-between">
+<h3 class="font-semibold text-on-surface-variant uppercase text-xs tracking-wider">账户状态</h3>
+<span class="material-symbols-outlined text-outline-variant">shield</span>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 py-3 px-4 bg-surface-container-lowest text-on-surface-variant hover:text-primary rounded-xl font-semibold text-sm transition-all">正常 (Active)</button>
+<button class="flex-1 py-3 px-4 bg-surface-container-lowest text-on-surface-variant hover:text-primary rounded-xl font-semibold text-sm transition-all">禁用 (Disabled)</button>
+<button class="flex-1 py-3 px-4 bg-surface-container-lowest text-on-surface-variant hover:text-primary rounded-xl font-semibold text-sm transition-all">锁定 (Locked)</button>
+</div>
+</div>
+<!-- Filter Group 3: Stats Summary -->
+<div class="md:col-span-2 bg-gradient-to-br from-secondary-container to-surface-container rounded-2xl p-6 flex flex-col justify-center items-center text-center">
+<p class="text-xs font-bold text-on-secondary-container uppercase mb-1">活跃总数</p>
+<p class="text-4xl font-black font-headline text-on-secondary-container">2,840</p>
+<p class="text-[10px] mt-2 text-on-secondary-container/60">+12% 较上月</p>
+</div>
+</div>
+<!-- Main Ledger (Table) -->
+<div class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm border border-outline-variant/5">
+<div class="overflow-x-auto">
+<table class="w-full border-collapse text-left">
+<thead>
+<tr class="bg-surface-container-low/50">
+<th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-widest">用户 ID</th>
+<th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-widest">用户名 / 邮箱</th>
+<th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-widest">类型</th>
+<th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-widest">注册日期</th>
+<th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-widest">状态</th>
+<th class="px-6 py-4 text-xs font-bold text-on-surface-variant uppercase tracking-widest text-right">操作</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<!-- Row 1 -->
+<tr class="hover:bg-secondary-container/20 transition-colors group">
+<td class="px-6 py-5">
+<span class="text-xs font-mono font-bold text-outline">#GH-8829</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary font-bold">张</div>
+<div>
+<p class="font-semibold text-sm">张晓明 (Xiaoming Zhang)</p>
+<p class="text-xs text-on-surface-variant">xiaoming.z@example.com</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-3 py-1 bg-surface-container-high rounded-full text-xs font-bold text-on-surface-variant">
+                                        候选人
+                                    </span>
+</td>
+<td class="px-6 py-5">
+<span class="text-sm text-on-surface-variant">2023-11-24</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+<span class="text-sm font-medium text-emerald-700">正常活跃</span>
+</div>
+</td>
+<td class="px-6 py-5 text-right">
+<div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-primary-container hover:text-primary rounded-lg transition-all" title="编辑资料">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-2 hover:bg-error-container/20 hover:text-error rounded-lg transition-all" title="禁用账户">
+<span class="material-symbols-outlined text-[20px]">block</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-secondary-container/20 transition-colors group bg-surface-container-low/20">
+<td class="px-6 py-5">
+<span class="text-xs font-mono font-bold text-outline">#GH-9012</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<img alt="Company Logo" class="w-10 h-10 rounded-lg bg-surface-container" data-alt="Corporate logo for tech company with blue and purple gradients and digital geometric shapes" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3xcZ63uou9H1wLnzWstsBhxqzuNxbyQnm8ONQAo4W5VEocw45Q8bXJJ054YLXp_FEiRc831sGZsLmwhyYTd73z1Sw19pIutwm12DGPjTaz8Q589Mby2V2nfyDu6eQf_Z559Xo-Xl7M4VV8bBBWwXYFAO1iPlBmIzcKw1D25qtEqcPxCoMGwETdQSu1ktMbtd8KA7jdjR39FeWskuREUnItQ7rk-sbxnLlJIoAW306FSaJqTH3pzryawo9f1AmWWdXi9se6fNEKXY"/>
+<div>
+<p class="font-semibold text-sm">字节跳动 HRBP (李经理)</p>
+<p class="text-xs text-on-surface-variant">recruitment@bytedance.com</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-3 py-1 bg-tertiary-container rounded-full text-xs font-bold text-on-tertiary-container">
+                                        雇主账户
+                                    </span>
+</td>
+<td class="px-6 py-5">
+<span class="text-sm text-on-surface-variant">2023-10-15</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+<span class="text-sm font-medium text-emerald-700">正常活跃</span>
+</div>
+</td>
+<td class="px-6 py-5 text-right">
+<div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-primary-container hover:text-primary rounded-lg transition-all">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-2 hover:bg-error-container/20 hover:text-error rounded-lg transition-all">
+<span class="material-symbols-outlined text-[20px]">block</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-secondary-container/20 transition-colors group">
+<td class="px-6 py-5">
+<span class="text-xs font-mono font-bold text-outline">#GH-7741</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary font-bold">陈</div>
+<div>
+<p class="font-semibold text-sm">陈思雨 (Siyu Chen)</p>
+<p class="text-xs text-on-surface-variant">chen.s@gmail.com</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-3 py-1 bg-surface-container-high rounded-full text-xs font-bold text-on-surface-variant">
+                                        候选人
+                                    </span>
+</td>
+<td class="px-6 py-5">
+<span class="text-sm text-on-surface-variant">2023-08-02</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<span class="text-sm font-medium text-error">已禁用</span>
+</div>
+</td>
+<td class="px-6 py-5 text-right">
+<div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-primary-container hover:text-primary rounded-lg transition-all">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-2 hover:bg-primary-container hover:text-primary rounded-lg transition-all" title="启用账户">
+<span class="material-symbols-outlined text-[20px]">check_circle</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-secondary-container/20 transition-colors group bg-surface-container-low/20">
+<td class="px-6 py-5">
+<span class="text-xs font-mono font-bold text-outline">#GH-6623</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary font-bold">W</div>
+<div>
+<p class="font-semibold text-sm">Wang Qiang</p>
+<p class="text-xs text-on-surface-variant">w.qiang@outlook.com</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-3 py-1 bg-surface-container-high rounded-full text-xs font-bold text-on-surface-variant">
+                                        候选人
+                                    </span>
+</td>
+<td class="px-6 py-5">
+<span class="text-sm text-on-surface-variant">2023-12-01</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-amber-500"></span>
+<span class="text-sm font-medium text-amber-700">登录锁定</span>
+</div>
+</td>
+<td class="px-6 py-5 text-right">
+<div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-primary-container hover:text-primary rounded-lg transition-all">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-2 hover:bg-primary-container hover:text-primary rounded-lg transition-all" title="解锁账户">
+<span class="material-symbols-outlined text-[20px]">lock_open</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Footer -->
+<div class="px-6 py-4 bg-surface-container-low/30 flex items-center justify-between border-t border-surface-container">
+<p class="text-xs text-on-surface-variant font-medium">显示第 1-10 条，共 2,840 条数据</p>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-lg hover:bg-surface-container-high transition-colors text-outline">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<div class="flex gap-1">
+<button class="w-8 h-8 rounded-lg bg-primary text-on-primary text-xs font-bold">1</button>
+<button class="w-8 h-8 rounded-lg hover:bg-surface-container-high text-xs font-bold">2</button>
+<button class="w-8 h-8 rounded-lg hover:bg-surface-container-high text-xs font-bold">3</button>
+<span class="px-1 text-outline">...</span>
+<button class="w-8 h-8 rounded-lg hover:bg-surface-container-high text-xs font-bold">284</button>
+</div>
+<button class="p-2 rounded-lg hover:bg-surface-container-high transition-colors text-outline">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Contextual Help / Status Legend Bento -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-surface-container-lowest p-6 rounded-2xl flex items-start gap-4">
+<div class="p-3 bg-emerald-50 rounded-xl">
+<span class="material-symbols-outlined text-emerald-600">verified</span>
+</div>
+<div>
+<h4 class="font-bold text-sm mb-1">合规性检查</h4>
+<p class="text-xs text-on-surface-variant leading-relaxed">系统每24小时自动对高风险账户进行异常活动扫描。近期未发现安全漏洞。</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-2xl flex items-start gap-4">
+<div class="p-3 bg-blue-50 rounded-xl">
+<span class="material-symbols-outlined text-blue-600">info</span>
+</div>
+<div>
+<h4 class="font-bold text-sm mb-1">权限说明</h4>
+<p class="text-xs text-on-surface-variant leading-relaxed">禁用账户将立即终止用户的当前会话，并禁止再次登录。操作将计入管理员审计日志。</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-2xl flex items-start gap-4">
+<div class="p-3 bg-amber-50 rounded-xl">
+<span class="material-symbols-outlined text-amber-600">contact_support</span>
+</div>
+<div>
+<h4 class="font-bold text-sm mb-1">申诉管理</h4>
+<p class="text-xs text-on-surface-variant leading-relaxed">当前有 3 个待处理的账户恢复申诉。请前往“系统申诉”模块查看详情。</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>
+

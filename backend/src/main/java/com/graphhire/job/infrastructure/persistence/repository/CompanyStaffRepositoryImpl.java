@@ -30,6 +30,13 @@ public class CompanyStaffRepositoryImpl implements CompanyStaffRepository {
     @Autowired
     private CompanyStaffMapper companyStaffMapper;
 
+    /** 根据ID查询企业员工记录 */
+    @Override
+    public Optional<CompanyStaff> findById(Long id) {
+        CompanyStaffPO po = companyStaffMapper.selectById(id);
+        return Optional.ofNullable(po).map(this::toDomain);
+    }
+
     /** 根据用户ID查询公司员工关系 */
     @Override
     public Optional<CompanyStaff> findByUserId(Long userId) {

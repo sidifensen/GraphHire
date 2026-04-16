@@ -1,0 +1,401 @@
+<!-- 职位管理 - 图谱智聘企业端 -->
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>职位管理 - 图谱智聘</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "primary-container": "#1a73e8",
+                "on-error": "#ffffff",
+                "background": "#f8f9fa",
+                "tertiary-fixed": "#d8e2ff",
+                "outline": "#727785",
+                "error": "#ba1a1a",
+                "surface-bright": "#f8f9fa",
+                "on-secondary-container": "#006d77",
+                "primary-fixed-dim": "#adc7ff",
+                "surface-variant": "#e1e3e4",
+                "secondary-fixed-dim": "#75d5e2",
+                "surface-container": "#edeeef",
+                "on-error-container": "#93000a",
+                "on-tertiary-fixed-variant": "#004494",
+                "secondary-fixed": "#92f1fe",
+                "on-background": "#191c1d",
+                "secondary": "#006972",
+                "primary": "#005bbf",
+                "surface-container-highest": "#e1e3e4",
+                "on-tertiary": "#ffffff",
+                "inverse-on-surface": "#f0f1f2",
+                "surface-container-low": "#f3f4f5",
+                "surface-container-lowest": "#ffffff",
+                "primary-fixed": "#d8e2ff",
+                "on-surface-variant": "#414754",
+                "on-primary-fixed": "#001a41",
+                "error-container": "#ffdad6",
+                "on-surface": "#191c1d",
+                "on-primary-container": "#ffffff",
+                "surface": "#f8f9fa",
+                "surface-dim": "#d9dadb",
+                "tertiary": "#005ac0",
+                "on-primary": "#ffffff",
+                "tertiary-fixed-dim": "#adc6ff",
+                "on-secondary-fixed": "#001f23",
+                "on-secondary": "#ffffff",
+                "on-tertiary-container": "#ffffff",
+                "inverse-primary": "#adc7ff",
+                "surface-container-high": "#e7e8e9",
+                "inverse-surface": "#2e3132",
+                "secondary-container": "#8feefc",
+                "tertiary-container": "#2a73e1",
+                "surface-tint": "#005bc0",
+                "on-secondary-fixed-variant": "#004f56",
+                "on-primary-fixed-variant": "#004493",
+                "on-tertiary-fixed": "#001a41",
+                "outline-variant": "#c1c6d6"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+            },
+            "fontFamily": {
+                "headline": ["Manrope"],
+                "body": ["Inter"],
+                "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, .font-headline { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface">
+<!-- SideNavBar Shell -->
+<aside class="fixed left-0 top-0 h-full flex flex-col p-4 bg-slate-50 dark:bg-slate-900 h-screen w-64 border-r-0 font-manrope antialiased transition-all duration-200 ease-in-out">
+<div class="flex items-center gap-3 px-2 mb-8">
+<div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="professional company logo with minimalist geometric shapes in deep blue and white, tech startup aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAf6LaWkqbBaKX_0e2xpRnpt5AumH4vhR-hPJq9JRfGLzxiR2v7ZQlXZHYF4lPXSlpl5yRnWOxnPScSsuPjZi4-KJBYg0YT4fy_90Qn561BERc_fcph2Cl4yRWmkiVyK7nhOeeldpymRe9vctqMJ_EVJMrGF4WgjKoDkVXd3zbahGvKuEhX6CcEFfLem0EJGhSLyXDnx0UFI_szcuHQvr4VnvI18l3CNSSnTkvkqEY1yjM1acAwqeq0KPfn8wCG8mWTBXT3uK1h010"/>
+</div>
+<div>
+<h1 class="text-xl font-bold text-blue-700 dark:text-blue-400">图谱智聘</h1>
+<p class="text-xs text-slate-500">企业管理后台</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-medium">控制台</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">business_center</span>
+<span class="font-medium">企业信息</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">add_circle</span>
+<span class="font-medium">职位发布</span>
+</a>
+<!-- Active Navigation: 职位管理 -->
+<a class="flex items-center gap-3 px-4 py-3 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-bold rounded-lg transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">layers</span>
+<span class="font-medium">职位管理</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">auto_awesome</span>
+<span class="font-medium">推荐简历</span>
+</a>
+</nav>
+<div class="mt-auto pt-4">
+<button class="w-full py-3 px-4 rounded-xl bg-gradient-to-br from-primary to-primary-container text-white font-bold flex items-center justify-center gap-2 shadow-sm hover:opacity-90 transition-all">
+<span class="material-symbols-outlined">add</span>
+                发布新职位
+            </button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 min-h-screen">
+<!-- TopAppBar Shell -->
+<header class="flex justify-between items-center h-16 px-8 w-full bg-white/70 dark:bg-slate-950/70 backdrop-blur-md sticky top-0 z-10 font-manrope">
+<div class="flex items-center gap-4">
+<h2 class="text-lg font-bold text-on-surface">职位管理</h2>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative group">
+<input class="bg-surface-container-low border-none rounded-full px-4 py-2 pl-10 w-64 focus:ring-2 focus:ring-primary/20 text-sm transition-all" placeholder="搜索职位..." type="text"/>
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+</div>
+<div class="flex items-center gap-4 text-slate-500">
+<span class="material-symbols-outlined cursor-pointer hover:text-blue-500 transition-colors">notifications</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-blue-500 transition-colors">settings</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-blue-500 transition-colors">help_outline</span>
+</div>
+<div class="flex items-center gap-3 border-l pl-6 border-slate-200">
+<img class="w-8 h-8 rounded-full" data-alt="close-up portrait of a professional corporate manager, clean professional lighting, smiling confidently" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJfzuBAmTU_t__frjSXSsY_nI96NtxuJMSafybhhoJ7LLXchqtV_E-8N7fWDco4VVec-qrjHFhV2oxO3XID5dq5xSUuPwhaIi8LEVNYKOJO3oAfmjoLBH9GL6uc8Ly1sXl9qn89n6ayo1fA3LEHbj2Hb1zoEb-gyV6c7ty8hlMMsBoHDEI0f8CTo9gHvp8Fp8JC9d7zVcb-LHZ8Hxv_VfWpz-2PdmBKaGxvLfcpMIXusL_XdMbou-RLdigXGLcsIbrG6Jn0gdjyCU"/>
+<span class="text-sm font-semibold">Admin</span>
+</div>
+</div>
+</header>
+<!-- Canvas Content -->
+<div class="p-8 space-y-8">
+<!-- Stats Bento Grid (Visual Interest) -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10 shadow-sm">
+<p class="text-xs font-bold text-slate-500 tracking-wider mb-2">在线职位</p>
+<div class="flex items-end gap-2">
+<span class="text-3xl font-headline font-extrabold text-primary">12</span>
+<span class="text-xs text-green-500 mb-1 flex items-center"><span class="material-symbols-outlined text-sm">trending_up</span> +2</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10 shadow-sm">
+<p class="text-xs font-bold text-slate-500 tracking-wider mb-2">简历总数</p>
+<div class="flex items-end gap-2">
+<span class="text-3xl font-headline font-extrabold text-on-surface">428</span>
+<span class="text-xs text-slate-400 mb-1">本月新增</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10 shadow-sm">
+<p class="text-xs font-bold text-slate-500 tracking-wider mb-2">待处理面试</p>
+<div class="flex items-end gap-2">
+<span class="text-3xl font-headline font-extrabold text-secondary">8</span>
+<span class="text-xs text-secondary mb-1">今日</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/10 shadow-sm relative overflow-hidden">
+<div class="absolute right-0 top-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12"></div>
+<p class="text-xs font-bold text-slate-500 tracking-wider mb-2">图谱智配度</p>
+<div class="flex items-end gap-2">
+<span class="text-3xl font-headline font-extrabold text-on-surface">86%</span>
+<span class="text-xs text-blue-500 mb-1">AI 领先</span>
+</div>
+</div>
+</div>
+<!-- Tab Filtering & Main Table Container -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/10 overflow-hidden shadow-sm">
+<!-- Navigation Tabs -->
+<div class="flex items-center border-b border-outline-variant/10 px-6">
+<button class="px-6 py-4 text-sm font-bold text-primary border-b-2 border-primary">全部</button>
+<button class="px-6 py-4 text-sm font-medium text-slate-500 hover:text-on-surface transition-colors">已发布</button>
+<button class="px-6 py-4 text-sm font-medium text-slate-500 hover:text-on-surface transition-colors">草稿</button>
+<button class="px-6 py-4 text-sm font-medium text-slate-500 hover:text-on-surface transition-colors">已关闭</button>
+<div class="ml-auto flex items-center gap-3">
+<button class="p-2 hover:bg-surface-container text-slate-500 rounded-lg transition-all">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+<button class="p-2 hover:bg-surface-container text-slate-500 rounded-lg transition-all">
+<span class="material-symbols-outlined">sort</span>
+</button>
+</div>
+</div>
+<!-- Table Content -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low">
+<th class="px-6 py-4 text-xs font-bold text-slate-500 tracking-widest">职位名称</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 tracking-widest">状态</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 tracking-widest">薪资</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 tracking-widest">发布时间</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 tracking-widest">投递人数</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 tracking-widest text-right">操作</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="px-6 py-5">
+<div class="font-semibold text-on-surface">高级前端工程师</div>
+<div class="text-xs text-slate-400 mt-1">技术部 · 北京</div>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 text-green-700 text-xs font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                        已发布
+                                    </span>
+</td>
+<td class="px-6 py-5 text-sm font-medium">25k - 45k</td>
+<td class="px-6 py-5 text-sm text-slate-500">2023-11-20</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<span class="text-sm font-bold text-primary">128</span>
+<div class="flex -space-x-2">
+<img class="w-6 h-6 rounded-full border-2 border-white" data-alt="avatar of a job candidate with neutral professional expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWWF2EwneGGEkXHaMdedbBI6OINII15797sT5qFAFk4bGxPqiZ6pNqO1HGqu9MEBjhMmqY5I97yuWjzGLgzZd4EbwKOOWFulSjrJVabiC1oDv65kBTV_ns4MY6mIXebK5v127pqg5JmXyaLs9Dk-eQG3uEYGxyztQJwhPdGWIcDMR5gqMBSgbv_Wa6q_v0RuMSsjYdKkm1QpyCERd_p3cne-DWhYTOWTiBOlfQv3elZe_tl082jSlbLhKhGjKwmezQk-h0vjBYgSo"/>
+<img class="w-6 h-6 rounded-full border-2 border-white" data-alt="avatar of a diverse job applicant, soft lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTDumpx0aDY9bABJcT1J2o3bghCmOR0WVA3Oh3MgdNW0YYyylcCTK18MMscI_ywqSBEkcStL74zTtMrZmtJ9cKKa-HwMxZPpqpH1cdXhOB2-hce2K_hH4kzuwlxWfV28nl6ft0TgH_deIKdeXFapdVQZIBH3dTx6oIscHcmsz5wihMbkkLRGx6SQmfCH-KXvlgmw7kFfJ7n7fV3RRwdpbfc3T5SR3tX4RYJ4-JB2bzHOjvesFSuBsmvJFpz7SSmDHSjGy_J4Pm9GY"/>
+<div class="w-6 h-6 rounded-full bg-slate-100 border-2 border-white text-[10px] flex items-center justify-center text-slate-400">+126</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 text-right">
+<div class="flex justify-end gap-2">
+<button class="p-2 text-slate-400 hover:text-primary transition-colors" title="编辑"><span class="material-symbols-outlined text-xl">edit_square</span></button>
+<button class="p-2 text-slate-400 hover:text-error transition-colors" title="下架"><span class="material-symbols-outlined text-xl">visibility_off</span></button>
+<button class="px-3 py-1 bg-primary/5 text-primary rounded-lg text-xs font-bold hover:bg-primary/10 transition-all flex items-center gap-1">
+<span class="material-symbols-outlined text-base">hub</span> 查看图谱
+                                        </button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="px-6 py-5">
+<div class="font-semibold text-on-surface">资深产品经理 (AI方向)</div>
+<div class="text-xs text-slate-400 mt-1">产品部 · 上海</div>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 text-green-700 text-xs font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                        已发布
+                                    </span>
+</td>
+<td class="px-6 py-5 text-sm font-medium">35k - 60k</td>
+<td class="px-6 py-5 text-sm text-slate-500">2023-11-18</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2">
+<span class="text-sm font-bold text-primary">84</span>
+<div class="flex -space-x-2">
+<img class="w-6 h-6 rounded-full border-2 border-white" data-alt="candidate profile icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCyM1vIK_qolJS0RdlpHjs8bEKNpTUeK54FZ5PD3rrhwMxI0jHBHah7XNs9EwUJ9WWwKVX58lGJ1scdC-fypXFSmBXyGOaH7Wx53RxKetmpDCvBLk1KPpSsaQwuh_k5ba6Bw514mgrACtWKOkDizjWHZXoIpfIkLRNrOqu-P2vQGsnFJ3OTfCSt7rLRK7YsvNsJuuViFf9N83u77yFlx5aZoHq8QdYborbhosVil7-p0aFiYe49b7OydwE7M8P61BQhj7D0SBxL-eI"/>
+<div class="w-6 h-6 rounded-full bg-slate-100 border-2 border-white text-[10px] flex items-center justify-center text-slate-400">+83</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 text-right">
+<div class="flex justify-end gap-2">
+<button class="p-2 text-slate-400 hover:text-primary transition-colors" title="编辑"><span class="material-symbols-outlined text-xl">edit_square</span></button>
+<button class="p-2 text-slate-400 hover:text-error transition-colors" title="下架"><span class="material-symbols-outlined text-xl">visibility_off</span></button>
+<button class="px-3 py-1 bg-primary/5 text-primary rounded-lg text-xs font-bold hover:bg-primary/10 transition-all flex items-center gap-1">
+<span class="material-symbols-outlined text-base">hub</span> 查看图谱
+                                        </button>
+</div>
+</td>
+</tr>
+<!-- Row 3 (Draft) -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="px-6 py-5 opacity-70">
+<div class="font-semibold text-on-surface">市场运营专家</div>
+<div class="text-xs text-slate-400 mt-1">市场部 · 深圳</div>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                                        草稿
+                                    </span>
+</td>
+<td class="px-6 py-5 text-sm font-medium opacity-70">15k - 25k</td>
+<td class="px-6 py-5 text-sm text-slate-500 opacity-70">--</td>
+<td class="px-6 py-5 text-sm text-slate-300">0</td>
+<td class="px-6 py-5 text-right">
+<div class="flex justify-end gap-2">
+<button class="p-2 text-slate-400 hover:text-primary transition-colors" title="编辑"><span class="material-symbols-outlined text-xl">edit_square</span></button>
+<button class="px-3 py-1 bg-primary text-white rounded-lg text-xs font-bold hover:bg-primary-container transition-all">
+                                            立即发布
+                                        </button>
+</div>
+</td>
+</tr>
+<!-- Row 4 (Closed) -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="px-6 py-5 grayscale opacity-50">
+<div class="font-semibold text-on-surface">人事行政主管</div>
+<div class="text-xs text-slate-400 mt-1">综合部 · 杭州</div>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-error-container text-on-error-container text-xs font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                                        已关闭
+                                    </span>
+</td>
+<td class="px-6 py-5 text-sm font-medium opacity-50">12k - 18k</td>
+<td class="px-6 py-5 text-sm text-slate-500 opacity-50">2023-10-05</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-2 opacity-50">
+<span class="text-sm font-bold">12</span>
+</div>
+</td>
+<td class="px-6 py-5 text-right">
+<div class="flex justify-end gap-2">
+<button class="p-2 text-slate-400 hover:text-primary transition-colors" title="重新发布"><span class="material-symbols-outlined text-xl">refresh</span></button>
+<button class="p-2 text-slate-400 hover:text-on-surface transition-colors" title="查看详情"><span class="material-symbols-outlined text-xl">description</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-6 py-4 bg-surface-container-low flex justify-between items-center">
+<span class="text-xs font-medium text-slate-500">共 24 个职位</span>
+<div class="flex gap-1">
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-white transition-all"><span class="material-symbols-outlined text-sm">chevron_left</span></button>
+<button class="w-8 h-8 rounded-lg bg-primary text-white text-xs font-bold">1</button>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:bg-white text-xs transition-all">2</button>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:bg-white text-xs transition-all">3</button>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-white transition-all"><span class="material-symbols-outlined text-sm">chevron_right</span></button>
+</div>
+</div>
+</div>
+<!-- Insight Section (Asymmetric Layout) -->
+<div class="flex flex-col lg:flex-row gap-6">
+<div class="lg:w-2/3 bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-8 text-white relative overflow-hidden">
+<div class="relative z-10">
+<h3 class="text-xl font-headline font-bold mb-2">AI 图谱分析</h3>
+<p class="text-blue-100 max-w-md text-sm mb-6">您的“高级前端工程师”职位近期投递热度较高，建议通过图谱分析优先面试具有“可视化经验”的 3 名高匹配度候选人。</p>
+<button class="bg-white text-blue-700 px-6 py-2 rounded-xl font-bold text-sm hover:bg-blue-50 transition-all flex items-center gap-2">
+                            立即分析匹配度 <span class="material-symbols-outlined text-sm">rocket_launch</span>
+</button>
+</div>
+<!-- Abstract Visual Element -->
+<div class="absolute right-0 bottom-0 top-0 w-1/2 opacity-20 pointer-events-none">
+<svg class="w-full h-full" viewbox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+<path d="M47.7,-62.4C60.9,-54.3,69.9,-39.2,74.5,-23.4C79.2,-7.6,79.5,8.9,73.1,23C66.8,37,53.8,48.5,39.6,56.9C25.4,65.3,10.1,70.6,-5.7,78.5C-21.5,86.3,-37.8,96.6,-50.2,92.5C-62.7,88.4,-71.4,69.8,-75.8,52.2C-80.1,34.5,-80.1,17.3,-77.4,1.6C-74.6,-14.1,-69.1,-28.2,-60,-40.4C-50.9,-52.6,-38.1,-62.9,-24.5,-70.6C-11,-78.4,3.2,-83.5,17.2,-79.8C31.3,-76.1,45.2,-63.6,47.7,-62.4Z" fill="#FFFFFF" transform="translate(100 100)"></path>
+</svg>
+</div>
+</div>
+<div class="lg:w-1/3 bg-secondary-container/30 border border-secondary/10 rounded-2xl p-8 backdrop-blur-sm">
+<h3 class="text-secondary font-headline font-bold mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">bolt</span>
+                        智能小助手
+                    </h3>
+<ul class="space-y-4">
+<li class="flex items-start gap-3">
+<div class="w-6 h-6 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-secondary text-sm">check</span>
+</div>
+<p class="text-xs leading-relaxed text-on-secondary-fixed-variant">职位“人事行政主管”已关闭 15 天，需要归档相关简历吗？</p>
+</li>
+<li class="flex items-start gap-3">
+<div class="w-6 h-6 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-secondary text-sm">lightbulb</span>
+</div>
+<p class="text-xs leading-relaxed text-on-secondary-fixed-variant">产品经理职位的薪资处于行业中游，适当提高可增加 20% 的简历量。</p>
+</li>
+</ul>
+<button class="w-full mt-6 py-2 rounded-lg border border-secondary/20 text-secondary text-xs font-bold hover:bg-secondary/5 transition-all">
+                        查看更多建议
+                    </button>
+</div>
+</div>
+</div>
+</main>
+</body></html>
+

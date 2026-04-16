@@ -1,0 +1,352 @@
+<!-- 控制台 - 图谱智聘企业端 -->
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-container": "#1a73e8",
+                    "on-error": "#ffffff",
+                    "background": "#f8f9fa",
+                    "tertiary-fixed": "#d8e2ff",
+                    "outline": "#727785",
+                    "error": "#ba1a1a",
+                    "surface-bright": "#f8f9fa",
+                    "on-secondary-container": "#006d77",
+                    "primary-fixed-dim": "#adc7ff",
+                    "surface-variant": "#e1e3e4",
+                    "secondary-fixed-dim": "#75d5e2",
+                    "surface-container": "#edeeef",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-fixed-variant": "#004494",
+                    "secondary-fixed": "#92f1fe",
+                    "on-background": "#191c1d",
+                    "secondary": "#006972",
+                    "primary": "#005bbf",
+                    "surface-container-highest": "#e1e3e4",
+                    "on-tertiary": "#ffffff",
+                    "inverse-on-surface": "#f0f1f2",
+                    "surface-container-low": "#f3f4f5",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed": "#d8e2ff",
+                    "on-surface-variant": "#414754",
+                    "on-primary-fixed": "#001a41",
+                    "error-container": "#ffdad6",
+                    "on-surface": "#191c1d",
+                    "on-primary-container": "#ffffff",
+                    "surface": "#f8f9fa",
+                    "surface-dim": "#d9dadb",
+                    "tertiary": "#005ac0",
+                    "on-primary": "#ffffff",
+                    "tertiary-fixed-dim": "#adc6ff",
+                    "on-secondary-fixed": "#001f23",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-container": "#ffffff",
+                    "inverse-primary": "#adc7ff",
+                    "surface-container-high": "#e7e8e9",
+                    "inverse-surface": "#2e3132",
+                    "secondary-container": "#8feefc",
+                    "tertiary-container": "#2a73e1",
+                    "surface-tint": "#005bc0",
+                    "on-secondary-fixed-variant": "#004f56",
+                    "on-primary-fixed-variant": "#004493",
+                    "on-tertiary-fixed": "#001a41",
+                    "outline-variant": "#c1c6d6"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="bg-background font-body text-on-surface antialiased">
+<!-- SideNavBar Shell -->
+<aside class="fixed left-0 top-0 h-full flex flex-col p-4 bg-slate-50 dark:bg-slate-900 h-screen w-64 border-r-0 font-manrope antialiased z-50">
+<div class="flex items-center gap-3 px-2 mb-10">
+<div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">graph_2</span>
+</div>
+<div>
+<h1 class="text-xl font-bold text-blue-700 dark:text-blue-400 leading-tight">图谱智聘</h1>
+<p class="text-xs text-slate-500 font-medium tracking-wider">企业管理后台</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Active Navigation: 控制台 -->
+<a class="flex items-center gap-3 px-4 py-3 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-bold rounded-lg transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>控制台</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">business_center</span>
+<span>企业信息</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">add_circle</span>
+<span>职位发布</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">layers</span>
+<span>职位管理</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">auto_awesome</span>
+<span>推荐简历</span>
+</a>
+</nav>
+<div class="mt-auto pt-4 border-t border-slate-200 dark:border-slate-800">
+<button class="w-full py-3 px-4 bg-primary text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined">add</span>
+<span>发布新职位</span>
+</button>
+</div>
+</aside>
+<!-- TopAppBar Shell -->
+<header class="flex justify-between items-center h-16 ml-64 px-8 w-[calc(100%-16rem)] fixed top-0 bg-white/70 backdrop-blur-md z-40">
+<div class="flex items-center gap-2">
+<span class="text-on-surface-variant font-medium">工作台</span>
+<span class="material-symbols-outlined text-sm text-outline">chevron_right</span>
+<span class="text-primary font-semibold">概览</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-full w-64 focus:ring-2 focus:ring-primary-container/30 text-sm transition-all" placeholder="搜索候选人或职位..." type="text"/>
+</div>
+<div class="flex items-center gap-4 text-outline">
+<span class="material-symbols-outlined cursor-pointer hover:text-blue-500 transition-colors">notifications</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-blue-500 transition-colors">settings</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-blue-500 transition-colors">help_outline</span>
+<div class="h-8 w-8 rounded-full overflow-hidden border-2 border-primary/10">
+<img alt="管理员头像" data-alt="professional portrait of a high-end corporate administrator with a friendly expression in a modern office environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQLdwVMQfYM5Pz_yEF_hA7IyxLD-hAb_RB9gwQvNd0glsHfRRpQKsA8_ASY8paJkakb-fyU3FW0v9nw3p1QzjzzZUYKi9HF3Ejn5yGImlcNiOZ3dVSsP29SAeAtGn-MX_A3HvqVBx5LbjPVNSy63-di7g8DAMFHL6jJlyEIpdq5F0Q6EujGTqD3yKcdoB8hRN1Y7r0APdl7G28OXbXKhjA7xkv_KtZhgs0qIwZdsegycm2hL8TKscE8QcjX0c2rqev3XHB3hyZ0g0"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 mt-16 p-8 min-h-screen">
+<!-- Welcome Header -->
+<header class="mb-10">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h2 class="text-3xl font-headline font-extrabold text-on-surface tracking-tight">早安，招聘团队</h2>
+<p class="mt-2 text-on-surface-variant font-medium flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm">calendar_today</span>
+                        2024年5月24日 · 星期五
+                    </p>
+</div>
+<div class="flex gap-3">
+<button class="px-5 py-2.5 bg-surface-container-high text-on-primary-fixed-variant rounded-xl font-semibold flex items-center gap-2 hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-sm">auto_awesome</span>
+                        查看推荐简历
+                    </button>
+<button class="px-5 py-2.5 bg-gradient-to-br from-primary to-primary-container text-white rounded-xl font-semibold shadow-lg shadow-primary/20 flex items-center gap-2 hover:scale-[1.02] transition-all">
+<span class="material-symbols-outlined text-sm">add</span>
+                        发布新职位
+                    </button>
+</div>
+</div>
+</header>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-6">
+<!-- Data Overview Cards -->
+<div class="col-span-12 lg:col-span-4 flex flex-col gap-6">
+<!-- Card 1: 待处理投递 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl relative overflow-hidden group transition-all hover:translate-y-[-4px]">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
+<div class="relative z-10">
+<div class="w-12 h-12 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary mb-4">
+<span class="material-symbols-outlined">inbox</span>
+</div>
+<h3 class="text-sm font-label font-bold text-outline uppercase tracking-wider">待处理投递</h3>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="text-4xl font-headline font-extrabold text-on-surface">12</span>
+<span class="text-xs font-bold text-error bg-error-container/50 px-2 py-0.5 rounded-full">+3 较昨日</span>
+</div>
+</div>
+</div>
+<!-- Card 2: 新匹配候选人 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl relative overflow-hidden group transition-all hover:translate-y-[-4px]">
+<div class="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
+<div class="relative z-10">
+<div class="w-12 h-12 rounded-lg bg-secondary-container/20 flex items-center justify-center text-secondary mb-4">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person_search</span>
+</div>
+<h3 class="text-sm font-label font-bold text-outline uppercase tracking-wider">新匹配候选人</h3>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="text-4xl font-headline font-extrabold text-on-surface">8</span>
+<span class="text-xs font-bold text-primary-container bg-primary-fixed/50 px-2 py-0.5 rounded-full">AI 智能匹配</span>
+</div>
+</div>
+</div>
+<!-- Card 3: 在招职位 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl relative overflow-hidden group transition-all hover:translate-y-[-4px]">
+<div class="absolute top-0 right-0 w-32 h-32 bg-tertiary/5 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
+<div class="relative z-10">
+<div class="w-12 h-12 rounded-lg bg-tertiary-container/10 flex items-center justify-center text-tertiary mb-4">
+<span class="material-symbols-outlined">work_history</span>
+</div>
+<h3 class="text-sm font-label font-bold text-outline uppercase tracking-wider">在招职位</h3>
+<div class="mt-2 flex items-baseline gap-2">
+<span class="text-4xl font-headline font-extrabold text-on-surface">5</span>
+<span class="text-xs font-bold text-on-surface-variant bg-surface-container-high px-2 py-0.5 rounded-full">进行中</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Main Content: Recent Jobs & AI Insights -->
+<div class="col-span-12 lg:col-span-8 space-y-6">
+<!-- Recent Jobs Section -->
+<section class="bg-surface-container-lowest rounded-xl p-8">
+<div class="flex items-center justify-between mb-8">
+<div>
+<h3 class="text-xl font-headline font-bold text-on-surface">近期发布职位</h3>
+<p class="text-sm text-outline mt-1">实时监控各职位投递与匹配动态</p>
+</div>
+<button class="text-primary text-sm font-bold hover:underline">查看全部</button>
+</div>
+<div class="space-y-4">
+<!-- Job Item 1 -->
+<div class="group flex items-center justify-between p-4 rounded-xl bg-surface hover:bg-surface-container-low transition-all">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-white flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-primary">terminal</span>
+</div>
+<div>
+<h4 class="font-bold text-on-surface group-hover:text-primary transition-colors">高级后端开发工程师</h4>
+<p class="text-xs text-outline mt-1 flex items-center gap-2">
+                                        发布于 2小时前
+                                        <span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+                                        北京 · 远程
+                                    </p>
+</div>
+</div>
+<div class="flex items-center gap-10">
+<div class="text-right">
+<div class="flex items-center justify-end gap-1 text-secondary font-bold">
+<span class="material-symbols-outlined text-sm">stars</span>
+<span>24 个匹配</span>
+</div>
+<p class="text-[10px] text-outline mt-0.5">算法推荐得分 95+</p>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:translate-x-1 transition-transform">chevron_right</span>
+</div>
+</div>
+<!-- Job Item 2 -->
+<div class="group flex items-center justify-between p-4 rounded-xl bg-surface-container-low/30 hover:bg-surface-container-low transition-all">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-white flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-primary">palette</span>
+</div>
+<div>
+<h4 class="font-bold text-on-surface group-hover:text-primary transition-colors">资深UI/UX设计师</h4>
+<p class="text-xs text-outline mt-1 flex items-center gap-2">
+                                        发布于 昨日
+                                        <span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+                                        上海
+                                    </p>
+</div>
+</div>
+<div class="flex items-center gap-10">
+<div class="text-right">
+<div class="flex items-center justify-end gap-1 text-secondary font-bold">
+<span class="material-symbols-outlined text-sm">stars</span>
+<span>18 个匹配</span>
+</div>
+<p class="text-[10px] text-outline mt-0.5">算法推荐得分 88+</p>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:translate-x-1 transition-transform">chevron_right</span>
+</div>
+</div>
+<!-- Job Item 3 -->
+<div class="group flex items-center justify-between p-4 rounded-xl bg-surface-container-low/30 hover:bg-surface-container-low transition-all">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-white flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-primary">monitoring</span>
+</div>
+<div>
+<h4 class="font-bold text-on-surface group-hover:text-primary transition-colors">产品运营经理</h4>
+<p class="text-xs text-outline mt-1 flex items-center gap-2">
+                                        发布于 3天前
+                                        <span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+                                        深圳
+                                    </p>
+</div>
+</div>
+<div class="flex items-center gap-10">
+<div class="text-right">
+<div class="flex items-center justify-end gap-1 text-secondary font-bold">
+<span class="material-symbols-outlined text-sm">stars</span>
+<span>32 个匹配</span>
+</div>
+<p class="text-[10px] text-outline mt-0.5">算法推荐得分 92+</p>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:translate-x-1 transition-transform">chevron_right</span>
+</div>
+</div>
+</div>
+</section>
+<!-- AI Quick Insight Card -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="bg-gradient-to-br from-secondary-container to-secondary/20 p-6 rounded-2xl border border-secondary/10 relative overflow-hidden group">
+<span class="material-symbols-outlined absolute -bottom-4 -right-4 text-secondary/10 text-9xl">magic_button</span>
+<div class="relative z-10">
+<div class="flex items-center gap-2 mb-4">
+<span class="px-2 py-1 bg-white/50 backdrop-blur-sm text-[10px] font-bold text-secondary rounded uppercase tracking-tighter">AI Insight</span>
+</div>
+<h4 class="font-headline font-bold text-on-secondary-container text-lg leading-snug">后端开发人才库中有 12 位与您的新职位相匹配。</h4>
+<p class="mt-3 text-sm text-on-secondary-fixed-variant leading-relaxed">基于图谱分析，这些候选人具备极高的技能重合度，建议立即查看。</p>
+<button class="mt-6 flex items-center gap-1 text-secondary font-bold text-sm">
+                                立即查看
+                                <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="bg-white p-6 rounded-2xl shadow-sm border border-outline-variant/10 flex flex-col justify-center items-center text-center">
+<div class="w-16 h-16 rounded-full bg-surface-container-low flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-primary text-3xl">insights</span>
+</div>
+<h4 class="font-bold text-on-surface">招聘效能分析</h4>
+<p class="mt-2 text-sm text-on-surface-variant px-4">上周平均初试通过率为 68%，高于行业平均水平 12%。</p>
+<div class="mt-6 w-full h-1 bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[68%]"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- FAB for quick action (contextual fallback) -->
+<button class="fixed bottom-8 right-8 w-14 h-14 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform md:hidden">
+<span class="material-symbols-outlined">add</span>
+</button>
+</body></html>
+

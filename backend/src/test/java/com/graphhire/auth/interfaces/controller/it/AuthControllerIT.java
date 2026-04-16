@@ -213,4 +213,9 @@ class AuthControllerIT extends BaseControllerIT {
             .andExpect(jsonPath("$.code").value(200))
             .andExpect(jsonPath("$.data.accessToken").isNotEmpty());
     }
+
+    @AfterAll
+    static void afterAll(@Autowired JdbcTemplate jdbcTemplate) {
+        cleanupTestUsers(jdbcTemplate);
+    }
 }

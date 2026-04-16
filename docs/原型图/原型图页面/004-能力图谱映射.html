@@ -1,0 +1,278 @@
+<!-- 能力图谱映射 - 图谱智聘 -->
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-background": "#191c1d",
+                      "on-primary": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "inverse-surface": "#2e3132",
+                      "primary": "#005bbf",
+                      "surface-variant": "#e1e3e4",
+                      "secondary-container": "#8feefc",
+                      "on-error": "#ffffff",
+                      "primary-fixed": "#d8e2ff",
+                      "tertiary-fixed-dim": "#adc6ff",
+                      "primary-fixed-dim": "#adc7ff",
+                      "on-secondary-fixed": "#001f23",
+                      "surface-container-low": "#f3f4f5",
+                      "outline": "#727785",
+                      "tertiary-container": "#2a73e1",
+                      "inverse-on-surface": "#f0f1f2",
+                      "on-secondary-container": "#006d77",
+                      "surface-container-high": "#e7e8e9",
+                      "on-secondary-fixed-variant": "#004f56",
+                      "on-surface-variant": "#414754",
+                      "tertiary-fixed": "#d8e2ff",
+                      "surface": "#f8f9fa",
+                      "surface-tint": "#005bc0",
+                      "on-secondary": "#ffffff",
+                      "secondary": "#006972",
+                      "on-surface": "#191c1d",
+                      "on-error-container": "#93000a",
+                      "background": "#f8f9fa",
+                      "on-primary-fixed": "#001a41",
+                      "secondary-fixed": "#92f1fe",
+                      "on-tertiary-fixed-variant": "#004494",
+                      "surface-container-lowest": "#ffffff",
+                      "secondary-fixed-dim": "#75d5e2",
+                      "surface-dim": "#d9dadb",
+                      "tertiary": "#005ac0",
+                      "surface-bright": "#f8f9fa",
+                      "on-tertiary": "#ffffff",
+                      "on-primary-container": "#ffffff",
+                      "outline-variant": "#c1c6d6",
+                      "on-primary-fixed-variant": "#004493",
+                      "surface-container-highest": "#e1e3e4",
+                      "surface-container": "#edeeef",
+                      "primary-container": "#1a73e8",
+                      "error": "#ba1a1a",
+                      "inverse-primary": "#adc7ff",
+                      "on-tertiary-container": "#ffffff",
+                      "on-tertiary-fixed": "#001a41"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "fontFamily": {
+                      "headline": ["Manrope", "PingFang SC", "Microsoft YaHei"],
+                      "body": ["Inter", "PingFang SC", "Microsoft YaHei"],
+                      "label": ["Inter", "PingFang SC", "Microsoft YaHei"]
+              }
+            },
+          },
+        }
+      </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .node-pulse {
+            box-shadow: 0 0 0 0 rgba(0, 91, 191, 0.4);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 91, 191, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(0, 91, 191, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 91, 191, 0); }
+        }
+        .skill-graph-container {
+            background-image: radial-gradient(#e1e3e4 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        .radar-grid {
+            clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body min-h-screen">
+<!-- TopNavBar Mapping -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-8 h-16 w-full max-w-full mx-auto bg-white/70 backdrop-blur-md font-manrope antialiased">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-bold tracking-tight text-blue-700">图谱智聘</span>
+<nav class="hidden md:flex gap-6 items-center">
+<a class="text-slate-600 hover:text-blue-600 transition-colors" href="#">探索发现</a>
+<a class="text-slate-600 hover:text-blue-600 transition-colors" href="#">我的申请</a>
+<a class="text-slate-600 hover:text-blue-600 transition-colors" href="#">消息中心</a>
+<a class="text-blue-700 border-b-2 border-blue-600 pb-1 font-semibold" href="#">深度洞察</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-600 hover:bg-slate-50 transition-colors rounded-full">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-slate-600 hover:bg-slate-50 transition-colors rounded-full">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden">
+<img alt="用户头像" class="w-full h-full object-cover" data-alt="Professional headshot of a software engineer with soft studio lighting and a neutral grey background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJJb8qjRi7kRo9ccZJ7vmlPbzy931FYFFpD-7yBB7D2cfWNk_jfUMJmP4Qj0jDwfqrfrQQ-az27EUoNw4D_3P88ndpBhl-opTqhKvbVePnfvH-xJczavReysrci1vf2LJmQ_Y_RxCP54T8T_zXrAxgjbvFKlfA4oLokBrp59kiQKdl1ITeSrDTBDRQBEX_aW4ml41vm0RCeQ_8f49v2_9furGr_ZyCaZAQ0lG9cOB8hBGwhC2DX4kLbnirz7GlBOoQAICJwTXraa8"/>
+</div>
+</div>
+</header>
+<main class="pt-16 flex min-h-screen">
+<!-- Main Visualization Canvas -->
+<section class="flex-1 relative skill-graph-container overflow-hidden bg-surface">
+<!-- Breadcrumbs / Controls -->
+<div class="absolute top-6 left-8 z-10 flex gap-4 items-center">
+<div class="glass-panel px-4 py-2 rounded-xl flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">hub</span>
+<span class="text-sm font-semibold text-on-surface">能力图谱映射</span>
+</div>
+<div class="flex bg-surface-container-low rounded-full p-1">
+<button class="px-4 py-1.5 rounded-full text-sm bg-surface-container-lowest font-medium">标准视图</button>
+<button class="px-4 py-1.5 rounded-full text-sm text-on-surface-variant hover:text-on-surface">3D 模型</button>
+</div>
+</div>
+<!-- Visualization Center -->
+<div class="relative w-full h-full flex items-center justify-center">
+<!-- SVG Connections -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none">
+<defs>
+<lineargradient id="lineGrad" x1="0%" x2="100%" y1="0%" y2="100%">
+<stop offset="0%" style="stop-color:var(--primary);stop-opacity:0.2"></stop>
+<stop offset="100%" style="stop-color:var(--secondary);stop-opacity:0.5"></stop>
+</lineargradient>
+</defs>
+<!-- Simulated Connection Lines -->
+<line stroke="url(#lineGrad)" stroke-dasharray="4" stroke-width="2" x1="50%" x2="35%" y1="50%" y2="30%"></line>
+<line stroke="url(#lineGrad)" stroke-dasharray="4" stroke-width="2" x1="50%" x2="65%" y1="50%" y2="35%"></line>
+<line stroke="url(#lineGrad)" stroke-dasharray="4" stroke-width="2" x1="50%" x2="40%" y1="50%" y2="70%"></line>
+<line stroke="url(#lineGrad)" stroke-dasharray="4" stroke-width="2" x1="50%" x2="60%" y1="50%" y2="75%"></line>
+</svg>
+<!-- Center Node -->
+<div class="relative z-20">
+<div class="w-24 h-24 rounded-full bg-primary p-1 node-pulse">
+<img alt="用户头像" class="w-full h-full object-cover rounded-full" data-alt="Close up portrait of a young professional with a confident smile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuApFJbNpF2f2MlDfz-X8YnhwIBhVf_WUbbwqUL9xTiZrNjUB-o5sBpSInbIj4Bep76wS7XNYTOc9TPrbO93ybCUe5u1bxKNF7v1Y8RRE63lX5dWxwyNqQ1Us3rBQpQb5BBa5DEeHivil124HdT246ad1NyRRlWQhXUt6iMnQQtaoa05LPI0vzb1GoLwZXF7HijbWKgD2FqgT9UpEMz1ABQNlNHWB_e7xuM0wBtFc9FhEYyErvpVrVMOXtNvsstRJeMnSw9YnPOuE3I"/>
+</div>
+<div class="absolute -bottom-10 left-1/2 -translate-x-1/2 whitespace-nowrap text-center">
+<p class="font-headline font-extrabold text-lg">Alex Rivera</p>
+<p class="text-xs text-on-surface-variant uppercase tracking-widest font-semibold">全栈开发工程师</p>
+</div>
+</div>
+<!-- Skill Clusters -->
+<!-- Tech Cluster -->
+<div class="absolute top-[25%] left-[30%] text-center">
+<div class="w-16 h-16 rounded-full bg-primary-container/20 backdrop-blur-md flex items-center justify-center border border-primary/20">
+<span class="material-symbols-outlined text-primary text-3xl">terminal</span>
+</div>
+<span class="mt-2 block text-xs font-bold uppercase tracking-tighter">技术栈</span>
+<div class="absolute -top-12 -left-16 w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-lg">
+<span class="text-[10px] font-black text-primary">React</span>
+</div>
+<div class="absolute -top-8 left-12 w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-lg border-2 border-secondary-container">
+<span class="text-[10px] font-black text-on-secondary-container">Node.js</span>
+</div>
+</div>
+<!-- Soft Skills Cluster -->
+<div class="absolute top-[30%] right-[30%] text-center">
+<div class="w-20 h-20 rounded-full bg-secondary-container/20 backdrop-blur-md flex items-center justify-center border border-secondary/20">
+<span class="material-symbols-outlined text-secondary text-4xl" style="font-variation-settings: 'FILL' 1;">groups</span>
+</div>
+<span class="mt-2 block text-xs font-bold uppercase tracking-tighter">领导力</span>
+</div>
+<!-- Education Cluster -->
+<div class="absolute bottom-[20%] left-[38%] text-center">
+<div class="w-14 h-14 rounded-full bg-surface-variant/40 backdrop-blur-md flex items-center justify-center border border-outline-variant">
+<span class="material-symbols-outlined text-on-surface-variant text-2xl">school</span>
+</div>
+<span class="mt-2 block text-xs font-bold uppercase tracking-tighter">教育背景</span>
+</div>
+<!-- Cloud Cluster -->
+<div class="absolute bottom-[25%] right-[35%] text-center">
+<div class="w-12 h-12 rounded-full bg-tertiary-fixed-dim/30 backdrop-blur-md flex items-center justify-center border border-tertiary/20">
+<span class="material-symbols-outlined text-tertiary text-2xl">cloud</span>
+</div>
+<span class="mt-2 block text-xs font-bold uppercase tracking-tighter">云架构</span>
+</div>
+</div>
+</section>
+<!-- Side Intelligence Panel -->
+<aside class="w-96 bg-surface-container-lowest border-l-0 shadow-2xl z-40 flex flex-col p-8 overflow-y-auto">
+<div class="mb-8">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h2 class="font-headline font-bold text-2xl leading-tight">高级软件工程师</h2>
+<p class="text-secondary font-semibold text-sm">Google Cloud (已匹配)</p>
+</div>
+<div class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-xs font-black">
+                        94% 匹配度
+                    </div>
+</div>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-6">根据您的能力图谱，您非常适合此职位。仅需在技术栈上进行细微调整即可满足要求。</p>
+</div>
+<!-- Radar Chart Section -->
+<div class="mb-10">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-xs font-black uppercase tracking-widest text-on-surface-variant">核心胜任力图</h3>
+<div class="flex items-center gap-2">
+<span class="text-[10px] font-bold text-primary">个人</span>
+<span class="text-[10px] font-bold text-outline">目标</span>
+</div>
+</div>
+<div class="relative w-full aspect-square flex items-center justify-center">
+<!-- Target Radar -->
+<div class="absolute w-full h-full radar-grid bg-surface-container-high opacity-50 scale-95"></div>
+<!-- User Radar (Comparison) -->
+<div class="absolute w-full h-full radar-grid bg-primary/20 border-2 border-primary scale-[0.85] transform -rotate-12 translate-x-2"></div>
+<!-- Labels -->
+<span class="absolute top-0 text-[10px] font-bold">技能</span>
+<span class="absolute right-0 top-1/3 text-[10px] font-bold">薪资</span>
+<span class="absolute bottom-0 right-1/4 text-[10px] font-bold">学历</span>
+<span class="absolute bottom-0 left-1/4 text-[10px] font-bold">地点</span>
+<span class="absolute left-0 top-1/3 text-[10px] font-bold">经验</span>
+</div>
+</div>
+<!-- Gaps & Actions -->
+<div class="flex-1">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-xs font-black uppercase tracking-widest text-on-surface-variant">技能对比分析</h3>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+<span class="ml-2 text-[10px] font-bold text-on-surface">对比模式</span>
+</label>
+</div>
+<div class="space-y-4">
+<div class="p-4 rounded-xl bg-surface-container-low border-l-4 border-error">
+<div class="flex justify-between items-center mb-1">
+<span class="text-sm font-bold">缺失技能: Kubernetes</span>
+<span class="text-[10px] font-black px-2 py-0.5 bg-error-container text-on-error-container rounded-full">高优先级</span>
+</div>
+<p class="text-xs text-on-surface-variant">该职位需要容器编排经验。建议参加为期2周的快速考证课程。</p>
+</div>
+<div class="p-4 rounded-xl bg-surface-container-low border-l-4 border-secondary">
+<div class="flex justify-between items-center mb-1">
+<span class="text-sm font-bold">优势技能: React/Next.js</span>
+<span class="text-[10px] font-black px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded-full">专家级</span>
+</div>
+<p class="text-xs text-on-surface-variant">您的掌握程度比该职位的平均候选人高出 20%。</p>
+</div>
+</div>
+</div>
+<button class="mt-8 w-full bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold py-4 rounded-xl transition-all hover:shadow-xl hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                使用图谱洞察申请
+                <span class="material-symbols-outlined text-sm">rocket_launch</span>
+</button>
+</aside>
+</main>
+<!-- FAB Action -->
+<button class="fixed bottom-8 right-8 w-14 h-14 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform z-50">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</button>
+</body></html>
+

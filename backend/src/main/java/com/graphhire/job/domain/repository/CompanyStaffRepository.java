@@ -11,6 +11,9 @@ import java.util.Optional;
  * 【模块说明】定义企业员工（用户与企业关联关系）的持久化操作规范。
  */
 public interface CompanyStaffRepository {
+    /** 根据ID查询企业员工记录 */
+    Optional<CompanyStaff> findById(Long id);
+
     /** 根据用户ID查询该用户关联的企业员工记录 */
     Optional<CompanyStaff> findByUserId(Long userId);
 

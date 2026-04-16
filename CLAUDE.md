@@ -66,7 +66,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **postgres** — PostgreSQL 数据库（graphhire），用于结构化数据持久化
 - **redis** — Redis 缓存（default），用于缓存和会话存储
+- **chrome-devtools** — Chrome DevTools，用于浏览器自动化、页面测试、截图、网络抓包
 
+
+> **使用场景**: 浏览器自动化 / 前端页面测试 → chrome-devtools；数据库查询 / SQL 调试 → postgres；缓存操作 / Session 管理 → redis
 ---
 
 ## 常用命令
@@ -91,7 +94,7 @@ taskkill /PID <PID> /F
 
 ## 项目概述
 
-**GraphHire 图谱智谱** — 基于AI智能匹配与能力图谱的招聘平台。核心功能：简历/职位文档智能解析、能力图谱构建、双向人岗匹配。
+**GraphHire 图谱智聘** — 基于AI智能匹配与能力图谱的招聘平台。核心功能：简历/职位文档智能解析、能力图谱构建、双向人岗匹配。
 **端口：** 8888(前端) / 7777(后端) / 5432(PostgreSQL) / 6379(Redis) / 7687(memgraph) / 9000(rustfs)
 
 ---
