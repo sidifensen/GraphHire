@@ -1,6 +1,7 @@
 package com.graphhire.resume.infrastructure.persistence.repository;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.json.JSONUtil;
 import com.graphhire.resume.domain.model.Resume;
 import com.graphhire.resume.domain.repository.ResumeRepository;
 import com.graphhire.resume.domain.vo.ParseStatus;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -107,23 +109,40 @@ public class ResumeRepositoryImpl implements ResumeRepository {
      */
     private Resume toDomain(ResumePO po) {
         Resume resume = new Resume();
-        // 使用 BeanUtil 复制基础字段，parseStatus 枚举单独转换
-        BeanUtil.copyProperties(po, resume);
+        // parseResult 需要在 BeanUtil 之前单独处理，避免 Map 被复制给 String 字段
+        String parseResultJson = null;
+        if (po.getParseResult() != null) {
+            parseResultJson = JSONUtil.toJsonStr(po.getParseResult());
+        }
+        Integer isDefaultVal = po.getIsDefault();
+        // 排除 parseResult 避免 BeanUtil 复制 Map->String 失败
+        BeanUtil.copyProperties(po, resume, "parseResult", "isDefault");
         if (po.getParseStatus() != null) {
             resume.setStatus(ParseStatus.values()[po.getParseStatus()]);
         }
+        resume.setParseResult(parseResultJson);
+        resume.setIsDefault(isDefaultVal != null && isDefaultVal == 1);
         return resume;
     }
 
     /**
      * Domain 转 PO
      */
+    @SuppressWarnings("unchecked")
     private ResumePO toPO(Resume resume) {
         ResumePO po = new ResumePO();
-        BeanUtil.copyProperties(resume, po);
+        cn.hutool.log.StaticLog.info("DEBUG toPO: resume.parseResult={}", resume.getParseResult());
+        // 排除 parseResult 和 isDefault，避免类型转换问题
+        BeanUtil.copyProperties(resume, po, "parseResult", "isDefault");
         if (resume.getStatus() != null) {
             po.setParseStatus(resume.getStatus().ordinal());
         }
+        // parseResult: JSON string -> Map
+        if (resume.getParseResult() != null) {
+            po.setParseResult((java.util.Map<String, Object>) JSONUtil.toBean(resume.getParseResult(), java.util.Map.class));
+        }
+        // isDefault: Boolean -> Integer(0/1)
+        po.setIsDefault(resume.getIsDefault() != null && resume.getIsDefault() ? 1 : 0);
         return po;
     }
 }

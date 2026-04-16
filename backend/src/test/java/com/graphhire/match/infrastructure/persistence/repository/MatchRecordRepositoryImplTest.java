@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import cn.hutool.json.JSONUtil;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
@@ -48,8 +49,8 @@ class MatchRecordRepositoryImplTest {
         samplePO.setCityScore(new BigDecimal("80.00"));
         samplePO.setEducationScore(new BigDecimal("75.00"));
         samplePO.setSalaryScore(new BigDecimal("95.00"));
-        samplePO.setMatchReport("{\"skills\": [\"Java\", \"Python\"]}");
-        samplePO.setStatus(0);
+        samplePO.setMatchReport(JSONUtil.parseObj("{\"skills\": [\"Java\", \"Python\"]}"));
+        samplePO.setViewed(0);
         samplePO.setCreateTime(LocalDateTime.of(2026, 4, 15, 10, 30, 0));
 
         sampleRecord = new MatchRecord();
@@ -184,7 +185,7 @@ class MatchRecordRepositoryImplTest {
             assertEquals(10L, captured.getResumeId());
             assertEquals(20L, captured.getJobId());
             assertEquals("{\"skills\": [\"Java\", \"Python\"]}", captured.getMatchReport());
-            assertEquals(0, captured.getStatus());
+            assertEquals(0, captured.getViewed());
             assertNotNull(captured.getOverallScore());
             assertEquals(90.0, captured.getSkillScore().doubleValue());
             assertEquals(85.0, captured.getExperienceScore().doubleValue());
@@ -216,7 +217,7 @@ class MatchRecordRepositoryImplTest {
         @Test
         @DisplayName("should map status 1 to isRead true")
         void toDomain_Status1_IsReadTrue() {
-            samplePO.setStatus(1);
+            samplePO.setViewed(1);
             when(matchRecordMapper.selectById(1L)).thenReturn(samplePO);
 
             Optional<MatchRecord> result = repository.findById(1L);
@@ -227,7 +228,7 @@ class MatchRecordRepositoryImplTest {
         @Test
         @DisplayName("should map status 0 to isRead false")
         void toDomain_Status0_IsReadFalse() {
-            samplePO.setStatus(0);
+            samplePO.setViewed(0);
             when(matchRecordMapper.selectById(1L)).thenReturn(samplePO);
 
             Optional<MatchRecord> result = repository.findById(1L);
@@ -264,7 +265,7 @@ class MatchRecordRepositoryImplTest {
 
             ArgumentCaptor<MatchRecordPO> poCaptor = ArgumentCaptor.forClass(MatchRecordPO.class);
             verify(matchRecordMapper).updateById(poCaptor.capture());
-            assertEquals(1, poCaptor.getValue().getStatus());
+            assertEquals(1, poCaptor.getValue().getViewed());
         }
 
         @Test
@@ -276,7 +277,7 @@ class MatchRecordRepositoryImplTest {
 
             ArgumentCaptor<MatchRecordPO> poCaptor = ArgumentCaptor.forClass(MatchRecordPO.class);
             verify(matchRecordMapper).updateById(poCaptor.capture());
-            assertEquals(0, poCaptor.getValue().getStatus());
+            assertEquals(0, poCaptor.getValue().getViewed());
         }
     }
 }

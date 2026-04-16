@@ -60,9 +60,9 @@ class ResumeControllerIT extends BaseControllerIT {
     @Test
     @DisplayName("01 - 上传简历")
     void uploadResume_Success() throws Exception {
-        ClassPathResource resource = new ClassPathResource("resume-test.txt");
+        ClassPathResource resource = new ClassPathResource("resume-test.pdf");
         byte[] fileContent = resource.getInputStream().readAllBytes();
-        MockMultipartFile file = new MockMultipartFile("file", "resume-test.txt", "text/plain", fileContent);
+        MockMultipartFile file = new MockMultipartFile("file", "resume-test.pdf", "application/pdf", fileContent);
 
         MvcResult result = mockMvc.perform(multipart("/resume/my/upload")
                 .file(file)

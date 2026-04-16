@@ -77,7 +77,7 @@ public class AdminRepositoryImpl implements AdminRepository {
     /** 统计已发布职位数量 */
     public long countPublishedJobs() {
         LambdaQueryWrapper<com.graphhire.job.infrastructure.persistence.po.JobPO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(com.graphhire.job.infrastructure.persistence.po.JobPO::getStatus, "PUBLISHED");
+        wrapper.eq(com.graphhire.job.infrastructure.persistence.po.JobPO::getStatus, 1); // 1=PUBLISHED
         return jobMapper.selectCount(wrapper);
     }
 

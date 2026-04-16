@@ -1,5 +1,6 @@
 package com.graphhire.resume.infrastructure.persistence.repository;
 
+import cn.hutool.json.JSONUtil;
 import com.graphhire.resume.domain.model.Resume;
 import com.graphhire.resume.domain.repository.ResumeRepository;
 import com.graphhire.resume.domain.vo.ParseStatus;
@@ -13,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -139,10 +141,10 @@ class ResumeRepositoryImplTest {
         po.setFileType("pdf");
         po.setFileSize(1024L);
         po.setParseStatus(2); // SUCCESS
-        po.setParseResult("{\"name\":\"张三\"}");
+        po.setParseResult(JSONUtil.parseObj("{\"name\":\"张三\"}"));
         po.setParseError("No error");
-        po.setConfidence(new BigDecimal("0.95"));
-        po.setIsDefault(true);
+        po.setConfidence(0.95);
+        po.setIsDefault(1);
         return po;
     }
 }

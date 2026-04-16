@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+
 import java.time.LocalDateTime;
 
 /**
@@ -15,103 +16,55 @@ public class ParseTaskPO {
     /** 任务ID（自增） */
     @TableId(type = IdType.AUTO)
     private Long id;
-    /** 关联的简历ID */
-    private Long resumeId;
-    /** 关联的职位ID（可选） */
-    private Long jobId;
-    /** 任务类型 */
-    private String taskType;
+    /** 关联的简历/职位ID */
+    @TableField("source_id")
+    private Long sourceId;
+    /** 任务类型（0:简历解析,1:职位解析） */
+    @TableField("task_type")
+    private Integer taskType;
     /** 任务状态（0:待执行,1:执行中,2:成功,3:失败） */
+    @TableField("status")
     private Integer status;
     /** 重试次数 */
+    @TableField("retry_count")
     private Integer retryCount;
     /** 错误信息 */
+    @TableField("error_msg")
     private String errorMessage;
     /** 创建时间 */
     @TableField("create_time")
     private LocalDateTime createTime;
-    /** 开始执行时间 */
-    private LocalDateTime startedAt;
     /** 完成时间 */
-    private LocalDateTime completedAt;
+    @TableField("finish_time")
+    private LocalDateTime finishTime;
+    /** 更新时间 */
+    @TableField("update_time")
+    private LocalDateTime updateTime;
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public Long getSourceId() { return sourceId; }
+    public void setSourceId(Long sourceId) { this.sourceId = sourceId; }
 
-    public Long getResumeId() {
-        return resumeId;
-    }
+    public Integer getTaskType() { return taskType; }
+    public void setTaskType(Integer taskType) { this.taskType = taskType; }
 
-    public void setResumeId(Long resumeId) {
-        this.resumeId = resumeId;
-    }
+    public Integer getStatus() { return status; }
+    public void setStatus(Integer status) { this.status = status; }
 
-    public Long getJobId() {
-        return jobId;
-    }
+    public Integer getRetryCount() { return retryCount; }
+    public void setRetryCount(Integer retryCount) { this.retryCount = retryCount; }
 
-    public void setJobId(Long jobId) {
-        this.jobId = jobId;
-    }
+    public String getErrorMessage() { return errorMessage; }
+    public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
 
-    public String getTaskType() {
-        return taskType;
-    }
+    public LocalDateTime getCreateTime() { return createTime; }
+    public void setCreateTime(LocalDateTime createTime) { this.createTime = createTime; }
 
-    public void setTaskType(String taskType) {
-        this.taskType = taskType;
-    }
+    public LocalDateTime getFinishTime() { return finishTime; }
+    public void setFinishTime(LocalDateTime finishTime) { this.finishTime = finishTime; }
 
-    public Integer getStatus() {
-        return status;
-    }
-
-    public void setStatus(Integer status) {
-        this.status = status;
-    }
-
-    public Integer getRetryCount() {
-        return retryCount;
-    }
-
-    public void setRetryCount(Integer retryCount) {
-        this.retryCount = retryCount;
-    }
-
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
-    }
-
-    public LocalDateTime getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(LocalDateTime createTime) {
-        this.createTime = createTime;
-    }
-
-    public LocalDateTime getStartedAt() {
-        return startedAt;
-    }
-
-    public void setStartedAt(LocalDateTime startedAt) {
-        this.startedAt = startedAt;
-    }
-
-    public LocalDateTime getCompletedAt() {
-        return completedAt;
-    }
-
-    public void setCompletedAt(LocalDateTime completedAt) {
-        this.completedAt = completedAt;
-    }
+    public LocalDateTime getUpdateTime() { return updateTime; }
+    public void setUpdateTime(LocalDateTime updateTime) { this.updateTime = updateTime; }
 }

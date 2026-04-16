@@ -7,13 +7,15 @@ package com.graphhire.job.domain.vo;
  * - DRAFT：草稿状态，可编辑，可发布
  * - PUBLISHED：已发布状态，可接收投递，可关闭
  * - CLOSED：已关闭状态，不可编辑，可重新发布
+ *
+ * 【DB映射】0=下架(CLOSED/DRAFT), 1=上架(PUBLISHED)
  */
 public enum JobStatus {
-    /** 草稿 */
+    /** 草稿/已下架 */
     DRAFT,
-    /** 已发布 */
+    /** 已发布/上架 */
     PUBLISHED,
-    /** 已关闭 */
+    /** 已关闭（等价于下架） */
     CLOSED;
 
     /** 从数据库 smallint 值转换 */
@@ -21,13 +23,12 @@ public enum JobStatus {
         return switch (code) {
             case 0 -> DRAFT;
             case 1 -> PUBLISHED;
-            case 2 -> CLOSED;
             default -> DRAFT;
         };
     }
 
-    /** 转换为数据库 smallint 值 */
+    /** 转换为数据库 smallint 值：0=下架(DRAFT/CLOSED), 1=上架(PUBLISHED) */
     public int toCode() {
-        return ordinal();
+        return this == PUBLISHED ? 1 : 0;
     }
 }

@@ -58,7 +58,7 @@ public class NotificationRepositoryImpl implements NotificationRepository {
         List<NotificationPO> pos = notificationMapper.selectList(
             new LambdaQueryWrapper<NotificationPO>()
                 .eq(NotificationPO::getUserId, userId)
-                .eq(NotificationPO::getIsRead, isRead)
+                .eq(NotificationPO::getIsRead, isRead != null ? (isRead ? 1 : 0) : null)
                 .orderByDesc(NotificationPO::getCreateTime));
         return pos.stream().map(this::toDomain).toList();
     }
@@ -117,14 +117,14 @@ public class NotificationRepositoryImpl implements NotificationRepository {
         return notificationMapper.selectCount(
             new LambdaQueryWrapper<NotificationPO>()
                 .eq(NotificationPO::getUserId, userId)
-                .eq(NotificationPO::getIsRead, false));
+                .eq(NotificationPO::getIsRead, 0));
     }
 
     /** 将用户所有通知标记为已读（批量更新） */
     @Override
     public void markAllAsReadByUserId(Long userId) {
         NotificationPO po = new NotificationPO();
-        po.setIsRead(true);
+        po.setIsRead(1);
         notificationMapper.update(po,
             new LambdaQueryWrapper<NotificationPO>().eq(NotificationPO::getUserId, userId));
     }
@@ -142,6 +142,8 @@ public class NotificationRepositoryImpl implements NotificationRepository {
         n.setReferenceId(po.getRelatedId());
         // 枚举类型需要单独转换
         n.setType(NotificationType.fromValue(po.getType()));
+        // isRead: Integer(0/1) -> Boolean
+        n.setIsRead(po.getIsRead() != null && po.getIsRead() == 1);
         return n;
     }
 
@@ -157,6 +159,8 @@ public class NotificationRepositoryImpl implements NotificationRepository {
         po.setRelatedId(n.getReferenceId());
         // 枚举类型需要单独转换
         po.setType(n.getType() != null ? n.getType().getValue() : null);
+        // isRead: Boolean -> Integer(0/1)
+        po.setIsRead(n.getIsRead() != null && n.getIsRead() ? 1 : 0);
         return po;
     }
 }

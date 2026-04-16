@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+
 import java.time.LocalDateTime;
 
 /**
@@ -16,18 +17,23 @@ public class NotificationPO {
     @TableId(type = IdType.AUTO)
     private Long id;
     /** 所属用户ID */
+    @TableField("user_id")
     private Long userId;
     /** 通知类型（整数值，对应 NotificationType 枚举） */
+    @TableField("type")
     private Integer type;
     /** 通知标题 */
+    @TableField("title")
     private String title;
     /** 通知内容 */
+    @TableField("content")
     private String content;
     /** 关联业务ID（可指向职位、简历、候选人等） */
     @TableField("related_id")
     private Long relatedId;
-    /** 已读状态：false-未读，true-已读 */
-    private Boolean isRead;
+    /** 已读状态：0-未读，1-已读 */
+    @TableField("is_read")
+    private Integer isRead;
     /** 创建时间 */
     @TableField("create_time")
     private LocalDateTime createTime;
@@ -35,75 +41,30 @@ public class NotificationPO {
     @TableField("update_time")
     private LocalDateTime updateTime;
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
 
-    public Long getUserId() {
-        return userId;
-    }
+    public Integer getType() { return type; }
+    public void setType(Integer type) { this.type = type; }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
 
-    public Integer getType() {
-        return type;
-    }
+    public String getContent() { return content; }
+    public void setContent(String content) { this.content = content; }
 
-    public void setType(Integer type) {
-        this.type = type;
-    }
+    public Long getRelatedId() { return relatedId; }
+    public void setRelatedId(Long relatedId) { this.relatedId = relatedId; }
 
-    public String getTitle() {
-        return title;
-    }
+    public Integer getIsRead() { return isRead; }
+    public void setIsRead(Integer isRead) { this.isRead = isRead; }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+    public LocalDateTime getCreateTime() { return createTime; }
+    public void setCreateTime(LocalDateTime createTime) { this.createTime = createTime; }
 
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public Long getRelatedId() {
-        return relatedId;
-    }
-
-    public void setRelatedId(Long relatedId) {
-        this.relatedId = relatedId;
-    }
-
-    public Boolean getIsRead() {
-        return isRead;
-    }
-
-    public void setIsRead(Boolean isRead) {
-        this.isRead = isRead;
-    }
-
-    public LocalDateTime getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(LocalDateTime createTime) {
-        this.createTime = createTime;
-    }
-
-    public LocalDateTime getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(LocalDateTime updateTime) {
-        this.updateTime = updateTime;
-    }
+    public LocalDateTime getUpdateTime() { return updateTime; }
+    public void setUpdateTime(LocalDateTime updateTime) { this.updateTime = updateTime; }
 }

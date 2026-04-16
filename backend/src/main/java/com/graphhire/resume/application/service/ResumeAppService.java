@@ -40,7 +40,11 @@ public class ResumeAppService {
         // 步骤2：创建简历聚合根
         Resume resume = new Resume();
         resume.setUserId(cmd.getUserId());
-        resume.upload(filePath, cmd.getFileName());
+        // 从文件名提取文件类型（扩展名）
+        String fileName = cmd.getFileName();
+        String fileType = fileName.contains(".") ? fileName.substring(fileName.lastIndexOf(".") + 1) : "unknown";
+        resume.setFileType(fileType);
+        resume.upload(filePath, fileName);
         // 步骤3：保存简历
         Resume saved = resumeRepository.save(resume);
 

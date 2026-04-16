@@ -27,6 +27,7 @@ public class SaTokenConfig implements WebMvcConfigurer {
             "/notifications/**",
             "/skill-tags/**",
             "/health",
+            "/actuator/**",
             "/error"
         );
     }

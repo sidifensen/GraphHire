@@ -44,7 +44,7 @@ class NotificationRepositoryImplTest {
         samplePO.setTitle("Test Title");
         samplePO.setContent("Test Content");
         samplePO.setRelatedId(200L);
-        samplePO.setIsRead(false);
+        samplePO.setIsRead(0);
         samplePO.setCreateTime(LocalDateTime.of(2026, 4, 15, 10, 0, 0));
         samplePO.setUpdateTime(LocalDateTime.of(2026, 4, 15, 10, 0, 0));
 
@@ -102,7 +102,7 @@ class NotificationRepositoryImplTest {
             po2.setType(2);
             po2.setTitle("Title 2");
             po2.setContent("Content 2");
-            po2.setIsRead(true);
+            po2.setIsRead(1);
             po2.setCreateTime(LocalDateTime.of(2026, 4, 14, 10, 0, 0));
 
             when(notificationMapper.selectList(any(LambdaQueryWrapper.class)))
@@ -147,7 +147,7 @@ class NotificationRepositoryImplTest {
         @Test
         @DisplayName("should return read notifications for user")
         void findByUserIdAndIsRead_Read() {
-            samplePO.setIsRead(true);
+            samplePO.setIsRead(1);
             when(notificationMapper.selectList(any(LambdaQueryWrapper.class)))
                 .thenReturn(List.of(samplePO));
 
