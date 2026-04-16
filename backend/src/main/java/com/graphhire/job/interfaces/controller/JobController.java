@@ -11,6 +11,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 职位管理接口
+ * 提供职位的创建、发布、关闭、修改和查询功能
+ */
 @RestController
 @RequestMapping("/job")
 public class JobController {
@@ -18,6 +22,11 @@ public class JobController {
     @Autowired
     private JobAppService jobAppService;
 
+    /**
+     * 创建职位
+     * @param request 创建请求
+     * @return 创建结果
+     */
     @PostMapping("/create")
     public Result<Long> createJob(@RequestParam Long companyId,
                                   @RequestParam String title,
@@ -39,18 +48,34 @@ public class JobController {
         return Result.success(job.getId());
     }
 
+    /**
+     * 发布职位
+     * @param id 职位ID
+     * @return 发布结果
+     */
     @PostMapping("/{id}/publish")
     public Result<Long> publishJob(@PathVariable Long id, @RequestBody PublishJobCmd cmd) {
         Job job = jobAppService.publishJob(id, cmd);
         return Result.success(job.getId());
     }
 
+    /**
+     * 关闭职位
+     * @param id 职位ID
+     * @return 关闭结果
+     */
     @PostMapping("/{id}/close")
     public Result<Void> closeJob(@PathVariable Long id) {
         jobAppService.closeJob(id);
         return Result.success();
     }
 
+    /**
+     * 更新薪资范围
+     * @param id 职位ID
+     * @param salary 薪资范围
+     * @return 更新结果
+     */
     @PutMapping("/{id}/salary")
     public Result<Void> updateSalary(@PathVariable Long id,
                                      @RequestParam Integer min,
@@ -61,21 +86,41 @@ public class JobController {
         return Result.success();
     }
 
+    /**
+     * 获取职位详情
+     * @param id 职位ID
+     * @return 职位详情
+     */
     @GetMapping("/{id}")
     public Result<Job> getJob(@PathVariable Long id) {
         return Result.success(jobAppService.getJobById(id));
     }
 
+    /**
+     * 获取公司职位列表
+     * @param companyId 公司ID
+     * @return 职位列表
+     */
     @GetMapping("/company/{companyId}")
     public Result<List<Job>> getJobsByCompany(@PathVariable Long companyId) {
         return Result.success(jobAppService.getJobsByCompany(companyId));
     }
 
+    /**
+     * 获取已发布职位列表
+     * @param companyId 公司ID
+     * @return 已发布职位列表
+     */
     @GetMapping("/published")
     public Result<List<Job>> getPublishedJobs() {
         return Result.success(jobAppService.getPublishedJobs());
     }
 
+    /**
+     * 删除职位
+     * @param id 职位ID
+     * @return 删除结果
+     */
     @DeleteMapping("/{id}")
     public Result<Void> deleteJob(@PathVariable Long id) {
         jobAppService.deleteJob(id);
