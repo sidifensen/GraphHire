@@ -12,7 +12,7 @@
     "next": "16.2.3",
     "react": "19.2.5",
     "react-dom": "19.2.5",
-    "antd": "6.3.5",
+    "antd": "^5.11.2",
     "@ant-design/pro-components": "^2.8.0",
     "@ant-design/charts": "^2.2.0",
     "zustand": "^5.0.0",
