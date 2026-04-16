@@ -5,18 +5,43 @@ import com.graphhire.match.domain.event.MatchCompletedEvent;
 import com.graphhire.match.domain.vo.MatchLevel;
 import com.graphhire.match.domain.vo.MatchScore;
 
+/**
+ * 匹配记录领域模型
+ *
+ * 【模块说明】管理人岗匹配记录的完整生命周期，记录匹配结果及状态流转。
+ *
+ * 【事件发布】
+ * - create()：发布 MatchCompletedEvent
+ *
+ * 【关联实体】
+ * - resumeId：关联的简历ID
+ * - jobId：关联的职位ID
+ * - score：匹配分数（包含五个维度及总分）
+ * - level：匹配等级（HIGH/MEDIUM/LOW）
+ * - matchReason：匹配原因说明
+ */
 public class MatchRecord extends BaseAggregateRoot {
-    public static final int DIRECTION_PERSON_APPLIES = 1;  // Person applies to job
-    public static final int DIRECTION_COMPANY_RECOMMENDS = 2;  // Company recommends candidate to person
+    /** 匹配方向：求职者投递 */
+    public static final int DIRECTION_PERSON_APPLIES = 1;
+    /** 匹配方向：企业推荐 */
+    public static final int DIRECTION_COMPANY_RECOMMENDS = 2;
 
+    /** 主键ID */
     private Long id;
+    /** 关联简历ID */
     private Long resumeId;
+    /** 关联职位ID */
     private Long jobId;
+    /** 匹配分数（技能、经验、城市、学历、薪资五个维度） */
     private MatchScore score;
+    /** 匹配等级（根据总分自动计算：>=80 HIGH，>=50 MEDIUM，<50 LOW） */
     private MatchLevel level;
+    /** 匹配原因说明（AI生成或计算得出） */
     private String matchReason;
+    /** 是否已读（求职者/HR是否查看过该匹配记录） */
     private Boolean isRead = false;
-    private Integer matchDirection; // 1=person applies to job, 2=company recommends candidate
+    /** 匹配方向：1=求职者投递，2=企业推荐 */
+    private Integer matchDirection;
 
     public static MatchRecord create(Long resumeId, Long jobId, MatchScore score) {
         MatchRecord record = new MatchRecord();

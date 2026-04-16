@@ -7,20 +7,36 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * 匹配记录持久化对象
+ * 对应数据库 match_record 表，用于MyBatis-Plus CRUD操作
+ */
 @TableName("match_record")
 public class MatchRecordPO {
+    /** 主键自增ID */
     @TableId(type = IdType.AUTO)
     private Long id;
+    /** 关联简历ID */
     private Long resumeId;
+    /** 关联职位ID */
     private Long jobId;
+    /** 总分（加权平均分） */
     private BigDecimal overallScore;
+    /** 技能匹配分数 */
     private BigDecimal skillScore;
+    /** 经验匹配分数 */
     private BigDecimal experienceScore;
+    /** 城市匹配分数 */
     private BigDecimal cityScore;
+    /** 学历匹配分数 */
     private BigDecimal educationScore;
+    /** 薪资匹配分数 */
     private BigDecimal salaryScore;
-    private String matchReport;  // JSONB
-    private Integer status;       // 0=pending, 1=viewed
+    /** 匹配报告（JSON格式，包含匹配原因、差距、建议等） */
+    private String matchReport;
+    /** 状态：0=未读，1=已读 */
+    private Integer status;
+    /** 创建时间 */
     private LocalDateTime createdAt;
 
     public Long getId() {

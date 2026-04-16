@@ -4,25 +4,20 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.graphhire.common.vo.Result;
 import com.graphhire.match.application.service.MatchAppService;
 import com.graphhire.match.interfaces.dto.response.MatchDetailResponse;
-import com.graphhire.resume.application.command.UploadResumeCmd;
-import com.graphhire.resume.application.service.ResumeAppService;
 import com.graphhire.resume.domain.model.PersonInfo;
-import com.graphhire.resume.domain.model.Resume;
 import com.graphhire.resume.domain.repository.PersonInfoRepository;
 import com.graphhire.resume.interfaces.dto.PersonInfoResponse;
 import com.graphhire.resume.interfaces.dto.request.PersonUpdateRequest;
 import com.graphhire.skill.infrastructure.graph.SkillGraphClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
 /**
- * 个人用户简历管理接口
- * 提供个人信息管理、简历管理、图谱查询和推荐功能
+ * 个人用户接口
+ * 提供个人信息管理、能力图谱查询和职位推荐功能
  */
 @RestController
 @RequestMapping("/person")
@@ -30,9 +25,6 @@ public class PersonController {
 
     @Autowired
     private PersonInfoRepository personInfoRepository;
-
-    @Autowired
-    private ResumeAppService resumeAppService;
 
     @Autowired
     private MatchAppService matchAppService;
@@ -110,91 +102,6 @@ public class PersonController {
 
         personInfoRepository.save(personInfo);
         return Result.success();
-    }
-
-    /**
-     * 上传简历
-     * @param file 简历文件
-     * @return 上传结果
-     */
-    @PostMapping("/resume/upload")
-    public Result<Resume> uploadResume(@RequestParam("file") MultipartFile file) throws IOException {
-        Long userId = StpUtil.getLoginIdAsLong();
-
-        // 校验文件类型
-        String fileName = file.getOriginalFilename();
-        if (fileName == null || (!fileName.endsWith(".doc") && !fileName.endsWith(".docx") && !fileName.endsWith(".pdf"))) {
-            return Result.error(400, "只支持 doc/docx/pdf 格式");
-        }
-
-        // 校验文件大小（最大10MB）
-        if (file.getSize() > 10 * 1024 * 1024) {
-            return Result.error(400, "文件大小不能超过 10MB");
-        }
-
-        UploadResumeCmd cmd = new UploadResumeCmd(file);
-        cmd.setUserId(userId);
-        Resume resume = resumeAppService.uploadResume(cmd);
-        return Result.success(resume);
-    }
-
-    /**
-     * 获取简历列表
-     * @return 简历列表
-     */
-    @GetMapping("/resume/list")
-    public Result<List<Resume>> listResumes() {
-        Long userId = StpUtil.getLoginIdAsLong();
-        List<Resume> resumes = resumeAppService.getResumesByUserId(userId);
-        return Result.success(resumes);
-    }
-
-    /**
-     * 删除简历
-     * @param id 简历ID
-     * @return 删除结果
-     */
-    @DeleteMapping("/resume/{id}")
-    public Result<Void> deleteResume(@PathVariable Long id) {
-        Long userId = StpUtil.getLoginIdAsLong();
-        resumeAppService.deleteResume(id, userId);
-        return Result.success();
-    }
-
-    /**
-     * 设置默认简历
-     * @param id 简历ID
-     * @return 设置结果
-     */
-    @PutMapping("/resume/{id}/default")
-    public Result<Void> setDefaultResume(@PathVariable Long id) {
-        Long userId = StpUtil.getLoginIdAsLong();
-        resumeAppService.setDefaultResume(id, userId);
-        return Result.success();
-    }
-
-    /**
-     * 重新解析简历
-     * @param id 简历ID
-     * @return 解析结果
-     */
-    @PostMapping("/resume/{id}/parse")
-    public Result<Void> parseResume(@PathVariable Long id) {
-        Long userId = StpUtil.getLoginIdAsLong();
-        resumeAppService.triggerResumeParse(id, userId);
-        return Result.success();
-    }
-
-    /**
-     * 获取简历详情
-     * @param id 简历ID
-     * @return 简历详情
-     */
-    @GetMapping("/resume/{id}/detail")
-    public Result<Resume> getResumeDetail(@PathVariable Long id) {
-        Long userId = StpUtil.getLoginIdAsLong();
-        Resume resume = resumeAppService.getResumeDetail(id, userId);
-        return Result.success(resume);
     }
 
     /**

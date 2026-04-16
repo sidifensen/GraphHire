@@ -287,4 +287,45 @@ public class AdminAppService {
     public List<Company> getCompanyAuthList() {
         return companyAppService.getPendingCompanies();
     }
+
+    /**
+     * 审批通过公司
+     * 【功能说明】管理员审批通过公司申请，将公司认证状态更新为已认证
+     * @param id 公司ID
+     * @return void
+     */
+    @Transactional
+    public void approveCompany(Long id) {
+        companyAppService.approveCompany(id);
+    }
+
+    /**
+     * 拒绝公司
+     * 【功能说明】管理员拒绝公司申请，将公司认证状态更新为已拒绝
+     * @param id 公司ID
+     * @return void
+     */
+    @Transactional
+    public void rejectCompany(Long id) {
+        companyAppService.rejectCompany(id);
+    }
+
+    /**
+     * 获取待审批公司列表
+     * 【功能说明】查询所有认证状态为待审核的企业列表
+     * @return List<Company> 待审批公司列表
+     */
+    public List<Company> getPendingCompanies() {
+        return companyAppService.getPendingCompanies();
+    }
+
+    /**
+     * 根据认证状态获取公司列表
+     * 【功能说明】根据指定的认证状态查询所有符合条件的企业
+     * @param authStatus 认证状态（0-待审核, 1-已认证, 2-已拒绝）
+     * @return List<Company> 公司列表
+     */
+    public List<Company> getCompaniesByAuthStatus(Integer authStatus) {
+        return companyAppService.getCompaniesByAuthStatus(AuthStatus.values()[authStatus]);
+    }
 }

@@ -156,4 +156,45 @@ public class AdminController {
     public Result<?> getCompanyAuthList() {
         return Result.success(adminAppService.getCompanyAuthList());
     }
+
+    /**
+     * 审批通过公司
+     * @param id 公司ID
+     * @return 审批结果
+     */
+    @PostMapping("/company/{id}/approve")
+    public Result<Void> approveCompany(@PathVariable Long id) {
+        adminAppService.approveCompany(id);
+        return Result.success();
+    }
+
+    /**
+     * 拒绝公司
+     * @param id 公司ID
+     * @return 拒绝结果
+     */
+    @PostMapping("/company/{id}/reject")
+    public Result<Void> rejectCompany(@PathVariable Long id) {
+        adminAppService.rejectCompany(id);
+        return Result.success();
+    }
+
+    /**
+     * 获取待审批公司列表
+     * @return 待审批公司列表
+     */
+    @GetMapping("/company/pending")
+    public Result<?> getPendingCompanies() {
+        return Result.success(adminAppService.getPendingCompanies());
+    }
+
+    /**
+     * 根据认证状态获取公司列表
+     * @param authStatus 认证状态
+     * @return 公司列表
+     */
+    @GetMapping("/company/auth-list")
+    public Result<?> getCompaniesByAuthStatus(@RequestParam Integer authStatus) {
+        return Result.success(adminAppService.getCompaniesByAuthStatus(authStatus));
+    }
 }

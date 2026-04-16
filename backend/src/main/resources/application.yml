@@ -64,6 +64,12 @@ sa-token:
   is-share: false
   token-style: uuid
   is-log: false
+  # 允许自定义 Token
+  allow-customize-token: true
+  # 允许刷新 Token
+  allow-refresh-token: true
+  # Refresh Token 有效期（秒），默认 7 天
+  refresh-token-timeout: 604800
 
 # MyBatis-Plus Configuration
 mybatis-plus:

@@ -6,26 +6,50 @@ import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.time.LocalDateTime;
 
+/**
+ * 职位持久化对象
+ *
+ * 【模块说明】与数据库job表结构一一对应，用于MyBatis-Plus CRUD操作。
+ * 【数据表】job
+ */
 @TableName("job")
 public class JobPO {
+    /** 职位ID（主键，自增） */
     @TableId(type = IdType.AUTO)
     private Long id;
+    /** 所属企业ID */
     private Long companyId;
+    /** 职位名称 */
     private String title;
+    /** 所属部门 */
     private String department;
+    /** 招聘人数 */
     private Integer headcount;
+    /** 工作城市 */
     private String locationCity;
+    /** 工作区县 */
     private String locationDistrict;
+    /** 工作详细地址 */
     private String locationDetail;
+    /** 最低薪资 */
     private Integer salaryMin;
+    /** 最高薪资 */
     private Integer salaryMax;
+    /** 薪资单位：月/小时/年 */
     private String salaryUnit;
+    /** 必填技能（JSON数组字符串） */
     private String requiredSkills;
+    /** 优先技能（JSON数组字符串） */
     private String preferredSkills;
+    /** 职位状态：DRAFT/PUBLISHED/CLOSED */
     private String status;
+    /** 职位描述 */
     private String description;
+    /** 创建时间 */
     private LocalDateTime createTime;
+    /** 更新时间 */
     private LocalDateTime updateTime;
+    /** 逻辑删除标记 */
     private Boolean deleted;
 
     public Long getId() {

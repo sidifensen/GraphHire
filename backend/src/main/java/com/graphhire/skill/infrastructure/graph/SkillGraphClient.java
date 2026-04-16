@@ -13,15 +13,15 @@ import org.springframework.web.client.RestTemplate;
 import java.util.*;
 
 /**
- * Memgraph graph client for skill tags.
- * Uses Memgraph's HTTP API (port 30002 by default) for graph operations.
+ * 技能标签图数据库客户端
+ * 【模块说明】使用Memgraph的HTTP API（默认端口30002）执行图操作
  */
 @Component
 public class SkillGraphClient {
 
     private static final Logger log = LoggerFactory.getLogger(SkillGraphClient.class);
 
-    // Memgraph HTTP API endpoint - can be configured via application properties
+    // Memgraph HTTP API地址，可通过配置文件修改
     private static final String MEMGRAPH_URL = "http://localhost:30002";
 
     private final RestTemplate restTemplate;
@@ -31,11 +31,10 @@ public class SkillGraphClient {
     }
 
     /**
-     * Build person-skill graph in Memgraph.
-     * Creates skill nodes and (person)-[:HAS_SKILL]->(skill) relationships.
-     *
-     * @param personId the person ID
-     * @param skills list of skill names
+     * 构建个人技能图谱
+     * 【功能说明】在Memgraph中创建技能节点和(person)-[:HAS_SKILL]->(skill)关系
+     * @param personId 人员ID
+     * @param skills 技能名称列表
      */
     public void buildPersonSkillGraph(Long personId, List<String> skills) {
         if (skills == null || skills.isEmpty()) {
@@ -44,34 +43,33 @@ public class SkillGraphClient {
         }
 
         try {
-            // Create skill nodes and person-skill relationships using Cypher queries
+            // 使用Cypher查询创建技能节点和人员-技能关系
             String cypher = buildPersonSkillCypher(personId, skills);
             executeCypher(cypher);
             log.info("Built person-skill graph for person {} with {} skills", personId, skills.size());
         } catch (Exception e) {
             log.error("Failed to build person-skill graph for person {}: {}", personId, e.getMessage());
-            // Don't fail the parse - just log error
+            // 不导致解析失败，仅记录错误
         }
     }
 
     /**
-     * Build job-skill graph in Memgraph.
-     * Creates skill nodes and job-skill relationships (REQUIRES_SKILL and PREFERS_SKILL).
-     *
-     * @param jobId the job ID
-     * @param requiredSkills list of required skill names
-     * @param preferredSkills list of preferred skill names
+     * 构建职位技能图谱
+     * 【功能说明】在Memgraph中创建技能节点和职位技能关系（REQUIRES_SKILL和PREFERS_SKILL）
+     * @param jobId 职位ID
+     * @param requiredSkills 必填技能列表
+     * @param preferredSkills 优先技能列表
      */
     public void buildJobSkillGraph(Long jobId, List<String> requiredSkills, List<String> preferredSkills) {
         try {
-            // Build required skills relationships
+            // 构建必填技能关系
             if (requiredSkills != null && !requiredSkills.isEmpty()) {
                 String requiredCypher = buildJobSkillCypher(jobId, requiredSkills, "REQUIRES_SKILL");
                 executeCypher(requiredCypher);
                 log.info("Built job-skill graph for job {} with {} required skills", jobId, requiredSkills.size());
             }
 
-            // Build preferred skills relationships
+            // 构建优先技能关系
             if (preferredSkills != null && !preferredSkills.isEmpty()) {
                 String preferredCypher = buildJobSkillCypher(jobId, preferredSkills, "PREFERS_SKILL");
                 executeCypher(preferredCypher);
@@ -79,15 +77,14 @@ public class SkillGraphClient {
             }
         } catch (Exception e) {
             log.error("Failed to build job-skill graph for job {}: {}", jobId, e.getMessage());
-            // Don't fail the parse - just log error
+            // 不导致解析失败，仅记录错误
         }
     }
 
     /**
-     * Get person skill graph data from Memgraph.
-     *
-     * @param personId the person ID
-     * @return graph data including nodes and relationships
+     * 获取个人技能图谱数据
+     * @param personId 人员ID
+     * @return 包含节点和关系的图数据
      */
     public Map<String, Object> getPersonSkillGraph(Long personId) {
         try {
@@ -108,10 +105,9 @@ public class SkillGraphClient {
     }
 
     /**
-     * Get job skill graph data from Memgraph.
-     *
-     * @param jobId the job ID
-     * @return graph data including nodes and relationships
+     * 获取职位技能图谱数据
+     * @param jobId 职位ID
+     * @return 包含节点和关系的图数据
      */
     public Map<String, Object> getJobSkillGraph(Long jobId) {
         try {
@@ -229,7 +225,7 @@ public class SkillGraphClient {
     }
 
     /**
-     * Get mock person graph data for testing without Memgraph.
+     * 获取模拟个人图谱数据（无Memgraph时测试用）
      */
     private Map<String, Object> getMockPersonGraph(Long personId) {
         Map<String, Object> graph = new HashMap<>();
@@ -243,7 +239,7 @@ public class SkillGraphClient {
     }
 
     /**
-     * Get mock job graph data for testing without Memgraph.
+     * 获取模拟职位图谱数据（无Memgraph时测试用）
      */
     private Map<String, Object> getMockJobGraph(Long jobId) {
         Map<String, Object> graph = new HashMap<>();

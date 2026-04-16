@@ -11,8 +11,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /**
- * MQ Consumer for building person skill graph when resume is parsed.
- * Listens to resume-parsed topic and triggers graph building.
+ * 简历技能图谱构建MQ消费者
+ * 【模块说明】监听resume-parsed主题，在简历解析完成时触发图谱构建
  */
 @Component
 @ConditionalOnProperty(name = "rocketmq.enabled", havingValue = "true", matchIfMissing = false)
@@ -31,7 +31,7 @@ public class ResumeGraphMQConsumer implements RocketMQListener<ResumeParsedEvent
             log.info("Successfully built graph for resume {}", event.getResume().getId());
         } catch (Exception e) {
             log.error("Failed to build graph for resume {}: {}", event.getResume().getId(), e.getMessage());
-            // Don't rethrow - we don't want to affect the main MQ flow
+            // 不重新抛出异常，以免影响主MQ流程
         }
     }
 }

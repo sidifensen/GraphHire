@@ -5,11 +5,21 @@ import com.graphhire.resume.domain.vo.ParseStatus;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * 简历仓储接口
+ * 定义简历的查询和持久化操作
+ */
 public interface ResumeRepository {
+    /** 根据ID查询简历 */
     Optional<Resume> findById(Long id);
+    /** 根据用户ID查询简历列表 */
     List<Resume> findByUserId(Long userId);
+    /** 根据解析状态查询简历列表 */
     List<Resume> findByParseStatus(ParseStatus parseStatus);
+    /** 分页查询简历 */
     com.baomidou.mybatisplus.core.metadata.IPage<Resume> findPage(int page, int size);
+    /** 保存简历 */
     Resume save(Resume resume);
+    /** 删除简历 */
     void delete(Resume resume);
 }

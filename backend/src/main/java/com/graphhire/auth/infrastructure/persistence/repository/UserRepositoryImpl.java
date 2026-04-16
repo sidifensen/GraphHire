@@ -11,6 +11,25 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+/**
+ * 用户仓储实现
+ *
+ * 【模块说明】实现 UserRepository 接口，负责用户数据与数据库之间的持久化转换。
+ *
+ * 【数据来源】
+ * - 数据表：sys_user
+ * - 使用 MyBatis-Plus 进行数据库操作
+ *
+ * 【方法概览】
+ * - findById()：根据ID查询用户
+ * - findByUsername()：根据用户名查询用户
+ * - save()：保存用户（新增或更新）
+ * - delete()：删除用户
+ *
+ * 【DO-DTO 转换】
+ * - toDomain()：UserPO -> User 领域实体
+ * - toPO()：User 领域实体 -> UserPO
+ */
 @Repository
 public class UserRepositoryImpl implements UserRepository {
     @Autowired
@@ -45,6 +64,11 @@ public class UserRepositoryImpl implements UserRepository {
         userMapper.deleteById(user.getId());
     }
 
+    /**
+     * 将 UserPO 转换为领域实体 User
+     * @param po 数据库持久化对象
+     * @return 用户领域实体，po 为 null 时返回 null
+     */
     private User toDomain(UserPO po) {
         if (po == null) return null;
         User user = new User();
@@ -53,11 +77,15 @@ public class UserRepositoryImpl implements UserRepository {
         user.setPassword(EncryptedPassword.encode(po.getPassword()));
         user.setUserType(mapIntToUserType(po.getUserType()));
         user.setStatus(mapIntToAuthStatus(po.getStatus()));
-        user.setFailedLoginCount(po.getFailedAttempts());
-        user.setLockedUntil(po.getLockUntil());
+        // 注意：failedLoginCount 和 lockedUntil 不持久化到 sys_user 表
         return user;
     }
 
+    /**
+     * 将领域实体 User 转换为 UserPO
+     * @param user 用户领域实体
+     * @return 数据库持久化对象
+     */
     private UserPO toPO(User user) {
         UserPO po = new UserPO();
         po.setId(user.getId());
@@ -65,11 +93,11 @@ public class UserRepositoryImpl implements UserRepository {
         po.setPassword(user.getPassword().getValue());
         po.setUserType(mapUserTypeToInt(user.getUserType()));
         po.setStatus(mapAuthStatusToInt(user.getStatus()));
-        po.setFailedAttempts(user.getFailedLoginCount());
-        po.setLockUntil(user.getLockedUntil());
+        // 注意：failedLoginCount 和 lockedUntil 不持久化到 sys_user 表
         return po;
     }
 
+    /** 将整数映射为 UserType 枚举 */
     private UserType mapIntToUserType(Integer value) {
         if (value == null) return null;
         switch (value) {
@@ -80,6 +108,7 @@ public class UserRepositoryImpl implements UserRepository {
         }
     }
 
+    /** 将 UserType 枚举映射为整数 */
     private Integer mapUserTypeToInt(UserType userType) {
         if (userType == null) return null;
         switch (userType) {
@@ -90,6 +119,7 @@ public class UserRepositoryImpl implements UserRepository {
         }
     }
 
+    /** 将整数映射为 AuthStatus 枚举 */
     private AuthStatus mapIntToAuthStatus(Integer value) {
         if (value == null) return AuthStatus.PENDING_VERIFY;
         switch (value) {
@@ -99,6 +129,7 @@ public class UserRepositoryImpl implements UserRepository {
         }
     }
 
+    /** 将 AuthStatus 枚举映射为整数 */
     private Integer mapAuthStatusToInt(AuthStatus status) {
         if (status == null) return 1;
         switch (status) {

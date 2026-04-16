@@ -4,5 +4,5 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class AppConfig {
-    // Application-wide beans and configuration
+    // 全局配置类和Bean定义
 }

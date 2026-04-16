@@ -1,13 +1,18 @@
 package com.graphhire.admin.application.query;
 
 /**
- * Query for user list with pagination.
+ * 用户列表查询参数
+ * 【模块说明】封装用户分页查询条件：页码、页大小、用户类型、账号状态
  */
 public class UserListQuery {
 
+    /** 当前页码，从1开始 */
     private Integer page = 1;
+    /** 每页记录数，默认20 */
     private Integer pageSize = 20;
+    /** 用户类型筛选：PERSON-个人用户，COMPANY-企业用户 */
     private String userType;
+    /** 账号状态筛选 */
     private String status;
 
     public UserListQuery() {

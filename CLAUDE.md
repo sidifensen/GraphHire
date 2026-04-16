@@ -28,7 +28,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Iron Law (TDD)** — 没有失败测试就不写生产代码；遵循 RED-GREEN-REFACTOR 节奏
 - **Iron Law (Debugging)** — 没有根因分析就不修 bug，禁止猜测修复
 - **流程优于猜测** — 先验证再断言，禁止跳过步骤
-- **提交** — 细粒度，每个 RED-GREEN-REFACTOR 循环后提交一次
 - **自我评估** — 使用内联检查表自检，而非发起子代理 review 循环
 
 ### 代码注释规范
@@ -49,6 +48,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `RELEASE-NOTES.md` — 版本历史记录
 
 ---
+## 本地 MCP 服务
+
+- **postgres** — PostgreSQL 数据库（graphhire），用于结构化数据持久化
+- **redis** — Redis 缓存（default），用于缓存和会话存储
+
+---
+
 ## 常用命令
 
 > **最高优先级**: 启动命令必须用 `run_in_background: true`，重启服务也同样要求

@@ -26,7 +26,7 @@ public class RustFSConfig {
 
     @Bean
     public S3Client s3Client() {
-        // Use placeholder credentials if not configured, for local development
+        // 本地开发时，如未配置凭证则使用占位符
         String ak = (accessKey == null || accessKey.isBlank()) ? "local" : accessKey;
         String sk = (secretKey == null || secretKey.isBlank()) ? "local" : secretKey;
 

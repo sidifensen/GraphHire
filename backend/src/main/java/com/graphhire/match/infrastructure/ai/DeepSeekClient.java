@@ -7,17 +7,39 @@ import org.springframework.web.client.RestTemplate;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * DeepSeek AI客户端
+ *
+ * 【模块说明】调用DeepSeek云端API进行人岗匹配计算、简历解析、职位解析。
+ *             AI不可用时自动降级为本地计算模式。
+ *
+ * 【注意事项】
+ * - 需要配置 ai.deepseek.api-key 和 ai.deepseek.url
+ * - API调用失败时会降级到本地计算，保证服务可用性
+ */
 @Component
 public class DeepSeekClient {
 
+    /** DeepSeek API密钥 */
     @Value("${ai.deepseek.api-key:}")
     private String apiKey;
 
+    /** DeepSeek API地址，默认 https://api.deepseek.com/v1 */
     @Value("${ai.deepseek.url:https://api.deepseek.com/v1}")
     private String baseUrl;
 
     private final RestTemplate restTemplate = new RestTemplate();
 
+    // =====================================================
+    // 【第一部分】匹配计算
+    // =====================================================
+
+    /**
+     * 生成匹配原因说明
+     * @param resumeId 简历ID
+     * @param jobId 职位ID
+     * @return 匹配原因说明（AI生成或默认文本）
+     */
     public String generateMatchReason(Long resumeId, Long jobId) {
         if (apiKey == null || apiKey.isBlank()) {
             return "Based on skill and experience matching";
@@ -41,16 +63,16 @@ public class DeepSeekClient {
     }
 
     /**
-     * Calculate match scores using DeepSeek AI.
-     * Falls back to simple calculation if API is not available.
-     *
-     * @param userInfo Map containing user skills, experience, education, target city, expected salary
-     * @param jobInfo Map containing required skills, preferred skills, experience required, education required, city, salary range
-     * @return Map containing all dimension scores and overall score
+     * 计算人岗匹配分数
+     * 【功能说明】调用DeepSeek AI分析用户信息和职位信息，返回多维度匹配分数。
+     *             AI不可用时自动降级为本地fallback计算。
+     * @param userInfo 用户信息（技能、经验、学历、目标城市、期望薪资）
+     * @param jobInfo 职位信息（技能要求、经验要求、学历要求、城市、薪资范围）
+     * @return 匹配结果Map（包含各维度分数、总分、匹配原因、差距、建议）
      */
     @SuppressWarnings("unchecked")
     public Map<String, Object> calculateMatch(Map<String, Object> userInfo, Map<String, Object> jobInfo) {
-        // If no API key, use fallback calculation
+        // AI不可用时使用降级计算
         if (apiKey == null || apiKey.isBlank()) {
             return fallbackCalculateMatch(userInfo, jobInfo);
         }
@@ -88,11 +110,19 @@ public class DeepSeekClient {
         }
     }
 
+    // =====================================================
+    // 【第二部分】本地降级计算
+    // =====================================================
+
+    /**
+     * 本地降级匹配计算
+     * 当AI服务不可用时，使用基于规则的本地计算作为备选方案
+     */
     private Map<String, Object> fallbackCalculateMatch(Map<String, Object> userInfo, Map<String, Object> jobInfo) {
-        // Simple fallback calculation based on skills
         var userSkills = (java.util.List<String>) userInfo.getOrDefault("skills", java.util.Collections.emptyList());
         var jobSkills = (java.util.List<String>) jobInfo.getOrDefault("required_skills", java.util.Collections.emptyList());
 
+        // 各维度分数计算
         double skillScore = calculateSkillOverlap(userSkills, jobSkills);
         double expScore = calculateExperienceScore(
             (Integer) userInfo.get("experience_years"),
@@ -111,6 +141,7 @@ public class DeepSeekClient {
             (java.util.List<Integer>) jobInfo.get("salary_range")
         );
 
+        // 加权总分计算（技能50%、经验20%、城市15%、学历10%、薪资5%）
         double overallScore = skillScore * 0.5 + expScore * 0.2 + cityScore * 0.15 + eduScore * 0.1 + salScore * 0.05;
 
         return Map.of(
@@ -126,6 +157,7 @@ public class DeepSeekClient {
         );
     }
 
+    /** 计算技能匹配分数：用户技能与岗位要求技能的重叠率 */
     private double calculateSkillOverlap(java.util.List<String> userSkills, java.util.List<String> jobSkills) {
         if (jobSkills.isEmpty()) return 100.0;
         long overlap = userSkills.stream()
@@ -135,6 +167,7 @@ public class DeepSeekClient {
         return (double) overlap / jobSkills.size() * 100;
     }
 
+    /** 计算经验匹配分数：用户经验年限是否满足岗位要求 */
     private double calculateExperienceScore(Integer userYears, String jobExpRequired) {
         if (jobExpRequired == null || jobExpRequired.isBlank()) return 100.0;
         if (userYears == null) return 50.0;
@@ -145,6 +178,7 @@ public class DeepSeekClient {
         return (double) userYears / requiredYears * 100;
     }
 
+    /** 解析经验要求字符串，提取数字年限 */
     private int parseExperienceRequirement(String expRequired) {
         if (expRequired == null) return 0;
         if (expRequired.contains("不限")) return 0;
@@ -155,12 +189,14 @@ public class DeepSeekClient {
         return 0;
     }
 
+    /** 计算城市匹配分数：用户目标城市与岗位所在城市是否一致 */
     private double calculateCityScore(String userCity, String jobCity) {
         if (jobCity == null || jobCity.isBlank()) return 100.0;
         if (userCity == null || userCity.isBlank()) return 50.0;
         return userCity.equalsIgnoreCase(jobCity) ? 100.0 : 0.0;
     }
 
+    /** 计算学历匹配分数：用户学历等级是否满足岗位要求 */
     private double calculateEducationScore(String userEdu, String jobEdu) {
         if (jobEdu == null || jobEdu.isBlank()) return 100.0;
         if (userEdu == null || userEdu.isBlank()) return 50.0;
@@ -171,6 +207,7 @@ public class DeepSeekClient {
         return (double) userLevel / jobLevel * 100;
     }
 
+    /** 获取学历等级：博士(4) > 硕士(3) > 本科(2) > 大专(1) > 其他(0) */
     private int getEducationLevel(String education) {
         return switch (education.toUpperCase()) {
             case "博士", "PHD" -> 4;
@@ -181,6 +218,7 @@ public class DeepSeekClient {
         };
     }
 
+    /** 计算薪资匹配分数：用户期望薪资是否在岗位薪资范围内 */
     private double calculateSalaryScore(Integer userSalary, java.util.List<Integer> salaryRange) {
         if (salaryRange == null || salaryRange.size() < 2 || userSalary == null) return 50.0;
         int min = salaryRange.get(0);
@@ -193,6 +231,11 @@ public class DeepSeekClient {
         return Math.max(0, 100 - (double) diff / range * 100);
     }
 
+    // =====================================================
+    // 【第三部分】响应解析
+    // =====================================================
+
+    /** 解析DeepSeek API返回的响应，提取JSON结果 */
     @SuppressWarnings("unchecked")
     private Map<String, Object> parseDeepSeekResponse(String response) {
         try {
@@ -203,7 +246,7 @@ public class DeepSeekClient {
                 return parseSimpleJson(json);
             }
         } catch (Exception e) {
-            // Fall back to default scores
+            // 降级到默认分数
         }
         return Map.of(
             "skill_score", 75.0,
@@ -218,6 +261,7 @@ public class DeepSeekClient {
         );
     }
 
+    /** 简单JSON解析，提取键值对 */
     @SuppressWarnings("unchecked")
     private Map<String, Object> parseSimpleJson(String json) {
         java.util.Map<String, Object> result = new java.util.HashMap<>();
@@ -235,6 +279,7 @@ public class DeepSeekClient {
                 }
             }
         }
+        // 如果没有overall_score，使用加权计算
         if (!result.containsKey("overall_score")) {
             double overall = 0;
             overall += (Double) result.getOrDefault("skill_score", 75.0) * 0.5;
@@ -247,6 +292,16 @@ public class DeepSeekClient {
         return result;
     }
 
+    // =====================================================
+    // 【第四部分】简历和职位解析
+    // =====================================================
+
+    /**
+     * 解析简历文本
+     * 【功能说明】调用AI提取简历中的结构化信息（姓名、邮箱、技能、工作经验、学历等）。
+     * @param text 简历文本内容
+     * @return 结构化信息Map
+     */
     public Map<String, Object> parseResume(String text) {
         if (apiKey == null || apiKey.isBlank()) {
             return getMockParseResult(text);
@@ -283,6 +338,7 @@ public class DeepSeekClient {
         }
     }
 
+    /** 解析简历API响应为结构化Map */
     private Map<String, Object> parseJsonResponse(String response) {
         Map<String, Object> result = new HashMap<>();
         result.put("raw_response", response);
@@ -291,6 +347,7 @@ public class DeepSeekClient {
         return result;
     }
 
+    /** 获取模拟简历解析结果（当AI不可用时使用） */
     private Map<String, Object> getMockParseResult(String text) {
         Map<String, Object> result = new HashMap<>();
         result.put("name", "Extracted Name");
@@ -307,6 +364,13 @@ public class DeepSeekClient {
         return result;
     }
 
+    /**
+     * 解析职位描述文本
+     * 【功能说明】调用AI从职位描述中提取结构化信息（技能要求、经验要求、学历要求、薪资范围等）。
+     * @param text 职位描述文本
+     * @param jobTitle 职位名称
+     * @return 结构化信息Map
+     */
     public Map<String, Object> parseJob(String text, String jobTitle) {
         if (apiKey == null || apiKey.isBlank()) {
             return getMockJobParseResult(text, jobTitle);
@@ -345,6 +409,7 @@ public class DeepSeekClient {
         }
     }
 
+    /** 解析职位API响应为结构化Map */
     private Map<String, Object> parseJobJsonResponse(String response) {
         Map<String, Object> result = new HashMap<>();
         result.put("raw_response", response);
@@ -355,6 +420,7 @@ public class DeepSeekClient {
         return result;
     }
 
+    /** 获取模拟职位解析结果（当AI不可用时使用） */
     private Map<String, Object> getMockJobParseResult(String text, String jobTitle) {
         Map<String, Object> result = new HashMap<>();
         result.put("title", jobTitle != null ? jobTitle : "Software Engineer");

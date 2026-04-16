@@ -5,20 +5,36 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
 
+/**
+ * 人员信息持久化对象
+ * 对应数据库 person_profile 表
+ */
 @TableName("person_profile")
 public class PersonInfoPO {
+    /** 人员信息ID（自增） */
     @TableId(type = IdType.AUTO)
     private Long id;
+    /** 用户ID */
     private Long userId;
+    /** 真实姓名 */
     private String realName;
+    /** 性别（0：未知，1：男，2：女） */
     private Integer gender;
+    /** 年龄 */
     private Integer age;
+    /** 联系电话 */
     private String phone;
+    /** 学历 */
     private String education;
+    /** 所在城市 */
     private String city;
+    /** 目标城市（求职意向） */
     private String targetCity;
+    /** 期望薪资 */
     private Integer expectedSalary;
+    /** 创建时间 */
     private LocalDateTime createdAt;
+    /** 更新时间 */
     private LocalDateTime updatedAt;
 
     public Long getId() {

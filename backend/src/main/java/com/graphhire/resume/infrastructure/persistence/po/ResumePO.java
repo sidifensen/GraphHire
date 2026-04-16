@@ -6,21 +6,38 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * 简历持久化对象
+ * 对应数据库 resume 表
+ */
 @TableName("resume")
 public class ResumePO {
+    /** 简历ID（自增） */
     @TableId(type = IdType.AUTO)
     private Long id;
+    /** 上传用户ID */
     private Long userId;
+    /** 文件名称 */
     private String fileName;
+    /** 文件存储路径 */
     private String filePath;
+    /** 文件类型（MIME type） */
     private String fileType;
+    /** 文件大小（字节） */
     private Long fileSize;
+    /** 解析状态（0:待解析,1:解析中,2:成功,3:失败） */
     private Integer parseStatus;
+    /** AI解析结果（JSON格式） */
     private String parseResult;
+    /** 解析失败错误信息 */
     private String parseError;
+    /** AI解析置信度 */
     private BigDecimal confidence;
+    /** 是否为默认简历 */
     private Boolean isDefault;
+    /** 创建时间 */
     private LocalDateTime createdAt;
+    /** 更新时间 */
     private LocalDateTime updatedAt;
 
     public Long getId() {

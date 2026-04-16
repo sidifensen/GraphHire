@@ -11,14 +11,12 @@ public class UserPO {
     private Long id;
     private String username;
     private String password;
-    private Integer userType;        // SMALLINT: 1=person, 2=company, 3=admin
-    private Integer status;          // SMALLINT: 0=disabled, 1=normal
+    private Integer userType;        // 用户类型：1=个人, 2=企业, 3=管理员
+    private Integer status;         // 状态：0=禁用, 1=正常
     private LocalDateTime lastLoginTime;
-    private String lastLoginIp;
-    private Integer failedAttempts;
-    private LocalDateTime lockUntil;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private LocalDateTime createTime;
+    private LocalDateTime updateTime;
+    private Integer deleted;
 
     public Long getId() {
         return id;
@@ -68,43 +66,27 @@ public class UserPO {
         this.lastLoginTime = lastLoginTime;
     }
 
-    public String getLastLoginIp() {
-        return lastLoginIp;
+    public LocalDateTime getCreateTime() {
+        return createTime;
     }
 
-    public void setLastLoginIp(String lastLoginIp) {
-        this.lastLoginIp = lastLoginIp;
+    public void setCreateTime(LocalDateTime createTime) {
+        this.createTime = createTime;
     }
 
-    public Integer getFailedAttempts() {
-        return failedAttempts;
+    public LocalDateTime getUpdateTime() {
+        return updateTime;
     }
 
-    public void setFailedAttempts(Integer failedAttempts) {
-        this.failedAttempts = failedAttempts;
+    public void setUpdateTime(LocalDateTime updateTime) {
+        this.updateTime = updateTime;
     }
 
-    public LocalDateTime getLockUntil() {
-        return lockUntil;
+    public Integer getDeleted() {
+        return deleted;
     }
 
-    public void setLockUntil(LocalDateTime lockUntil) {
-        this.lockUntil = lockUntil;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
+    public void setDeleted(Integer deleted) {
+        this.deleted = deleted;
     }
 }

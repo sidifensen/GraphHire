@@ -9,6 +9,16 @@
         "enhanced-postgres-mcp-server",
         "postgresql://postgres:postgres@localhost:5432/graphhire"
       ]
+    },
+    "redis": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-redis",
+        "redis://default:redis@localhost:6379"
+      ]
     }
   }
 }

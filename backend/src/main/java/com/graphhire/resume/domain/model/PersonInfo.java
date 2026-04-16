@@ -2,16 +2,30 @@ package com.graphhire.resume.domain.model;
 
 import com.graphhire.common.model.BaseEntity;
 
+/**
+ * 人员信息领域模型
+ * 存储候选人的个人信息，包括基本信息、求职意向等
+ */
 public class PersonInfo extends BaseEntity {
+    /** 人员信息ID */
     private Long id;
+    /** 用户ID */
     private Long userId;
+    /** 真实姓名 */
     private String realName;
+    /** 性别（0：未知，1：男，2：女） */
     private Integer gender;
+    /** 年龄 */
     private Integer age;
+    /** 联系电话 */
     private String phone;
+    /** 学历 */
     private String education;
+    /** 所在城市 */
     private String city;
+    /** 目标城市（求职意向） */
     private String targetCity;
+    /** 期望薪资 */
     private Integer expectedSalary;
 
     public Long getId() {

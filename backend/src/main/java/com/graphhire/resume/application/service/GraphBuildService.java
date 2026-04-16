@@ -15,22 +15,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Service for building skill graphs when resume/job is parsed.
- * Extracts skills from parse results and builds graph relationships in Memgraph.
+ * 技能图谱构建服务
+ *
+ * 【模块说明】从简历/职位的解析结果中提取技能信息，构建Memgraph知识图谱关系。
+ * 【数据来源】Resume.parseResult（JSON格式）
+ * 【依赖服务】SkillGraphClient（Memgraph图数据库客户端）
+ *
+ * 【方法概览】
+ * - buildGraphForResume()：为简历构建技能图谱
+ * - buildGraphForJob()：为职位构建技能图谱
+ * - extractSkillsFromParseResult()：从JSON中提取技能列表（私有）
  */
 @Service
 public class GraphBuildService {
 
+    /** 日志记录器 */
     private static final Logger log = LoggerFactory.getLogger(GraphBuildService.class);
 
+    /** 技能图谱客户端（Memgraph） */
     @Autowired
     private SkillGraphClient skillGraphClient;
 
     /**
-     * Build skill graph for a resume after parsing.
-     * Extracts skills from parseResult JSON and creates person-skill relationships.
-     *
-     * @param resume the parsed resume
+     * 为简历构建技能图谱
+     * 【功能说明】从简历解析结果中提取技能，构建候选人-技能关系。
+     * @param resume 已解析的简历实体
      */
     public void buildGraphForResume(Resume resume) {
         if (resume == null || resume.getParseResult() == null) {
@@ -39,8 +48,10 @@ public class GraphBuildService {
         }
 
         try {
+            // 从解析结果提取技能列表
             List<String> skills = extractSkillsFromParseResult(resume.getParseResult());
             if (skills != null && !skills.isEmpty()) {
+                // 构建图谱关系
                 skillGraphClient.buildPersonSkillGraph(resume.getUserId(), skills);
                 log.info("Built person-skill graph for user {} with {} skills", resume.getUserId(), skills.size());
             } else {
@@ -48,16 +59,14 @@ public class GraphBuildService {
             }
         } catch (Exception e) {
             log.error("Failed to build graph for resume {}: {}", resume.getId(), e.getMessage());
-            // Don't fail the parse - just log error
+            // 不导致解析失败，仅记录错误
         }
     }
 
     /**
-     * Build skill graph for a job.
-     * Extracts skills from job's requiredSkills and preferredSkills fields
-     * and creates job-skill relationships.
-     *
-     * @param job the job entity
+     * 为职位构建技能图谱
+     * 【功能说明】从职位的必技能和偏好技能构建职位-技能关系。
+     * @param job 职位实体
      */
     public void buildGraphForJob(Job job) {
         if (job == null) {
@@ -75,6 +84,7 @@ public class GraphBuildService {
                 return;
             }
 
+            // 构建图谱关系
             skillGraphClient.buildJobSkillGraph(job.getId(), requiredSkills, preferredSkills);
             log.info("Built job-skill graph for job {} with {} required and {} preferred skills",
                     job.getId(),
@@ -82,16 +92,18 @@ public class GraphBuildService {
                     preferredSkills != null ? preferredSkills.size() : 0);
         } catch (Exception e) {
             log.error("Failed to build graph for job {}: {}", job.getId(), e.getMessage());
-            // Don't fail the parse - just log error
+            // 不导致解析失败，仅记录错误
         }
     }
 
     /**
-     * Extract skills list from parse result JSON.
-     * Expected format: {"skills": ["Java", "Python", "Spring"]}
-     *
-     * @param parseResult JSON string from resume parsing
-     * @return list of skill names
+     * 从解析结果JSON中提取技能列表
+     * 支持多种JSON格式：
+     * - {"skills": ["Java", "Python"]}
+     * - {"parse_result": {"skills": [...]}}
+     * - {"data": {"skills": [...]}}
+     * @param parseResult JSON格式的解析结果
+     * @return 技能名称列表
      */
     private List<String> extractSkillsFromParseResult(String parseResult) {
         List<String> skills = new ArrayList<>();
@@ -103,7 +115,7 @@ public class GraphBuildService {
         try {
             JSONObject json = JSON.parseObject(parseResult);
 
-            // Try to get "skills" array directly
+            // 尝试获取 "skills" 数组
             JSONArray skillsArray = json.getJSONArray("skills");
             if (skillsArray != null) {
                 for (int i = 0; i < skillsArray.size(); i++) {
@@ -112,7 +124,7 @@ public class GraphBuildService {
                 return skills;
             }
 
-            // Try nested structure like {"parse_result": {"skills": [...]}}
+            // 尝试嵌套结构 {"parse_result": {"skills": [...]}}
             JSONObject parseResultObj = json.getJSONObject("parse_result");
             if (parseResultObj != null) {
                 skillsArray = parseResultObj.getJSONArray("skills");
@@ -124,7 +136,7 @@ public class GraphBuildService {
                 }
             }
 
-            // Try result.data.skills format
+            // 尝试 {"data": {"skills": [...]}} 格式
             JSONObject dataObj = json.getJSONObject("data");
             if (dataObj != null) {
                 skillsArray = dataObj.getJSONArray("skills");

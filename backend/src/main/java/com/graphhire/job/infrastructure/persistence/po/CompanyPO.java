@@ -5,18 +5,34 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
 
+/**
+ * 企业持久化对象
+ *
+ * 【模块说明】与数据库company表结构一一对应，用于MyBatis-Plus CRUD操作。
+ * 【数据表】company
+ */
 @TableName("company")
 public class CompanyPO {
+    /** 企业ID（主键，自增） */
     @TableId(type = IdType.AUTO)
     private Long id;
+    /** 用户ID（关联用户系统） */
     private Long userId;
+    /** 企业名称 */
     private String companyName;
+    /** 统一社会信用代码 */
     private String unifiedSocialCreditCode;
+    /** 营业执照文件路径 */
     private String licensePath;
-    private Integer authStatus;  // 0=pending, 1=approved, 2=rejected
+    /** 认证状态：0=待审核，1=已认证，2=已拒绝 */
+    private Integer authStatus;
+    /** 认证拒绝原因 */
     private String authReason;
+    /** 认证时间 */
     private LocalDateTime authTime;
+    /** 创建时间 */
     private LocalDateTime createdAt;
+    /** 更新时间 */
     private LocalDateTime updatedAt;
 
     public Long getId() {

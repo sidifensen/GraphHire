@@ -17,7 +17,11 @@ import com.graphhire.job.domain.vo.JobStatus;
 import com.graphhire.job.domain.vo.Location;
 import com.graphhire.job.domain.vo.SalaryRange;
 import com.graphhire.job.interfaces.dto.request.CreateStaffRequest;
+import com.graphhire.job.interfaces.dto.request.SalaryUpdateRequest;
 import com.graphhire.job.interfaces.dto.request.StatusChangeRequest;
+import com.graphhire.match.application.service.MatchAppService;
+import com.graphhire.match.interfaces.dto.response.MatchDetailResponse;
+import com.graphhire.skill.infrastructure.graph.SkillGraphClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -56,6 +60,12 @@ class CompanyControllerTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private MatchAppService matchAppService;
+
+    @Mock
+    private SkillGraphClient skillGraphClient;
 
     @InjectMocks
     private CompanyController companyController;
@@ -562,6 +572,304 @@ class CompanyControllerTest {
 
                 // When & Then
                 assertThrows(Exception.class, () -> companyController.toggleJobStatus(jobId, request));
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("发布职位测试")
+    class PublishJobTests {
+
+        @Test
+        @DisplayName("成功发布职位")
+        void publishJob_Success() {
+            try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+                // Given
+                Long userId = 1L;
+                Long companyId = 1L;
+                Long jobId = 1L;
+
+                stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(userId);
+                when(companyAppService.getCompanyIdByUserId(userId)).thenReturn(companyId);
+
+                Job job = new Job();
+                job.setId(jobId);
+                job.setCompanyId(companyId);
+                job.setStatus(JobStatus.DRAFT);
+
+                when(jobAppService.getJobById(jobId)).thenReturn(job);
+                when(jobAppService.publishJob(eq(jobId), isNull())).thenReturn(job);
+
+                // When
+                var result = companyController.publishJob(jobId);
+
+                // Then
+                assertNotNull(result);
+                assertEquals(200, result.getCode());
+                verify(jobAppService).publishJob(eq(jobId), isNull());
+            }
+        }
+
+        @Test
+        @DisplayName("无权发布他人职位时抛出异常")
+        void publishJob_NoPermission_ThrowsException() {
+            try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+                // Given
+                Long userId = 1L;
+                Long companyId = 1L;
+                Long otherCompanyId = 2L;
+                Long jobId = 1L;
+
+                stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(userId);
+                when(companyAppService.getCompanyIdByUserId(userId)).thenReturn(companyId);
+
+                Job job = new Job();
+                job.setId(jobId);
+                job.setCompanyId(otherCompanyId);
+
+                when(jobAppService.getJobById(jobId)).thenReturn(job);
+
+                // When & Then
+                assertThrows(Exception.class, () -> companyController.publishJob(jobId));
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("关闭职位测试")
+    class CloseJobTests {
+
+        @Test
+        @DisplayName("成功关闭职位")
+        void closeJob_Success() {
+            try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+                // Given
+                Long userId = 1L;
+                Long companyId = 1L;
+                Long jobId = 1L;
+
+                stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(userId);
+                when(companyAppService.getCompanyIdByUserId(userId)).thenReturn(companyId);
+
+                Job job = new Job();
+                job.setId(jobId);
+                job.setCompanyId(companyId);
+                job.setStatus(JobStatus.PUBLISHED);
+
+                when(jobAppService.getJobById(jobId)).thenReturn(job);
+                when(jobAppService.closeJob(jobId)).thenReturn(job);
+
+                // When
+                var result = companyController.closeJob(jobId);
+
+                // Then
+                assertNotNull(result);
+                assertEquals(200, result.getCode());
+                verify(jobAppService).closeJob(jobId);
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("更新薪资测试")
+    class UpdateSalaryTests {
+
+        @Test
+        @DisplayName("成功更新薪资")
+        void updateSalary_Success() {
+            try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+                // Given
+                Long userId = 1L;
+                Long companyId = 1L;
+                Long jobId = 1L;
+
+                stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(userId);
+                when(companyAppService.getCompanyIdByUserId(userId)).thenReturn(companyId);
+
+                Job job = new Job();
+                job.setId(jobId);
+                job.setCompanyId(companyId);
+
+                when(jobAppService.getJobById(jobId)).thenReturn(job);
+                when(jobAppService.updateSalary(eq(jobId), any(SalaryRange.class))).thenReturn(job);
+
+                SalaryUpdateRequest request = new SalaryUpdateRequest();
+                request.setMin(5000);
+                request.setMax(10000);
+                request.setUnit("月");
+
+                // When
+                var result = companyController.updateSalary(jobId, request);
+
+                // Then
+                assertNotNull(result);
+                assertEquals(200, result.getCode());
+                verify(jobAppService).updateSalary(eq(jobId), any(SalaryRange.class));
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("删除职位测试")
+    class DeleteJobTests {
+
+        @Test
+        @DisplayName("成功删除职位")
+        void deleteJob_Success() {
+            try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+                // Given
+                Long userId = 1L;
+                Long companyId = 1L;
+                Long jobId = 1L;
+
+                stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(userId);
+                when(companyAppService.getCompanyIdByUserId(userId)).thenReturn(companyId);
+
+                Job job = new Job();
+                job.setId(jobId);
+                job.setCompanyId(companyId);
+
+                when(jobAppService.getJobById(jobId)).thenReturn(job);
+                doNothing().when(jobAppService).deleteJob(jobId);
+
+                // When
+                var result = companyController.deleteJob(jobId);
+
+                // Then
+                assertNotNull(result);
+                assertEquals(200, result.getCode());
+                verify(jobAppService).deleteJob(jobId);
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("重新解析职位测试")
+    class ReparseJobTests {
+
+        @Test
+        @DisplayName("成功重新解析职位")
+        void reparseJob_Success() {
+            try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+                // Given
+                Long userId = 1L;
+                Long companyId = 1L;
+                Long jobId = 1L;
+
+                stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(userId);
+                when(companyAppService.getCompanyIdByUserId(userId)).thenReturn(companyId);
+
+                Job job = new Job();
+                job.setId(jobId);
+                job.setCompanyId(companyId);
+
+                when(jobAppService.getJobById(jobId)).thenReturn(job);
+                doNothing().when(jobAppService).triggerJobParse(jobId);
+
+                // When
+                var result = companyController.reparseJob(jobId);
+
+                // Then
+                assertNotNull(result);
+                assertEquals(200, result.getCode());
+                verify(jobAppService).triggerJobParse(jobId);
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("创建公司测试")
+    class CreateCompanyTests {
+
+        @Test
+        @DisplayName("成功创建公司")
+        void createCompany_Success() {
+            // Given
+            String name = "New Company";
+            String unifiedSocialCreditCode = "91110000000000001X";
+
+            Company company = new Company();
+            company.setId(1L);
+            company.setName(name);
+
+            when(companyAppService.createCompany(eq(name), eq(unifiedSocialCreditCode),
+                isNull(), isNull(), isNull(), isNull())).thenReturn(company);
+
+            // When
+            var result = companyController.createCompany(name, unifiedSocialCreditCode,
+                null, null, null, null);
+
+            // Then
+            assertNotNull(result);
+            assertEquals(200, result.getCode());
+            assertEquals(1L, result.getData());
+            verify(companyAppService).createCompany(eq(name), eq(unifiedSocialCreditCode),
+                isNull(), isNull(), isNull(), isNull());
+        }
+    }
+
+    @Nested
+    @DisplayName("获取公司测试")
+    class GetCompanyTests {
+
+        @Test
+        @DisplayName("成功获取公司详情")
+        void getCompany_Success() {
+            // Given
+            Long companyId = 1L;
+            Company company = new Company();
+            company.setId(companyId);
+            company.setName("Test Company");
+
+            when(companyAppService.getCompanyById(companyId)).thenReturn(company);
+
+            // When
+            var result = companyController.getCompany(companyId);
+
+            // Then
+            assertNotNull(result);
+            assertEquals(200, result.getCode());
+            assertEquals(companyId, result.getData().getId());
+            assertEquals("Test Company", result.getData().getName());
+        }
+    }
+
+    @Nested
+    @DisplayName("获取职位图谱测试")
+    class GetJobGraphTests {
+
+        @Test
+        @DisplayName("成功获取职位图谱")
+        void getJobGraph_Success() {
+            try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+                // Given
+                Long userId = 1L;
+                Long companyId = 1L;
+                Long jobId = 1L;
+
+                stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(userId);
+                when(companyAppService.getCompanyIdByUserId(userId)).thenReturn(companyId);
+
+                Job job = new Job();
+                job.setId(jobId);
+                job.setCompanyId(companyId);
+
+                when(jobAppService.getJobById(jobId)).thenReturn(job);
+
+                java.util.Map<String, Object> graphData = new java.util.HashMap<>();
+                graphData.put("jobId", jobId);
+                graphData.put("skills", java.util.Arrays.asList("Java", "Spring"));
+
+                when(skillGraphClient.getJobSkillGraph(jobId)).thenReturn(graphData);
+
+                // When
+                var result = companyController.getJobGraph(jobId);
+
+                // Then
+                assertNotNull(result);
+                assertEquals(200, result.getCode());
+                assertNotNull(result.getData());
+                assertEquals(jobId, result.getData().get("jobId"));
             }
         }
     }

@@ -1,12 +1,16 @@
 package com.graphhire.admin.application.command;
 
 /**
- * Command for company authentication (approve/reject).
+ * 企业认证审批命令
+ * 【模块说明】封装管理员对企业进行认证审批所需的参数：审批ID、是否通过、拒绝原因
  */
 public class AuthCompanyCmd {
 
+    /** 待审批企业ID */
     private Long companyId;
+    /** 是否通过认证：true-通过，false-拒绝 */
     private boolean approved;
+    /** 拒绝原因（审批拒绝时必填） */
     private String reason;
 
     public AuthCompanyCmd() {

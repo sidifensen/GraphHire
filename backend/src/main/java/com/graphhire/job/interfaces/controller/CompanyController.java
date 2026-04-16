@@ -20,6 +20,7 @@ import com.graphhire.job.domain.repository.JobRepository;
 import com.graphhire.job.domain.vo.Location;
 import com.graphhire.job.domain.vo.SalaryRange;
 import com.graphhire.job.interfaces.dto.request.CreateStaffRequest;
+import com.graphhire.job.interfaces.dto.request.SalaryUpdateRequest;
 import com.graphhire.job.interfaces.dto.request.StatusChangeRequest;
 import com.graphhire.match.application.service.MatchAppService;
 import com.graphhire.match.interfaces.dto.response.MatchDetailResponse;
@@ -186,6 +187,76 @@ public class CompanyController {
     }
 
     /**
+     * 发布职位
+     * @param id 职位ID
+     * @return 发布结果
+     */
+    @PostMapping("/job/{id}/publish")
+    public Result<Void> publishJob(@PathVariable Long id) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        Long companyId = companyAppService.getCompanyIdByUserId(userId);
+        Job job = jobAppService.getJobById(id);
+        if (!job.getCompanyId().equals(companyId)) {
+            throw new Exceptions.ForbiddenException("无权操作该职位");
+        }
+        jobAppService.publishJob(id, null);
+        return Result.success();
+    }
+
+    /**
+     * 关闭职位
+     * @param id 职位ID
+     * @return 关闭结果
+     */
+    @PostMapping("/job/{id}/close")
+    public Result<Void> closeJob(@PathVariable Long id) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        Long companyId = companyAppService.getCompanyIdByUserId(userId);
+        Job job = jobAppService.getJobById(id);
+        if (!job.getCompanyId().equals(companyId)) {
+            throw new Exceptions.ForbiddenException("无权操作该职位");
+        }
+        jobAppService.closeJob(id);
+        return Result.success();
+    }
+
+    /**
+     * 更新薪资范围
+     * @param id 职位ID
+     * @param request 薪资更新请求
+     * @return 更新结果
+     */
+    @PutMapping("/job/{id}/salary")
+    public Result<Void> updateSalary(@PathVariable Long id, @RequestBody SalaryUpdateRequest request) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        Long companyId = companyAppService.getCompanyIdByUserId(userId);
+        Job job = jobAppService.getJobById(id);
+        if (!job.getCompanyId().equals(companyId)) {
+            throw new Exceptions.ForbiddenException("无权操作该职位");
+        }
+        SalaryRange salaryRange = SalaryRange.of(request.getMin(), request.getMax(), request.getUnit());
+        jobAppService.updateSalary(id, salaryRange);
+        return Result.success();
+    }
+
+    /**
+     * 删除职位
+     * @param id 职位ID
+     * @return 删除结果
+     */
+    @DeleteMapping("/job/{id}")
+    public Result<Void> deleteJob(@PathVariable Long id) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        Long companyId = companyAppService.getCompanyIdByUserId(userId);
+        Job job = jobAppService.getJobById(id);
+        if (!job.getCompanyId().equals(companyId)) {
+            throw new Exceptions.ForbiddenException("无权操作该职位");
+        }
+        jobAppService.deleteJob(id);
+        return Result.success();
+    }
+
+    /**
      * 重新解析职位
      * @param id 职位ID
      * @return 解析结果
@@ -266,28 +337,6 @@ public class CompanyController {
     }
 
     /**
-     * 审批公司
-     * @param id 公司ID
-     * @return 审批结果
-     */
-    @PostMapping("/{id}/approve")
-    public Result<Void> approveCompany(@PathVariable Long id) {
-        companyAppService.approveCompany(id);
-        return Result.success();
-    }
-
-    /**
-     * 拒绝公司
-     * @param id 公司ID
-     * @return 拒绝结果
-     */
-    @PostMapping("/{id}/reject")
-    public Result<Void> rejectCompany(@PathVariable Long id) {
-        companyAppService.rejectCompany(id);
-        return Result.success();
-    }
-
-    /**
      * 更新公司
      * @param id 公司ID
      * @param name 公司名称
@@ -319,25 +368,6 @@ public class CompanyController {
     @GetMapping("/{id}")
     public Result<Company> getCompany(@PathVariable Long id) {
         return Result.success(companyAppService.getCompanyById(id));
-    }
-
-    /**
-     * 获取待审批公司列表
-     * @return 待审批公司列表
-     */
-    @GetMapping("/pending")
-    public Result<List<Company>> getPendingCompanies() {
-        return Result.success(companyAppService.getPendingCompanies());
-    }
-
-    /**
-     * 根据认证状态获取公司
-     * @param authStatus 认证状态
-     * @return 公司列表
-     */
-    @GetMapping
-    public Result<List<Company>> getCompaniesByAuthStatus(@RequestParam AuthStatus authStatus) {
-        return Result.success(companyAppService.getCompaniesByAuthStatus(authStatus));
     }
 
     /**

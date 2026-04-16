@@ -20,7 +20,7 @@ public class LoginResponse {
         this.userId = userId;
     }
 
-    // Legacy constructor for backward compatibility
+    // 兼容旧版构造器
     public LoginResponse(String token, UserType userType) {
         this.accessToken = token;
         this.refreshToken = null;

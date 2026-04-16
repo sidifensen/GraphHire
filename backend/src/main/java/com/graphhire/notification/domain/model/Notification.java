@@ -5,17 +5,42 @@ import com.graphhire.notification.domain.vo.NotificationType;
 
 import java.time.LocalDateTime;
 
+/**
+ * 通知领域模型
+ *
+ * 【模块说明】管理用户通知的完整生命周期，包括创建、已读/未读状态管理、内容更新。
+ * 【关联实体】
+ * - userId：所属用户ID
+ * - type：通知类型（NotificationType枚举）
+ * - title：通知标题
+ * - content：通知内容
+ * - isRead：已读状态
+ * - readTime：已读时间
+ * - metadata：扩展元数据（JSON格式，存储关联的附加数据）
+ * - referenceId：关联业务ID（用于跳转等场景）
+ * - createdAt：创建时间
+ */
 public class Notification extends BaseAggregateRoot {
+    /** 通知ID（主键） */
     private Long id;
+    /** 所属用户ID */
     private Long userId;
+    /** 通知类型 */
     private NotificationType type;
+    /** 通知标题 */
     private String title;
+    /** 通知内容 */
     private String content;
+    /** 已读状态：false-未读，true-已读 */
     private Boolean isRead = false;
+    /** 已读时间 */
     private LocalDateTime readTime;
-    private String metadata; // JSON string for additional data
-    private Long referenceId; // maps to related_id in database
-    private LocalDateTime createdAt; // maps to create_time in database
+    /** 扩展元数据（JSON格式，用于存储关联数据） */
+    private String metadata;
+    /** 关联业务ID（可指向职位、简历、候选人等） */
+    private Long referenceId;
+    /** 创建时间 */
+    private LocalDateTime createdAt;
 
     public Notification() {
     }

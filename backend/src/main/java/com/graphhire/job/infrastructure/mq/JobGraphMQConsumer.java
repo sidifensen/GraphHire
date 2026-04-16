@@ -12,8 +12,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /**
- * MQ Consumer for building job skill graph when job is published.
- * Listens to job-published topic and triggers graph building.
+ * 职位技能图谱构建MQ消费者
+ * 【模块说明】监听job-published主题，在职位发布时触发图谱构建
  */
 @Component
 @ConditionalOnProperty(name = "rocketmq.enabled", havingValue = "true", matchIfMissing = false)
@@ -32,7 +32,7 @@ public class JobGraphMQConsumer implements RocketMQListener<JobPublishedEvent> {
             log.info("Successfully built graph for job {}", event.getJob().getId());
         } catch (Exception e) {
             log.error("Failed to build graph for job {}: {}", event.getJob().getId(), e.getMessage());
-            // Don't rethrow - we don't want to affect the main MQ flow
+            // 不重新抛出异常，以免影响主MQ流程
         }
     }
 }

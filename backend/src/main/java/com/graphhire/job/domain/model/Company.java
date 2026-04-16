@@ -3,32 +3,70 @@ package com.graphhire.job.domain.model;
 import com.graphhire.common.model.BaseAggregateRoot;
 import com.graphhire.auth.domain.vo.AuthStatus;
 
+/**
+ * 企业领域模型
+ *
+ * 【模块说明】管理企业账号的注册、认证审核、信息维护等核心功能。
+ *
+ * 【认证状态机】
+ * - PENDING_VERIFY：待审核，管理员审批前状态
+ * - VERIFIED：已认证，审核通过
+ * - REJECTED/DISABLED：认证失败/账号被禁用
+ *
+ * 【核心操作】
+ * - approve()：审批通过，将认证状态变更为VERIFIED
+ * - reject()：审批拒绝，将认证状态变更为REJECTED
+ */
 public class Company extends BaseAggregateRoot {
+    /** 企业ID（主键） */
     private Long id;
+    /** 企业名称 */
     private String name;
+    /** 统一社会信用代码 */
     private String unifiedSocialCreditCode;
+    /** 认证状态：PENDING_VERIFY/VERIFIED/REJECTED/LOCKED/DISABLED */
     private AuthStatus authStatus = AuthStatus.PENDING_VERIFY;
+    /** 营业执照文件存储路径 */
     private String licenseUrl;
+    /** 联系人姓名 */
     private String contactName;
+    /** 联系人电话 */
     private String contactPhone;
+    /** 联系人邮箱 */
     private String contactEmail;
+    /** 企业简介 */
     private String description;
+    /** 企业官网URL */
     private String website;
 
+    /**
+     * 审批通过
+     * 【功能说明】将企业认证状态变更为已认证，仅允许待审核状态的企业操作。
+     */
     public void approve() {
+        // 校验：仅待审核状态可审批
         if (this.authStatus != AuthStatus.PENDING_VERIFY) {
             throw new IllegalStateException("只能审批待审核的企业");
         }
         this.authStatus = AuthStatus.VERIFIED;
     }
 
+    /**
+     * 审批拒绝
+     * 【功能说明】将企业认证状态变更为已拒绝，仅允许待审核状态的企业操作。
+     */
     public void reject() {
+        // 校验：仅待审核状态可审批
         if (this.authStatus != AuthStatus.PENDING_VERIFY) {
             throw new IllegalStateException("只能审批待审核的企业");
         }
         this.authStatus = AuthStatus.REJECTED;
     }
 
+    /**
+     * 更新企业信息
+     * 【功能说明】批量更新企业的联系信息和简介描述。
+     */
     public void updateInfo(String name, String contactName, String contactPhone,
                           String contactEmail, String description, String website) {
         this.name = name;
