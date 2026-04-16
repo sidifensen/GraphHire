@@ -10,6 +10,7 @@ import com.graphhire.auth.domain.repository.UserRepository;
 import com.graphhire.auth.domain.service.PasswordEncoder;
 import com.graphhire.auth.domain.vo.AuthStatus;
 import com.graphhire.auth.domain.vo.UserType;
+import com.graphhire.auth.infrastructure.mail.MailService;
 import com.graphhire.auth.interfaces.dto.response.LoginResponse;
 import com.graphhire.common.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +49,9 @@ public class AuthAppService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private MailService mailService;
 
     @Autowired
     private StringRedisTemplate redisTemplate;
@@ -100,34 +104,38 @@ public class AuthAppService {
      * 个人用户注册
      * 【功能说明】创建个人用户账号，自动完成登录并返回认证 Token。
      * 【业务步骤】
-     * 步骤1：检查用户名是否已存在
-     * 步骤2：创建用户并设置类型为 PERSON
-     * 步骤3：调用 User.register() 加密密码并发布注册事件
-     * 步骤4：保存用户到数据库
-     * 步骤5：执行 Sa-Token 登录
-     * 步骤6：构建登录响应
+     * 步骤1：校验验证码
+     * 步骤2：检查用户名是否已存在
+     * 步骤3：创建用户并设置类型为 PERSON
+     * 步骤4：调用 User.register() 加密密码并发布注册事件
+     * 步骤5：保存用户到数据库
+     * 步骤6：执行 Sa-Token 登录
+     * 步骤7：构建登录响应
      */
     public LoginResponse registerPerson(PersonRegisterCmd cmd) {
-        // 步骤1：检查用户名是否已存在
+        // 步骤1：校验验证码
+        validateVerifyCode(cmd.getUsername(), cmd.getVerifyCode(), "register");
+
+        // 步骤2：检查用户名是否已存在
         if (userRepository.findByUsername(cmd.getUsername()).isPresent()) {
             throw com.graphhire.common.vo.Exceptions.BusinessException.of("用户已存在");
         }
 
-        // 步骤2：创建用户并设置类型
+        // 步骤3：创建用户并设置类型
         User user = new User();
         user.setUsername(com.graphhire.auth.domain.vo.Username.of(cmd.getUsername()));
         user.setUserType(UserType.PERSON);
 
-        // 步骤3：注册（加密密码、设置状态、发布事件）
+        // 步骤4：注册（加密密码、设置状态、发布事件）
         user.register(cmd.getPassword());
 
-        // 步骤4：保存用户
+        // 步骤5：保存用户
         userRepository.save(user);
 
-        // 步骤5：Sa-Token 登录
+        // 步骤6：Sa-Token 登录
         doLogin(user);
 
-        // 步骤6：构建登录响应
+        // 步骤7：构建登录响应
         return buildLoginResponse(user);
     }
 
@@ -135,34 +143,38 @@ public class AuthAppService {
      * 企业用户注册
      * 【功能说明】创建企业用户账号，自动完成登录并返回认证 Token。
      * 【业务步骤】
-     * 步骤1：检查用户名是否已存在
-     * 步骤2：创建用户并设置类型为 COMPANY
-     * 步骤3：调用 User.register() 加密密码并发布注册事件
-     * 步骤4：保存用户到数据库
-     * 步骤5：执行 Sa-Token 登录
-     * 步骤6：构建登录响应
+     * 步骤1：校验验证码
+     * 步骤2：检查用户名是否已存在
+     * 步骤3：创建用户并设置类型为 COMPANY
+     * 步骤4：调用 User.register() 加密密码并发布注册事件
+     * 步骤5：保存用户到数据库
+     * 步骤6：执行 Sa-Token 登录
+     * 步骤7：构建登录响应
      */
     public LoginResponse registerCompany(CompanyRegisterCmd cmd) {
-        // 步骤1：检查用户名是否已存在
+        // 步骤1：校验验证码
+        validateVerifyCode(cmd.getUsername(), cmd.getVerifyCode(), "register");
+
+        // 步骤2：检查用户名是否已存在
         if (userRepository.findByUsername(cmd.getUsername()).isPresent()) {
             throw com.graphhire.common.vo.Exceptions.BusinessException.of("用户已存在");
         }
 
-        // 步骤2：创建用户并设置类型
+        // 步骤3：创建用户并设置类型
         User user = new User();
         user.setUsername(com.graphhire.auth.domain.vo.Username.of(cmd.getUsername()));
         user.setUserType(UserType.COMPANY);
 
-        // 步骤3：注册（加密密码、设置状态、发布事件）
+        // 步骤4：注册（加密密码、设置状态、发布事件）
         user.register(cmd.getPassword());
 
-        // 步骤4：保存用户
+        // 步骤5：保存用户
         userRepository.save(user);
 
-        // 步骤5：Sa-Token 登录
+        // 步骤6：Sa-Token 登录
         doLogin(user);
 
-        // 步骤6：构建登录响应
+        // 步骤7：构建登录响应
         return buildLoginResponse(user);
     }
 
@@ -221,6 +233,7 @@ public class AuthAppService {
      * @param cmd 发送验证码命令
      */
     public void sendVerifyCode(SendVerifyCodeCmd cmd) {
+        // 直接调用重载方法，使用默认类型
         sendVerifyCode(cmd.getUsername(), "default");
     }
 
@@ -230,18 +243,20 @@ public class AuthAppService {
      * 【业务步骤】
      * 步骤1：生成6位随机数字验证码
      * 步骤2：构造 Redis Key 并存储（15分钟过期）
-     * 步骤3：调用邮件服务发送验证码（当前为打印到控制台）
+     * 步骤3：调用邮件服务发送验证码
      */
     public void sendVerifyCode(String username, String type) {
         // 步骤1：生成6位随机验证码
         String code = String.format("%06d", new Random().nextInt(999999));
 
-        // 步骤2：存储到 Redis
+        // 步骤2：存储到 Redis（15分钟过期）
         String key = "email_code:" + username + ":" + type;
         redisTemplate.opsForValue().set(key, code, 15, TimeUnit.MINUTES);
 
-        // 步骤3：发送邮件（TODO: 接入真实邮件服务）
-        System.out.println("Sending verification code " + code + " to " + username);
+        // 步骤3：发送邮件
+        String subject = "【GraphHire】您的验证码";
+        String content = "您的验证码是：" + code + "，15分钟内有效，请勿泄露给他人。";
+        mailService.sendVerifyCodeMail(username, subject, content);
     }
 
     /**
@@ -270,16 +285,9 @@ public class AuthAppService {
      */
     public void resetPassword(String username, String code, String newPassword) {
         // 步骤1：校验验证码
-        String key = "email_code:" + username + ":forgot_password";
-        String storedCode = redisTemplate.opsForValue().get(key);
-        if (storedCode == null || !storedCode.equals(code)) {
-            throw com.graphhire.common.vo.Exceptions.BusinessException.of("验证码错误或已过期");
-        }
+        validateVerifyCode(username, code, "forgot_password");
 
-        // 步骤2：删除已使用的验证码
-        redisTemplate.delete(key);
-
-        // 步骤3：查询用户并更新密码
+        // 步骤2：查询用户并更新密码
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> com.graphhire.common.vo.Exceptions.BusinessException.of("用户不存在"));
         user.setPassword(com.graphhire.auth.domain.vo.EncryptedPassword.encode(newPassword));
@@ -359,6 +367,25 @@ public class AuthAppService {
     // =====================================================
     // 【第四部分】私有辅助方法
     // =====================================================
+
+    /**
+     * 校验邮箱验证码
+     * @param username 邮箱
+     * @param code 用户输入的验证码
+     * @param type 验证码类型（register/forgot_password）
+     */
+    private void validateVerifyCode(String username, String code, String type) {
+        if (code == null || code.isBlank()) {
+            throw com.graphhire.common.vo.Exceptions.BusinessException.of("验证码不能为空");
+        }
+        String key = "email_code:" + username + ":" + type;
+        String storedCode = redisTemplate.opsForValue().get(key);
+        if (storedCode == null || !storedCode.equals(code)) {
+            throw com.graphhire.common.vo.Exceptions.BusinessException.of("验证码错误或已过期");
+        }
+        // 验证成功后删除验证码（一次性使用）
+        redisTemplate.delete(key);
+    }
 
     /** 执行 Sa-Token 登录，存储用户类型到 Session */
     private void doLogin(User user) {
