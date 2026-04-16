@@ -11,7 +11,9 @@ import com.graphhire.resume.domain.vo.ParseStatus;
 import com.graphhire.resume.infrastructure.ai.DocumentParser;
 import com.graphhire.match.infrastructure.ai.DeepSeekClient;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
+import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -19,8 +21,9 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 @Component
+@ConditionalOnProperty(name = "rocketmq.enabled", havingValue = "true", matchIfMissing = false)
 @RocketMQMessageListener(topic = "resume-parse", consumerGroup = "resume-parse-consumer")
-public class ResumeParseMQConsumer {
+public class ResumeParseMQConsumer implements RocketMQListener<String> {
 
     @Autowired
     private ResumeRepository resumeRepository;
@@ -37,7 +40,12 @@ public class ResumeParseMQConsumer {
     @Autowired
     private NotificationRepository notificationRepository;
 
-    public void consumeResumeParse(Long resumeId, Long parseTaskId) {
+    @Override
+    public void onMessage(String message) {
+        // message format: "resumeId,parseTaskId"
+        String[] parts = message.split(",");
+        Long resumeId = Long.parseLong(parts[0]);
+        Long parseTaskId = Long.parseLong(parts[1]);
         // 1. Update parse_task status to RUNNING (1)
         ParseTask task = parseTaskRepository.findById(parseTaskId)
             .orElseThrow(() -> new RuntimeException("Parse task not found: " + parseTaskId));

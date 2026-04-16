@@ -20,12 +20,12 @@ public class AuthController {
         return Result.success(authService.login(request.getUsername(), request.getPassword()));
     }
 
-    @PostMapping("/person/register")
+    @PostMapping("/register/person")
     public Result<LoginResponse> personRegister(@RequestBody PersonRegisterRequest request) {
         return Result.success(authService.registerPerson(request.toCmd()));
     }
 
-    @PostMapping("/company/register")
+    @PostMapping("/register/company")
     public Result<LoginResponse> companyRegister(@RequestBody CompanyRegisterRequest request) {
         return Result.success(authService.registerCompany(request.toCmd()));
     }

@@ -7,6 +7,7 @@ import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /**
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component;
  * Listens to resume-parsed topic and triggers graph building.
  */
 @Component
+@ConditionalOnProperty(name = "rocketmq.enabled", havingValue = "true", matchIfMissing = false)
 @RocketMQMessageListener(topic = "resume-parsed", consumerGroup = "graph-consumer-resume")
 public class ResumeGraphMQConsumer implements RocketMQListener<ResumeParsedEvent> {
 

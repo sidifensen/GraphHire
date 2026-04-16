@@ -26,11 +26,15 @@ public class RustFSConfig {
 
     @Bean
     public S3Client s3Client() {
+        // Use placeholder credentials if not configured, for local development
+        String ak = (accessKey == null || accessKey.isBlank()) ? "local" : accessKey;
+        String sk = (secretKey == null || secretKey.isBlank()) ? "local" : secretKey;
+
         return S3Client.builder()
             .endpointOverride(URI.create(endpoint))
             .region(Region.of(region))
             .credentialsProvider(StaticCredentialsProvider.create(
-                AwsBasicCredentials.create(accessKey, secretKey)))
+                AwsBasicCredentials.create(ak, sk)))
             .forcePathStyle(true)
             .build();
     }

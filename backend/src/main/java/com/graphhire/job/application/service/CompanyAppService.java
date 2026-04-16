@@ -86,4 +86,16 @@ public class CompanyAppService {
         return companyRepository.findById(companyId)
                 .orElseThrow(() -> Exceptions.BusinessException.of("企业不存在"));
     }
+
+    /**
+     * Submit authentication materials (license) for the company.
+     * Updates the license_path and sets auth_status to PENDING_VERIFY.
+     */
+    @Transactional
+    public Company submitAuthMaterials(Long userId, String licenseUrl) {
+        Company company = getCompanyByUserId(userId);
+        company.setLicenseUrl(licenseUrl);
+        company.setAuthStatus(AuthStatus.PENDING_VERIFY);
+        return companyRepository.save(company);
+    }
 }

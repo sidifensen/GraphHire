@@ -8,7 +8,6 @@ import com.graphhire.match.application.query.MatchDetailQuery;
 import com.graphhire.match.domain.model.MatchRecord;
 import com.graphhire.match.domain.repository.MatchRecordRepository;
 import com.graphhire.match.domain.service.MatchDomainService;
-import com.graphhire.match.infrastructure.mq.MatchMQConsumer;
 import com.graphhire.match.iface.dto.response.MatchDetailResponse;
 import com.graphhire.notification.application.service.NotificationAppService;
 import com.graphhire.notification.domain.model.Notification;
@@ -153,6 +152,33 @@ public class MatchAppService {
             for (MatchRecord record : records) {
                 Job job = jobRepository.findById(record.getJobId()).orElse(null);
                 if (job != null) {
+                    recommendations.add(new MatchDetailResponse(record, resume, job));
+                }
+            }
+        }
+        return recommendations;
+    }
+
+    /**
+     * Get recommended resumes for a company based on their published jobs.
+     * Returns match records sorted by match score.
+     */
+    public List<MatchDetailResponse> getRecommendedResumesForCompany(Long companyId) {
+        // Get all published jobs for the company
+        List<Job> companyJobs = jobRepository.findByCompanyId(companyId).stream()
+            .filter(j -> j.getStatus() == JobStatus.PUBLISHED)
+            .toList();
+        if (companyJobs.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // Collect all match records for company's jobs
+        List<MatchDetailResponse> recommendations = new ArrayList<>();
+        for (Job job : companyJobs) {
+            List<MatchRecord> records = matchRecordRepository.findByJobId(job.getId());
+            for (MatchRecord record : records) {
+                Resume resume = resumeRepository.findById(record.getResumeId()).orElse(null);
+                if (resume != null) {
                     recommendations.add(new MatchDetailResponse(record, resume, job));
                 }
             }

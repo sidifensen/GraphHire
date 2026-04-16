@@ -8,6 +8,7 @@ import com.graphhire.resume.infrastructure.persistence.po.ParseTaskPO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -28,6 +29,13 @@ public class ParseTaskRepositoryImpl implements ParseTaskRepository {
         wrapper.eq(ParseTaskPO::getResumeId, resumeId);
         ParseTaskPO po = parseTaskMapper.selectOne(wrapper);
         return Optional.ofNullable(po).map(this::toDomain);
+    }
+
+    @Override
+    public List<ParseTask> findAll() {
+        return parseTaskMapper.selectList(null).stream()
+                .map(this::toDomain)
+                .toList();
     }
 
     @Override

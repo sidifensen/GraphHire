@@ -78,7 +78,8 @@ public class CompanyController {
 
     @PostMapping("/auth")
     public Result<Void> submitAuthMaterials(@RequestParam(required = false) String licenseUrl) {
-        // TODO: Implement auth materials submission
+        Long userId = StpUtil.getLoginIdAsLong();
+        companyAppService.submitAuthMaterials(userId, licenseUrl);
         return Result.success();
     }
 
@@ -147,7 +148,7 @@ public class CompanyController {
         if (!job.getCompanyId().equals(companyId)) {
             throw new Exceptions.ForbiddenException("无权操作该职位");
         }
-        // TODO: Implement job reparse
+        jobAppService.triggerJobParse(id);
         return Result.success();
     }
 
@@ -173,6 +174,18 @@ public class CompanyController {
         Long companyId = companyAppService.getCompanyIdByUserId(userId);
         MatchDetailResponse response = matchAppService.getMatchDetailForCompany(resumeId, jobId, companyId);
         return Result.success(response);
+    }
+
+    /**
+     * Get recommended resumes list for company.
+     * Returns candidates that match the company's published jobs.
+     */
+    @GetMapping("/recommend/resumes")
+    public Result<List<MatchDetailResponse>> getRecommendedResumes() {
+        Long userId = StpUtil.getLoginIdAsLong();
+        Long companyId = companyAppService.getCompanyIdByUserId(userId);
+        List<MatchDetailResponse> recommendations = matchAppService.getRecommendedResumesForCompany(companyId);
+        return Result.success(recommendations);
     }
 
     @PostMapping("/create")

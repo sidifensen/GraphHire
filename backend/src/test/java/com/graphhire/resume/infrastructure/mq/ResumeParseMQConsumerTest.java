@@ -90,7 +90,7 @@ class ResumeParseMQConsumerTest {
             });
 
             // When
-            consumer.consumeResumeParse(resumeId, parseTaskId);
+            consumer.onMessage(resumeId + "," + parseTaskId);
 
             // Then
             ArgumentCaptor<ParseTask> taskCaptor = ArgumentCaptor.forClass(ParseTask.class);
@@ -150,7 +150,7 @@ class ResumeParseMQConsumerTest {
             when(parseTaskRepository.save(any(ParseTask.class))).thenReturn(task);
 
             // When
-            consumer.consumeResumeParse(resumeId, parseTaskId);
+            consumer.onMessage(resumeId + "," + parseTaskId);
 
             // Then
             ArgumentCaptor<Resume> resumeCaptor = ArgumentCaptor.forClass(Resume.class);
@@ -183,7 +183,7 @@ class ResumeParseMQConsumerTest {
 
             // When & Then
             RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> consumer.consumeResumeParse(resumeId, parseTaskId));
+                () -> consumer.onMessage(resumeId + "," + parseTaskId));
             assertTrue(exception.getMessage().contains("Parse task not found"));
         }
 
@@ -204,7 +204,7 @@ class ResumeParseMQConsumerTest {
 
             // When & Then
             RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> consumer.consumeResumeParse(resumeId, parseTaskId));
+                () -> consumer.onMessage(resumeId + "," + parseTaskId));
             assertTrue(exception.getMessage().contains("Resume not found"));
         }
 
@@ -239,7 +239,7 @@ class ResumeParseMQConsumerTest {
             });
 
             // When
-            consumer.consumeResumeParse(resumeId, parseTaskId);
+            consumer.onMessage(resumeId + "," + parseTaskId);
 
             // Then
             ArgumentCaptor<Resume> resumeCaptor = ArgumentCaptor.forClass(Resume.class);

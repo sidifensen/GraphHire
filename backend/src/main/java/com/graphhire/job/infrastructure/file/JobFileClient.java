@@ -10,7 +10,7 @@ import java.nio.file.Path;
 import java.util.UUID;
 
 @Component
-public class RustFSClient {
+public class JobFileClient {
 
     @Value("${rustfs.endpoint:http://localhost:8081}")
     private String endpoint;

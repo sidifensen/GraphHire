@@ -140,6 +140,28 @@ public class AuthAppService {
         return generateTokenPair(user);
     }
 
+    /**
+     * Admin login - verifies user_type is ADMIN
+     */
+    public LoginResponse adminLogin(String username, String password) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> Exceptions.BusinessException.of("用户不存在"));
+        if (user.isLocked()) {
+            throw Exceptions.BusinessException.of("账号已锁定");
+        }
+        if (user.getUserType() != UserType.ADMIN) {
+            throw Exceptions.BusinessException.of("非管理员账号");
+        }
+        if (!user.getPassword().matches(password)) {
+            user.loginFailed();
+            userRepository.save(user);
+            throw Exceptions.BusinessException.of("密码错误");
+        }
+        user.loginSuccess();
+        userRepository.save(user);
+        return generateTokenPair(user);
+    }
+
     private LoginResponse generateTokenPair(User user) {
         String accessToken = generateAccessToken(user);
         String refreshToken = generateRefreshToken(user);

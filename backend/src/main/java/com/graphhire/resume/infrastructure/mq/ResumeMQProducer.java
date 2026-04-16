@@ -4,9 +4,11 @@ import com.graphhire.resume.domain.model.Resume;
 import com.graphhire.resume.domain.event.ResumeUploadedEvent;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 @Component
+@ConditionalOnProperty(name = "rocketmq.enabled", havingValue = "true", matchIfMissing = false)
 public class ResumeMQProducer {
 
     private static final String TOPIC_RESUME_UPLOADED = "resume-uploaded";

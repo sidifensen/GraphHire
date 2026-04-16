@@ -43,6 +43,13 @@ public class JobRepositoryImpl implements JobRepository {
     }
 
     @Override
+    public List<Job> findAll() {
+        return jobMapper.selectList(null).stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
+    @Override
     public Job save(Job job) {
         JobPO po = toPO(job);
         if (job.getId() == null) {

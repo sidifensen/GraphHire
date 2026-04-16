@@ -30,7 +30,7 @@ public class ResumeAppService {
     @Autowired
     private RustFSClient rustFSClient;
 
-    @Autowired
+    @Autowired(required = false)
     private ResumeMQProducer mqProducer;
 
     @Transactional
@@ -51,8 +51,10 @@ public class ResumeAppService {
         task.setStatus(ParseTask.TaskStatus.PENDING);
         parseTaskRepository.save(task);
 
-        // 5. Send MQ message to trigger AI parsing
-        mqProducer.sendResumeParseMessage(saved.getId(), task.getId());
+        // 5. Send MQ message to trigger AI parsing (if MQ is enabled)
+        if (mqProducer != null) {
+            mqProducer.sendResumeParseMessage(saved.getId(), task.getId());
+        }
 
         return saved;
     }
@@ -129,10 +131,12 @@ public class ResumeAppService {
         if (!resume.getUserId().equals(userId)) {
             throw new RuntimeException("无权解析此简历");
         }
-        // Mark as parsing and send MQ event to trigger AI parsing
+        // Mark as parsing and send MQ event to trigger AI parsing (if MQ is enabled)
         resume.markParsing();
         resumeRepository.save(resume);
-        mqProducer.sendResumeUploadedEvent(resume);
+        if (mqProducer != null) {
+            mqProducer.sendResumeUploadedEvent(resume);
+        }
     }
 
     public Resume getResumeDetail(Long resumeId, Long userId) {

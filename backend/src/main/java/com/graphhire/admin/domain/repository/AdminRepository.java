@@ -1,5 +1,8 @@
 package com.graphhire.admin.domain.repository;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.graphhire.auth.domain.model.User;
+
 import java.util.Optional;
 
 /**
@@ -36,4 +39,9 @@ public interface AdminRepository {
      * Find user by ID.
      */
     Optional<Long> findUserIdById(Long id);
+
+    /**
+     * Find users with pagination.
+     */
+    IPage<User> findUsersPage(int page, int size);
 }

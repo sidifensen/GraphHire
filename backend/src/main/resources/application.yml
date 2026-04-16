@@ -1,11 +1,12 @@
 server:
-  port: 8080
-  servlet:
-    context-path: /api
+  port: 7777
 
 spring:
   application:
     name: graphhire-backend
+  autoconfigure:
+    exclude:
+      - org.apache.rocketmq.spring.autoconfigure.RocketMQAutoConfiguration
 
   datasource:
     driver-class-name: org.postgresql.Driver
@@ -81,9 +82,14 @@ mybatis-plus:
 
 # RocketMQ Configuration
 rocketmq:
-  name-server: localhost:9876
+  enabled: false
+  name-server: ${ROCKETMQ_NAMESERVER:localhost:9876}
   producer:
     group: graphhire-producer-group
+
+# RustFS Configuration
+rustfs:
+  endpoint: http://localhost:9000
 
 # Logging Configuration
 logging:

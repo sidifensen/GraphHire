@@ -13,6 +13,8 @@ public interface JobRepository {
 
     List<Job> findByStatus(JobStatus status);
 
+    List<Job> findAll();
+
     Job save(Job job);
 
     void delete(Job job);

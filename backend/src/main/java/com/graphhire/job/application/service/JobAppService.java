@@ -24,10 +24,10 @@ public class JobAppService {
     @Autowired
     private JobRepository jobRepository;
 
-    @Autowired
+    @Autowired(required = false)
     private JobMQProducer jobMQProducer;
 
-    @Autowired
+    @Autowired(required = false)
     private JobParseMQProducer jobParseMQProducer;
 
     @Autowired
@@ -68,7 +68,9 @@ public class JobAppService {
         job.publish();
         job.setPublishedAt(LocalDateTime.now());
         Job savedJob = jobRepository.save(job);
-        jobMQProducer.sendJobPublishedEvent(savedJob);
+        if (jobMQProducer != null) {
+            jobMQProducer.sendJobPublishedEvent(savedJob);
+        }
 
         if (savedJob.getFilePath() != null && !savedJob.getFilePath().isBlank()) {
             triggerJobParse(savedJob.getId());
@@ -92,7 +94,9 @@ public class JobAppService {
         job.setParseStatus(ParseStatus.PENDING);
         jobRepository.save(job);
 
-        jobParseMQProducer.sendJobParseTask(jobId, savedTask.getId());
+        if (jobParseMQProducer != null) {
+            jobParseMQProducer.sendJobParseTask(jobId, savedTask.getId());
+        }
     }
 
     @Transactional

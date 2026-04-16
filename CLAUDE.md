@@ -31,6 +31,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **提交** — 细粒度，每个 RED-GREEN-REFACTOR 循环后提交一次
 - **自我评估** — 使用内联检查表自检，而非发起子代理 review 循环
 
+### 代码注释规范
+
+- **必须添加注释**：所有类、方法、关键逻辑分支、业务规则处理处必须添加注释
+- **注释内容**：说明"为什么这样做"而非"做了什么"——代码本身已说明做了什么
+- **注释位置**：注释应位于代码上方或行尾（视情况选择）
+- **特殊情况**：简单明了、无歧义的代码（如 getter/setter、属性赋值）可不加注释
+- **TODO/FIXME**：必须附带负责人和日期，格式 `// TODO(username: YYYY-MM-DD): <描述>`
+
 ---
 
 ## 文档布局
