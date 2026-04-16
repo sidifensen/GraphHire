@@ -1,6 +1,7 @@
 package com.graphhire.resume.infrastructure.persistence.po;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
@@ -27,7 +28,8 @@ public class ParseTaskPO {
     /** 错误信息 */
     private String errorMessage;
     /** 创建时间 */
-    private LocalDateTime createdAt;
+    @TableField("create_time")
+    private LocalDateTime createTime;
     /** 开始执行时间 */
     private LocalDateTime startedAt;
     /** 完成时间 */
@@ -89,12 +91,12 @@ public class ParseTaskPO {
         this.errorMessage = errorMessage;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    public LocalDateTime getCreateTime() {
+        return createTime;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    public void setCreateTime(LocalDateTime createTime) {
+        this.createTime = createTime;
     }
 
     public LocalDateTime getStartedAt() {

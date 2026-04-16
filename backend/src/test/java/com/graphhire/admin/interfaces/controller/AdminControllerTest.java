@@ -373,9 +373,9 @@ class AdminControllerTest {
         @DisplayName("查询技能标签列表成功")
         void getSkillList_Success() {
             // Given
-            SkillTag skill1 = new SkillTag("Java", SkillCategory.PROGRAMMING_LANGUAGE);
+            SkillTag skill1 = new SkillTag("Java", SkillCategory.技术技能);
             skill1.setId(1L);
-            SkillTag skill2 = new SkillTag("Spring", SkillCategory.FRAMEWORK);
+            SkillTag skill2 = new SkillTag("Spring", SkillCategory.技术技能);
             skill2.setId(2L);
             List<SkillTag> skillList = java.util.Arrays.asList(skill1, skill2);
             when(adminAppService.getSkillList()).thenReturn(skillList);

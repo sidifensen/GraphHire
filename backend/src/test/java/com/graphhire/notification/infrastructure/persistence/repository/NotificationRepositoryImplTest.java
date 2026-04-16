@@ -43,10 +43,10 @@ class NotificationRepositoryImplTest {
         samplePO.setType(1);
         samplePO.setTitle("Test Title");
         samplePO.setContent("Test Content");
-        samplePO.setReferenceId(200L);
+        samplePO.setRelatedId(200L);
         samplePO.setIsRead(false);
-        samplePO.setCreatedAt(LocalDateTime.of(2026, 4, 15, 10, 0, 0));
-        samplePO.setUpdatedAt(LocalDateTime.of(2026, 4, 15, 10, 0, 0));
+        samplePO.setCreateTime(LocalDateTime.of(2026, 4, 15, 10, 0, 0));
+        samplePO.setUpdateTime(LocalDateTime.of(2026, 4, 15, 10, 0, 0));
 
         sampleNotification = new Notification();
         sampleNotification.setId(1L);
@@ -103,7 +103,7 @@ class NotificationRepositoryImplTest {
             po2.setTitle("Title 2");
             po2.setContent("Content 2");
             po2.setIsRead(true);
-            po2.setCreatedAt(LocalDateTime.of(2026, 4, 14, 10, 0, 0));
+            po2.setCreateTime(LocalDateTime.of(2026, 4, 14, 10, 0, 0));
 
             when(notificationMapper.selectList(any(LambdaQueryWrapper.class)))
                 .thenReturn(Arrays.asList(samplePO, po2));

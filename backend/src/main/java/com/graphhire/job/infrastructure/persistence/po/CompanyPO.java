@@ -1,6 +1,7 @@
 package com.graphhire.job.infrastructure.persistence.po;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
@@ -19,20 +20,26 @@ public class CompanyPO {
     /** 用户ID（关联用户系统） */
     private Long userId;
     /** 企业名称 */
+    @TableField("name")
     private String companyName;
     /** 统一社会信用代码 */
+    @TableField("code")
     private String unifiedSocialCreditCode;
     /** 营业执照文件路径 */
     private String licensePath;
     /** 认证状态：0=待审核，1=已认证，2=已拒绝 */
     private Integer authStatus;
     /** 认证拒绝原因 */
+    @TableField(exist = false)
     private String authReason;
     /** 认证时间 */
+    @TableField(exist = false)
     private LocalDateTime authTime;
     /** 创建时间 */
-    private LocalDateTime createdAt;
+    @TableField("create_time")
+    private LocalDateTime createTime;
     /** 更新时间 */
+    @TableField("update_time")
     private LocalDateTime updatedAt;
 
     public Long getId() {
@@ -99,12 +106,12 @@ public class CompanyPO {
         this.authTime = authTime;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    public LocalDateTime getCreateTime() {
+        return createTime;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    public void setCreateTime(LocalDateTime createTime) {
+        this.createTime = createTime;
     }
 
     public LocalDateTime getUpdatedAt() {

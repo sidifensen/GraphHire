@@ -23,6 +23,7 @@ public class SaTokenConfig implements WebMvcConfigurer {
         // 放行路径
         .excludePathPatterns(
             "/auth/**",
+            "/admin/login",
             "/notifications/**",
             "/skill-tags/**",
             "/health",

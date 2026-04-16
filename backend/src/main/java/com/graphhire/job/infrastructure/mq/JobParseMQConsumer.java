@@ -104,7 +104,7 @@ public class JobParseMQConsumer {
                                 // 不存在则创建新的技能标签
                                 SkillTag newSkill = new SkillTag();
                                 newSkill.setName(skillName);
-                                newSkill.updateCategory(com.graphhire.skill.domain.vo.SkillCategory.PROGRAMMING_LANGUAGE);
+                                newSkill.updateCategory(com.graphhire.skill.domain.vo.SkillCategory.技术技能);
                                 return skillTagRepository.save(newSkill);
                             });
 

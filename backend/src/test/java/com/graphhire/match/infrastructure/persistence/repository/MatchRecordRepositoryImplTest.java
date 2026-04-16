@@ -50,7 +50,7 @@ class MatchRecordRepositoryImplTest {
         samplePO.setSalaryScore(new BigDecimal("95.00"));
         samplePO.setMatchReport("{\"skills\": [\"Java\", \"Python\"]}");
         samplePO.setStatus(0);
-        samplePO.setCreatedAt(LocalDateTime.of(2026, 4, 15, 10, 30, 0));
+        samplePO.setCreateTime(LocalDateTime.of(2026, 4, 15, 10, 30, 0));
 
         sampleRecord = new MatchRecord();
         sampleRecord.setId(1L);

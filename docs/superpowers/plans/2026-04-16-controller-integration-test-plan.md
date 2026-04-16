@@ -692,12 +692,12 @@ git commit -m "test: 添加 SkillTagControllerIT 集成测试"
 ## Task 5: 创建 PersonControllerIT
 
 **Files:**
-- Create: `backend/src/test/java/com/graphhire/person/interfaces/controller/it/PersonControllerIT.java`
+- Create: `backend/src/test/java/com/graphhire/resume/interfaces/controller/it/PersonControllerIT.java`
 
 - [ ] **Step 1: 编写 PersonControllerIT**
 
 ```java
-package com.graphhire.person.interfaces.controller.it;
+package com.graphhire.resume.interfaces.controller.it;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -806,8 +806,6 @@ package com.graphhire.job.interfaces.controller.it;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.graphhire.BaseControllerIT;
-import com.graphhire.job.domain.vo.Location;
-import com.graphhire.job.domain.vo.SalaryRange;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -1337,14 +1335,11 @@ git commit -m "test: 添加 MatchControllerIT 集成测试"
 ```java
 package com.graphhire.notification.interfaces.controller.it;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.graphhire.BaseControllerIT;
-import com.graphhire.notification.domain.vo.NotificationType;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;

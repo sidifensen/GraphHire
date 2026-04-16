@@ -2,20 +2,27 @@ package com.graphhire;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.graphhire.auth.application.service.AuthAppService;
+import com.graphhire.auth.domain.model.User;
+import com.graphhire.auth.domain.repository.UserRepository;
+import com.graphhire.auth.domain.service.PasswordEncoder;
+import com.graphhire.auth.domain.vo.AuthStatus;
+import com.graphhire.auth.domain.vo.UserType;
+import com.graphhire.auth.interfaces.dto.response.LoginResponse;
+import cn.hutool.crypto.digest.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Transactional
 public abstract class BaseControllerIT {
 
     @Autowired
@@ -23,6 +30,18 @@ public abstract class BaseControllerIT {
 
     @Autowired
     protected ObjectMapper objectMapper;
+
+    @Autowired
+    protected AuthAppService authService;
+
+    @Autowired
+    protected UserRepository userRepository;
+
+    @Autowired
+    protected PasswordEncoder passwordEncoder;
+
+    @Autowired
+    protected JdbcTemplate jdbcTemplate;
 
     protected static String personToken;
     protected static String companyToken;
@@ -55,17 +74,85 @@ public abstract class BaseControllerIT {
     }
 
     /**
-     * Call this from subclass @BeforeAll to login and store tokens.
-     * Usage: BaseControllerIT.initTokens(mockMvc, objectMapper);
+     * Call this from subclass @BeforeAll (static context).
+     * Safe to call multiple times — subsequent calls return immediately if tokens exist.
+     *
+     * Approach: Create users via direct JDBC (bypasses verifyCode), then call HTTP login endpoint
+     * via MockMvc (goes through SaToken filter chain for valid token).
      */
-    protected static void initTokens(MockMvc mockMvc, ObjectMapper objectMapper) throws Exception {
-        doLogin(mockMvc, objectMapper, TEST_PERSON_USERNAME, TEST_PERSON_PASSWORD);
-        doLogin(mockMvc, objectMapper, TEST_COMPANY_USERNAME, TEST_COMPANY_PASSWORD);
-        doLogin(mockMvc, objectMapper, TEST_ADMIN_USERNAME, TEST_ADMIN_PASSWORD);
+    protected static void ensureTokensInitialized(AuthAppService authService,
+                                                  UserRepository userRepository,
+                                                  PasswordEncoder passwordEncoder,
+                                                  JdbcTemplate jdbcTemplate,
+                                                  MockMvc mockMvc,
+                                                  ObjectMapper objectMapper) throws Exception {
+        if (personToken != null && companyToken != null && adminToken != null) {
+            return; // Already initialized
+        }
+
+        // Create test users via direct JDBC (avoids verifyCode requirement)
+        personUserId = createUserViaJdbc(jdbcTemplate, TEST_PERSON_USERNAME, TEST_PERSON_PASSWORD, "PERSON");
+        companyUserId = createUserViaJdbc(jdbcTemplate, TEST_COMPANY_USERNAME, TEST_COMPANY_PASSWORD, "COMPANY");
+        adminUserId = createUserViaJdbc(jdbcTemplate, TEST_ADMIN_USERNAME, TEST_ADMIN_PASSWORD, "ADMIN");
+
+        // For company user, also create company and company_staff records
+        createCompanyAndStaff(jdbcTemplate, companyUserId);
+
+        // Login via HTTP (MockMvc goes through full filter chain including SaToken)
+        personToken = doHttpLogin(mockMvc, objectMapper, TEST_PERSON_USERNAME, TEST_PERSON_PASSWORD);
+        companyToken = doHttpLogin(mockMvc, objectMapper, TEST_COMPANY_USERNAME, TEST_COMPANY_PASSWORD);
+        adminToken = doHttpLogin(mockMvc, objectMapper, TEST_ADMIN_USERNAME, TEST_ADMIN_PASSWORD);
     }
 
-    private static void doLogin(MockMvc mockMvc, ObjectMapper objectMapper,
-                               String username, String password) throws Exception {
+    private static Long createUserViaJdbc(JdbcTemplate jdbc, String username, String password, String userType) {
+        // Check if user already exists
+        Integer count = jdbc.queryForObject(
+            "SELECT COUNT(*) FROM sys_user WHERE username = ?", Integer.class, username);
+        if (count != null && count > 0) {
+            // Return existing user ID
+            return jdbc.queryForObject(
+                "SELECT id FROM sys_user WHERE username = ?", Long.class, username);
+        }
+
+        String encryptedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
+        // user_type: 1=PERSON, 2=COMPANY, 3=ADMIN; status: 1=VERIFIED
+        int ut = "PERSON".equals(userType) ? 1 : ("COMPANY".equals(userType) ? 2 : 3);
+        jdbc.update(
+            "INSERT INTO sys_user (username, password, user_type, status, deleted, last_login_time, create_time, update_time) " +
+            "VALUES (?, ?, ?, 1, 0, NULL, NOW(), NOW())",
+            username, encryptedPassword, ut
+        );
+        // Return the auto-generated ID
+        return jdbc.queryForObject("SELECT LASTVAL()", Long.class);
+    }
+
+    private static void createCompanyAndStaff(JdbcTemplate jdbc, Long companyUserId) {
+        // Check if company already exists for this user
+        Integer count = jdbc.queryForObject(
+            "SELECT COUNT(*) FROM company WHERE user_id = ?", Integer.class, companyUserId);
+        if (count != null && count > 0) {
+            return; // Already exists
+        }
+
+        // Create company record (auth_status: 0=PENDING_VERIFY, 1=VERIFIED)
+        // Column names: name, code (unified social credit code), auth_status
+        jdbc.update(
+            "INSERT INTO company (user_id, name, code, auth_status, create_time, update_time) " +
+            "VALUES (?, ?, ?, 1, NOW(), NOW())",
+            companyUserId, "Test Company", "911100000000000000"
+        );
+        Long companyId = jdbc.queryForObject("SELECT LASTVAL()", Long.class);
+
+        // Create company_staff record linking user to company (post: OWNER)
+        jdbc.update(
+            "INSERT INTO company_staff (company_id, user_id, post, create_time, update_time) " +
+            "VALUES (?, ?, 'OWNER', NOW(), NOW())",
+            companyId, companyUserId
+        );
+    }
+
+    private static String doHttpLogin(MockMvc mockMvc, ObjectMapper objectMapper,
+                                     String username, String password) throws Exception {
         String json = String.format("{\"username\":\"%s\",\"password\":\"%s\"}", username, password);
         MvcResult result = mockMvc.perform(post("/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -74,18 +161,6 @@ public abstract class BaseControllerIT {
 
         String response = result.getResponse().getContentAsString();
         JsonNode node = objectMapper.readTree(response);
-        String token = node.path("data").path("accessToken").asText();
-        Long userId = node.path("data").path("userId").asLong();
-
-        if (username.equals(TEST_PERSON_USERNAME)) {
-            personToken = token;
-            personUserId = userId;
-        } else if (username.equals(TEST_COMPANY_USERNAME)) {
-            companyToken = token;
-            companyUserId = userId;
-        } else if (username.equals(TEST_ADMIN_USERNAME)) {
-            adminToken = token;
-            adminUserId = userId;
-        }
+        return node.path("data").path("accessToken").asText();
     }
 }

@@ -2,22 +2,23 @@ package com.graphhire.resume.interfaces.controller.it;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.graphhire.auth.application.service.AuthAppService;
+import com.graphhire.auth.domain.repository.UserRepository;
+import com.graphhire.auth.domain.service.PasswordEncoder;
 import com.graphhire.BaseControllerIT;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
+import org.springframework.mock.web.MockMultipartFile;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import org.springframework.mock.web.MockMultipartFile;
 
 @TestMethodOrder(MethodOrderer.DisplayName.class)
 class ResumeControllerIT extends BaseControllerIT {
@@ -28,11 +29,27 @@ class ResumeControllerIT extends BaseControllerIT {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private AuthAppService authService;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     private static Long uploadedResumeId;
 
     @BeforeAll
-    static void beforeAll(@Autowired MockMvc mockMvc, @Autowired ObjectMapper objectMapper) throws Exception {
-        BaseControllerIT.initTokens(mockMvc, objectMapper);
+    static void beforeAll(@Autowired MockMvc mockMvc, @Autowired ObjectMapper objectMapper,
+                          @Autowired AuthAppService authService,
+                          @Autowired UserRepository userRepository,
+                          @Autowired PasswordEncoder passwordEncoder,
+                          @Autowired JdbcTemplate jdbcTemplate) throws Exception {
+        ensureTokensInitialized(authService, userRepository, passwordEncoder, jdbcTemplate, mockMvc, objectMapper);
     }
 
     @BeforeEach

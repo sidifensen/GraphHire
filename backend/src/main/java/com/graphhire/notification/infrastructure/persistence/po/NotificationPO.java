@@ -1,6 +1,7 @@
 package com.graphhire.notification.infrastructure.persistence.po;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
@@ -23,13 +24,16 @@ public class NotificationPO {
     /** 通知内容 */
     private String content;
     /** 关联业务ID（可指向职位、简历、候选人等） */
-    private Long referenceId;
+    @TableField("related_id")
+    private Long relatedId;
     /** 已读状态：false-未读，true-已读 */
     private Boolean isRead;
     /** 创建时间 */
-    private LocalDateTime createdAt;
+    @TableField("create_time")
+    private LocalDateTime createTime;
     /** 更新时间 */
-    private LocalDateTime updatedAt;
+    @TableField("update_time")
+    private LocalDateTime updateTime;
 
     public Long getId() {
         return id;
@@ -71,12 +75,12 @@ public class NotificationPO {
         this.content = content;
     }
 
-    public Long getReferenceId() {
-        return referenceId;
+    public Long getRelatedId() {
+        return relatedId;
     }
 
-    public void setReferenceId(Long referenceId) {
-        this.referenceId = referenceId;
+    public void setRelatedId(Long relatedId) {
+        this.relatedId = relatedId;
     }
 
     public Boolean getIsRead() {
@@ -87,19 +91,19 @@ public class NotificationPO {
         this.isRead = isRead;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    public LocalDateTime getCreateTime() {
+        return createTime;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    public void setCreateTime(LocalDateTime createTime) {
+        this.createTime = createTime;
     }
 
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
+    public LocalDateTime getUpdateTime() {
+        return updateTime;
     }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
+    public void setUpdateTime(LocalDateTime updateTime) {
+        this.updateTime = updateTime;
     }
 }

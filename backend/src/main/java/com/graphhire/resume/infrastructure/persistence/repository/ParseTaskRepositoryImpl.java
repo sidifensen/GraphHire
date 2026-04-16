@@ -84,7 +84,7 @@ public class ParseTaskRepositoryImpl implements ParseTaskRepository {
             task.setStatus(ParseTask.TaskStatus.values()[po.getStatus()]);
         }
         // 手动复制日期字段，保持对象引用语义
-        task.setCreatedAt(po.getCreatedAt());
+        task.setCreatedAt(po.getCreateTime());
         task.setStartedAt(po.getStartedAt());
         task.setCompletedAt(po.getCompletedAt());
         return task;
@@ -99,7 +99,7 @@ public class ParseTaskRepositoryImpl implements ParseTaskRepository {
             po.setStatus(task.getStatus().ordinal());
         }
         // 手动复制日期字段，保持对象引用语义
-        po.setCreatedAt(task.getCreatedAt());
+        po.setCreateTime(task.getCreatedAt());
         po.setStartedAt(task.getStartedAt());
         po.setCompletedAt(task.getCompletedAt());
         return po;

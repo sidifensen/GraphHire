@@ -31,7 +31,7 @@ class SkillTagControllerIT extends BaseControllerIT {
     void createSkillTag_Success() throws Exception {
         String tagName = "Java_" + UUID.randomUUID().toString().substring(0, 8);
         String json = String.format(
-            "{\"name\":\"%s\",\"category\":\"PROGRAMMING_LANGUAGE\",\"description\":\"Java编程语言\"}",
+            "{\"name\":\"%s\",\"category\":\"技术技能\",\"description\":\"Java编程语言\"}",
             tagName);
 
         MvcResult result = mockMvc.perform(post("/skill-tags")
@@ -81,7 +81,7 @@ class SkillTagControllerIT extends BaseControllerIT {
     @Test
     @DisplayName("05 - 按分类获取技能标签")
     void getSkillTagsByCategory_Success() throws Exception {
-        mockMvc.perform(get("/skill-tags/category/{category}", "PROGRAMMING_LANGUAGE"))
+        mockMvc.perform(get("/skill-tags/category/{category}", "技术技能"))
             .andExpect(jsonPath("$.code").value(200))
             .andExpect(jsonPath("$.data").isArray());
     }
@@ -91,7 +91,7 @@ class SkillTagControllerIT extends BaseControllerIT {
     void updateSkillTag_Success() throws Exception {
         assertNotNull(createdTagId);
 
-        String json = "{\"name\":\"UpdatedJava\",\"category\":\"PROGRAMMING_LANGUAGE\",\"description\":\"Updated\"}";
+        String json = "{\"name\":\"UpdatedJava\",\"category\":\"技术技能\",\"description\":\"Updated\"}";
 
         mockMvc.perform(put("/skill-tags/{id}", createdTagId)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -125,7 +125,7 @@ class SkillTagControllerIT extends BaseControllerIT {
         assertNotNull(createdTagId);
 
         mockMvc.perform(put("/skill-tags/{id}/category", createdTagId)
-                .param("category", "FRAMEWORK"))
+                .param("category", "软技能"))
             .andExpect(jsonPath("$.code").value(200));
     }
 

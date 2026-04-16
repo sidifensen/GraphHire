@@ -1,6 +1,7 @@
 package com.graphhire.resume.infrastructure.persistence.po;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
@@ -33,7 +34,8 @@ public class PersonInfoPO {
     /** 期望薪资 */
     private Integer expectedSalary;
     /** 创建时间 */
-    private LocalDateTime createdAt;
+    @TableField("create_time")
+    private LocalDateTime createTime;
     /** 更新时间 */
     private LocalDateTime updatedAt;
 
@@ -117,12 +119,12 @@ public class PersonInfoPO {
         this.expectedSalary = expectedSalary;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    public LocalDateTime getCreateTime() {
+        return createTime;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    public void setCreateTime(LocalDateTime createTime) {
+        this.createTime = createTime;
     }
 
     public LocalDateTime getUpdatedAt() {

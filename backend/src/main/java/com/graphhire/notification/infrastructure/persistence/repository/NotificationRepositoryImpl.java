@@ -48,7 +48,7 @@ public class NotificationRepositoryImpl implements NotificationRepository {
         List<NotificationPO> pos = notificationMapper.selectList(
             new LambdaQueryWrapper<NotificationPO>()
                 .eq(NotificationPO::getUserId, userId)
-                .orderByDesc(NotificationPO::getCreatedAt));
+                .orderByDesc(NotificationPO::getCreateTime));
         return pos.stream().map(this::toDomain).toList();
     }
 
@@ -59,7 +59,7 @@ public class NotificationRepositoryImpl implements NotificationRepository {
             new LambdaQueryWrapper<NotificationPO>()
                 .eq(NotificationPO::getUserId, userId)
                 .eq(NotificationPO::getIsRead, isRead)
-                .orderByDesc(NotificationPO::getCreatedAt));
+                .orderByDesc(NotificationPO::getCreateTime));
         return pos.stream().map(this::toDomain).toList();
     }
 
@@ -70,7 +70,7 @@ public class NotificationRepositoryImpl implements NotificationRepository {
             new LambdaQueryWrapper<NotificationPO>()
                 .eq(NotificationPO::getUserId, userId)
                 .eq(NotificationPO::getType, type.getValue())
-                .orderByDesc(NotificationPO::getCreatedAt));
+                .orderByDesc(NotificationPO::getCreateTime));
         return pos.stream().map(this::toDomain).toList();
     }
 
@@ -138,6 +138,8 @@ public class NotificationRepositoryImpl implements NotificationRepository {
         if (po == null) return null;
         Notification n = new Notification();
         BeanUtil.copyProperties(po, n);
+        // 手动映射 relatedId -> referenceId（字段名不同）
+        n.setReferenceId(po.getRelatedId());
         // 枚举类型需要单独转换
         n.setType(NotificationType.fromValue(po.getType()));
         return n;
@@ -151,6 +153,8 @@ public class NotificationRepositoryImpl implements NotificationRepository {
     private NotificationPO toPO(Notification n) {
         NotificationPO po = new NotificationPO();
         BeanUtil.copyProperties(n, po);
+        // 手动映射 referenceId -> relatedId（字段名不同）
+        po.setRelatedId(n.getReferenceId());
         // 枚举类型需要单独转换
         po.setType(n.getType() != null ? n.getType().getValue() : null);
         return po;
