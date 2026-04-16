@@ -55,6 +55,10 @@ public class CompanyController {
     @Autowired
     private SkillGraphClient skillGraphClient;
 
+    /**
+     * 获取公司信息
+     * @return 公司信息
+     */
     @GetMapping("/info")
     public Result<Company> getCompanyInfo() {
         Long userId = StpUtil.getLoginIdAsLong();
@@ -62,6 +66,16 @@ public class CompanyController {
         return Result.success(company);
     }
 
+    /**
+     * 更新公司信息
+     * @param name 公司名称
+     * @param contactName 联系人姓名
+     * @param contactPhone 联系人电话
+     * @param contactEmail 联系人邮箱
+     * @param description 公司描述
+     * @param website 公司网站
+     * @return 更新结果
+     */
     @PutMapping("/info")
     public Result<Void> updateCompanyInfo(@RequestParam(required = false) String name,
                                          @RequestParam(required = false) String contactName,
@@ -76,6 +90,11 @@ public class CompanyController {
         return Result.success();
     }
 
+    /**
+     * 提交认证材料
+     * @param licenseUrl 营业执照URL
+     * @return 提交结果
+     */
     @PostMapping("/auth")
     public Result<Void> submitAuthMaterials(@RequestParam(required = false) String licenseUrl) {
         Long userId = StpUtil.getLoginIdAsLong();
@@ -83,6 +102,11 @@ public class CompanyController {
         return Result.success();
     }
 
+    /**
+     * 发布职位
+     * @param cmd 职位信息
+     * @return 发布结果
+     */
     @PostMapping("/job")
     public Result<Long> publishJob(@RequestBody PublishJobCmd cmd) {
         Long userId = StpUtil.getLoginIdAsLong();
@@ -93,6 +117,10 @@ public class CompanyController {
         return Result.success(job.getId());
     }
 
+    /**
+     * 获取职位列表
+     * @return 职位列表
+     */
     @GetMapping("/job/list")
     public Result<List<Job>> listJobs() {
         Long userId = StpUtil.getLoginIdAsLong();
@@ -101,6 +129,11 @@ public class CompanyController {
         return Result.success(jobs);
     }
 
+    /**
+     * 获取职位详情
+     * @param id 职位ID
+     * @return 职位详情
+     */
     @GetMapping("/job/{id}")
     public Result<Job> getJob(@PathVariable Long id) {
         Long userId = StpUtil.getLoginIdAsLong();
@@ -112,6 +145,12 @@ public class CompanyController {
         return Result.success(job);
     }
 
+    /**
+     * 更新职位
+     * @param id 职位ID
+     * @param cmd 更新请求
+     * @return 更新结果
+     */
     @PutMapping("/job/{id}")
     public Result<Void> updateJob(@PathVariable Long id, @RequestBody PublishJobCmd cmd) {
         Long userId = StpUtil.getLoginIdAsLong();
@@ -124,6 +163,12 @@ public class CompanyController {
         return Result.success();
     }
 
+    /**
+     * 切换职位状态
+     * @param id 职位ID
+     * @param request 状态变更请求
+     * @return 操作结果
+     */
     @PutMapping("/job/{id}/status")
     public Result<Void> toggleJobStatus(@PathVariable Long id, @RequestBody StatusChangeRequest request) {
         Long userId = StpUtil.getLoginIdAsLong();
@@ -140,6 +185,11 @@ public class CompanyController {
         return Result.success();
     }
 
+    /**
+     * 重新解析职位
+     * @param id 职位ID
+     * @return 解析结果
+     */
     @PostMapping("/job/{id}/parse")
     public Result<Void> reparseJob(@PathVariable Long id) {
         Long userId = StpUtil.getLoginIdAsLong();
@@ -152,6 +202,11 @@ public class CompanyController {
         return Result.success();
     }
 
+    /**
+     * 获取职位图谱
+     * @param id 职位ID
+     * @return 职位图谱
+     */
     @GetMapping("/job/{id}/graph")
     public Result<Map<String, Object>> getJobGraph(@PathVariable Long id) {
         Long userId = StpUtil.getLoginIdAsLong();
@@ -165,8 +220,8 @@ public class CompanyController {
     }
 
     /**
-     * Get match detail for company to view candidate resume.
-     * Sends notification type=5 (RESUME_VIEWED) on first view from this company.
+     * 获取企业查看候选人简历的匹配详情
+     * 【功能说明】企业首次查看时发送type=5的简历被查看通知
      */
     @GetMapping("/match/{resumeId}")
     public Result<MatchDetailResponse> getMatchDetail(@PathVariable Long resumeId, @RequestParam Long jobId) {
@@ -177,8 +232,8 @@ public class CompanyController {
     }
 
     /**
-     * Get recommended resumes list for company.
-     * Returns candidates that match the company's published jobs.
+     * 获取企业推荐简历列表
+     * 【功能说明】返回与企业已发布职位匹配的候选人列表
      */
     @GetMapping("/recommend/resumes")
     public Result<List<MatchDetailResponse>> getRecommendedResumes() {
@@ -188,6 +243,16 @@ public class CompanyController {
         return Result.success(recommendations);
     }
 
+    /**
+     * 创建公司
+     * @param name 公司名称
+     * @param unifiedSocialCreditCode 统一社会信用代码
+     * @param licenseUrl 营业执照URL
+     * @param contactName 联系人姓名
+     * @param contactPhone 联系人电话
+     * @param contactEmail 联系人邮箱
+     * @return 创建结果
+     */
     @PostMapping("/create")
     public Result<Long> createCompany(@RequestParam String name,
                                        @RequestParam String unifiedSocialCreditCode,
@@ -200,18 +265,39 @@ public class CompanyController {
         return Result.success(company.getId());
     }
 
+    /**
+     * 审批公司
+     * @param id 公司ID
+     * @return 审批结果
+     */
     @PostMapping("/{id}/approve")
     public Result<Void> approveCompany(@PathVariable Long id) {
         companyAppService.approveCompany(id);
         return Result.success();
     }
 
+    /**
+     * 拒绝公司
+     * @param id 公司ID
+     * @return 拒绝结果
+     */
     @PostMapping("/{id}/reject")
     public Result<Void> rejectCompany(@PathVariable Long id) {
         companyAppService.rejectCompany(id);
         return Result.success();
     }
 
+    /**
+     * 更新公司
+     * @param id 公司ID
+     * @param name 公司名称
+     * @param contactName 联系人姓名
+     * @param contactPhone 联系人电话
+     * @param contactEmail 联系人邮箱
+     * @param description 公司描述
+     * @param website 公司网站
+     * @return 更新结果
+     */
     @PutMapping("/{id}")
     public Result<Void> updateCompany(@PathVariable Long id,
                                       @RequestParam(required = false) String name,
@@ -225,40 +311,54 @@ public class CompanyController {
         return Result.success();
     }
 
+    /**
+     * 获取公司
+     * @param id 公司ID
+     * @return 公司详情
+     */
     @GetMapping("/{id}")
     public Result<Company> getCompany(@PathVariable Long id) {
         return Result.success(companyAppService.getCompanyById(id));
     }
 
+    /**
+     * 获取待审批公司列表
+     * @return 待审批公司列表
+     */
     @GetMapping("/pending")
     public Result<List<Company>> getPendingCompanies() {
         return Result.success(companyAppService.getPendingCompanies());
     }
 
+    /**
+     * 根据认证状态获取公司
+     * @param authStatus 认证状态
+     * @return 公司列表
+     */
     @GetMapping
     public Result<List<Company>> getCompaniesByAuthStatus(@RequestParam AuthStatus authStatus) {
         return Result.success(companyAppService.getCompaniesByAuthStatus(authStatus));
     }
 
     /**
-     * Create staff account - only OWNER can create staff
-     * Creates new user (user_type=2 company) and company_staff record
+     * 创建员工账号
+     * 【功能说明】只有企业主(OWNER)可以创建员工，创建新用户(user_type=2企业)并建立company_staff关系
      */
     @PostMapping("/staff/create")
     public Result<Void> createStaff(@RequestBody CreateStaffRequest request) {
-        // 1. Get current user ID from Sa-Token session
+        // 步骤1：从Sa-Token session获取当前用户ID
         Long currentUserId = StpUtil.getLoginIdAsLong();
 
-        // 2. Get current user's company_staff record
+        // 步骤2：获取当前用户的company_staff记录
         CompanyStaff currentStaff = companyStaffRepository.findByUserId(currentUserId)
                 .orElseThrow(() -> Exceptions.BusinessException.of("非企业用户"));
 
-        // 3. Verify current user is OWNER (only owner can create staff)
+        // 步骤3：验证当前用户是企业主（只有企业主可以创建员工）
         if (!"OWNER".equals(currentStaff.getPost())) {
             throw new Exceptions.ForbiddenException("只有企业主可以创建员工账号");
         }
 
-        // 4. Validate request
+        // 步骤4：校验请求参数
         if (request.getUsername() == null || request.getUsername().isBlank()) {
             throw new Exceptions.ValidationException("用户名不能为空");
         }
@@ -273,12 +373,12 @@ public class CompanyController {
             throw new Exceptions.ValidationException("职位必须是HR或RECRUITER");
         }
 
-        // 5. Check if username already exists
+        // 步骤5：检查用户名是否已存在
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             throw Exceptions.BusinessException.of("用户名已存在");
         }
 
-        // 6. Create new user with BCrypt encoded password
+        // 步骤6：创建使用BCrypt加密密码的新用户
         User newUser = new User();
         newUser.setUsername(Username.of(request.getUsername()));
         newUser.setPassword(EncryptedPassword.encode(request.getPassword()));
@@ -286,7 +386,7 @@ public class CompanyController {
         newUser.setStatus(AuthStatus.VERIFIED);
         userRepository.save(newUser);
 
-        // 7. Create company_staff record
+        // 步骤7：创建company_staff记录
         CompanyStaff newStaff = new CompanyStaff();
         newStaff.setUserId(newUser.getId());
         newStaff.setCompanyId(currentStaff.getCompanyId());
