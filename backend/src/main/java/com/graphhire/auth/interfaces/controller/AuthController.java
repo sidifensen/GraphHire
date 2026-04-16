@@ -1,6 +1,7 @@
 package com.graphhire.auth.interfaces.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
+import com.graphhire.auth.application.command.ForgotPasswordCmd;
 import com.graphhire.auth.application.service.AuthAppService;
 import com.graphhire.auth.interfaces.dto.request.CompanyRegisterRequest;
 import com.graphhire.auth.interfaces.dto.request.LoginRequest;
@@ -74,29 +75,29 @@ public class AuthController {
 
     /**
      * 忘记密码
-     * @param email 用户邮箱
+     * @param cmd 忘记密码命令（username、verifyCode、newPassword）
      * @return void
      */
     @PostMapping("/forgot-password")
-    public Result<Void> forgotPassword(@RequestParam String email) {
-        authService.forgotPassword(email);
+    public Result<Void> forgotPassword(@RequestBody ForgotPasswordCmd cmd) {
+        authService.forgotPassword(cmd.getUsername(), cmd.getVerifyCode(), cmd.getNewPassword());
         return Result.success();
     }
 
     /**
-     * 重置密码
+     * 重置密码（已废弃，请使用 /forgot-password 接口）
      * @param email 用户邮箱
      * @param code 验证码
      * @param newPassword 新密码
      * @return void
      */
-    @PostMapping("/reset-password")
-    public Result<Void> resetPassword(@RequestParam String email,
-                                      @RequestParam String code,
-                                      @RequestParam String newPassword) {
-        authService.resetPassword(email, code, newPassword);
-        return Result.success();
-    }
+    // @PostMapping("/reset-password")
+    // public Result<Void> resetPassword(@RequestParam String email,
+    //                                   @RequestParam String code,
+    //                                   @RequestParam String newPassword) {
+    //     authService.resetPassword(email, code, newPassword);
+    //     return Result.success();
+    // }
 
     /**
      * 登出
