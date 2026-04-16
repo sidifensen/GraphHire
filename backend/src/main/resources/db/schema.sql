@@ -1,0 +1,569 @@
+-- =============================================
+-- GraphHire 图谱智聘 - PostgreSQL 建表脚本
+-- 版本: v1.1
+-- 日期: 2026-04-17
+-- 说明: 所有字段均有中文注释，索引按业务查询需求设计
+-- 注意: 不使用外键约束，由应用层保证数据一致性
+-- 更新: v1.1 新增投递/收藏/人才库/技能分类表，扩展通知类型
+-- =============================================
+
+-- 开启 UUID 扩展
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- =============================================
+-- 1. 用户表 sys_user
+-- =============================================
+CREATE TABLE sys_user
+(
+    id              BIGSERIAL PRIMARY KEY,
+    username        VARCHAR(50)  NOT NULL UNIQUE,
+    password        VARCHAR(255) NOT NULL,
+    user_type       SMALLINT     NOT NULL DEFAULT 1,
+    company_id      BIGINT,
+    status          SMALLINT     NOT NULL DEFAULT 1,
+    last_login_time TIMESTAMP,
+    create_time     TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time     TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted         SMALLINT     NOT NULL DEFAULT 0,
+
+    CONSTRAINT chk_user_type CHECK (user_type IN (1, 2, 3)),
+    CONSTRAINT chk_user_status CHECK (status IN (0, 1))
+);
+
+COMMENT ON TABLE sys_user IS '用户表：存储个人用户、企业用户、管理员账号信息';
+COMMENT ON COLUMN sys_user.id IS '主键ID';
+COMMENT ON COLUMN sys_user.username IS '用户名（手机号/邮箱）';
+COMMENT ON COLUMN sys_user.password IS 'BCrypt加密后的密码';
+COMMENT ON COLUMN sys_user.user_type IS '用户类型：1-个人用户 2-企业用户 3-管理员';
+COMMENT ON COLUMN sys_user.company_id IS '所属企业ID（仅企业用户有效）';
+COMMENT ON COLUMN sys_user.status IS '账号状态：0-禁用 1-正常';
+COMMENT ON COLUMN sys_user.last_login_time IS '最后登录时间（用于统计日活用户）';
+COMMENT ON COLUMN sys_user.create_time IS '创建时间';
+COMMENT ON COLUMN sys_user.update_time IS '更新时间';
+COMMENT ON COLUMN sys_user.deleted IS '软删除标记：0-未删除 1-已删除';
+
+CREATE INDEX idx_sys_user_username ON sys_user (username);
+CREATE INDEX idx_sys_user_user_type ON sys_user (user_type);
+CREATE INDEX idx_sys_user_company_id ON sys_user (company_id) WHERE company_id IS NOT NULL;
+CREATE INDEX idx_sys_user_status_deleted ON sys_user (status, deleted);
+
+-- =============================================
+-- 2. 个人信息表 person_info
+-- =============================================
+CREATE TABLE person_info
+(
+    id          BIGSERIAL PRIMARY KEY,
+    user_id     BIGINT    NOT NULL UNIQUE,
+    real_name   VARCHAR(50),
+    gender      SMALLINT,
+    age         INT,
+    education   VARCHAR(20),
+    city        VARCHAR(50),
+    target_city VARCHAR(50),
+    phone       VARCHAR(20),
+    email       VARCHAR(100),
+    create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted     SMALLINT  NOT NULL DEFAULT 0,
+
+    CONSTRAINT chk_gender CHECK (gender IS NULL OR gender IN (1, 2))
+);
+
+COMMENT ON TABLE person_info IS '个人信息表：存储个人用户的详细资料';
+COMMENT ON COLUMN person_info.user_id IS '关联用户ID（1:1）';
+COMMENT ON COLUMN person_info.real_name IS '真实姓名';
+COMMENT ON COLUMN person_info.gender IS '性别：1-男 2-女';
+COMMENT ON COLUMN person_info.age IS '年龄';
+COMMENT ON COLUMN person_info.education IS '学历：初中及以下/高中/中专/大专/本科/硕士/博士';
+COMMENT ON COLUMN person_info.city IS '居住城市';
+COMMENT ON COLUMN person_info.target_city IS '意向工作城市';
+COMMENT ON COLUMN person_info.phone IS '手机号';
+COMMENT ON COLUMN person_info.email IS '电子邮箱';
+
+CREATE INDEX idx_person_info_user_id ON person_info (user_id);
+CREATE INDEX idx_person_info_city_target ON person_info (city, target_city) WHERE deleted = 0;
+
+-- =============================================
+-- 3. 企业表 company
+-- =============================================
+CREATE TABLE company
+(
+    id           BIGSERIAL PRIMARY KEY,
+    user_id      BIGINT       NOT NULL,
+    name         VARCHAR(200) NOT NULL,
+    code         VARCHAR(50)  NOT NULL UNIQUE,
+    license_path VARCHAR(500),
+    auth_status  SMALLINT     NOT NULL DEFAULT 0,
+    industry     VARCHAR(50),
+    scale        VARCHAR(20),
+    address      VARCHAR(300),
+    contact      VARCHAR(50),
+    phone        VARCHAR(20),
+    create_time  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted      SMALLINT     NOT NULL DEFAULT 0,
+
+    CONSTRAINT chk_auth_status CHECK (auth_status IN (0, 1, 2))
+);
+
+COMMENT ON TABLE company IS '企业表：存储企业用户的公司信息';
+COMMENT ON COLUMN company.id IS '主键ID';
+COMMENT ON COLUMN company.user_id IS '管理员用户ID（创建企业的用户）';
+COMMENT ON COLUMN company.name IS '企业名称';
+COMMENT ON COLUMN company.code IS '统一社会信用代码（18位）';
+COMMENT ON COLUMN company.license_path IS '营业执照存储路径（RustFS）';
+COMMENT ON COLUMN company.auth_status IS '认证状态：0-待审核 1-已认证 2-已拒绝';
+COMMENT ON COLUMN company.industry IS '所属行业';
+COMMENT ON COLUMN company.scale IS '企业规模：初创型/小型/中型/大型/上市公司';
+COMMENT ON COLUMN company.address IS '详细地址';
+COMMENT ON COLUMN company.contact IS '联系人姓名';
+COMMENT ON COLUMN company.phone IS '联系电话';
+COMMENT ON COLUMN company.create_time IS '创建时间';
+COMMENT ON COLUMN company.update_time IS '更新时间';
+COMMENT ON COLUMN company.deleted IS '软删除标记：0-未删除 1-已删除';
+
+CREATE INDEX idx_company_user_id ON company (user_id);
+CREATE INDEX idx_company_auth_status ON company (auth_status) WHERE deleted = 0;
+CREATE INDEX idx_company_code ON company (code);
+
+-- =============================================
+-- 4. 企业员工关联表 company_staff
+-- =============================================
+CREATE TABLE company_staff
+(
+    id          BIGSERIAL PRIMARY KEY,
+    user_id     BIGINT      NOT NULL UNIQUE,
+    company_id  BIGINT      NOT NULL,
+    post        VARCHAR(20) NOT NULL,
+    create_time TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT chk_post CHECK (post IN ('OWNER', 'HR', 'RECRUITER'))
+);
+
+COMMENT ON TABLE company_staff IS '企业员工关联表：建立用户与企业的多对一关系';
+COMMENT ON COLUMN company_staff.user_id IS '用户ID（唯一，每个用户只能属于一个企业）';
+COMMENT ON COLUMN company_staff.company_id IS '企业ID';
+COMMENT ON COLUMN company_staff.post IS '职务：OWNER-企业主 HR-HR专员 RECRUITER-招聘专员';
+
+CREATE INDEX idx_company_staff_company_id ON company_staff (company_id);
+CREATE INDEX idx_company_staff_user_id ON company_staff (user_id);
+
+-- =============================================
+-- 5. 简历表 resume
+-- =============================================
+CREATE TABLE resume
+(
+    id           BIGSERIAL PRIMARY KEY,
+    user_id      BIGINT       NOT NULL,
+    file_name    VARCHAR(255) NOT NULL,
+    file_path    VARCHAR(500) NOT NULL,
+    file_type    VARCHAR(10)  NOT NULL,
+    parse_status SMALLINT     NOT NULL DEFAULT 0,
+    parse_result JSONB,
+    is_default   SMALLINT     NOT NULL DEFAULT 0,
+    create_time  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted      SMALLINT     NOT NULL DEFAULT 0,
+
+    CONSTRAINT chk_parse_status CHECK (parse_status IN (0, 1, 2, 3)),
+    CONSTRAINT chk_file_type CHECK (file_type IN ('doc', 'docx', 'pdf'))
+);
+
+COMMENT ON TABLE resume IS '简历表：存储用户上传的简历文档及解析结果';
+COMMENT ON COLUMN resume.id IS '主键ID';
+COMMENT ON COLUMN resume.user_id IS '所属用户ID';
+COMMENT ON COLUMN resume.file_name IS '原始文件名';
+COMMENT ON COLUMN resume.file_path IS 'RustFS存储路径';
+COMMENT ON COLUMN resume.file_type IS '文件类型：doc/docx/pdf';
+COMMENT ON COLUMN resume.parse_status IS '解析状态：0-待解析 1-解析中 2-成功 3-失败';
+COMMENT ON COLUMN resume.parse_result IS 'AI解析结果JSON（包含结构化数据+置信度）';
+COMMENT ON COLUMN resume.is_default IS '是否默认简历：0-否 1-是';
+COMMENT ON COLUMN resume.create_time IS '上传时间';
+COMMENT ON COLUMN resume.update_time IS '更新时间';
+COMMENT ON COLUMN resume.deleted IS '软删除标记：0-未删除 1-已删除';
+
+CREATE INDEX idx_resume_user_id ON resume (user_id);
+CREATE INDEX idx_resume_parse_status ON resume (parse_status) WHERE deleted = 0;
+CREATE INDEX idx_resume_user_default ON resume (user_id, is_default) WHERE deleted = 0 AND is_default = 1;
+CREATE INDEX idx_resume_create_time ON resume (create_time DESC);
+CREATE INDEX idx_resume_parse_skills ON resume USING GIN ((parse_result -> 'skills'));
+
+-- =============================================
+-- 6. 技能标签表 skill_tag
+-- =============================================
+CREATE TABLE skill_tag
+(
+    id          BIGSERIAL PRIMARY KEY,
+    name        VARCHAR(50) NOT NULL UNIQUE,
+    category    VARCHAR(50),
+    parent_id   BIGINT,
+    synonyms    JSONB,
+    create_time TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE skill_tag IS '技能标签表：统一管理所有技能标签（技术技能/软技能）';
+COMMENT ON COLUMN skill_tag.id IS '主键ID';
+COMMENT ON COLUMN skill_tag.name IS '技能名称（如：Java、Python、项目管理）';
+COMMENT ON COLUMN skill_tag.category IS '分类：技术技能/软技能';
+COMMENT ON COLUMN skill_tag.parent_id IS '父级分类ID（用于构建技能分类树）';
+COMMENT ON COLUMN skill_tag.synonyms IS '同义词列表JSON（如：["Spring Boot", "Spring"]）';
+
+CREATE INDEX idx_skill_tag_name ON skill_tag (name);
+CREATE INDEX idx_skill_tag_category ON skill_tag (category);
+CREATE INDEX idx_skill_tag_parent_id ON skill_tag (parent_id) WHERE parent_id IS NOT NULL;
+CREATE INDEX idx_skill_tag_synonyms ON skill_tag USING GIN (synonyms);
+
+-- =============================================
+-- 7. 简历技能关联表 resume_skill
+-- =============================================
+CREATE TABLE resume_skill
+(
+    id           BIGSERIAL PRIMARY KEY,
+    resume_id    BIGINT    NOT NULL,
+    skill_id     BIGINT    NOT NULL,
+    skill_level  SMALLINT  NOT NULL DEFAULT 1,
+    skill_source VARCHAR(50),
+    is_required  SMALLINT,
+    create_time  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT uk_resume_skill UNIQUE (resume_id, skill_id),
+    CONSTRAINT chk_skill_level CHECK (skill_level BETWEEN 1 AND 3),
+    CONSTRAINT chk_is_required CHECK (is_required IS NULL OR is_required IN (1, 2))
+);
+
+COMMENT ON TABLE resume_skill IS '简历技能关联表：存储简历解析出的技能及熟练度';
+COMMENT ON COLUMN resume_skill.resume_id IS '简历ID';
+COMMENT ON COLUMN resume_skill.skill_id IS '技能标签ID';
+COMMENT ON COLUMN resume_skill.skill_level IS '熟练度：1-了解 2-熟悉 3-精通';
+COMMENT ON COLUMN resume_skill.skill_source IS '技能来源：工作经历/项目经验/教育背景';
+COMMENT ON COLUMN resume_skill.is_required IS '是否应聘必须技能：1-必须 2-优先 NULL-普通技能';
+
+CREATE INDEX idx_resume_skill_resume_id ON resume_skill (resume_id);
+CREATE INDEX idx_resume_skill_skill_id ON resume_skill (skill_id);
+
+-- =============================================
+-- 8. 职位表 job
+-- =============================================
+CREATE TABLE job
+(
+    id           BIGSERIAL PRIMARY KEY,
+    company_id   BIGINT       NOT NULL,
+    title        VARCHAR(100) NOT NULL,
+    file_path    VARCHAR(500),
+    parse_status SMALLINT     NOT NULL DEFAULT 0,
+    parse_result JSONB,
+    city         VARCHAR(50),
+    salary_min   INT,
+    salary_max   INT,
+    salary_unit  VARCHAR(20),
+    experience   VARCHAR(50),
+    education    VARCHAR(20),
+    job_type     SMALLINT     NOT NULL DEFAULT 1,
+    status       SMALLINT     NOT NULL DEFAULT 0,
+    create_time  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted      SMALLINT     NOT NULL DEFAULT 0,
+
+    CONSTRAINT chk_job_parse_status CHECK (parse_status IN (0, 1, 2, 3)),
+    CONSTRAINT chk_job_type CHECK (job_type IN (1, 2)),
+    CONSTRAINT chk_job_status CHECK (status IN (0, 1)),
+    CONSTRAINT chk_salary CHECK (salary_min IS NULL OR salary_max IS NULL OR salary_min <= salary_max)
+);
+
+COMMENT ON TABLE job IS '职位表：存储企业发布的职位信息';
+COMMENT ON COLUMN job.id IS '主键ID';
+COMMENT ON COLUMN job.company_id IS '所属企业ID';
+COMMENT ON COLUMN job.title IS '职位名称';
+COMMENT ON COLUMN job.file_path IS '原始职位描述文档路径（RustFS）';
+COMMENT ON COLUMN job.parse_status IS '解析状态：0-待解析 1-解析中 2-成功 3-失败';
+COMMENT ON COLUMN job.parse_result IS 'AI解析结果JSON（包含技能要求、岗位职责等）';
+COMMENT ON COLUMN job.city IS '工作城市';
+COMMENT ON COLUMN job.salary_min IS '最低薪资';
+COMMENT ON COLUMN job.salary_max IS '最高薪资';
+COMMENT ON COLUMN job.salary_unit IS '薪资单位：月/年';
+COMMENT ON COLUMN job.experience IS '经验要求（如：1-3年、3-5年、不限）';
+COMMENT ON COLUMN job.education IS '学历要求：初中及以下/高中/中专/大专/本科/硕士/博士';
+COMMENT ON COLUMN job.job_type IS '工作类型：1-全职 2-兼职';
+COMMENT ON COLUMN job.status IS '职位状态：0-下架 1-上架';
+COMMENT ON COLUMN job.create_time IS '发布时间';
+COMMENT ON COLUMN job.update_time IS '更新时间';
+COMMENT ON COLUMN job.deleted IS '软删除标记：0-未删除 1-已删除';
+
+CREATE INDEX idx_job_company_id ON job (company_id);
+CREATE INDEX idx_job_status ON job (status) WHERE deleted = 0;
+CREATE INDEX idx_job_city ON job (city) WHERE deleted = 0 AND status = 1;
+CREATE INDEX idx_job_create_time ON job (create_time DESC);
+CREATE INDEX idx_job_title ON job (title);
+
+-- =============================================
+-- 9. 职位技能关联表 job_skill
+-- =============================================
+CREATE TABLE job_skill
+(
+    id          BIGSERIAL PRIMARY KEY,
+    job_id      BIGINT        NOT NULL,
+    skill_id    BIGINT        NOT NULL,
+    is_required SMALLINT      NOT NULL DEFAULT 1,
+    weight      DECIMAL(3, 2) NOT NULL DEFAULT 1.00,
+    create_time TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT uk_job_skill UNIQUE (job_id, skill_id),
+    CONSTRAINT chk_is_required CHECK (is_required IN (1, 2)),
+    CONSTRAINT chk_weight CHECK (weight BETWEEN 0 AND 1)
+);
+
+COMMENT ON TABLE job_skill IS '职位技能关联表：存储职位所需的技能要求';
+COMMENT ON COLUMN job_skill.job_id IS '职位ID';
+COMMENT ON COLUMN job_skill.skill_id IS '技能标签ID';
+COMMENT ON COLUMN job_skill.is_required IS '是否必须：1-必须技能 2-优先技能';
+COMMENT ON COLUMN job_skill.weight IS '技能权重系数（0.00-1.00）';
+
+CREATE INDEX idx_job_skill_job_id ON job_skill (job_id);
+CREATE INDEX idx_job_skill_skill_id ON job_skill (skill_id);
+CREATE INDEX idx_job_skill_required ON job_skill (is_required) WHERE is_required = 1;
+
+-- =============================================
+-- 10. 匹配记录表 match_record
+-- =============================================
+CREATE TABLE match_record
+(
+    id              BIGSERIAL PRIMARY KEY,
+    resume_id       BIGINT        NOT NULL,
+    job_id          BIGINT        NOT NULL,
+    match_direction SMALLINT      NOT NULL DEFAULT 1,
+    match_score     DECIMAL(5, 2) NOT NULL,
+    skill_score     DECIMAL(5, 2) NOT NULL,
+    exp_score       DECIMAL(5, 2) NOT NULL,
+    city_score      DECIMAL(5, 2) NOT NULL,
+    edu_score       DECIMAL(5, 2) NOT NULL,
+    salary_score    DECIMAL(5, 2) NOT NULL,
+    match_detail    JSONB,
+    viewed          SMALLINT      NOT NULL DEFAULT 0,
+    create_time     TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time     TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT uk_match_resume_job UNIQUE (resume_id, job_id, match_direction),
+    CONSTRAINT chk_match_direction CHECK (match_direction IN (1, 2)),
+    CONSTRAINT chk_viewed CHECK (viewed IN (0, 1))
+);
+
+COMMENT ON TABLE match_record IS '匹配记录表：存储人岗匹配的计算结果';
+COMMENT ON COLUMN match_record.id IS '主键ID';
+COMMENT ON COLUMN match_record.resume_id IS '简历ID';
+COMMENT ON COLUMN match_record.job_id IS '职位ID';
+COMMENT ON COLUMN match_record.match_direction IS '匹配方向：1-个人申请职位 2-企业推荐候选人';
+COMMENT ON COLUMN match_record.match_score IS '综合匹配分（0-100）';
+COMMENT ON COLUMN match_record.skill_score IS '技能匹配得分（0-100）';
+COMMENT ON COLUMN match_record.exp_score IS '经验匹配得分（0-100）';
+COMMENT ON COLUMN match_record.city_score IS '城市匹配得分（0-100）';
+COMMENT ON COLUMN match_record.edu_score IS '学历匹配得分（0-100）';
+COMMENT ON COLUMN match_record.salary_score IS '薪资匹配得分（0-100）';
+COMMENT ON COLUMN match_record.match_detail IS '详细匹配分析JSON（AI生成）';
+COMMENT ON COLUMN match_record.viewed IS '是否已查看：0-未查看 1-已查看';
+COMMENT ON COLUMN match_record.create_time IS '匹配时间';
+COMMENT ON COLUMN match_record.update_time IS '更新时间';
+
+CREATE UNIQUE INDEX idx_match_resume_job ON match_record (resume_id, job_id, match_direction);
+CREATE INDEX idx_match_resume_id ON match_record (resume_id);
+CREATE INDEX idx_match_job_id ON match_record (job_id);
+CREATE INDEX idx_match_score ON match_record (match_score DESC);
+CREATE INDEX idx_match_viewed ON match_record (viewed) WHERE viewed = 0;
+CREATE INDEX idx_match_create_time ON match_record (create_time DESC);
+CREATE INDEX idx_match_direction ON match_record (match_direction);
+
+-- =============================================
+-- 11. 解析任务表 parse_task
+-- =============================================
+CREATE TABLE parse_task
+(
+    id          BIGSERIAL PRIMARY KEY,
+    task_type   SMALLINT  NOT NULL,
+    source_id   BIGINT    NOT NULL,
+    status      SMALLINT  NOT NULL DEFAULT 0,
+    retry_count INT       NOT NULL DEFAULT 0,
+    error_msg   TEXT,
+    create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    finish_time TIMESTAMP,
+    update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT chk_task_type CHECK (task_type IN (1, 2)),
+    CONSTRAINT chk_task_status CHECK (status IN (0, 1, 2, 3))
+);
+
+COMMENT ON TABLE parse_task IS '解析任务表：管理文档解析任务的队列和执行状态';
+COMMENT ON COLUMN parse_task.id IS '主键ID';
+COMMENT ON COLUMN parse_task.task_type IS '任务类型：1-简历解析 2-职位解析';
+COMMENT ON COLUMN parse_task.source_id IS '来源ID（简历ID或职位ID）';
+COMMENT ON COLUMN parse_task.status IS '任务状态：0-排队 1-执行中 2-成功 3-失败';
+COMMENT ON COLUMN parse_task.retry_count IS '重试次数';
+COMMENT ON COLUMN parse_task.error_msg IS '错误信息';
+COMMENT ON COLUMN parse_task.create_time IS '创建时间';
+COMMENT ON COLUMN parse_task.finish_time IS '完成时间';
+COMMENT ON COLUMN parse_task.update_time IS '更新时间';
+
+CREATE INDEX idx_parse_task_status ON parse_task (status);
+CREATE INDEX idx_parse_task_type ON parse_task (task_type);
+CREATE INDEX idx_parse_task_source ON parse_task (task_type, source_id);
+CREATE INDEX idx_parse_task_create_time ON parse_task (create_time);
+
+-- =============================================
+-- 12. 消息通知表 notification
+-- =============================================
+CREATE TABLE notification
+(
+    id          BIGSERIAL PRIMARY KEY,
+    user_id     BIGINT       NOT NULL,
+    type        SMALLINT     NOT NULL,
+    title       VARCHAR(100) NOT NULL,
+    content     TEXT,
+    related_id  BIGINT,
+    is_read     SMALLINT     NOT NULL DEFAULT 0,
+    create_time TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT chk_notif_type CHECK (type IN (1, 2, 3, 4, 5)),
+    CONSTRAINT chk_is_read CHECK (is_read IN (0, 1))
+);
+
+COMMENT ON TABLE notification IS '消息通知表：存储用户的站内通知';
+COMMENT ON COLUMN notification.id IS '主键ID';
+COMMENT ON COLUMN notification.user_id IS '接收用户ID';
+COMMENT ON COLUMN notification.type IS '通知类型：1-简历解析完成 2-新职位推荐 3-收到候选人推荐 4-企业认证结果 5-简历被查看';
+COMMENT ON COLUMN notification.title IS '通知标题';
+COMMENT ON COLUMN notification.content IS '通知内容';
+COMMENT ON COLUMN notification.related_id IS '关联ID（简历ID/职位ID/匹配记录ID等）';
+COMMENT ON COLUMN notification.is_read IS '已读状态：0-未读 1-已读';
+COMMENT ON COLUMN notification.create_time IS '创建时间';
+COMMENT ON COLUMN notification.update_time IS '更新时间';
+
+CREATE INDEX idx_notification_user_id ON notification (user_id);
+CREATE INDEX idx_notification_user_unread ON notification (user_id, is_read) WHERE is_read = 0;
+CREATE INDEX idx_notification_type ON notification (type);
+CREATE INDEX idx_notification_create_time ON notification (create_time DESC);
+
+-- =============================================
+-- 13. 投递记录表 application
+-- =============================================
+CREATE TABLE application
+(
+    id          BIGSERIAL PRIMARY KEY,
+    resume_id   BIGINT       NOT NULL,
+    job_id      BIGINT       NOT NULL,
+    user_id     BIGINT       NOT NULL,
+    company_id  BIGINT       NOT NULL,
+    status      VARCHAR(20)  NOT NULL DEFAULT 'PENDING',
+    applied_at  TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    note        TEXT,
+
+    CONSTRAINT uk_application_resume_job UNIQUE (resume_id, job_id),
+    CONSTRAINT chk_application_status CHECK (status IN ('PENDING', 'VIEWED', 'INTERVIEW_INVITED', 'REJECTED', 'ACCEPTED', 'WITHDRAWN'))
+);
+
+COMMENT ON TABLE application IS '投递记录表：存储用户的职位投递记录';
+COMMENT ON COLUMN application.id IS '主键ID';
+COMMENT ON COLUMN application.resume_id IS '投递的简历ID';
+COMMENT ON COLUMN application.job_id IS '投递的职位ID';
+COMMENT ON COLUMN application.user_id IS '求职者用户ID';
+COMMENT ON COLUMN application.company_id IS '目标公司ID';
+COMMENT ON COLUMN application.status IS '投递状态：PENDING-待处理 VIEWED-已查看 INTERVIEW_INVITED-面试邀请 REJECTED-已拒绝 ACCEPTED-已接受 WITHDRAWN-已撤回';
+COMMENT ON COLUMN application.applied_at IS '投递时间';
+COMMENT ON COLUMN application.updated_at IS '更新时间';
+COMMENT ON COLUMN application.note IS 'HR备注';
+
+CREATE INDEX idx_application_user_id ON application (user_id);
+CREATE INDEX idx_application_job_id ON application (job_id);
+CREATE INDEX idx_application_company_id ON application (company_id);
+CREATE INDEX idx_application_status ON application (status);
+CREATE INDEX idx_application_applied_at ON application (applied_at DESC);
+
+-- =============================================
+-- 14. 收藏记录表 favorite
+-- =============================================
+CREATE TABLE favorite
+(
+    id          BIGSERIAL PRIMARY KEY,
+    user_id     BIGINT   NOT NULL,
+    job_id      BIGINT   NOT NULL,
+    created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT uk_favorite_user_job UNIQUE (user_id, job_id)
+);
+
+COMMENT ON TABLE favorite IS '收藏记录表：存储用户收藏的职位';
+COMMENT ON COLUMN favorite.id IS '主键ID';
+COMMENT ON COLUMN favorite.user_id IS '用户ID';
+COMMENT ON COLUMN favorite.job_id IS '收藏的职位ID';
+COMMENT ON COLUMN favorite.created_at IS '收藏时间';
+
+CREATE INDEX idx_favorite_user_id ON favorite (user_id);
+CREATE INDEX idx_favorite_job_id ON favorite (job_id);
+CREATE INDEX idx_favorite_created_at ON favorite (created_at DESC);
+
+-- =============================================
+-- 15. 人才库表 talent_pool
+-- =============================================
+CREATE TABLE talent_pool
+(
+    id          BIGSERIAL PRIMARY KEY,
+    company_id  BIGINT       NOT NULL,
+    resume_id   BIGINT       NOT NULL,
+    added_at    TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    note        TEXT,
+    status      VARCHAR(20)  NOT NULL DEFAULT 'ACTIVE',
+
+    CONSTRAINT uk_talent_pool_company_resume UNIQUE (company_id, resume_id),
+    CONSTRAINT chk_talent_pool_status CHECK (status IN ('ACTIVE', 'ARCHIVED'))
+);
+
+COMMENT ON TABLE talent_pool IS '人才库表：存储企业收藏的候选人简历';
+COMMENT ON COLUMN talent_pool.id IS '主键ID';
+COMMENT ON COLUMN talent_pool.company_id IS '公司ID';
+COMMENT ON COLUMN talent_pool.resume_id IS '简历ID';
+COMMENT ON COLUMN talent_pool.added_at IS '加入时间';
+COMMENT ON COLUMN talent_pool.note IS '备注';
+COMMENT ON COLUMN talent_pool.status IS '状态：ACTIVE-活跃 ARCHIVED-已归档';
+
+CREATE INDEX idx_talent_pool_company_id ON talent_pool (company_id);
+CREATE INDEX idx_talent_pool_resume_id ON talent_pool (resume_id);
+CREATE INDEX idx_talent_pool_added_at ON talent_pool (added_at DESC);
+
+-- =============================================
+-- 16. 技能分类表 skill_category
+-- =============================================
+CREATE TABLE skill_category
+(
+    id          BIGSERIAL PRIMARY KEY,
+    name        VARCHAR(50)  NOT NULL UNIQUE,
+    description TEXT,
+    created_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE skill_category IS '技能分类表：统一管理技能标签的分类';
+COMMENT ON COLUMN skill_category.id IS '主键ID';
+COMMENT ON COLUMN skill_category.name IS '分类名称';
+COMMENT ON COLUMN skill_category.description IS '分类描述';
+COMMENT ON COLUMN skill_category.created_at IS '创建时间';
+
+CREATE INDEX idx_skill_category_name ON skill_category (name);
+
+-- =============================================
+-- 表结构扩展
+-- =============================================
+
+-- person_info 表添加头像字段
+ALTER TABLE person_info ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500);
+COMMENT ON COLUMN person_info.avatar_url IS '头像URL';
+
+-- skill_tag 表添加分类关联字段
+ALTER TABLE skill_tag ADD COLUMN IF NOT EXISTS category_id BIGINT REFERENCES skill_category(id);
+COMMENT ON COLUMN skill_tag.category_id IS '所属分类ID';
+
+-- notification 表扩展类型约束（支持6-简历投递 7-面试邀请）
+ALTER TABLE notification DROP CONSTRAINT IF EXISTS chk_notif_type;
+ALTER TABLE notification ADD CONSTRAINT chk_notif_type CHECK (type IN (1, 2, 3, 4, 5, 6, 7));
+COMMENT ON COLUMN notification.type IS '通知类型：1-简历解析完成 2-新职位推荐 3-收到候选人推荐 4-企业认证结果 5-简历被查看 6-面试邀请 7-简历投递';
