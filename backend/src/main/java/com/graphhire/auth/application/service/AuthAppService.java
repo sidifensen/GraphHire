@@ -286,6 +286,32 @@ public class AuthAppService {
         userRepository.save(user);
     }
 
+    /**
+     * 修改密码
+     * 【功能说明】已登录用户修改密码，需验证旧密码后才能更新。
+     * 【业务步骤】
+     * 步骤1：查询当前用户，不存在则抛异常
+     * 步骤2：校验旧密码，失败则抛异常
+     * 步骤3：更新为新密码（BCrypt加密）
+     * 步骤4：保存用户
+     */
+    public void updatePassword(Long userId, String oldPassword, String newPassword) {
+        // 步骤1：查询当前用户
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> com.graphhire.common.vo.Exceptions.BusinessException.of("用户不存在"));
+
+        // 步骤2：校验旧密码
+        if (!user.getPassword().matches(oldPassword)) {
+            throw com.graphhire.common.vo.Exceptions.BusinessException.of("旧密码错误");
+        }
+
+        // 步骤3：更新为新密码
+        user.setPassword(com.graphhire.auth.domain.vo.EncryptedPassword.encode(newPassword));
+
+        // 步骤4：保存用户
+        userRepository.save(user);
+    }
+
     // =====================================================
     // 【第三部分】Token 管理
     // =====================================================
