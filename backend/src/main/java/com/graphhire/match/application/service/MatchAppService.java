@@ -65,9 +65,7 @@ public class MatchAppService {
      * 【业务步骤】
      * 步骤1：根据简历ID查询简历信息
      * 步骤2：获取所有已发布的职位列表
-     * 步骤3：遍历职位，检查匹配记录是否已存在，跳过已匹配记录
-     * 步骤4：调用领域服务计算匹配度并设置匹配方向为企业推荐
-     * 步骤5：保存匹配记录并为用户创建职位推荐通知
+     * 步骤3：遍历职位，为用户创建职位推荐通知（MatchRecord由Application模块处理）
      */
     @Transactional
     public void triggerMatchForResume(Long resumeId) {
@@ -79,17 +77,9 @@ public class MatchAppService {
         List<Job> jobs = jobRepository.findByStatus(JobStatus.PUBLISHED);
 
         for (Job job : jobs) {
-            // 步骤3：检查匹配记录是否已存在，跳过已匹配记录
-            if (!matchRecordRepository.findByResumeIdAndJobId(resumeId, job.getId()).isEmpty()) {
-                continue;
-            }
-
-            // 步骤4：调用领域服务计算匹配度并设置匹配方向为企业推荐
+            // 步骤3：为用户创建职位推荐通知（type=2: 新职位推荐）
+            // 注意：MatchRecord创建由Application模块处理，这里只发送通知
             MatchRecord record = matchDomainService.calculateMatch(resume, job);
-            record.setMatchDirection(MatchRecord.DIRECTION_COMPANY_RECOMMENDS); // 2=企业推荐候选人
-            matchRecordRepository.save(record);
-
-            // 步骤5：为用户创建职位推荐通知（type=2: 新职位推荐）
             createJobRecommendationNotification(resume.getUserId(), job.getId(), BigDecimal.valueOf(record.getScore().getTotal()));
         }
     }
@@ -100,9 +90,7 @@ public class MatchAppService {
      * 【业务步骤】
      * 步骤1：根据职位ID查询职位信息
      * 步骤2：获取所有解析状态为成功的简历列表
-     * 步骤3：遍历简历，检查匹配记录是否已存在，跳过已匹配记录
-     * 步骤4：调用领域服务计算匹配度并设置匹配方向为求职者投递
-     * 步骤5：保存匹配记录并为企业创建候选人推荐通知
+     * 步骤3：遍历简历，为企业创建候选人推荐通知（MatchRecord由Application模块处理）
      */
     @Transactional
     public void triggerMatchForJob(Long jobId) {
@@ -114,17 +102,9 @@ public class MatchAppService {
         List<Resume> resumes = resumeRepository.findByParseStatus(ParseStatus.SUCCESS);
 
         for (Resume resume : resumes) {
-            // 步骤3：检查匹配记录是否已存在，跳过已匹配记录
-            if (!matchRecordRepository.findByResumeIdAndJobId(resume.getId(), jobId).isEmpty()) {
-                continue;
-            }
-
-            // 步骤4：调用领域服务计算匹配度并设置匹配方向为求职者投递
+            // 步骤3：为企业创建候选人推荐通知（type=3: 候选人推荐）
+            // 注意：MatchRecord创建由Application模块处理，这里只发送通知
             MatchRecord record = matchDomainService.calculateMatch(resume, job);
-            record.setMatchDirection(MatchRecord.DIRECTION_PERSON_APPLIES); // 1=求职者投递
-            matchRecordRepository.save(record);
-
-            // 步骤5：为企业创建候选人推荐通知（type=3: 候选人推荐）
             createCandidateRecommendationNotification(job.getCompanyId(), resume.getId(), BigDecimal.valueOf(record.getScore().getTotal()));
         }
     }
