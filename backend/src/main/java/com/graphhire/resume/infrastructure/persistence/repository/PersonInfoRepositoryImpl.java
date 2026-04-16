@@ -10,6 +10,17 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+/**
+ * 个人信息仓储实现
+ *
+ * 【模块说明】提供个人信息数据的持久化操作。
+ *
+ * 【数据来源】person_info 表
+ *
+ * 【方法概览】
+ * - findByUserId：根据用户ID查询个人信息
+ * - save：保存个人信息
+ */
 @Repository
 public class PersonInfoRepositoryImpl implements PersonInfoRepository {
 
@@ -36,6 +47,9 @@ public class PersonInfoRepositoryImpl implements PersonInfoRepository {
         return personInfo;
     }
 
+    /**
+     * PO 转 PersonInfo Domain
+     */
     private PersonInfo toDomain(PersonInfoPO po) {
         PersonInfo personInfo = new PersonInfo();
         personInfo.setId(po.getId());
@@ -51,6 +65,9 @@ public class PersonInfoRepositoryImpl implements PersonInfoRepository {
         return personInfo;
     }
 
+    /**
+     * PersonInfo Domain 转 PO
+     */
     private PersonInfoPO toPO(PersonInfo personInfo) {
         PersonInfoPO po = new PersonInfoPO();
         po.setId(personInfo.getId());
