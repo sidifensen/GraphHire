@@ -15,6 +15,10 @@ public enum NotificationType {
     COMPANY_AUTH_RESULT(4, "Company Auth Result"),
     /** 简历被查看通知 */
     RESUME_VIEWED(5, "Resume Viewed"),
+    /** 简历投递通知 */
+    RESUME_SUBMITTED(7, "Resume Submitted"),
+    /** 面试邀请通知 */
+    INTERVIEW_INVITED(6, "Interview Invited"),
     /** 系统通知 */
     SYSTEM_NOTIFICATION(99, "System Notification");
 
