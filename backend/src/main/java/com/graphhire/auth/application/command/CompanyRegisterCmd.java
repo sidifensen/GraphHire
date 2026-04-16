@@ -15,6 +15,8 @@ public class CompanyRegisterCmd {
     private String companyName;
     /** 统一社会信用代码 */
     private String unifiedSocialCreditCode;
+    /** 验证码 */
+    private String verifyCode;
 
     public String getUsername() {
         return username;
@@ -46,5 +48,13 @@ public class CompanyRegisterCmd {
 
     public void setUnifiedSocialCreditCode(String unifiedSocialCreditCode) {
         this.unifiedSocialCreditCode = unifiedSocialCreditCode;
+    }
+
+    public String getVerifyCode() {
+        return verifyCode;
+    }
+
+    public void setVerifyCode(String verifyCode) {
+        this.verifyCode = verifyCode;
     }
 }

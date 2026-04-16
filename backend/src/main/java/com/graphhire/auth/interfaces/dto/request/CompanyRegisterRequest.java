@@ -5,6 +5,7 @@ public class CompanyRegisterRequest {
     private String password;
     private String companyName;
     private String unifiedSocialCreditCode;
+    private String verifyCode;
 
     public String getUsername() {
         return username;
@@ -38,12 +39,21 @@ public class CompanyRegisterRequest {
         this.unifiedSocialCreditCode = unifiedSocialCreditCode;
     }
 
+    public String getVerifyCode() {
+        return verifyCode;
+    }
+
+    public void setVerifyCode(String verifyCode) {
+        this.verifyCode = verifyCode;
+    }
+
     public com.graphhire.auth.application.command.CompanyRegisterCmd toCmd() {
         com.graphhire.auth.application.command.CompanyRegisterCmd cmd = new com.graphhire.auth.application.command.CompanyRegisterCmd();
         cmd.setUsername(this.username);
         cmd.setPassword(this.password);
         cmd.setCompanyName(this.companyName);
         cmd.setUnifiedSocialCreditCode(this.unifiedSocialCreditCode);
+        cmd.setVerifyCode(this.verifyCode);
         return cmd;
     }
 }

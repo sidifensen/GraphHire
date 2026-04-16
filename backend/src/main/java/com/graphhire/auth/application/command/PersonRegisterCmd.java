@@ -3,6 +3,7 @@ package com.graphhire.auth.application.command;
 public class PersonRegisterCmd {
     private String username;
     private String password;
+    private String verifyCode;
 
     public String getUsername() {
         return username;
@@ -18,5 +19,13 @@ public class PersonRegisterCmd {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getVerifyCode() {
+        return verifyCode;
+    }
+
+    public void setVerifyCode(String verifyCode) {
+        this.verifyCode = verifyCode;
     }
 }
