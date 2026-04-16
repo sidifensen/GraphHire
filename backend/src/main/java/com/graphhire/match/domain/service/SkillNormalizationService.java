@@ -29,7 +29,7 @@ public class SkillNormalizationService {
      * 步骤3：同义词匹配
      * 步骤4：保留未匹配的原始技能
      */
-    public List<SkillTag> normalize(List<String> rawSkills) {
+    public List<String> normalize(List<String> rawSkills) {
         Set<String> normalized = new HashSet<>();
         for (String skill : rawSkills) {
             if (skill == null || skill.isBlank()) {
