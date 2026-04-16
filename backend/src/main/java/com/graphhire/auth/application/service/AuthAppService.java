@@ -260,32 +260,15 @@ public class AuthAppService {
     }
 
     /**
-     * 忘记密码
-     * 【功能说明】根据用户名查询用户并发送验证码到对应邮箱。
-     * 【业务步骤】
-     * 步骤1：查询用户，不存在则抛异常
-     * 步骤2：发送验证码
-     */
-    public void forgotPassword(String username) {
-        // 步骤1：查询用户
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> com.graphhire.common.vo.Exceptions.BusinessException.of("用户不存在"));
-
-        // 步骤2：发送验证码
-        sendVerifyCode(username, "forgot_password");
-    }
-
-    /**
-     * 重置密码
+     * 忘记密码（重置密码）
      * 【功能说明】通过邮箱验证码重置用户密码。
      * 【业务步骤】
      * 步骤1：校验验证码有效性
-     * 步骤2：删除已使用的验证码
-     * 步骤3：查询用户并更新密码
+     * 步骤2：查询用户并更新密码
      */
-    public void resetPassword(String username, String code, String newPassword) {
+    public void forgotPassword(String username, String verifyCode, String newPassword) {
         // 步骤1：校验验证码
-        validateVerifyCode(username, code, "forgot_password");
+        validateVerifyCode(username, verifyCode, "forgot_password");
 
         // 步骤2：查询用户并更新密码
         User user = userRepository.findByUsername(username)

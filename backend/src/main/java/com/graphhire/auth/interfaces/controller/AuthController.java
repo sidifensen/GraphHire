@@ -65,11 +65,13 @@ public class AuthController {
     /**
      * 发送验证码
      * @param email 邮箱地址
+     * @param type 验证码类型（register/forgot_password）
      * @return void
      */
     @PostMapping("/send-verify-code")
-    public Result<Void> sendVerifyCode(@RequestParam String email) {
-        authService.sendVerifyCode(email, "default");
+    public Result<Void> sendVerifyCode(@RequestParam String email,
+                                       @RequestParam(defaultValue = "default") String type) {
+        authService.sendVerifyCode(email, type);
         return Result.success();
     }
 
