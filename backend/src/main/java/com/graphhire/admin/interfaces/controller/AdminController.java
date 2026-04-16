@@ -15,7 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Admin controller for admin operations.
+ * 管理员操作接口
+ * 提供管理员登录、仪表盘统计、企业认证、用户管理等功能
  */
 @RestController
 @RequestMapping("/admin")
@@ -28,7 +29,9 @@ public class AdminController {
     private AuthAppService authAppService;
 
     /**
-     * Admin login - only users with user_type=ADMIN can login
+     * 管理员登录
+     * @param request 登录请求
+     * @return 登录响应
      */
     @PostMapping("/login")
     public Result<LoginResponse> adminLogin(@RequestBody LoginRequest request) {
@@ -36,7 +39,8 @@ public class AdminController {
     }
 
     /**
-     * Get dashboard statistics.
+     * 获取仪表盘统计数据
+     * @return 统计数据
      */
     @GetMapping("/dashboard/stats")
     public Result<DashboardStatsResponse> getDashboardStats() {
@@ -44,7 +48,10 @@ public class AdminController {
     }
 
     /**
-     * Authenticate (approve/reject) a company.
+     * 企业认证授权
+     * @param id 企业ID
+     * @param cmd 认证命令
+     * @return 认证结果
      */
     @PutMapping("/company/auth/{id}")
     public Result<Void> authCompany(@PathVariable Long id, @RequestBody AuthCompanyCmd cmd) {
@@ -53,7 +60,10 @@ public class AdminController {
     }
 
     /**
-     * Modify user status (enable/disable).
+     * 修改用户状态
+     * @param id 用户ID
+     * @param enabled 是否启用
+     * @return 操作结果
      */
     @PutMapping("/user/{id}/status")
     public Result<Void> modifyUserStatus(@PathVariable Long id, @RequestParam boolean enabled) {
@@ -62,7 +72,9 @@ public class AdminController {
     }
 
     /**
-     * Disable a user account.
+     * 禁用用户
+     * @param cmd 禁用命令
+     * @return 操作结果
      */
     @PostMapping("/user/disable")
     public Result<Void> disableUser(@RequestBody DisableUserCmd cmd) {
@@ -71,7 +83,9 @@ public class AdminController {
     }
 
     /**
-     * Get user list with pagination.
+     * 获取用户列表
+     * @param query 查询条件
+     * @return 用户列表
      */
     @GetMapping("/user/list")
     public Result<List<Long>> getUserList(@RequestBody UserListQuery query) {
@@ -79,7 +93,10 @@ public class AdminController {
     }
 
     /**
-     * Get resume library list with pagination (admin).
+     * 获取简历列表
+     * @param page 页码
+     * @param size 每页大小
+     * @return 简历列表
      */
     @GetMapping("/resume/list")
     public Result<?> getResumeList(@RequestParam(defaultValue = "1") int page,
@@ -88,7 +105,10 @@ public class AdminController {
     }
 
     /**
-     * Get job library list with pagination (admin).
+     * 获取职位列表
+     * @param page 页码
+     * @param size 每页大小
+     * @return 职位列表
      */
     @GetMapping("/job/list")
     public Result<?> getJobList(@RequestParam(defaultValue = "1") int page,
@@ -97,7 +117,8 @@ public class AdminController {
     }
 
     /**
-     * Get skill tag list (admin).
+     * 获取技能标签列表
+     * @return 技能标签列表
      */
     @GetMapping("/skill/list")
     public Result<?> getSkillList() {
@@ -105,7 +126,10 @@ public class AdminController {
     }
 
     /**
-     * Get parse task list with pagination (admin).
+     * 获取任务列表
+     * @param page 页码
+     * @param size 每页大小
+     * @return 任务列表
      */
     @GetMapping("/task/list")
     public Result<?> getTaskList(@RequestParam(defaultValue = "1") int page,
@@ -114,7 +138,9 @@ public class AdminController {
     }
 
     /**
-     * Retry a failed parse task.
+     * 重试任务
+     * @param id 任务ID
+     * @return 重试结果
      */
     @PostMapping("/task/{id}/retry")
     public Result<Void> retryTask(@PathVariable Long id) {
@@ -123,7 +149,8 @@ public class AdminController {
     }
 
     /**
-     * Get company auth list (pending companies).
+     * 获取企业认证列表
+     * @return 认证列表
      */
     @GetMapping("/company/auth/list")
     public Result<?> getCompanyAuthList() {
