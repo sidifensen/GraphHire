@@ -20,6 +20,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 个人用户简历管理接口
+ * 提供个人信息管理、简历管理、图谱查询和推荐功能
+ */
 @RestController
 @RequestMapping("/person")
 public class PersonController {
@@ -37,7 +41,8 @@ public class PersonController {
     private SkillGraphClient skillGraphClient;
 
     /**
-     * GET /person/info - 获取个人信息
+     * 获取个人信息
+     * @return 个人信息
      */
     @GetMapping("/info")
     public Result<PersonInfoResponse> getPersonInfo() {
@@ -63,7 +68,9 @@ public class PersonController {
     }
 
     /**
-     * PUT /person/info - 更新个人信息
+     * 更新个人信息
+     * @param request 更新请求
+     * @return 更新结果
      */
     @PutMapping("/info")
     public Result<Void> updatePersonInfo(@RequestBody PersonUpdateRequest request) {
@@ -75,7 +82,7 @@ public class PersonController {
                 return newInfo;
             });
 
-        // Update fields from request
+        // 更新请求中的字段
         if (request.getRealName() != null) {
             personInfo.setRealName(request.getRealName());
         }
@@ -106,19 +113,21 @@ public class PersonController {
     }
 
     /**
-     * POST /person/resume/upload - 上传简历
+     * 上传简历
+     * @param file 简历文件
+     * @return 上传结果
      */
     @PostMapping("/resume/upload")
     public Result<Resume> uploadResume(@RequestParam("file") MultipartFile file) throws IOException {
         Long userId = StpUtil.getLoginIdAsLong();
 
-        // Validate file type
+        // 校验文件类型
         String fileName = file.getOriginalFilename();
         if (fileName == null || (!fileName.endsWith(".doc") && !fileName.endsWith(".docx") && !fileName.endsWith(".pdf"))) {
             return Result.error(400, "只支持 doc/docx/pdf 格式");
         }
 
-        // Validate file size (10MB max)
+        // 校验文件大小（最大10MB）
         if (file.getSize() > 10 * 1024 * 1024) {
             return Result.error(400, "文件大小不能超过 10MB");
         }
@@ -130,7 +139,8 @@ public class PersonController {
     }
 
     /**
-     * GET /person/resume/list - 简历列表
+     * 获取简历列表
+     * @return 简历列表
      */
     @GetMapping("/resume/list")
     public Result<List<Resume>> listResumes() {
@@ -140,7 +150,9 @@ public class PersonController {
     }
 
     /**
-     * DELETE /person/resume/{id} - 删除简历
+     * 删除简历
+     * @param id 简历ID
+     * @return 删除结果
      */
     @DeleteMapping("/resume/{id}")
     public Result<Void> deleteResume(@PathVariable Long id) {
@@ -150,7 +162,9 @@ public class PersonController {
     }
 
     /**
-     * PUT /person/resume/{id}/default - 设置默认简历
+     * 设置默认简历
+     * @param id 简历ID
+     * @return 设置结果
      */
     @PutMapping("/resume/{id}/default")
     public Result<Void> setDefaultResume(@PathVariable Long id) {
@@ -160,7 +174,9 @@ public class PersonController {
     }
 
     /**
-     * POST /person/resume/{id}/parse - 重新解析简历
+     * 重新解析简历
+     * @param id 简历ID
+     * @return 解析结果
      */
     @PostMapping("/resume/{id}/parse")
     public Result<Void> parseResume(@PathVariable Long id) {
@@ -170,7 +186,9 @@ public class PersonController {
     }
 
     /**
-     * GET /person/resume/{id}/detail - 简历详情（解析后）
+     * 获取简历详情
+     * @param id 简历ID
+     * @return 简历详情
      */
     @GetMapping("/resume/{id}/detail")
     public Result<Resume> getResumeDetail(@PathVariable Long id) {
@@ -180,7 +198,8 @@ public class PersonController {
     }
 
     /**
-     * GET /person/graph - 获取个人能力图谱
+     * 获取个人能力图谱
+     * @return 个人图谱
      */
     @GetMapping("/graph")
     public Result<Map<String, Object>> getPersonGraph() {
@@ -190,7 +209,8 @@ public class PersonController {
     }
 
     /**
-     * GET /person/recommend/jobs - 获取推荐职位列表
+     * 获取推荐职位列表
+     * @return 推荐职位列表
      */
     @GetMapping("/recommend/jobs")
     public Result<List<MatchDetailResponse>> getRecommendedJobs() {
@@ -200,7 +220,9 @@ public class PersonController {
     }
 
     /**
-     * GET /person/match/{jobId} - 获取与职位的匹配详情
+     * 获取与职位的匹配详情
+     * @param jobId 职位ID
+     * @return 匹配详情
      */
     @GetMapping("/match/{jobId}")
     public Result<MatchDetailResponse> getMatchDetail(@PathVariable Long jobId) {
