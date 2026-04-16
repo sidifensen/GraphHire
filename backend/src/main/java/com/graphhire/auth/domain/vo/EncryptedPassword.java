@@ -28,6 +28,16 @@ public final class EncryptedPassword {
     }
 
     /**
+     * 静态工厂方法，从已加密的字符串构造 EncryptedPassword
+     * 用于从数据库读取已加密密码时使用
+     * @param encrypted 已加密的 BCrypt 字符串
+     * @return EncryptedPassword 实例
+     */
+    public static EncryptedPassword fromEncrypted(String encrypted) {
+        return new EncryptedPassword(encrypted);
+    }
+
+    /**
      * 校验明文密码是否与加密密码匹配
      * @param raw 明文密码
      * @return true 表示匹配，false 表示不匹配

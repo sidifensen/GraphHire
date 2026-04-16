@@ -1,6 +1,7 @@
 package com.graphhire.auth.interfaces.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
+import com.graphhire.auth.application.command.ForgotPasswordCmd;
 import com.graphhire.auth.application.service.AuthAppService;
 import com.graphhire.auth.domain.vo.UserType;
 import com.graphhire.auth.interfaces.dto.request.CompanyRegisterRequest;
@@ -19,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -118,8 +120,9 @@ class AuthControllerTest {
         void personRegister_Success() {
             // Given
             PersonRegisterRequest request = new PersonRegisterRequest();
-            request.setUsername("newuser");
+            request.setUsername("newuser@example.com");
             request.setPassword("password123");
+            request.setVerifyCode("123456");
 
             LoginResponse loginResponse = new LoginResponse(
                 "token456", null, 86400L, UserType.PERSON, 2L
@@ -143,11 +146,28 @@ class AuthControllerTest {
         void personRegister_UsernameExists() {
             // Given
             PersonRegisterRequest request = new PersonRegisterRequest();
-            request.setUsername("existinguser");
+            request.setUsername("existinguser@example.com");
             request.setPassword("password123");
+            request.setVerifyCode("123456");
 
             when(authService.registerPerson(any()))
                 .thenThrow(new RuntimeException("用户已存在"));
+
+            // When & Then
+            assertThrows(RuntimeException.class, () -> authController.personRegister(request));
+        }
+
+        @Test
+        @DisplayName("个人用户注册失败 - 验证码错误")
+        void personRegister_WrongVerifyCode() {
+            // Given
+            PersonRegisterRequest request = new PersonRegisterRequest();
+            request.setUsername("newuser@example.com");
+            request.setPassword("password123");
+            request.setVerifyCode("wrongcode");
+
+            when(authService.registerPerson(any()))
+                .thenThrow(new RuntimeException("验证码错误或已过期"));
 
             // When & Then
             assertThrows(RuntimeException.class, () -> authController.personRegister(request));
@@ -163,10 +183,11 @@ class AuthControllerTest {
         void companyRegister_Success() {
             // Given
             CompanyRegisterRequest request = new CompanyRegisterRequest();
-            request.setUsername("companyuser");
+            request.setUsername("companyuser@example.com");
             request.setPassword("password123");
             request.setCompanyName("Test Company");
             request.setUnifiedSocialCreditCode("91110000000000001X");
+            request.setVerifyCode("123456");
 
             LoginResponse loginResponse = new LoginResponse(
                 "token789", null, 86400L, UserType.COMPANY, 3L
@@ -190,10 +211,11 @@ class AuthControllerTest {
         void companyRegister_UsernameExists() {
             // Given
             CompanyRegisterRequest request = new CompanyRegisterRequest();
-            request.setUsername("existingcompany");
+            request.setUsername("existingcompany@example.com");
             request.setPassword("password123");
             request.setCompanyName("Existing Company");
             request.setUnifiedSocialCreditCode("91110000000000002X");
+            request.setVerifyCode("123456");
 
             when(authService.registerCompany(any()))
                 .thenThrow(new RuntimeException("用户已存在"));
@@ -335,19 +357,53 @@ class AuthControllerTest {
     class SendVerifyCodeTests {
 
         @Test
-        @DisplayName("发送验证码成功")
-        void sendVerifyCode_Success() {
+        @DisplayName("发送验证码成功（默认类型）")
+        void sendVerifyCode_DefaultType_Success() {
             // Given
             String email = "test@example.com";
             doNothing().when(authService).sendVerifyCode(email, "default");
 
             // When
-            var result = authController.sendVerifyCode(email);
+            var result = authController.sendVerifyCode(email, "default");
 
             // Then
             assertNotNull(result);
             assertEquals(200, result.getCode());
             verify(authService).sendVerifyCode(email, "default");
+        }
+
+        @Test
+        @DisplayName("发送注册验证码成功")
+        void sendVerifyCode_Register_Success() {
+            // Given
+            String email = "test@example.com";
+            String type = "register";
+            doNothing().when(authService).sendVerifyCode(email, type);
+
+            // When
+            var result = authController.sendVerifyCode(email, type);
+
+            // Then
+            assertNotNull(result);
+            assertEquals(200, result.getCode());
+            verify(authService).sendVerifyCode(email, "register");
+        }
+
+        @Test
+        @DisplayName("发送忘记密码验证码成功")
+        void sendVerifyCode_ForgotPassword_Success() {
+            // Given
+            String email = "test@example.com";
+            String type = "forgot_password";
+            doNothing().when(authService).sendVerifyCode(email, type);
+
+            // When
+            var result = authController.sendVerifyCode(email, type);
+
+            // Then
+            assertNotNull(result);
+            assertEquals(200, result.getCode());
+            verify(authService).sendVerifyCode(email, "forgot_password");
         }
     }
 
@@ -359,67 +415,65 @@ class AuthControllerTest {
         @DisplayName("忘记密码成功")
         void forgotPassword_Success() {
             // Given
-            String email = "test@example.com";
-            doNothing().when(authService).forgotPassword(email);
+            ForgotPasswordCmd cmd = new ForgotPasswordCmd();
+            cmd.setUsername("test@example.com");
+            cmd.setVerifyCode("123456");
+            cmd.setNewPassword("newPassword123");
+
+            doNothing().when(authService).forgotPassword("test@example.com", "123456", "newPassword123");
 
             // When
-            var result = authController.forgotPassword(email);
+            var result = authController.forgotPassword(cmd);
 
             // Then
             assertNotNull(result);
             assertEquals(200, result.getCode());
-            verify(authService).forgotPassword(email);
+            verify(authService).forgotPassword("test@example.com", "123456", "newPassword123");
         }
 
         @Test
         @DisplayName("忘记密码失败 - 用户不存在")
         void forgotPassword_UserNotFound() {
             // Given
-            String email = "nonexistent@example.com";
+            ForgotPasswordCmd cmd = new ForgotPasswordCmd();
+            cmd.setUsername("nonexistent@example.com");
+            cmd.setVerifyCode("123456");
+            cmd.setNewPassword("newPassword123");
+
             doThrow(new RuntimeException("用户不存在"))
-                .when(authService).forgotPassword(email);
+                .when(authService).forgotPassword("nonexistent@example.com", "123456", "newPassword123");
 
             // When & Then
-            assertThrows(RuntimeException.class, () -> authController.forgotPassword(email));
+            assertThrows(RuntimeException.class, () -> authController.forgotPassword(cmd));
+        }
+
+        @Test
+        @DisplayName("忘记密码失败 - 验证码错误")
+        void forgotPassword_WrongVerifyCode() {
+            // Given
+            ForgotPasswordCmd cmd = new ForgotPasswordCmd();
+            cmd.setUsername("test@example.com");
+            cmd.setVerifyCode("wrongcode");
+            cmd.setNewPassword("newPassword123");
+
+            doThrow(new RuntimeException("验证码错误或已过期"))
+                .when(authService).forgotPassword("test@example.com", "wrongcode", "newPassword123");
+
+            // When & Then
+            assertThrows(RuntimeException.class, () -> authController.forgotPassword(cmd));
         }
     }
 
     @Nested
-    @DisplayName("重置密码测试")
+    @DisplayName("重置密码测试（已废弃）")
     class ResetPasswordTests {
 
         @Test
-        @DisplayName("重置密码成功")
-        void resetPassword_Success() {
-            // Given
-            String email = "test@example.com";
-            String code = "123456";
-            String newPassword = "newPassword123";
-
-            doNothing().when(authService).resetPassword(email, code, newPassword);
-
-            // When
-            var result = authController.resetPassword(email, code, newPassword);
-
-            // Then
-            assertNotNull(result);
-            assertEquals(200, result.getCode());
-            verify(authService).resetPassword(email, code, newPassword);
-        }
-
-        @Test
-        @DisplayName("重置密码失败 - 验证码错误")
-        void resetPassword_WrongCode() {
-            // Given
-            String email = "test@example.com";
-            String code = "wrongcode";
-            String newPassword = "newPassword123";
-
-            doThrow(new RuntimeException("验证码错误或已过期"))
-                .when(authService).resetPassword(email, code, newPassword);
-
-            // When & Then
-            assertThrows(RuntimeException.class, () -> authController.resetPassword(email, code, newPassword));
+        @DisplayName("重置密码接口已废弃，使用忘记密码接口")
+        void resetPassword_Deprecated() {
+            // 注意：reset-password 接口已废弃，统一使用 /forgot-password
+            // 此测试仅作文档说明
+            assertTrue(true);
         }
     }
 

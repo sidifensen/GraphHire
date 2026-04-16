@@ -74,7 +74,7 @@ public class UserRepositoryImpl implements UserRepository {
         User user = new User();
         user.setId(po.getId());
         user.setUsername(Username.of(po.getUsername()));
-        user.setPassword(EncryptedPassword.encode(po.getPassword()));
+        user.setPassword(EncryptedPassword.fromEncrypted(po.getPassword()));
         user.setUserType(mapIntToUserType(po.getUserType()));
         user.setStatus(mapIntToAuthStatus(po.getStatus()));
         // 注意：failedLoginCount 和 lockedUntil 不持久化到 sys_user 表
