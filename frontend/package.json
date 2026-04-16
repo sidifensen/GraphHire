@@ -1,0 +1,17 @@
+{
+  "name": "graphhire",
+  "private": true,
+  "workspaces": [
+    "frontend/apps/*",
+    "frontend/packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0",
+    "typescript": "^5.4.0"
+  }
+}
