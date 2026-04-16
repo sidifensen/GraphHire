@@ -1,45 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Inter:wght@300..700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --color-primary: #3B82F6;
-  --color-primary-dark: #60A5FA;
-  --color-success: #10B981;
-  --color-warning: #F59E0B;
-  --color-danger: #EF4444;
-  --color-bg: #F9FAFB;
-  --color-card: #FFFFFF;
-  --color-text: #1F2937;
-  --color-text-secondary: #4B5563;
-  --color-border: #E5E7EB;
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
-.dark {
-  --color-bg: #111827;
-  --color-card: #1F2937;
-  --color-text: #F3F4F6;
-  --color-text-secondary: #D1D5DB;
-  --color-border: #374151;
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
-body {
-  background-color: var(--color-bg);
-  color: var(--color-text);
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
-.shadow-card {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 2px 6px rgba(0, 0, 0, 0.04);
-}
-
-.shadow-hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.dark .shadow-card {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.2);
-}
-
-.dark .shadow-hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+html {
+  scroll-behavior: smooth;
 }
