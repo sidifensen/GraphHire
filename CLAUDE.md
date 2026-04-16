@@ -4,6 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
+
 > **强制要求：开发前必须严格按照以下 superpowers-plus 流程执行，禁止跳过任何步骤**
 
 ## superpowers-plus 标准流程
@@ -29,6 +30,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Iron Law (Debugging)** — 没有根因分析就不修 bug，禁止猜测修复
 - **流程优于猜测** — 先验证再断言，禁止跳过步骤
 - **自我评估** — 使用内联检查表自检，而非发起子代理 review 循环
+
+### Git 规范
+
+**强制要求：所有提交信息必须使用中文编写。**
+
+| 提交类型 | 格式 | 示例 |
+|---------|------|------|
+| 新功能 | `feat: 功能描述` | `feat: 添加用户登录功能` |
+| bug修复 | `fix: 问题描述` | `fix: 修复登录超时问题` |
+| 文档更新 | `docs: 描述` | `docs: 更新API文档` |
+| 重构 | `refactor: 描述` | `refactor: 简化权限校验逻辑` |
+| 样式 | `style: 描述` | `style: 调整按钮间距` |
+| 测试 | `test: 描述` | `test: 新增登录单元测试` |
+| 性能 | `perf: 描述` | `perf: 优化查询性能` |
+| 构建 | `build: 描述` | `build: 更新依赖版本` |
 
 ### Hutool 工具规范
 
