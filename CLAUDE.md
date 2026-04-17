@@ -1,9 +1,8 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+### Git 规范
 
----
-
+**强制要求：所有提交信息必须使用中文编写。**
 
 > **强制要求：开发前必须严格按照以下 superpowers-plus 流程执行，禁止跳过任何步骤**
 
@@ -17,13 +16,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 6. **requesting-code-review** — 代码评审（任务间隙激活）
 7. **finishing-a-development-branch** — 分支完成（任务完成后激活）
 
-### 分支场景
-- 遇到问题 → **systematic-debugging**（系统调试）
-- 接收评审反馈 → **receiving-code-review**（接收代码评审）
-- 多任务可并行 → **dispatching-parallel-agents**（并行代理分发）
-- 需要编写验收标准 → **writing-acceptance-criteria**（编写验收标准）
-- 验证完成后、合并前 → **acceptance-testing**（验收测试）
-
 ### 核心原则
 
 - **Iron Law (TDD)** — 没有失败测试就不写生产代码；遵循 RED-GREEN-REFACTOR 节奏
@@ -31,44 +23,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **流程优于猜测** — 先验证再断言，禁止跳过步骤
 - **自我评估** — 使用内联检查表自检，而非发起子代理 review 循环
 
-### Git 规范
-
-**强制要求：所有提交信息必须使用中文编写。**
-
-| 提交类型 | 格式 | 示例 |
-|---------|------|------|
-| 新功能 | `feat: 功能描述` | `feat: 添加用户登录功能` |
-| bug修复 | `fix: 问题描述` | `fix: 修复登录超时问题` |
-| 文档更新 | `docs: 描述` | `docs: 更新API文档` |
-| 重构 | `refactor: 描述` | `refactor: 简化权限校验逻辑` |
-| 样式 | `style: 描述` | `style: 调整按钮间距` |
-| 测试 | `test: 描述` | `test: 新增登录单元测试` |
-| 性能 | `perf: 描述` | `perf: 优化查询性能` |
-| 构建 | `build: 描述` | `build: 更新依赖版本` |
-
 ### Hutool 工具规范
 
 **强制要求：所有手写工具类代码必须优先使用 Hutool 替代，禁止重复造轮子。**
-
-| 场景 | 必须使用 | 禁止使用 |
-|------|---------|---------|
-| JSON 解析 | `JSONUtil.parseObj()` | 手写 `substring`+`split` |
-| HTTP 请求 | `HttpRequest` / `HttpUtil` | `RestTemplate`（新场景）|
-| 日期 | `DateUtil.date()` / `format()` | `new Date()` |
-| 字符串 | `StrUtil.isBlank()` / `format()` | `== null` / `isEmpty()` |
-| Bean拷贝 | `BeanUtil.copyProperties()` | 逐字段 `setXxx()` |
-| 集合空安全 | `CollUtil.emptyIfNull()` | `list == null ? [] : list` |
-| 随机数/验证码 | `RandomUtil` / `SecureUtil.randomNumbers()` | `new Random()` |
-| 日志 | `StaticLog.info()` / `error()` | `System.out.println()` |
-| 异常消息 | `ExceptionUtil.getMessage()` | `e.getMessage()` 直接透出 |
-| 格式验证 | `Validator.isEmail()` / `isMobile()` | 手写正则 |
-| 文件操作 | `FileUtil` / `NioUtil` | `Files`/`Paths` 手写流 |
-| ID生成 | `IdUtil.simpleUUID()` | 拼接字符串作ID |
-| Base64 | `Base64` | 手写Base64 |
-
-**豁免：** MyBatis-Plus / Sa-Token / Redis / Result / PageQuery/Result / 枚举映射
-
----
 
 ## 文档布局
 
@@ -90,7 +47,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 常用命令
 
-> **最高优先级**: 启动命令必须用 `run_in_background: true`，重启服务也同样要求
+> **最高优先级**: 启动命令必须用 `run_in_background: true`，启动前自动检查端口占用，若被占用则先终止占用进程
 
 ```bash
 # 前端 http://localhost:8888
@@ -98,14 +55,6 @@ cd frontend && npm run dev
 
 # 后端 http://localhost:7777
 cd backend && mvn spring-boot:run
-```
-
-## 端口占用处理
-
-```bash
-netstat -ano | findstr :8888  # Windows
-netstat -ano | findstr :7777
-taskkill /PID <PID> /F
 ```
 
 ## 项目概述

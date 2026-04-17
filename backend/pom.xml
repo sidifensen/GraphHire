@@ -24,17 +24,12 @@
         <tika.version>3.2.0</tika.version>
         <aws-sdk.version>2.25.0</aws-sdk.version>
         <lombok.version>1.18.30</lombok.version>
-        <knife4j.version>4.5.0</knife4j.version>
     </properties>
 
     <repositories>
         <repository>
             <id>central</id>
             <url>https://repo1.maven.org/maven2</url>
-        </repository>
-        <repository>
-            <id>jitpack</id>
-            <url>https://jitpack.io</url>
         </repository>
     </repositories>
 

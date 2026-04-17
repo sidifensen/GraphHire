@@ -3,7 +3,6 @@ package com.graphhire.auth.interfaces.controller;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.StrUtil;
 import com.graphhire.auth.application.command.ChangePasswordCmd;
-import com.graphhire.auth.application.command.ForgotPasswordCmd;
 import com.graphhire.auth.application.command.SendResetCodeCmd;
 import com.graphhire.auth.application.service.AuthAppService;
 import com.graphhire.common.vo.Result;
@@ -46,22 +45,6 @@ public class PasswordController {
         // 步骤3：调用服务层修改密码（包含旧密码校验）
         authService.updatePassword(userId, cmd.getOldPassword(), cmd.getNewPassword());
 
-        return Result.success();
-    }
-
-    /**
-     * 忘记密码
-     * 通过邮箱验证码重置用户密码
-     * @param cmd 忘记密码命令（username、verifyCode、newPassword）
-     * @return void
-     */
-    @PostMapping("/forgot-password")
-    public Result<Void> forgotPassword(@RequestBody ForgotPasswordCmd cmd) {
-        // 校验新密码格式
-        validatePasswordFormat(cmd.getNewPassword());
-
-        // 调用服务层重置密码
-        authService.forgotPassword(cmd.getUsername(), cmd.getVerifyCode(), cmd.getNewPassword());
         return Result.success();
     }
 
