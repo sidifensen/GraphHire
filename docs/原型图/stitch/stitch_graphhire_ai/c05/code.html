@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+
+<html lang="zh"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>发布新职位 - GraphHire</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#faf8ff",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "surface-container-high": "#e2e7ff",
+                        "surface-container-low": "#f2f3ff",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "secondary-container": "#6cf8bb",
+                        "primary-container": "#2563eb",
+                        "on-secondary-fixed": "#002113",
+                        "on-primary-fixed": "#00174b",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "surface-bright": "#faf8ff",
+                        "surface-variant": "#dae2fd",
+                        "inverse-on-surface": "#eef0ff",
+                        "on-surface-variant": "#434655",
+                        "outline-variant": "#c3c6d7",
+                        "inverse-primary": "#b4c5ff",
+                        "on-primary-container": "#eeefff",
+                        "on-secondary-container": "#00714d",
+                        "surface-container": "#eaedff",
+                        "on-secondary": "#ffffff",
+                        "background": "#faf8ff",
+                        "tertiary": "#784b00",
+                        "on-surface": "#131b2e",
+                        "on-tertiary-fixed": "#2a1700",
+                        "outline": "#737686",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed-variant": "#005236",
+                        "surface-tint": "#0053db",
+                        "primary": "#004ac6",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#d2d9f4",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed-dim": "#4edea3",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "surface-container-highest": "#dae2fd",
+                        "tertiary-fixed": "#ffddb8",
+                        "on-background": "#131b2e",
+                        "inverse-surface": "#283044",
+                        "tertiary-container": "#996100",
+                        "primary-fixed": "#dbe1ff",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed": "#6ffbbe",
+                        "secondary": "#006c49",
+                        "on-tertiary-container": "#ffeedd"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #faf8ff; color: #131b2e; }
+        h1, h2, h3, h4, h5, h6, .font-headline { font-family: 'Manrope', sans-serif; }
+        .glass-panel { background: rgba(250, 248, 255, 0.7); backdrop-filter: blur(24px); }
+        .primary-gradient { background: linear-gradient(135deg, #004ac6 0%, #2563eb 100%); }
+    </style>
+</head>
+<body class="bg-surface text-on-surface flex h-screen overflow-hidden">
+<!-- Side NavBar -->
+<nav class="h-screen w-64 fixed left-0 top-0 bg-surface border-r border-surface-container-low shadow-[20px_0px_50px_rgba(19,27,46,0.02)] flex flex-col p-4 gap-2 z-50">
+<!-- Header -->
+<div class="flex items-center gap-3 px-2 py-4 mb-4">
+<div class="w-8 h-8 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-lg">
+                G
+            </div>
+<div>
+<h1 class="font-headline text-xl font-black text-primary">GraphHire</h1>
+<p class="font-label text-xs text-on-surface-variant uppercase tracking-wider">Admin Portal</p>
+</div>
+</div>
+<!-- CTA -->
+<button class="mb-6 w-full primary-gradient text-on-primary font-label text-sm font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-[0px_4px_10px_rgba(0,74,198,0.2)] hover:shadow-[0px_6px_15px_rgba(0,74,198,0.3)] transition-all">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">add</span>
+            Post New Job
+        </button>
+<!-- Navigation Links -->
+<div class="flex flex-col gap-1 flex-1 overflow-y-auto">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="font-label text-sm font-semibold">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface-container-highest text-primary font-label text-sm font-semibold shadow-[0px_2px_8px_rgba(0,74,198,0.05)]" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">work</span>
+<span>Job Management</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">psychology</span>
+<span class="font-label text-sm font-semibold">Recommendations</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">gavel</span>
+<span class="font-label text-sm font-semibold">Audit</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">group</span>
+<span class="font-label text-sm font-semibold">User Management</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">label</span>
+<span class="font-label text-sm font-semibold">Skill Tags</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="font-label text-sm font-semibold">Settings</span>
+</a>
+</div>
+<!-- User Profile -->
+<div class="mt-auto pt-4 border-t border-surface-container-low">
+<div class="flex items-center gap-3 px-2 py-2">
+<img alt="Admin Profile" class="w-9 h-9 rounded-full object-cover outline-variant outline outline-1 outline-offset-2" data-alt="professional headshot of a man with glasses wearing a dark suit against a neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrBxitzSerbefVhyDNJBx8LdEc-dVy7Dm_Bxoo6gjDYOKiibg1Ncz0oQgJJYQ0CggXDFMUX3TeTD8PJ29h38FbzkDz5CcbBKlQpXw2qHJwH3JBD4qKeZk4VWK5DQjtssJye8TGZPnqjGf1l8j4twdGjMCcDE3deWa_gb_yTgeKn_5E6TRPOBRWZs_7QnoyqnPpRpHdo4DdlZ56ziu7XuXyXNLhDDb0JNzVGrJDxd8II7q4E1gQYbWcmdjK2Uh7QL_cRI4PCFfF_Zw"/>
+<div>
+<p class="font-label text-sm font-semibold text-on-surface">Admin User</p>
+<p class="font-label text-xs text-on-surface-variant">HR Manager</p>
+</div>
+</div>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="ml-64 flex-1 flex flex-col h-screen overflow-hidden bg-surface relative">
+<!-- Header area -->
+<header class="px-10 py-8 shrink-0 z-10 glass-panel">
+<div class="max-w-4xl mx-auto flex justify-between items-end">
+<div>
+<p class="font-label text-sm text-on-surface-variant uppercase tracking-wider mb-2">职位管理 / 发布</p>
+<h1 class="font-headline text-4xl font-extrabold text-on-surface tracking-tight">发布新职位</h1>
+</div>
+<div class="flex gap-4">
+<button class="bg-transparent text-primary font-label text-sm font-semibold py-2 px-4 rounded-xl border border-outline-variant/20 hover:bg-surface-container-low transition-colors">
+                        存为草稿
+                    </button>
+<button class="primary-gradient text-on-primary font-label text-sm font-semibold py-2 px-6 rounded-xl shadow-[0px_4px_10px_rgba(0,74,198,0.2)] hover:shadow-[0px_6px_15px_rgba(0,74,198,0.3)] transition-all">
+                        立即发布
+                    </button>
+</div>
+</div>
+</header>
+<!-- Scrollable Form Area -->
+<div class="flex-1 overflow-y-auto px-10 pb-20">
+<div class="max-w-4xl mx-auto space-y-8">
+<!-- Section 1: Basic Info -->
+<section class="bg-surface-container-lowest rounded-xl p-8 shadow-[0px_20px_50px_rgba(19,27,46,0.03)] border border-outline-variant/15 relative overflow-hidden">
+<!-- Decorative element -->
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -z-0"></div>
+<h2 class="font-headline text-xl font-bold text-on-surface mb-6 flex items-center gap-2 relative z-10">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">info</span>
+                        基础信息
+                    </h2>
+<div class="grid grid-cols-2 gap-x-8 gap-y-6 relative z-10">
+<!-- Job Title -->
+<div class="col-span-2">
+<label class="block font-label text-sm font-medium text-on-surface-variant mb-2">职位名称</label>
+<input class="w-full bg-surface-container-low text-on-surface placeholder:text-outline border-0 border-b-2 border-transparent focus:border-primary focus:bg-surface-container-lowest focus:ring-0 transition-all rounded-t-lg px-4 py-3 font-body text-base" placeholder="例如：高级前端工程师" type="text"/>
+</div>
+<!-- Job Type -->
+<div>
+<label class="block font-label text-sm font-medium text-on-surface-variant mb-2">工作性质</label>
+<div class="relative">
+<select class="w-full bg-surface-container-low text-on-surface border-0 border-b-2 border-transparent focus:border-primary focus:bg-surface-container-lowest focus:ring-0 transition-all rounded-t-lg px-4 py-3 font-body text-base appearance-none cursor-pointer">
+<option>全职</option>
+<option>兼职</option>
+<option>实习</option>
+<option>合同工</option>
+</select>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+</div>
+<!-- Experience -->
+<div>
+<label class="block font-label text-sm font-medium text-on-surface-variant mb-2">经验要求</label>
+<div class="relative">
+<select class="w-full bg-surface-container-low text-on-surface border-0 border-b-2 border-transparent focus:border-primary focus:bg-surface-container-lowest focus:ring-0 transition-all rounded-t-lg px-4 py-3 font-body text-base appearance-none cursor-pointer">
+<option>不限</option>
+<option>1-3年</option>
+<option>3-5年</option>
+<option>5-10年</option>
+<option>10年以上</option>
+</select>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+</div>
+<!-- Salary Range -->
+<div>
+<label class="block font-label text-sm font-medium text-on-surface-variant mb-2">薪资范围 (月薪)</label>
+<div class="flex items-center gap-2">
+<input class="w-full bg-surface-container-low text-on-surface placeholder:text-outline border-0 border-b-2 border-transparent focus:border-primary focus:bg-surface-container-lowest focus:ring-0 transition-all rounded-t-lg px-4 py-3 font-body text-base text-center" placeholder="最低" type="number"/>
+<span class="text-on-surface-variant">-</span>
+<input class="w-full bg-surface-container-low text-on-surface placeholder:text-outline border-0 border-b-2 border-transparent focus:border-primary focus:bg-surface-container-lowest focus:ring-0 transition-all rounded-t-lg px-4 py-3 font-body text-base text-center" placeholder="最高" type="number"/>
+<span class="text-on-surface-variant ml-2">K</span>
+</div>
+</div>
+<!-- City -->
+<div>
+<label class="block font-label text-sm font-medium text-on-surface-variant mb-2">工作城市</label>
+<input class="w-full bg-surface-container-low text-on-surface placeholder:text-outline border-0 border-b-2 border-transparent focus:border-primary focus:bg-surface-container-lowest focus:ring-0 transition-all rounded-t-lg px-4 py-3 font-body text-base" placeholder="例如：北京" type="text"/>
+</div>
+</div>
+</section>
+<!-- Section 2: Skill Requirements (Bento Grid Style) -->
+<section class="bg-surface-container-lowest rounded-xl p-8 shadow-[0px_20px_50px_rgba(19,27,46,0.03)] border border-outline-variant/15">
+<div class="flex justify-between items-center mb-6">
+<h2 class="font-headline text-xl font-bold text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">psychology</span>
+                            技能要求模型
+                        </h2>
+<button class="text-primary text-sm font-semibold hover:bg-surface-container-low px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                            添加核心技能
+                        </button>
+</div>
+<p class="text-sm text-on-surface-variant mb-6">通过定义核心技能及其权重，AI 将自动为您匹配最合适的候选人雷达图。</p>
+<!-- Interactive Skill Tags Container -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Skill Item 1 -->
+<div class="bg-surface-container-low p-4 rounded-xl flex items-center justify-between border border-transparent hover:border-outline-variant/20 transition-all group">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary font-bold text-lg">
+                                    R
+                                </div>
+<div>
+<h3 class="font-label font-semibold text-on-surface">React.js</h3>
+<p class="text-xs text-on-surface-variant">核心框架</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="text-right">
+<div class="text-xs text-on-surface-variant mb-1">权重高</div>
+<div class="flex gap-1">
+<div class="w-3 h-1.5 bg-primary rounded-full"></div>
+<div class="w-3 h-1.5 bg-primary rounded-full"></div>
+<div class="w-3 h-1.5 bg-primary rounded-full"></div>
+<div class="w-3 h-1.5 bg-surface-dim rounded-full"></div>
+</div>
+</div>
+<button class="text-outline hover:text-error opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+</div>
+<!-- Skill Item 2 -->
+<div class="bg-surface-container-low p-4 rounded-xl flex items-center justify-between border border-transparent hover:border-outline-variant/20 transition-all group">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary font-bold text-lg">
+                                    T
+                                </div>
+<div>
+<h3 class="font-label font-semibold text-on-surface">TypeScript</h3>
+<p class="text-xs text-on-surface-variant">类型系统</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="text-right">
+<div class="text-xs text-on-surface-variant mb-1">权重极高</div>
+<div class="flex gap-1">
+<div class="w-3 h-1.5 bg-primary rounded-full"></div>
+<div class="w-3 h-1.5 bg-primary rounded-full"></div>
+<div class="w-3 h-1.5 bg-primary rounded-full"></div>
+<div class="w-3 h-1.5 bg-primary rounded-full"></div>
+</div>
+</div>
+<button class="text-outline hover:text-error opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+</div>
+<!-- Skill Item 3 -->
+<div class="bg-surface-container-low p-4 rounded-xl flex items-center justify-between border border-transparent hover:border-outline-variant/20 transition-all group">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary font-bold text-lg">
+                                    N
+                                </div>
+<div>
+<h3 class="font-label font-semibold text-on-surface">Node.js</h3>
+<p class="text-xs text-on-surface-variant">服务端渲染</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="text-right">
+<div class="text-xs text-on-surface-variant mb-1">权重中等</div>
+<div class="flex gap-1">
+<div class="w-3 h-1.5 bg-primary rounded-full"></div>
+<div class="w-3 h-1.5 bg-primary rounded-full"></div>
+<div class="w-3 h-1.5 bg-surface-dim rounded-full"></div>
+<div class="w-3 h-1.5 bg-surface-dim rounded-full"></div>
+</div>
+</div>
+<button class="text-outline hover:text-error opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+</div>
+<!-- Add Skill Quick Entry -->
+<div class="border-2 border-dashed border-outline-variant/30 rounded-xl p-4 flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low hover:border-primary/50 cursor-pointer transition-all">
+<span class="material-symbols-outlined mr-2">add_circle</span>
+<span class="font-label text-sm font-medium">输入技能名称并回车添加</span>
+</div>
+</div>
+</section>
+<!-- Section 3: Job Description -->
+<section class="bg-surface-container-lowest rounded-xl p-8 shadow-[0px_20px_50px_rgba(19,27,46,0.03)] border border-outline-variant/15 mb-8">
+<h2 class="font-headline text-xl font-bold text-on-surface mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">description</span>
+                        职位描述
+                    </h2>
+<!-- Fake Rich Text Editor Toolbar -->
+<div class="bg-surface-container-low border-b border-outline-variant/20 rounded-t-lg p-2 flex gap-2">
+<button class="p-1.5 rounded hover:bg-surface text-on-surface-variant"><span class="material-symbols-outlined text-[18px]">format_bold</span></button>
+<button class="p-1.5 rounded hover:bg-surface text-on-surface-variant"><span class="material-symbols-outlined text-[18px]">format_italic</span></button>
+<button class="p-1.5 rounded hover:bg-surface text-on-surface-variant"><span class="material-symbols-outlined text-[18px]">format_underlined</span></button>
+<div class="w-px h-6 bg-outline-variant/30 mx-1 my-auto"></div>
+<button class="p-1.5 rounded hover:bg-surface text-on-surface-variant"><span class="material-symbols-outlined text-[18px]">format_list_bulleted</span></button>
+<button class="p-1.5 rounded hover:bg-surface text-on-surface-variant"><span class="material-symbols-outlined text-[18px]">format_list_numbered</span></button>
+</div>
+<!-- Editor Area -->
+<textarea class="w-full h-64 bg-surface-container-lowest text-on-surface placeholder:text-outline border-0 focus:ring-0 p-4 font-body text-base resize-y" placeholder="详细描述该职位的职责、要求以及团队氛围..."></textarea>
+</section>
+</div>
+</div>
+</main>
+</body></html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>上传简历 - GraphHire</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#faf8ff",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "surface-container-high": "#e2e7ff",
+                        "surface-container-low": "#f2f3ff",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "secondary-container": "#6cf8bb",
+                        "primary-container": "#2563eb",
+                        "on-secondary-fixed": "#002113",
+                        "on-primary-fixed": "#00174b",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "surface-bright": "#faf8ff",
+                        "surface-variant": "#dae2fd",
+                        "inverse-on-surface": "#eef0ff",
+                        "on-surface-variant": "#434655",
+                        "outline-variant": "#c3c6d7",
+                        "inverse-primary": "#b4c5ff",
+                        "on-primary-container": "#eeefff",
+                        "on-secondary-container": "#00714d",
+                        "surface-container": "#eaedff",
+                        "on-secondary": "#ffffff",
+                        "background": "#faf8ff",
+                        "tertiary": "#784b00",
+                        "on-surface": "#131b2e",
+                        "on-tertiary-fixed": "#2a1700",
+                        "outline": "#737686",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed-variant": "#005236",
+                        "surface-tint": "#0053db",
+                        "primary": "#004ac6",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#d2d9f4",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed-dim": "#4edea3",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "surface-container-highest": "#dae2fd",
+                        "tertiary-fixed": "#ffddb8",
+                        "on-background": "#131b2e",
+                        "inverse-surface": "#283044",
+                        "tertiary-container": "#996100",
+                        "primary-fixed": "#dbe1ff",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed": "#6ffbbe",
+                        "secondary": "#006c49",
+                        "on-tertiary-container": "#ffeedd"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {},
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, h4, h5, h6, .font-headline { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col antialiased">
+<!-- TopNavBar (Linear/Transactional variant - simplified) -->
+<header class="bg-surface dark:bg-slate-950 docked full-width top-0 bg-surface-container-low dark:bg-slate-900 flat no shadows flex justify-between items-center w-full px-6 py-3 max-w-full mx-auto">
+<div class="flex items-center gap-4">
+<span class="font-headline text-2xl font-bold tracking-tight text-blue-700 dark:text-blue-500">GraphHire</span>
+</div>
+<div>
+<button class="font-label text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors scale-95 active:duration-75">
+                跳过
+            </button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col items-center justify-center p-6 md:p-10">
+<div class="w-full max-w-2xl flex flex-col gap-8">
+<!-- Header Section -->
+<div class="text-center space-y-2">
+<h1 class="font-headline text-4xl md:text-5xl font-bold text-on-surface tracking-tight">
+                    开启您的智能求职之旅
+                </h1>
+<p class="font-body text-base text-on-surface-variant max-w-lg mx-auto">
+                    上传您的最新简历，我们的AI引擎将深度解析您的技能矩阵，为您匹配最适合的优质机会。
+                </p>
+</div>
+<!-- Upload Zone -->
+<div class="bg-surface-container-low rounded-xl p-1 relative overflow-hidden group">
+<!-- Decorative subtle gradient backdrop -->
+<div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none"></div>
+<div class="bg-surface-container-lowest border border-outline-variant/15 rounded-xl p-10 md:p-16 flex flex-col items-center justify-center text-center relative z-10 transition-all duration-300 hover:bg-surface-container-low/50 cursor-pointer">
+<div class="w-20 h-20 mb-6 rounded-full bg-surface-container-highest flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-300 shadow-[0px_20px_50px_rgba(19,27,46,0.06)]">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">cloud_upload</span>
+</div>
+<h3 class="font-headline text-xl font-bold text-on-surface mb-2">
+                        点击或拖拽简历文件至此
+                    </h3>
+<p class="font-label text-sm text-on-surface-variant mb-6">
+                        支持格式：PDF, DOCX, JPG (最大 10MB)
+                    </p>
+<button class="bg-gradient-to-r from-primary to-primary-container text-on-primary font-label text-sm font-semibold py-3 px-8 rounded-xl shadow-[0px_10px_20px_rgba(0,74,198,0.15)] hover:shadow-[0px_15px_30px_rgba(0,74,198,0.2)] transition-all duration-300">
+                        选择文件
+                    </button>
+</div>
+</div>
+<!-- Analysis State (Hidden by default, shown here for representation) -->
+<div class="bg-surface-container-lowest border border-outline-variant/15 rounded-xl p-6 shadow-[0px_20px_50px_rgba(19,27,46,0.06)] mt-4">
+<div class="flex items-center gap-4 mb-4">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-primary animate-pulse">
+<span class="material-symbols-outlined">psychology</span>
+</div>
+<div>
+<h4 class="font-headline text-lg font-bold text-on-surface">AI 正在解析您的简历...</h4>
+<p class="font-label text-xs text-on-surface-variant">正在提取技能标签与项目经验</p>
+</div>
+</div>
+<div class="w-full bg-surface-container-high rounded-full h-2 mb-2 overflow-hidden">
+<div class="bg-gradient-to-r from-primary to-secondary h-2 rounded-full w-2/3 relative">
+<div class="absolute inset-0 bg-white/20 animate-[pulse_2s_ease-in-out_infinite]"></div>
+</div>
+</div>
+<div class="flex justify-between text-xs font-label text-on-surface-variant">
+<span>解析进度</span>
+<span>65%</span>
+</div>
+</div>
+<!-- Trust / Privacy Note -->
+<div class="flex items-center justify-center gap-2 text-on-surface-variant/70 font-label text-xs mt-4">
+<span class="material-symbols-outlined text-sm">lock</span>
+<span>您的数据将受到严格加密保护，未经授权不会向第三方公开。</span>
+</div>
+</div>
+</main>
+</body></html>

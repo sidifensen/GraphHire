@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>用户管理 - GraphHire</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#faf8ff",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "surface-container-high": "#e2e7ff",
+                        "surface-container-low": "#f2f3ff",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "secondary-container": "#6cf8bb",
+                        "primary-container": "#2563eb",
+                        "on-secondary-fixed": "#002113",
+                        "on-primary-fixed": "#00174b",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "surface-bright": "#faf8ff",
+                        "surface-variant": "#dae2fd",
+                        "inverse-on-surface": "#eef0ff",
+                        "on-surface-variant": "#434655",
+                        "outline-variant": "#c3c6d7",
+                        "inverse-primary": "#b4c5ff",
+                        "on-primary-container": "#eeefff",
+                        "on-secondary-container": "#00714d",
+                        "surface-container": "#eaedff",
+                        "on-secondary": "#ffffff",
+                        "background": "#faf8ff",
+                        "tertiary": "#784b00",
+                        "on-surface": "#131b2e",
+                        "on-tertiary-fixed": "#2a1700",
+                        "outline": "#737686",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed-variant": "#005236",
+                        "surface-tint": "#0053db",
+                        "primary": "#004ac6",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#d2d9f4",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed-dim": "#4edea3",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "surface-container-highest": "#dae2fd",
+                        "tertiary-fixed": "#ffddb8",
+                        "on-background": "#131b2e",
+                        "inverse-surface": "#283044",
+                        "tertiary-container": "#996100",
+                        "primary-fixed": "#dbe1ff",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed": "#6ffbbe",
+                        "secondary": "#006c49",
+                        "on-tertiary-container": "#ffeedd"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #faf8ff; color: #131b2e; }
+        h1, h2, h3, h4, h5, h6, .font-headline { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface flex min-h-screen">
+<!-- SideNavBar -->
+<nav class="bg-surface dark:bg-slate-950 text-blue-600 dark:text-blue-400 font-manrope text-sm font-semibold h-screen w-64 fixed left-0 top-0 border-r border-slate-100 dark:border-slate-800 shadow-[20px_0px_50px_rgba(19,27,46,0.02)] flex flex-col h-full p-4 gap-2 z-50">
+<div class="flex items-center gap-3 mb-8 px-2 mt-4">
+<div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-primary-container flex items-center justify-center text-white font-headline font-bold text-lg">
+                G
+            </div>
+<div>
+<h1 class="text-xl font-black text-blue-700 dark:text-blue-500 font-headline">GraphHire</h1>
+<p class="text-xs text-on-surface-variant font-label">Admin Portal</p>
+</div>
+</div>
+<div class="flex-1 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:translate-x-1 transition-transform duration-200 cursor-pointer active:opacity-80 rounded-lg" href="#">
+<span class="material-symbols-outlined text-lg">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:translate-x-1 transition-transform duration-200 cursor-pointer active:opacity-80 rounded-lg" href="#">
+<span class="material-symbols-outlined text-lg">work</span>
+                Job Management
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:translate-x-1 transition-transform duration-200 cursor-pointer active:opacity-80 rounded-lg" href="#">
+<span class="material-symbols-outlined text-lg">psychology</span>
+                Recommendations
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:translate-x-1 transition-transform duration-200 cursor-pointer active:opacity-80 rounded-lg" href="#">
+<span class="material-symbols-outlined text-lg">gavel</span>
+                Audit
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 rounded-lg cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">group</span>
+                User Management
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:translate-x-1 transition-transform duration-200 cursor-pointer active:opacity-80 rounded-lg" href="#">
+<span class="material-symbols-outlined text-lg">label</span>
+                Skill Tags
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 hover:translate-x-1 transition-transform duration-200 cursor-pointer active:opacity-80 rounded-lg" href="#">
+<span class="material-symbols-outlined text-lg">settings</span>
+                Settings
+            </a>
+</div>
+<div class="mt-auto">
+<button class="w-full py-2.5 bg-gradient-to-r from-primary to-primary-container text-white rounded-xl font-semibold shadow-[0px_10px_20px_rgba(0,74,198,0.2)] hover:opacity-90 transition-opacity">
+                Post New Job
+            </button>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="ml-64 flex-1 p-10 max-w-7xl">
+<!-- Header Section -->
+<header class="mb-10 flex justify-between items-end">
+<div>
+<h2 class="text-[3.5rem] leading-tight font-headline font-bold text-on-surface tracking-tight">用户管理</h2>
+<p class="text-on-surface-variant font-label text-sm uppercase tracking-wider mt-2 font-medium">全局系统用户与企业账户监控 (Global User &amp; Company Monitoring)</p>
+</div>
+<div class="flex gap-4">
+<button class="px-5 py-2.5 bg-surface-container-high text-on-primary-fixed-variant rounded-xl font-label font-medium hover:bg-surface-variant transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">download</span>
+                    导出报告
+                </button>
+<button class="px-5 py-2.5 bg-gradient-to-r from-primary to-primary-container text-white rounded-xl font-label font-medium shadow-[0px_10px_20px_rgba(0,74,198,0.2)] hover:opacity-90 transition-opacity flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">person_add</span>
+                    添加用户
+                </button>
+</div>
+</header>
+<!-- Controls Section (Search & Bulk Actions) -->
+<section class="bg-surface-container-low rounded-xl p-6 mb-8 flex flex-wrap gap-6 items-center justify-between">
+<div class="flex-1 min-w-[300px] max-w-md relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface border-none rounded-xl py-3 pl-12 pr-4 text-sm font-body text-on-surface focus:ring-2 focus:ring-primary focus:outline-none placeholder:text-outline-variant shadow-[0px_5px_15px_rgba(19,27,46,0.03)]" placeholder="按姓名、邮箱或 ID 搜索用户..." type="text"/>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-sm font-label text-on-surface-variant mr-2">批量操作:</span>
+<button class="px-4 py-2 bg-surface text-error rounded-lg font-label text-sm font-medium shadow-[0px_5px_15px_rgba(19,27,46,0.03)] hover:bg-error-container transition-colors opacity-50 cursor-not-allowed">
+                    封禁选中
+                </button>
+<button class="px-4 py-2 bg-surface text-primary rounded-lg font-label text-sm font-medium shadow-[0px_5px_15px_rgba(19,27,46,0.03)] hover:bg-primary-fixed transition-colors opacity-50 cursor-not-allowed">
+                    重置密码
+                </button>
+</div>
+</section>
+<!-- User Table Canvas -->
+<section class="bg-surface rounded-2xl shadow-[0px_20px_50px_rgba(19,27,46,0.04)] overflow-hidden">
+<!-- Table Header -->
+<div class="grid grid-cols-[auto_1fr_1fr_1fr_1fr_auto] gap-4 px-6 py-4 bg-surface-container-lowest border-b border-outline-variant/15 text-xs font-label font-semibold text-on-surface-variant uppercase tracking-wider">
+<div class="flex items-center"><input class="rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 bg-surface" type="checkbox"/></div>
+<div>用户信息 (User Info)</div>
+<div>账户类型 (Type)</div>
+<div>状态 (Status)</div>
+<div>最后活跃 (Last Active)</div>
+<div class="text-right">操作 (Actions)</div>
+</div>
+<!-- Table Body -->
+<div class="flex flex-col">
+<!-- Row 1 -->
+<div class="grid grid-cols-[auto_1fr_1fr_1fr_1fr_auto] gap-4 px-6 py-5 items-center bg-surface hover:bg-surface-container-lowest transition-colors group cursor-pointer border-b border-outline-variant/10 last:border-0">
+<div class="flex items-center"><input class="rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 bg-surface" onclick="event.stopPropagation()" type="checkbox"/></div>
+<div class="flex items-center gap-4">
+<img alt="Avatar" class="w-10 h-10 rounded-full object-cover" data-alt="close-up portrait of a young professional woman with dark hair and soft natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYrIHvXbtRY5jaeZ3HTr7yv4g7USN6JXaHLFlcTdQIVAOkWyz1XpQBnUKe27ryH5Hg22xsY5x-IyevUN8JAb3EVLxe6eBMxSbtja-2IuGR9gv0hD4T7aGG6lZI0otSBD1Xjt4-RpOYGNGGbHgJa0TKT01QIOVijRC-ZadStuLmYk_VAFEm-WiNEfGtHyUzbsKWvCMIlB6qwkVGq3DS3b1VZpV-WHUA3AC7mjYTWbGi5Qzh3o_UYJiicdmThKYmENETui2LGPKCQOo"/>
+<div>
+<p class="font-headline font-semibold text-on-surface text-sm">林雨晴</p>
+<p class="font-body text-xs text-on-surface-variant">lin.yuqing@example.com</p>
+</div>
+</div>
+<div>
+<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-surface-container-high text-on-surface-variant">个人用户</span>
+</div>
+<div>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-secondary-container/30 text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                            活跃
+                        </span>
+</div>
+<div class="font-body text-sm text-on-surface-variant">
+                        2 分钟前
+                    </div>
+<div class="text-right">
+<button class="p-2 text-on-surface-variant hover:text-primary rounded-lg hover:bg-surface-container-high transition-colors" onclick="event.stopPropagation()">
+<span class="material-symbols-outlined text-sm">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Row 2 -->
+<div class="grid grid-cols-[auto_1fr_1fr_1fr_1fr_auto] gap-4 px-6 py-5 items-center bg-surface hover:bg-surface-container-lowest transition-colors group cursor-pointer border-b border-outline-variant/10 last:border-0">
+<div class="flex items-center"><input class="rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 bg-surface" onclick="event.stopPropagation()" type="checkbox"/></div>
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-tertiary-container/20 flex items-center justify-center text-tertiary font-headline font-bold">
+                            T
+                        </div>
+<div>
+<p class="font-headline font-semibold text-on-surface text-sm">腾讯科技</p>
+<p class="font-body text-xs text-on-surface-variant">hr@tencent.com</p>
+</div>
+</div>
+<div>
+<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-primary-container/10 text-primary">企业客户</span>
+</div>
+<div>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-secondary-container/30 text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                            活跃
+                        </span>
+</div>
+<div class="font-body text-sm text-on-surface-variant">
+                        1 小时前
+                    </div>
+<div class="text-right">
+<button class="p-2 text-on-surface-variant hover:text-primary rounded-lg hover:bg-surface-container-high transition-colors" onclick="event.stopPropagation()">
+<span class="material-symbols-outlined text-sm">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Row 3 -->
+<div class="grid grid-cols-[auto_1fr_1fr_1fr_1fr_auto] gap-4 px-6 py-5 items-center bg-surface hover:bg-surface-container-lowest transition-colors group cursor-pointer border-b border-outline-variant/10 last:border-0">
+<div class="flex items-center"><input class="rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 bg-surface" onclick="event.stopPropagation()" type="checkbox"/></div>
+<div class="flex items-center gap-4">
+<img alt="Avatar" class="w-10 h-10 rounded-full object-cover grayscale opacity-70" data-alt="portrait of a serious middle aged man in a casual shirt with neutral lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfq75HJjnUhCm_ADLuYjlTbX-3Cg0MBSSv6s2taV4sZdYzEm4VJ9uuCP_bjV64FJK-5F4yKwV5PTfSSkMzPIH-QJ9JSaqu4gL079rXp1buMG4TOPAK1wjjQyp4B0zeufgCVVe5HGkzlsMw0gv3_qvLDqwk3Am2YTpul2LE-xVKb5vkidS6RwwQrhmmeFGZ9pw3C-LI5CNyVLImKZYaPzA4Ht0EcDZhAiPBGqRLpNxHtm1Mzvyt3pt0H7aI2wlor9_Gq3IUmlJ2Yu8"/>
+<div>
+<p class="font-headline font-semibold text-on-surface-variant text-sm">张伟</p>
+<p class="font-body text-xs text-outline">zhang.wei_spam@example.com</p>
+</div>
+</div>
+<div>
+<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-surface-container-high text-on-surface-variant">个人用户</span>
+</div>
+<div>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-error-container/50 text-error">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                            已封禁
+                        </span>
+</div>
+<div class="font-body text-sm text-outline">
+                        2023-10-15
+                    </div>
+<div class="text-right">
+<button class="p-2 text-on-surface-variant hover:text-primary rounded-lg hover:bg-surface-container-high transition-colors" onclick="event.stopPropagation()">
+<span class="material-symbols-outlined text-sm">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Pagination (Editorial Style) -->
+<div class="px-6 py-4 bg-surface flex items-center justify-between border-t border-outline-variant/15">
+<span class="text-xs font-label text-on-surface-variant">显示 1 - 3 共 1,248 用户</span>
+<div class="flex items-center gap-2">
+<button class="p-1.5 rounded-lg text-outline hover:text-primary hover:bg-surface-container-low transition-colors disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<span class="text-sm font-label text-on-surface px-2">1</span>
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</section>
+</main>
+</body></html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>企业注册 - GraphHire</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#faf8ff",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "surface-container-high": "#e2e7ff",
+                        "surface-container-low": "#f2f3ff",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "secondary-container": "#6cf8bb",
+                        "primary-container": "#2563eb",
+                        "on-secondary-fixed": "#002113",
+                        "on-primary-fixed": "#00174b",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "surface-bright": "#faf8ff",
+                        "surface-variant": "#dae2fd",
+                        "inverse-on-surface": "#eef0ff",
+                        "on-surface-variant": "#434655",
+                        "outline-variant": "#c3c6d7",
+                        "inverse-primary": "#b4c5ff",
+                        "on-primary-container": "#eeefff",
+                        "on-secondary-container": "#00714d",
+                        "surface-container": "#eaedff",
+                        "on-secondary": "#ffffff",
+                        "background": "#faf8ff",
+                        "tertiary": "#784b00",
+                        "on-surface": "#131b2e",
+                        "on-tertiary-fixed": "#2a1700",
+                        "outline": "#737686",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed-variant": "#005236",
+                        "surface-tint": "#0053db",
+                        "primary": "#004ac6",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#d2d9f4",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed-dim": "#4edea3",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "surface-container-highest": "#dae2fd",
+                        "tertiary-fixed": "#ffddb8",
+                        "on-background": "#131b2e",
+                        "inverse-surface": "#283044",
+                        "tertiary-container": "#996100",
+                        "primary-fixed": "#dbe1ff",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed": "#6ffbbe",
+                        "secondary": "#006c49",
+                        "on-tertiary-container": "#ffeedd"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined[data-weight="fill"] {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body antialiased min-h-screen flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8">
+<div class="w-full max-w-2xl bg-surface-container-lowest rounded-xl shadow-[0px_20px_50px_rgba(19,27,46,0.06)] overflow-hidden flex flex-col">
+<div class="p-8 pb-6 text-center">
+<h1 class="font-headline text-3xl font-bold tracking-tight text-primary">GraphHire</h1>
+<p class="mt-2 text-sm text-on-surface-variant">企业注册</p>
+</div>
+<div class="px-8 py-6 bg-surface-container-low flex justify-center items-center">
+<div class="flex items-center w-full max-w-md">
+<div class="flex flex-col items-center flex-1">
+<div class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-sm z-10 relative">
+<span class="material-symbols-outlined text-sm">check</span>
+</div>
+<span class="text-xs mt-2 text-primary font-medium">账号信息</span>
+</div>
+<div class="flex-1 h-[2px] bg-primary opacity-50 -mx-4 z-0 relative top-[-10px]"></div>
+<div class="flex flex-col items-center flex-1">
+<div class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-sm z-10 relative">
+                        2
+                    </div>
+<span class="text-xs mt-2 text-primary font-medium">企业信息</span>
+</div>
+<div class="flex-1 h-[2px] bg-outline-variant opacity-30 -mx-4 z-0 relative top-[-10px]"></div>
+<div class="flex flex-col items-center flex-1">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-sm z-10 relative">
+                        3
+                    </div>
+<span class="text-xs mt-2 text-on-surface-variant font-medium">提交审核</span>
+</div>
+</div>
+</div>
+<div class="p-8 flex-grow">
+<form action="/company/info" class="space-y-6" method="GET">
+<div class="space-y-4">
+<div>
+<label class="block text-sm font-medium text-on-surface-variant mb-1" for="company-name">企业名称</label>
+<input class="w-full bg-surface-container-low border-b-2 border-transparent focus:border-primary focus:bg-surface-container-lowest focus:ring-0 rounded-t-md px-4 py-3 text-sm transition-colors text-on-surface placeholder:text-outline" id="company-name" name="company-name" placeholder="请输入企业全称" required="" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-on-surface-variant mb-1" for="credit-code">统一社会信用代码</label>
+<input class="w-full bg-surface-container-low border-b-2 border-transparent focus:border-primary focus:bg-surface-container-lowest focus:ring-0 rounded-t-md px-4 py-3 text-sm transition-colors text-on-surface placeholder:text-outline" id="credit-code" name="credit-code" placeholder="18位营业执照注册号" required="" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-on-surface-variant mb-1">营业执照扫描件</label>
+<div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed border-outline-variant border-opacity-30 rounded-lg hover:bg-surface-container-low transition-colors cursor-pointer group">
+<div class="space-y-1 text-center">
+<span class="material-symbols-outlined text-4xl text-outline group-hover:text-primary transition-colors" data-icon="cloud_upload">cloud_upload</span>
+<div class="flex text-sm text-on-surface-variant justify-center">
+<label class="relative cursor-pointer rounded-md font-medium text-primary hover:text-primary-container focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary" for="file-upload">
+<span>点击上传文件</span>
+<input accept="image/*" class="sr-only" id="file-upload" name="file-upload" type="file"/>
+</label>
+<p class="pl-1">或拖拽文件到此处</p>
+</div>
+<p class="text-xs text-outline">支持 JPG, PNG 格式，最大 5MB</p>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-4 flex gap-4">
+<button class="flex-1 bg-surface-container-high text-on-primary-fixed-variant py-3 px-4 rounded-xl text-sm font-semibold hover:bg-surface-variant transition-colors text-center" type="button">
+                        上一步
+                    </button>
+<button class="flex-1 bg-gradient-to-r from-primary to-primary-container text-on-primary py-3 px-4 rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity shadow-md text-center" type="submit">
+                        提交审核
+                    </button>
+</div>
+</form>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+
+<html lang="zh"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>个人信息页 - GraphHire</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#faf8ff",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "surface-container-high": "#e2e7ff",
+                        "surface-container-low": "#f2f3ff",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "secondary-container": "#6cf8bb",
+                        "primary-container": "#2563eb",
+                        "on-secondary-fixed": "#002113",
+                        "on-primary-fixed": "#00174b",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "surface-bright": "#faf8ff",
+                        "surface-variant": "#dae2fd",
+                        "inverse-on-surface": "#eef0ff",
+                        "on-surface-variant": "#434655",
+                        "outline-variant": "#c3c6d7",
+                        "inverse-primary": "#b4c5ff",
+                        "on-primary-container": "#eeefff",
+                        "on-secondary-container": "#00714d",
+                        "surface-container": "#eaedff",
+                        "on-secondary": "#ffffff",
+                        "background": "#faf8ff",
+                        "tertiary": "#784b00",
+                        "on-surface": "#131b2e",
+                        "on-tertiary-fixed": "#2a1700",
+                        "outline": "#737686",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed-variant": "#005236",
+                        "surface-tint": "#0053db",
+                        "primary": "#004ac6",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#d2d9f4",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed-dim": "#4edea3",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "surface-container-highest": "#dae2fd",
+                        "tertiary-fixed": "#ffddb8",
+                        "on-background": "#131b2e",
+                        "inverse-surface": "#283044",
+                        "tertiary-container": "#996100",
+                        "primary-fixed": "#dbe1ff",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed": "#6ffbbe",
+                        "secondary": "#006c49",
+                        "on-tertiary-container": "#ffeedd"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface-container-low text-on-surface font-body antialiased min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<nav class="bg-surface dark:bg-slate-950 font-manrope text-sm font-medium w-full top-0 z-50">
+<div class="flex justify-between items-center w-full px-6 py-3 max-w-full mx-auto">
+<!-- Brand -->
+<div class="text-2xl font-bold tracking-tight text-blue-700 dark:text-blue-500">
+                GraphHire
+            </div>
+<!-- Navigation Links (Web) -->
+<div class="hidden md:flex items-center gap-8">
+<a class="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors scale-95 active:duration-75" href="#">Home</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors scale-95 active:duration-75" href="#">Jobs</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors scale-95 active:duration-75" href="#">Companies</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors scale-95 active:duration-75" href="#">Skill Graph</a>
+</div>
+<!-- Trailing Actions -->
+<div class="flex items-center gap-4 text-blue-600 dark:text-blue-400">
+<button class="scale-95 active:duration-75 hover:text-blue-600 dark:hover:text-blue-300 transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button aria-label="Profile Settings" class="scale-95 active:duration-75 hover:text-blue-600 dark:hover:text-blue-300 transition-colors text-blue-700 dark:text-blue-400 border-b-2 border-blue-700 dark:border-blue-400 pb-1">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<img alt="User avatar with dropdown menu" class="w-8 h-8 rounded-full object-cover ml-2 cursor-pointer" data-alt="Close up professional headshot of a smiling young man with short dark hair wearing a blue shirt against a neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBczPeNcyOA2y1YgdyBtNcs9QgifVBhq83NzPuVMxfdjq2c0mP_F-6RbEbOxXJvtfyVwm3hak_0TqUxaxZ0XsVAqLQ22NsOheXEkT7q_BP_8plKgIwV5dnyROmcqwGBfaIhcnrJvNySrh3PQnqtWBgYAz5DFTUf50SJMPozWfPIrTGwUa0Pz8X-GkNVXWIN_tfItF7hslyprpcmOYPyUUhk3H6e1vaAsM8Aqojf_1PYAsn5ogqad-b0xyzkDVbw2OBto2QZxmoGTtQ"/>
+</div>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-grow w-full max-w-7xl mx-auto px-6 py-12 flex flex-col gap-8">
+<!-- Header / Progress Area -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+<div>
+<h1 class="font-headline text-4xl font-extrabold text-on-surface tracking-tight">个人中心</h1>
+<p class="text-on-surface-variant mt-2 font-label">管理您的简历和求职意向，让 AI 更好地为您匹配机会。</p>
+</div>
+<!-- Profile Completeness Bar -->
+<div class="bg-surface p-6 rounded-[1rem] shadow-[0px_20px_50px_rgba(19,27,46,0.06)] w-full md:w-80 flex flex-col gap-3">
+<div class="flex justify-between items-end">
+<span class="font-headline font-bold text-on-surface">简历完整度</span>
+<span class="font-headline text-2xl font-extrabold text-primary">85%</span>
+</div>
+<div class="bg-surface-container-high h-2.5 rounded-full overflow-hidden w-full">
+<div class="bg-gradient-to-r from-primary to-primary-container h-full rounded-full" style="width: 85%;"></div>
+</div>
+<p class="text-xs text-on-surface-variant font-label">完善工作经历可提升 15% 匹配率</p>
+</div>
+</div>
+<!-- Asymmetrical Bento Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Left Column: Identity & Contact (30%) -->
+<div class="lg:col-span-4 flex flex-col gap-8">
+<!-- Basic Info Card -->
+<div class="bg-surface p-8 rounded-[1.5rem] shadow-[0px_20px_50px_rgba(19,27,46,0.06)] relative overflow-hidden group">
+<button class="absolute top-6 right-6 text-on-surface-variant hover:text-primary transition-colors bg-surface-container-low p-2 rounded-full">
+<span class="material-symbols-outlined text-sm" data-icon="edit">edit</span>
+</button>
+<div class="flex flex-col items-center text-center gap-4">
+<div class="relative">
+<img alt="Profile Picture" class="w-32 h-32 rounded-full object-cover border-4 border-surface shadow-sm" data-alt="Close up professional headshot of a smiling young man with short dark hair wearing a blue shirt against a neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCleFwV0OOlNQbpJH9x8kOU5pWUn2sIwIKryVQ4R7CEvpd_Wr183Dw150sj-zcjotzbm0IbYl4Ooh7ObdLl_58ZKh0pNRxwRj4Ru9Rbu4MOsLyeBbkdNDLd9lz2ciUpWHKaUgqex9Sy5NiSUUAGe7lcfdU5XSLPUwCr8rTtNU2DEf-ZH2oPxITItUTvH2QlarQdoYobHWwrVj0_9kYoFwMQrFZ0xIM8E4frv2zgvAxbKIs7_tZ5GeLyO-CI2BuJaYdKJJj7yAH-9zI"/>
+<div class="absolute bottom-0 right-0 bg-secondary-container text-on-secondary-container p-1.5 rounded-full border-2 border-surface">
+<span class="material-symbols-outlined text-sm" data-icon="verified">verified</span>
+</div>
+</div>
+<div>
+<h2 class="font-headline text-2xl font-bold text-on-surface">张伟</h2>
+<p class="text-primary font-medium mt-1">资深前端开发工程师</p>
+<p class="text-on-surface-variant text-sm mt-1">5年经验 · 本科 · 28岁</p>
+</div>
+</div>
+<div class="mt-8 flex flex-col gap-4">
+<div class="flex items-center gap-3 p-3 bg-surface-container-low rounded-xl">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="call">call</span>
+<span class="font-body text-sm text-on-surface">+86 138 0013 8000</span>
+</div>
+<div class="flex items-center gap-3 p-3 bg-surface-container-low rounded-xl">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="mail">mail</span>
+<span class="font-body text-sm text-on-surface">zhangwei.dev@example.com</span>
+</div>
+<div class="flex items-center gap-3 p-3 bg-surface-container-low rounded-xl">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="location_on">location_on</span>
+<span class="font-body text-sm text-on-surface">中国, 深圳市, 南山区</span>
+</div>
+</div>
+</div>
+<!-- Job Intentions (Read Mode) -->
+<div class="bg-surface p-8 rounded-[1.5rem] shadow-[0px_20px_50px_rgba(19,27,46,0.06)] relative">
+<button class="absolute top-6 right-6 text-on-surface-variant hover:text-primary transition-colors bg-surface-container-low p-2 rounded-full">
+<span class="material-symbols-outlined text-sm" data-icon="edit">edit</span>
+</button>
+<h3 class="font-headline text-lg font-bold text-on-surface mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="track_changes">track_changes</span>
+                        求职意向
+                    </h3>
+<div class="grid grid-cols-2 gap-y-6 gap-x-4">
+<div class="flex flex-col gap-1">
+<span class="text-xs uppercase font-label text-on-surface-variant tracking-wider">期望职位</span>
+<span class="text-sm font-medium text-on-surface">前端架构师 / 资深开发</span>
+</div>
+<div class="flex flex-col gap-1">
+<span class="text-xs uppercase font-label text-on-surface-variant tracking-wider">期望城市</span>
+<span class="text-sm font-medium text-on-surface">深圳 / 广州</span>
+</div>
+<div class="flex flex-col gap-1">
+<span class="text-xs uppercase font-label text-on-surface-variant tracking-wider">薪资要求</span>
+<span class="text-sm font-medium text-primary">35k - 45k</span>
+</div>
+<div class="flex flex-col gap-1">
+<span class="text-xs uppercase font-label text-on-surface-variant tracking-wider">求职状态</span>
+<span class="text-sm font-medium text-on-surface">在职，看看机会</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Editorial Data Canvas (70%) -->
+<div class="lg:col-span-8 flex flex-col gap-8">
+<!-- Work Experience Section (Demonstrating Inline Editing State) -->
+<div class="bg-surface p-10 rounded-[1.5rem] shadow-[0px_20px_50px_rgba(19,27,46,0.06)]">
+<div class="flex justify-between items-center mb-8">
+<h3 class="font-headline text-2xl font-bold text-on-surface flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="work">work</span>
+                            工作经历
+                        </h3>
+<button class="bg-surface-container-high text-on-primary-fixed-variant px-4 py-2 rounded-full text-sm font-medium hover:bg-surface-dim transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+                            添加经历
+                        </button>
+</div>
+<div class="flex flex-col gap-10">
+<!-- Editing State Item -->
+<div class="bg-surface-container-highest p-6 rounded-xl relative">
+<div class="absolute -left-3 top-8 w-6 h-6 bg-primary rounded-full border-4 border-surface hidden md:block"></div>
+<div class="flex flex-col gap-5">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+<div class="flex flex-col gap-2">
+<label class="text-xs font-label text-on-surface-variant">公司名称</label>
+<input class="bg-surface-container-low focus:bg-surface-container-lowest focus:border-b-2 focus:border-primary px-4 py-3 rounded-t-md outline-none w-full text-sm font-medium text-on-surface transition-all border-b-2 border-transparent" type="text" value="腾讯科技有限公司"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-xs font-label text-on-surface-variant">担任职位</label>
+<input class="bg-surface-container-low focus:bg-surface-container-lowest focus:border-b-2 focus:border-primary px-4 py-3 rounded-t-md outline-none w-full text-sm font-medium text-on-surface transition-all border-b-2 border-transparent" type="text" value="高级前端开发工程师"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-xs font-label text-on-surface-variant">开始时间</label>
+<input class="bg-surface-container-low focus:bg-surface-container-lowest focus:border-b-2 focus:border-primary px-4 py-3 rounded-t-md outline-none w-full text-sm font-medium text-on-surface transition-all border-b-2 border-transparent" type="text" value="2020.07"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-xs font-label text-on-surface-variant">结束时间</label>
+<input class="bg-surface-container-low focus:bg-surface-container-lowest focus:border-b-2 focus:border-primary px-4 py-3 rounded-t-md outline-none w-full text-sm font-medium text-on-surface transition-all border-b-2 border-transparent" type="text" value="至今"/>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-xs font-label text-on-surface-variant">工作内容与业绩</label>
+<textarea class="bg-surface-container-low focus:bg-surface-container-lowest focus:border-b-2 focus:border-primary px-4 py-3 rounded-t-md outline-none w-full text-sm text-on-surface transition-all border-b-2 border-transparent resize-none" rows="4">负责公司核心业务线的前端架构设计与开发工作。
+主导微前端架构落地，提升多团队协作效率及页面加载速度 30%。
+封装并维护基础 UI 组件库，在多个内部项目中推广使用。</textarea>
+</div>
+<div class="flex justify-end gap-3 mt-2">
+<button class="px-6 py-2 rounded-full text-sm font-medium text-on-surface-variant hover:bg-surface-container-low transition-colors">取消</button>
+<button class="bg-gradient-to-r from-primary to-primary-container text-on-primary px-8 py-2 rounded-full text-sm font-medium shadow-md hover:shadow-lg transition-all">保存</button>
+</div>
+</div>
+</div>
+<!-- Read-only Item -->
+<div class="relative pl-0 md:pl-8 group">
+<div class="absolute left-0 top-2 w-3 h-3 bg-outline-variant rounded-full hidden md:block group-hover:bg-primary transition-colors"></div>
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-2">
+<div>
+<h4 class="font-headline text-xl font-bold text-on-surface">大疆创新科技有限公司</h4>
+<p class="text-on-surface-variant font-medium mt-1">前端开发工程师</p>
+</div>
+<div class="flex items-center gap-4 mt-2 md:mt-0">
+<span class="text-sm font-label text-on-surface-variant bg-surface-container-low px-3 py-1 rounded-full">2018.06 - 2020.06</span>
+<button class="text-outline hover:text-primary transition-colors opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined text-sm" data-icon="edit">edit</span>
+</button>
+</div>
+</div>
+<p class="text-sm text-on-surface-variant leading-relaxed mt-4 max-w-3xl">
+                                参与无人机控制台 Web 端应用的开发。负责实现实时图传画面的接收与渲染，优化 WebGL 性能。配合设计团队实现高保真的数据可视化仪表盘。
+                            </p>
+</div>
+</div>
+</div>
+<!-- Education Section -->
+<div class="bg-surface p-10 rounded-[1.5rem] shadow-[0px_20px_50px_rgba(19,27,46,0.06)]">
+<div class="flex justify-between items-center mb-8">
+<h3 class="font-headline text-2xl font-bold text-on-surface flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="school">school</span>
+                            教育经历
+                        </h3>
+<button class="bg-surface-container-high text-on-primary-fixed-variant px-4 py-2 rounded-full text-sm font-medium hover:bg-surface-dim transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+                            添加经历
+                        </button>
+</div>
+<div class="flex flex-col gap-8">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center p-6 bg-surface-container-low rounded-xl group hover:bg-surface-container-highest transition-colors">
+<div class="flex items-start gap-4">
+<div class="w-12 h-12 bg-surface rounded-full flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-primary" data-icon="account_balance">account_balance</span>
+</div>
+<div>
+<h4 class="font-headline text-lg font-bold text-on-surface">华南理工大学</h4>
+<p class="text-on-surface-variant text-sm mt-1">计算机科学与技术 · 本科</p>
+</div>
+</div>
+<div class="flex items-center gap-4 mt-4 md:mt-0">
+<span class="text-sm font-label text-on-surface-variant">2014.09 - 2018.06</span>
+<button class="text-outline hover:text-primary transition-colors opacity-0 group-hover:opacity-100 bg-surface p-2 rounded-full shadow-sm">
+<span class="material-symbols-outlined text-sm" data-icon="edit">edit</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

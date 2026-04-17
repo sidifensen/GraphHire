@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GraphHire - 通知中心</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#faf8ff",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "surface-container-high": "#e2e7ff",
+                        "surface-container-low": "#f2f3ff",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "secondary-container": "#6cf8bb",
+                        "primary-container": "#2563eb",
+                        "on-secondary-fixed": "#002113",
+                        "on-primary-fixed": "#00174b",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "surface-bright": "#faf8ff",
+                        "surface-variant": "#dae2fd",
+                        "inverse-on-surface": "#eef0ff",
+                        "on-surface-variant": "#434655",
+                        "outline-variant": "#c3c6d7",
+                        "inverse-primary": "#b4c5ff",
+                        "on-primary-container": "#eeefff",
+                        "on-secondary-container": "#00714d",
+                        "surface-container": "#eaedff",
+                        "on-secondary": "#ffffff",
+                        "background": "#faf8ff",
+                        "tertiary": "#784b00",
+                        "on-surface": "#131b2e",
+                        "on-tertiary-fixed": "#2a1700",
+                        "outline": "#737686",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed-variant": "#005236",
+                        "surface-tint": "#0053db",
+                        "primary": "#004ac6",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#d2d9f4",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed-dim": "#4edea3",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "surface-container-highest": "#dae2fd",
+                        "tertiary-fixed": "#ffddb8",
+                        "on-background": "#131b2e",
+                        "inverse-surface": "#283044",
+                        "tertiary-container": "#996100",
+                        "primary-fixed": "#dbe1ff",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed": "#6ffbbe",
+                        "secondary": "#006c49",
+                        "on-tertiary-container": "#ffeedd"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {},
+                    "fontFamily": {
+                        "headline": ["Manrope", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body antialiased flex h-screen overflow-hidden">
+<!-- SideNavBar (Suppressed intentionally as Notifications is a sub-view/task-focused area according to semantic shell mandate, but the prompt says Layout: SideNavBar + Categorized list. I will include it but highlight intent fallback if necessary. Given the JSON labels, none exactly match "Notifications". The prompt dictates to use SideNavBar. I will render it and leave all inactive as it's a specific page not in the main tabs.) -->
+<nav class="bg-surface dark:bg-slate-950 text-blue-600 dark:text-blue-400 font-manrope text-sm font-semibold text-xl font-black text-blue-700 dark:text-blue-500 h-screen w-64 fixed left-0 top-0 border-r border-slate-100 dark:border-slate-800 shadow-[20px_0px_50px_rgba(19,27,46,0.02)] flex flex-col p-4 gap-2 z-50">
+<div class="mb-8 px-4 py-2">
+<div class="flex items-center gap-3 mb-2">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container text-xs">
+<span class="material-symbols-outlined" data-icon="apartment">apartment</span>
+</div>
+<span class="text-xl font-headline font-black tracking-tight">GraphHire</span>
+</div>
+<span class="text-xs font-label text-on-surface-variant uppercase tracking-wider">Admin Portal</span>
+</div>
+<button class="mb-6 mx-2 w-full flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-primary-container text-on-primary py-3 rounded-xl font-headline font-semibold shadow-md hover:shadow-lg transition-all">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+            Post New Job
+        </button>
+<div class="flex-1 flex flex-col gap-1 overflow-y-auto">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg hover:translate-x-1 transition-transform duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg hover:translate-x-1 transition-transform duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="work">work</span>
+                Job Management
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg hover:translate-x-1 transition-transform duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="psychology">psychology</span>
+                Recommendations
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg hover:translate-x-1 transition-transform duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="gavel">gavel</span>
+                Audit
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg hover:translate-x-1 transition-transform duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+                User Management
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg hover:translate-x-1 transition-transform duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="label">label</span>
+                Skill Tags
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-lg hover:translate-x-1 transition-transform duration-200 cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                Settings
+            </a>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="ml-64 flex-1 flex flex-col h-screen overflow-hidden bg-surface relative">
+<!-- Top App Bar equivalent for inner view -->
+<header class="px-10 py-8 flex justify-between items-end shrink-0 z-10 bg-surface">
+<div>
+<h1 class="text-4xl font-headline font-black text-on-surface tracking-tight mb-2">通知中心</h1>
+<p class="text-sm font-label text-on-surface-variant">管理您的候选人动态、系统提示与审计状态。</p>
+</div>
+<div class="flex gap-4">
+<button class="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high transition-colors text-sm font-medium">
+<span class="material-symbols-outlined text-[18px]" data-icon="done_all">done_all</span>
+                    全部标为已读
+                </button>
+</div>
+</header>
+<!-- Scrollable Canvas Area -->
+<div class="flex-1 overflow-y-auto px-10 pb-12 flex gap-10">
+<!-- Left Data/List Column (Asymmetric 60/40) -->
+<div class="w-3/5 flex flex-col gap-8">
+<!-- Category: Candidate News -->
+<section>
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-primary" data-icon="person_add">person_add</span>
+<h2 class="text-lg font-headline font-bold text-on-surface">候选人动态</h2>
+<span class="px-2 py-0.5 rounded bg-primary-container text-on-primary text-xs font-bold ml-2">3</span>
+</div>
+<div class="flex flex-col gap-4">
+<!-- Item 1 (Unread) -->
+<div class="group flex items-start gap-4 p-6 rounded-xl bg-surface-container-highest cursor-pointer relative overflow-hidden transition-all duration-300">
+<!-- Indicator -->
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="w-10 h-10 rounded-full bg-primary-fixed-dim text-on-primary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined" data-icon="assignment_ind">assignment_ind</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<h3 class="text-base font-headline font-bold text-on-surface group-hover:text-primary transition-colors">王伟 - 高级前端工程师 简历已更新</h3>
+<span class="text-xs font-label text-on-surface-variant">10分钟前</span>
+</div>
+<p class="text-sm text-on-surface-variant line-clamp-2">候选人更新了近期的项目经历，重点补充了React性能优化相关的细节。AI匹配度评分已重新计算。</p>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="group flex items-start gap-4 p-6 rounded-xl bg-surface-container-low hover:bg-surface-container-highest cursor-pointer transition-all duration-300">
+<div class="w-10 h-10 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined" data-icon="event_available">event_available</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<h3 class="text-base font-headline font-semibold text-on-surface group-hover:text-primary transition-colors">李娜 确认了下周二的面试时间</h3>
+<span class="text-xs font-label text-on-surface-variant">2小时前</span>
+</div>
+<p class="text-sm text-on-surface-variant line-clamp-2">面试官：张三。会议链接已自动生成并发送至双方邮箱。</p>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="group flex items-start gap-4 p-6 rounded-xl bg-surface-container-low hover:bg-surface-container-highest cursor-pointer transition-all duration-300">
+<div class="w-10 h-10 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined" data-icon="smart_toy">smart_toy</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<h3 class="text-base font-headline font-semibold text-on-surface group-hover:text-primary transition-colors">AI 挖掘出 5 位潜在匹配候选人</h3>
+<span class="text-xs font-label text-on-surface-variant">昨天 14:30</span>
+</div>
+<p class="text-sm text-on-surface-variant line-clamp-2">针对“数据科学家”岗位，系统通过技能图谱关联分析，为您推荐了新的被动求职者。</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Category: System -->
+<section>
+<div class="flex items-center gap-3 mb-4 mt-4">
+<span class="material-symbols-outlined text-outline" data-icon="settings_suggest">settings_suggest</span>
+<h2 class="text-lg font-headline font-bold text-on-surface">系统提示</h2>
+</div>
+<div class="flex flex-col gap-4">
+<!-- Item -->
+<div class="group flex items-start gap-4 p-6 rounded-xl bg-surface-container-low hover:bg-surface-container-highest cursor-pointer transition-all duration-300">
+<div class="w-10 h-10 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined" data-icon="update">update</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<h3 class="text-base font-headline font-semibold text-on-surface group-hover:text-primary transition-colors">系统更新 v2.4.1 已完成</h3>
+<span class="text-xs font-label text-on-surface-variant">昨天 02:00</span>
+</div>
+<p class="text-sm text-on-surface-variant line-clamp-2">优化了简历解析引擎的准确率，支持更多格式的附件上传。点击查看完整更新日志。</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Category: Audit Status -->
+<section>
+<div class="flex items-center gap-3 mb-4 mt-4">
+<span class="material-symbols-outlined text-secondary" data-icon="verified_user">verified_user</span>
+<h2 class="text-lg font-headline font-bold text-on-surface">审计状态</h2>
+</div>
+<div class="flex flex-col gap-4">
+<!-- Item -->
+<div class="group flex items-start gap-4 p-6 rounded-xl bg-surface-container-low hover:bg-surface-container-highest cursor-pointer transition-all duration-300">
+<div class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined" data-icon="task_alt">task_alt</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<h3 class="text-base font-headline font-semibold text-on-surface group-hover:text-primary transition-colors">Q3 招聘合规审查报告已生成</h3>
+<span class="text-xs font-label text-on-surface-variant">10月1日</span>
+</div>
+<p class="text-sm text-on-surface-variant line-clamp-2">所有数据访问记录正常，未发现越权操作。报告已存档备查。</p>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Detail View Column (Editorial Canvas Area) -->
+<div class="w-2/5 sticky top-0 h-[calc(100vh-140px)]">
+<!-- Selected State Placeholder (Simulating click on first item) -->
+<div class="h-full rounded-2xl bg-surface-container-lowest shadow-[0px_20px_50px_rgba(19,27,46,0.06)] flex flex-col overflow-hidden relative">
+<!-- Glassmorphism Header Area -->
+<div class="p-8 pb-6 border-b border-outline-variant/15 relative z-10 bg-surface-container-lowest/70 backdrop-blur-xl">
+<div class="flex items-center gap-2 mb-6">
+<span class="px-3 py-1 rounded-full bg-primary-fixed-dim text-on-primary-fixed text-xs font-bold tracking-wider uppercase">候选人动态</span>
+<span class="text-xs font-label text-outline ml-auto">10分钟前</span>
+</div>
+<h2 class="text-3xl font-headline font-black text-on-surface leading-tight mb-4">王伟 - 高级前端工程师<br/>简历已更新</h2>
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-variant">
+<img alt="Professional headshot of a young asian man in a business casual shirt with a neutral background" class="w-full h-full object-cover" data-alt="Professional headshot of a young asian man in a business casual shirt with a neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHm5qWT7BtorW_17ge2MzlV1U1f6ntqDiufQXRgIpABGwtWXz8mRy2z31R4WF4E_k-2G0wOX3xjFHEBrgie6lW1LjPS6rD9ReL2N6ex4MRZa8M9HrpPBOrb4QDZvZAJNXW8BZGWPKTPIiDA_KJEygaIhJwi_rleZY61OAmcYKZuD2qiJzUnIK3JWqWX59vGurlOemrRYsHLd0uT41XtMSSH9M9xBAUgAD8lwxIhP4Hh28-GG_lr1cQpS8kOeADKx4X3VAFG8f8EE8"/>
+</div>
+<div>
+<p class="text-sm font-semibold text-on-surface">AI 解析助手</p>
+<p class="text-xs text-on-surface-variant">系统自动通知</p>
+</div>
+</div>
+</div>
+<!-- Detail Content -->
+<div class="flex-1 p-8 overflow-y-auto">
+<div class="prose prose-sm prose-slate max-w-none text-on-surface-variant space-y-6">
+<p class="text-base leading-relaxed">系统检测到候选人 <strong class="text-on-surface">王伟</strong> 在第三方招聘平台上更新了其个人简历。</p>
+<div class="p-5 rounded-xl bg-surface-container-low border border-outline-variant/15">
+<h4 class="text-sm font-headline font-bold text-on-surface uppercase tracking-wider mb-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="insights">insights</span>
+                                    AI 差异分析摘要
+                                </h4>
+<ul class="space-y-3 text-sm">
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined text-[16px] text-secondary mt-0.5" data-icon="add_circle">add_circle</span>
+<span>新增项目经历：<strong>大型电商中后台重构</strong> (2023.01 - 至今)</span>
+</li>
+<li class="flex items-start gap-2">
+<span class="material-symbols-outlined text-[16px] text-secondary mt-0.5" data-icon="trending_up">trending_up</span>
+<span>技能词频上升：<strong>React Hooks</strong>, <strong>Webpack 5</strong>, <strong>Micro-frontends</strong></span>
+</li>
+</ul>
+</div>
+<p class="text-base leading-relaxed">由于关键技能图谱的变化，该候选人与当前开放岗位 <span class="text-primary cursor-pointer hover:underline">资深Web开发工程师 (Req-009)</span> 的AI匹配度评分已从 <span class="text-on-surface font-bold">82%</span> 提升至 <span class="text-secondary font-black">91%</span>。</p>
+</div>
+</div>
+<!-- Action Footer -->
+<div class="p-6 bg-surface-container-lowest border-t border-outline-variant/15 flex gap-3 mt-auto">
+<button class="flex-1 py-3 px-6 rounded-xl bg-gradient-to-r from-primary to-primary-container text-on-primary font-headline font-semibold text-sm hover:shadow-lg transition-all text-center">
+                            查看对比详情
+                        </button>
+<button class="py-3 px-6 rounded-xl bg-surface-container-high text-on-primary-fixed-variant font-headline font-semibold text-sm hover:bg-surface-variant transition-colors">
+                            归档
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

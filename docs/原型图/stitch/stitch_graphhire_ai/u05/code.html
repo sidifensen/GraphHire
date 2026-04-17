@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GraphHire - 简历管理</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#faf8ff",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "surface-container-high": "#e2e7ff",
+                        "surface-container-low": "#f2f3ff",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "secondary-container": "#6cf8bb",
+                        "primary-container": "#2563eb",
+                        "on-secondary-fixed": "#002113",
+                        "on-primary-fixed": "#00174b",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "surface-bright": "#faf8ff",
+                        "surface-variant": "#dae2fd",
+                        "inverse-on-surface": "#eef0ff",
+                        "on-surface-variant": "#434655",
+                        "outline-variant": "#c3c6d7",
+                        "inverse-primary": "#b4c5ff",
+                        "on-primary-container": "#eeefff",
+                        "on-secondary-container": "#00714d",
+                        "surface-container": "#eaedff",
+                        "on-secondary": "#ffffff",
+                        "background": "#faf8ff",
+                        "tertiary": "#784b00",
+                        "on-surface": "#131b2e",
+                        "on-tertiary-fixed": "#2a1700",
+                        "outline": "#737686",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed-variant": "#005236",
+                        "surface-tint": "#0053db",
+                        "primary": "#004ac6",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#d2d9f4",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed-dim": "#4edea3",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "surface-container-highest": "#dae2fd",
+                        "tertiary-fixed": "#ffddb8",
+                        "on-background": "#131b2e",
+                        "inverse-surface": "#283044",
+                        "tertiary-container": "#996100",
+                        "primary-fixed": "#dbe1ff",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed": "#6ffbbe",
+                        "secondary": "#006c49",
+                        "on-tertiary-container": "#ffeedd"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #faf8ff; color: #131b2e; }
+        h1, h2, h3, h4, h5, h6, .font-headline { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<nav aria-label="Top navigation" class="bg-surface dark:bg-slate-950 font-manrope text-sm font-medium w-full top-0 bg-surface-container-low dark:bg-slate-900 flat no shadows flex justify-between items-center px-6 py-3 max-w-full mx-auto">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-bold tracking-tight text-blue-700 dark:text-blue-500">GraphHire</span>
+<div class="hidden md:flex gap-6">
+<a class="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors scale-95 active:duration-75" href="#">Home</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors scale-95 active:duration-75" href="#">Jobs</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors scale-95 active:duration-75" href="#">Companies</a>
+<a class="text-blue-700 dark:text-blue-400 border-b-2 border-blue-700 dark:border-blue-400 pb-1 scale-95 active:duration-75" href="#">Skill Graph</a> <!-- Assuming Skill Graph relates to resume management conceptually for this demo -->
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<img alt="User avatar with dropdown menu" class="w-8 h-8 rounded-full border border-outline-variant/20 cursor-pointer object-cover" data-alt="Close-up portrait of a professional man with short dark hair, wearing a navy blue shirt, smiling slightly against a neutral background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9RwiGjomVqF0O__tcdkqkfGPN8TrJOPn7R8FX_Q7QBdNMrpXonVMk1hCYS38UALFemF3Zb0lJuvZ5XA3skCUDP0IJ2xlBmH4ETCTdW-5aKdCvstaX1UV6VUS06h44IYez5SOHC9UTHqUPpVADfQtGEzTJZR0hII8DbGon8OvchHu1Tup4EAWLX7XfzkvE3FNKg38xSPIHB5Q53O3g4oEACerwFzOiLS2t519-J2A4jYIggzDCLGi9cyKlqVP6OFe1Slw7bxkuCaY"/>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-grow flex p-6 gap-8 max-w-7xl mx-auto w-full">
+<!-- Sidebar Navigation for Profile/Settings context -->
+<aside class="w-64 hidden lg:flex flex-col gap-2">
+<h2 class="font-headline text-lg font-bold text-on-surface mb-4 px-4">个人中心</h2>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-medium">基本信息</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl bg-surface-container-highest text-primary font-semibold transition-colors" href="#">
+<span class="material-symbols-outlined" data-weight="fill" style="font-variation-settings: 'FILL' 1;">description</span>
+<span>简历管理</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">work_history</span>
+<span class="font-medium">投递记录</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">favorite</span>
+<span class="font-medium">收藏夹</span>
+</a>
+</nav>
+</aside>
+<!-- Canvas Area -->
+<section class="flex-grow flex flex-col gap-6">
+<!-- Header & Action -->
+<div class="flex justify-between items-end mb-4">
+<div>
+<h1 class="font-headline text-3xl font-extrabold text-on-surface tracking-tight mb-2">简历管理</h1>
+<p class="text-on-surface-variant text-sm">管理您的在线简历和附件简历，支持设置默认投递版本。</p>
+</div>
+<button class="bg-gradient-to-r from-primary to-primary-container text-on-primary px-6 py-3 rounded-xl font-semibold shadow-[0px_20px_50px_rgba(19,27,46,0.06)] hover:opacity-90 transition-opacity flex items-center gap-2">
+<span class="material-symbols-outlined">upload_file</span>
+                    上传新简历
+                </button>
+</div>
+<!-- Resumes List (Bento/Card Style) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Default Resume Card -->
+<div class="bg-surface-container-lowest p-6 rounded-xl relative flex flex-col gap-4 shadow-[0px_20px_50px_rgba(19,27,46,0.06)] group">
+<!-- Default Badge -->
+<div class="absolute top-4 right-4 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                        默认简历
+                    </div>
+<div class="flex items-start gap-4">
+<div class="w-12 h-12 bg-primary-fixed rounded-xl flex items-center justify-center text-primary flex-shrink-0">
+<span class="material-symbols-outlined text-2xl">picture_as_pdf</span>
+</div>
+<div>
+<h3 class="font-headline font-bold text-on-surface text-lg truncate pr-20" title="张三_前端开发工程师_5年经验.pdf">张三_前端开发工程师_5年经验.pdf</h3>
+<p class="text-on-surface-variant text-sm mt-1">更新于 2023-10-25</p>
+</div>
+</div>
+<!-- AI Insights (Curator Aesthetic) -->
+<div class="bg-surface-container-low p-3 rounded-lg flex flex-col gap-2 mt-2">
+<span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">AI 技能解析</span>
+<div class="flex flex-wrap gap-2">
+<span class="bg-surface text-primary px-2 py-1 rounded text-xs font-medium border border-outline-variant/20">React</span>
+<span class="bg-surface text-primary px-2 py-1 rounded text-xs font-medium border border-outline-variant/20">TypeScript</span>
+<span class="bg-surface text-primary px-2 py-1 rounded text-xs font-medium border border-outline-variant/20">Tailwind CSS</span>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-3 mt-auto pt-4 border-t border-outline-variant/10">
+<button class="text-primary hover:text-primary-container font-medium text-sm flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+                            预览
+                        </button>
+<button class="text-on-surface-variant hover:text-on-surface font-medium text-sm flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+                            重命名
+                        </button>
+</div>
+</div>
+<!-- Secondary Resume Card -->
+<div class="bg-surface-container-low p-6 rounded-xl relative flex flex-col gap-4 border border-outline-variant/15 group">
+<div class="flex items-start gap-4">
+<div class="w-12 h-12 bg-surface-variant rounded-xl flex items-center justify-center text-on-surface-variant flex-shrink-0">
+<span class="material-symbols-outlined text-2xl">description</span>
+</div>
+<div>
+<h3 class="font-headline font-bold text-on-surface text-lg truncate pr-10" title="张三_全栈开发_通用版.docx">张三_全栈开发_通用版.docx</h3>
+<p class="text-on-surface-variant text-sm mt-1">更新于 2023-08-12</p>
+</div>
+</div>
+<div class="bg-surface p-3 rounded-lg flex flex-col gap-2 mt-2">
+<span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">匹配方向</span>
+<p class="text-sm text-on-surface">Node.js 后端开发, 基础架构</p>
+</div>
+<!-- Actions -->
+<div class="flex items-center justify-between mt-auto pt-4 border-t border-outline-variant/10">
+<div class="flex items-center gap-3">
+<button class="text-on-surface-variant hover:text-primary font-medium text-sm flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+                                预览
+                            </button>
+<button class="text-on-surface-variant hover:text-error font-medium text-sm flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+                                删除
+                            </button>
+</div>
+<button class="text-primary text-sm font-medium hover:underline decoration-2 underline-offset-4 decoration-surface-tint">
+                            设为默认
+                        </button>
+</div>
+</div>
+</div>
+</section>
+</main>
+</body></html>

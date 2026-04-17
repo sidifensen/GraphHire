@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>管理员登录 - GraphHire</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#faf8ff",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "surface-container-high": "#e2e7ff",
+                        "surface-container-low": "#f2f3ff",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "secondary-container": "#6cf8bb",
+                        "primary-container": "#2563eb",
+                        "on-secondary-fixed": "#002113",
+                        "on-primary-fixed": "#00174b",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "surface-bright": "#faf8ff",
+                        "surface-variant": "#dae2fd",
+                        "inverse-on-surface": "#eef0ff",
+                        "on-surface-variant": "#434655",
+                        "outline-variant": "#c3c6d7",
+                        "inverse-primary": "#b4c5ff",
+                        "on-primary-container": "#eeefff",
+                        "on-secondary-container": "#00714d",
+                        "surface-container": "#eaedff",
+                        "on-secondary": "#ffffff",
+                        "background": "#faf8ff",
+                        "tertiary": "#784b00",
+                        "on-surface": "#131b2e",
+                        "on-tertiary-fixed": "#2a1700",
+                        "outline": "#737686",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed-variant": "#005236",
+                        "surface-tint": "#0053db",
+                        "primary": "#004ac6",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#d2d9f4",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed-dim": "#4edea3",
+                        "on-primary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "surface-container-highest": "#dae2fd",
+                        "tertiary-fixed": "#ffddb8",
+                        "on-background": "#131b2e",
+                        "inverse-surface": "#283044",
+                        "tertiary-container": "#996100",
+                        "primary-fixed": "#dbe1ff",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed": "#6ffbbe",
+                        "secondary": "#006c49",
+                        "on-tertiary-container": "#ffeedd"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {},
+                    "fontFamily": {
+                        "headline": [
+                            "Manrope"
+                        ],
+                        "body": [
+                            "Inter"
+                        ],
+                        "label": [
+                            "Inter"
+                        ]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-surface-container-low min-h-screen flex items-center justify-center font-body text-on-surface antialiased p-6">
+<main class="w-full max-w-[440px] flex flex-col gap-8">
+<!-- Header / Branding -->
+<div class="flex flex-col items-center justify-center text-center gap-2">
+<div class="h-16 w-16 bg-gradient-to-br from-primary to-primary-container rounded-xl flex items-center justify-center shadow-[0px_20px_50px_rgba(19,27,46,0.06)] mb-2">
+<span class="material-symbols-outlined text-on-primary text-3xl" style="font-variation-settings: 'FILL' 1;">
+                    shield_person
+                </span>
+</div>
+<h1 class="font-headline text-3xl font-bold tracking-tight text-on-surface">GraphHire</h1>
+<p class="font-label text-sm font-medium text-on-surface-variant uppercase tracking-widest">管理员控制台</p>
+</div>
+<!-- Login Card -->
+<div class="bg-surface rounded-[24px] p-8 shadow-[0px_20px_50px_rgba(19,27,46,0.06)] flex flex-col gap-6 relative overflow-hidden">
+<div class="absolute -top-24 -right-24 w-48 h-48 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
+<div>
+<h2 class="font-headline text-xl font-bold text-on-surface">系统登录</h2>
+<p class="text-sm text-on-surface-variant mt-1">请输入您的管理员凭证以继续</p>
+</div>
+<form class="flex flex-col gap-5">
+<!-- Admin ID Field -->
+<div class="flex flex-col gap-2">
+<label class="font-label text-sm font-medium text-on-surface" for="admin-id">管理员 ID</label>
+<div class="relative">
+<span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+<span class="material-symbols-outlined text-outline text-xl">person</span>
+</span>
+<input class="w-full bg-surface-container-low text-on-surface placeholder-on-surface-variant/50 rounded-lg py-3 pl-11 pr-4 border-none focus:ring-0 focus:bg-surface-container-lowest focus:border-b-2 focus:border-primary transition-all font-body text-sm outline-none shadow-sm" id="admin-id" placeholder="输入您的管理员账号" type="text"/>
+</div>
+</div>
+<!-- Secret Key Field -->
+<div class="flex flex-col gap-2">
+<label class="font-label text-sm font-medium text-on-surface" for="secret-key">安全密钥</label>
+<div class="relative">
+<span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+<span class="material-symbols-outlined text-outline text-xl">key</span>
+</span>
+<input class="w-full bg-surface-container-low text-on-surface placeholder-on-surface-variant/50 rounded-lg py-3 pl-11 pr-4 border-none focus:ring-0 focus:bg-surface-container-lowest focus:border-b-2 focus:border-primary transition-all font-body text-sm outline-none shadow-sm" id="secret-key" placeholder="••••••••••••" type="password"/>
+</div>
+</div>
+<!-- Captcha Field -->
+<div class="flex flex-col gap-2">
+<label class="font-label text-sm font-medium text-on-surface" for="captcha">验证码</label>
+<div class="flex gap-3">
+<div class="relative flex-1">
+<span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+<span class="material-symbols-outlined text-outline text-xl">verified_user</span>
+</span>
+<input class="w-full bg-surface-container-low text-on-surface placeholder-on-surface-variant/50 rounded-lg py-3 pl-11 pr-4 border-none focus:ring-0 focus:bg-surface-container-lowest focus:border-b-2 focus:border-primary transition-all font-body text-sm outline-none shadow-sm" id="captcha" placeholder="输入验证码" type="text"/>
+</div>
+<div class="w-[120px] h-[48px] bg-surface-container-highest rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0 relative group cursor-pointer">
+<!-- Placeholder for Captcha Image -->
+<img alt="Captcha" class="w-full h-full object-cover mix-blend-multiply opacity-80 group-hover:opacity-100 transition-opacity" data-alt="Abstract blurry text reading W7K9Q on a noisy blue background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQONoH2hlwGUoJrBSSVb0x6mPOUduZx1adL6q1UjGtnVJCdBifTzeAKZanHnfP0rQU-SMsR3xEiGOo09TLV_kfRqZgoy0enOrsLsR0gNjgif8TcV9Ebx_tMxj3zvUvAHmMKo5JbfiJukiTWb51faxZXQZS9SXOZy_ku0GbB20QU1xiNberZ2oYFtIm3lHDSVwpsyB68fFZ8pxGAe4AYUO1EIrkFQVZNxzhEResN4mALnJrtdX-U1TydYbJUVOuHTwkRjJckDVdR_I"/>
+<div class="absolute inset-0 flex items-center justify-center bg-on-surface/5 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-on-surface text-xl">refresh</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between mt-2">
+<label class="flex items-center gap-2 cursor-pointer">
+<input class="rounded border-outline-variant text-primary focus:ring-primary bg-surface-container-low w-4 h-4" type="checkbox"/>
+<span class="text-sm text-on-surface-variant font-medium">记住此设备</span>
+</label>
+<a class="text-sm text-primary font-medium hover:text-primary-container transition-colors underline decoration-transparent hover:decoration-primary/30 underline-offset-4" href="#">忘记密钥?</a>
+</div>
+<button class="w-full bg-gradient-to-r from-primary to-primary-container text-on-primary font-headline font-semibold text-base py-3.5 rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all mt-4 flex items-center justify-center gap-2" type="button">
+                    安全登录
+                    <span class="material-symbols-outlined text-lg">arrow_forward</span>
+</button>
+</form>
+</div>
+<div class="text-center text-xs text-on-surface-variant/70 font-medium tracking-wide">
+            © 2024 GraphHire. 所有权利保留.
+        </div>
+</main>
+</body></html>

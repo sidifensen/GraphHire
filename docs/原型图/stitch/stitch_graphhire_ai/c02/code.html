@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>登录 - GraphHire 企业端</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface": "#faf8ff",
+                    "on-error-container": "#93000a",
+                    "on-primary-fixed-variant": "#003ea8",
+                    "tertiary-fixed-dim": "#ffb95f",
+                    "surface-container-high": "#e2e7ff",
+                    "surface-container-low": "#f2f3ff",
+                    "primary-fixed-dim": "#b4c5ff",
+                    "secondary-container": "#6cf8bb",
+                    "primary-container": "#2563eb",
+                    "on-secondary-fixed": "#002113",
+                    "on-primary-fixed": "#00174b",
+                    "on-tertiary-fixed-variant": "#653e00",
+                    "surface-bright": "#faf8ff",
+                    "surface-variant": "#dae2fd",
+                    "inverse-on-surface": "#eef0ff",
+                    "on-surface-variant": "#434655",
+                    "outline-variant": "#c3c6d7",
+                    "inverse-primary": "#b4c5ff",
+                    "on-primary-container": "#eeefff",
+                    "on-secondary-container": "#00714d",
+                    "surface-container": "#eaedff",
+                    "on-secondary": "#ffffff",
+                    "background": "#faf8ff",
+                    "tertiary": "#784b00",
+                    "on-surface": "#131b2e",
+                    "on-tertiary-fixed": "#2a1700",
+                    "outline": "#737686",
+                    "error": "#ba1a1a",
+                    "on-secondary-fixed-variant": "#005236",
+                    "surface-tint": "#0053db",
+                    "primary": "#004ac6",
+                    "error-container": "#ffdad6",
+                    "surface-dim": "#d2d9f4",
+                    "on-tertiary": "#ffffff",
+                    "secondary-fixed-dim": "#4edea3",
+                    "on-primary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "surface-container-highest": "#dae2fd",
+                    "tertiary-fixed": "#ffddb8",
+                    "on-background": "#131b2e",
+                    "inverse-surface": "#283044",
+                    "tertiary-container": "#996100",
+                    "primary-fixed": "#dbe1ff",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-fixed": "#6ffbbe",
+                    "secondary": "#006c49",
+                    "on-tertiary-container": "#ffeedd"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {},
+            "fontFamily": {
+                    "headline": [
+                            "Manrope",
+                            "sans-serif"
+                    ],
+                    "body": [
+                            "Inter",
+                            "sans-serif"
+                    ],
+                    "label": [
+                            "Inter",
+                            "sans-serif"
+                    ]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body antialiased min-h-screen flex flex-col md:flex-row overflow-hidden">
+<!-- Left Side: Marketing / Branding (Hidden on mobile) -->
+<div class="hidden md:flex md:w-3/5 lg:w-2/3 relative flex-col justify-between p-10 bg-surface-container-low overflow-hidden">
+<!-- Decorative Background Layer (Glassmorphism / Gradient) -->
+<div class="absolute inset-0 z-0">
+<div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary/10 to-surface-container-low mix-blend-multiply"></div>
+<!-- Subtle data visualization shapes in background -->
+<div class="absolute top-1/4 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
+<div class="absolute bottom-1/4 left-1/4 w-72 h-72 bg-secondary/5 rounded-full blur-3xl"></div>
+<!-- Abstract Image placeholder -->
+<img alt="Background pattern" class="absolute inset-0 w-full h-full object-cover opacity-[0.03] pointer-events-none" data-alt="Abstract composition of glowing interconnected data nodes forming a complex network structure, representing artificial intelligence and big data analytics, deep blue background with soft vibrant cyan lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdVMX8np2DTc4_GA9a1FN-_yDpvs-HJxGe9AO76JGqyIxTwQip1sBYIiYNo7T_SmGPopSVLfGdZVEf35gTwAI-COQ0a4RhEpKg_suSN8Iaztj_9OuWo7JItmjySfXn7Pq_ChlrTj7SAmXifPkAeFh77-7hB8PBHtyk2yaXFROrEn77MuVm5C6hv0oSMc9fxhhdepnE8NQy6n0_3U8uK6MiU-_RygNPvrqX2oGSo98XKrnvAf-bUJOxnjSVy_5JKMZ6u9FTWALD7zQ"/>
+</div>
+<div class="relative z-10">
+<h1 class="font-headline text-3xl font-bold tracking-tight text-primary flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="workspaces" data-weight="fill" style="font-variation-settings: 'FILL' 1;">workspaces</span>
+                GraphHire
+            </h1>
+</div>
+<div class="relative z-10 max-w-2xl mt-auto mb-20">
+<div class="bg-surface/70 backdrop-blur-xl p-8 rounded-xl shadow-[0px_20px_50px_rgba(19,27,46,0.06)] border border-outline-variant/15">
+<h2 class="font-headline text-display-sm text-4xl font-extrabold text-on-surface leading-tight mb-4">
+                    精准匹配，预见未来人才。
+                </h2>
+<p class="font-body text-lg text-on-surface-variant leading-relaxed mb-8">
+                    利用先进的技能图谱和人工智能算法，我们帮助企业从海量数据中甄选最契合的候选人，让招聘变得如数据科学般精准与高效。
+                </p>
+<!-- Mini Stats / Social Proof -->
+<div class="flex gap-8">
+<div>
+<p class="font-headline text-2xl font-bold text-primary">98%</p>
+<p class="font-label text-sm text-on-surface-variant">匹配准确率</p>
+</div>
+<div>
+<p class="font-headline text-2xl font-bold text-primary">3x</p>
+<p class="font-label text-sm text-on-surface-variant">招聘效率提升</p>
+</div>
+<div>
+<p class="font-headline text-2xl font-bold text-primary">500+</p>
+<p class="font-label text-sm text-on-surface-variant">头部企业信赖</p>
+</div>
+</div>
+</div>
+</div>
+<div class="relative z-10 text-sm font-label text-on-surface-variant">
+            © 2024 GraphHire. 保留所有权利。
+        </div>
+</div>
+<!-- Right Side: Login Form -->
+<div class="w-full md:w-2/5 lg:w-1/3 flex flex-col justify-center p-8 sm:p-12 md:p-16 bg-surface relative z-20 shadow-[-20px_0px_50px_rgba(19,27,46,0.03)] md:shadow-none min-h-screen md:min-h-0">
+<!-- Mobile Logo -->
+<div class="md:hidden mb-12 flex justify-center">
+<h1 class="font-headline text-3xl font-bold tracking-tight text-primary flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="workspaces" data-weight="fill" style="font-variation-settings: 'FILL' 1;">workspaces</span>
+                GraphHire
+            </h1>
+</div>
+<div class="w-full max-w-sm mx-auto">
+<div class="mb-10 text-center md:text-left">
+<h2 class="font-headline text-2xl font-bold text-on-surface mb-2">企业管理员登录</h2>
+<p class="font-body text-on-surface-variant text-sm">欢迎回来，请输入您的登录凭证进入管理控制台。</p>
+</div>
+<form action="/company/dashboard" class="space-y-6" method="GET">
+<!-- Email/Mobile Field -->
+<div>
+<label class="block font-label text-sm font-medium text-on-surface mb-1.5" for="username">手机号码或企业邮箱</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-outline">
+<span class="material-symbols-outlined text-[20px]" data-icon="person">person</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-3 bg-surface-container-low text-on-surface font-body text-sm rounded border-0 border-b-2 border-transparent focus:bg-surface-container-lowest focus:border-primary focus:ring-0 transition-colors placeholder:text-outline/70" id="username" name="username" placeholder="admin@company.com" required="" type="text"/>
+</div>
+</div>
+<!-- Password Field -->
+<div>
+<div class="flex justify-between items-center mb-1.5">
+<label class="block font-label text-sm font-medium text-on-surface" for="password">密码</label>
+<a class="font-label text-xs font-medium text-primary hover:text-primary-container transition-colors" href="#">忘记密码？</a>
+</div>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-outline">
+<span class="material-symbols-outlined text-[20px]" data-icon="lock">lock</span>
+</div>
+<input class="block w-full pl-10 pr-10 py-3 bg-surface-container-low text-on-surface font-body text-sm rounded border-0 border-b-2 border-transparent focus:bg-surface-container-lowest focus:border-primary focus:ring-0 transition-colors placeholder:text-outline/70" id="password" name="password" placeholder="••••••••" required="" type="password"/>
+<button class="absolute inset-y-0 right-0 pr-3 flex items-center text-outline hover:text-on-surface-variant transition-colors focus:outline-none" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="visibility_off">visibility_off</span>
+</button>
+</div>
+</div>
+<!-- Remember Me -->
+<div class="flex items-center">
+<input class="h-4 w-4 rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-surface bg-surface-container-lowest" id="remember-me" name="remember-me" type="checkbox"/>
+<label class="ml-2 block text-sm font-body text-on-surface-variant" for="remember-me">
+                        在此设备上保持登录
+                    </label>
+</div>
+<!-- Submit Button -->
+<div class="pt-2">
+<button class="w-full flex justify-center py-3.5 px-4 rounded-xl text-sm font-label font-semibold text-on-primary bg-gradient-to-r from-primary to-primary-container shadow-[0px_4px_10px_rgba(37,99,235,0.2)] hover:shadow-[0px_6px_15px_rgba(37,99,235,0.3)] hover:opacity-95 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-surface" type="submit">
+                        登录控制台
+                    </button>
+</div>
+</form>
+<!-- Registration Link -->
+<div class="mt-8 text-center md:text-left">
+<p class="text-sm font-body text-on-surface-variant">
+                    还没有企业账号？
+                    <a class="font-label font-semibold text-primary hover:text-primary-container relative group inline-block" href="/company/register">
+                        立即注册
+                        <span class="absolute -bottom-0.5 left-0 w-full h-[2px] bg-surface-tint scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
+</a>
+</p>
+</div>
+</div>
+</div>
+</body></html>
