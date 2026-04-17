@@ -1,36 +1,46 @@
+export type UserType = 'PERSON' | 'COMPANY' | 'ADMIN';
+
 export interface User {
   id: string;
-  email: string;
-  name?: string;
+  username: string;
+  email?: string;
   phone?: string;
-  role: 'JOB_SEEKER' | 'RECRUITER' | 'ADMIN';
+  type: UserType;
   avatar?: string;
 }
 
 export interface AuthTokens {
-  accessToken: string | null;
-  refreshToken: string | null;
+  accessToken: string;
+  refreshToken?: string;
 }
 
 export interface LoginRequest {
-  identifier: string;
+  username: string;
   password: string;
 }
 
 export interface LoginResponse {
   accessToken: string;
-  refreshToken: string;
-  user: User;
+  refreshToken?: string;
+  expiresIn: number;
+  userType: UserType;
+  userId: number;
 }
 
-export interface RegisterRequest {
-  email: string;
+export interface PersonRegisterRequest {
+  username: string;
   password: string;
-  role: 'JOB_SEEKER' | 'RECRUITER';
-  phone?: string;
+  verifyCode: string;
 }
 
 export interface RegisterResponse {
-  userId: string;
+  userId: number;
   message: string;
+}
+
+// API Result wrapper (for type extraction)
+export interface ApiResult<T> {
+  code: number;
+  message: string;
+  data: T;
 }

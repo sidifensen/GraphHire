@@ -1,11 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { User, AuthTokens } from '@/lib/types';
+import type { User, UserType } from '@/lib/types';
 
-interface AuthState extends AuthTokens {
-  user: User | null;
+interface AuthState {
+  accessToken: string | null;
+  refreshToken: string | null;
+  user: { id: number; username: string; type: UserType } | null;
   isAuthenticated: boolean;
-  setAuth: (tokens: AuthTokens, user: User) => void;
+  setAuth: (tokens: { accessToken: string; refreshToken?: string }, user: { id: number; username: string; type: UserType }) => void;
   logout: () => void;
 }
 
@@ -19,7 +21,8 @@ export const authStore = create<AuthState>()(
 
       setAuth: (tokens, user) =>
         set({
-          ...tokens,
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken || null,
           user,
           isAuthenticated: true,
         }),
