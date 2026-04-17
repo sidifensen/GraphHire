@@ -28,7 +28,12 @@ public class SaTokenConfig implements WebMvcConfigurer {
             "/skill-tags/**",
             "/health",
             "/actuator/**",
-            "/error"
+            "/error",
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/v3/api-docs/**",
+            "/doc.html",
+            "/webjars/**"
         );
     }
 }
