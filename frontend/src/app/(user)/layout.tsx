@@ -3,7 +3,7 @@ import { TopNavBar } from '@/components/layout/top-navbar';
 import { BottomTabBar } from '@/components/layout/bottom-tab';
 
 export const metadata: Metadata = {
-  title: 'GraphHire 图谱智聘 - 求职者',
+  title: 'GraphHire 图谱智聘 - 用户端',
 };
 
 export default function UserLayout({ children }: { children: React.ReactNode }) {
