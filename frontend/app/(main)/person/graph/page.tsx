@@ -159,7 +159,7 @@ export default function GraphPage() {
         <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
       </button>
 
-      <style jsx>{`
+      <style>{`
         @keyframes pulse {
           0% { box-shadow: 0 0 0 0 rgba(0, 91, 191, 0.4); }
           70% { box-shadow: 0 0 0 15px rgba(0, 91, 191, 0); }
