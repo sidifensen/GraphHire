@@ -10,7 +10,7 @@ export interface Company {
   city?: string;
   industry?: string;
   employeeCount?: string;
-  certificationStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
+  authStatus: 'PENDING' | 'VERIFIED' | 'REJECTED';
   createdAt: string;
 }
 
@@ -24,6 +24,31 @@ export interface CompanyStaff {
   createdAt: string;
 }
 
+export interface PageResult<T> {
+  list: T[];
+  total: number;
+  page: number;
+  size: number;
+}
+
+// Public APIs (no auth required)
+export const publicCompanyApi = {
+  search: async (params?: {
+    keyword?: string;
+    page?: number;
+    size?: number;
+  }): Promise<PageResult<Company>> => {
+    const response = await apiClient.get<PageResult<Company>>('/public/companies', { params });
+    return response.data;
+  },
+
+  getById: async (id: number): Promise<Company> => {
+    const response = await apiClient.get<Company>(`/public/companies/${id}`);
+    return response.data;
+  },
+};
+
+// Authenticated company APIs
 export const companyApi = {
   getInfo: async (companyId: number): Promise<Company> => {
     const response = await apiClient.get(`/company/${companyId}`);
