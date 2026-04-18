@@ -1,14 +1,30 @@
 import apiClient from './client';
 
+export interface SalaryRange {
+  min: number;
+  max: number;
+  unit?: string;
+}
+
+export interface Location {
+  city: string;
+  district?: string;
+  address?: string;
+}
+
 export interface Job {
   id: number;
+  companyId: number;
   title: string;
-  description: string;
-  salaryRange?: { min: number; max: number };
-  location?: { city: string; district?: string };
+  department?: string;
+  headcount?: number;
+  location?: Location;
+  salaryRange?: SalaryRange;
   requiredSkills?: string[];
+  preferredSkills?: string[];
+  description?: string;
   status: string;
-  createTime: string;
+  publishedAt?: string;
 }
 
 export interface PageResult<T> {

@@ -136,3 +136,6 @@ jacoco/
 
 # Git worktrees
 .worktrees/
+
+# SpectrAI worktree isolation
+.spectrai-worktrees/

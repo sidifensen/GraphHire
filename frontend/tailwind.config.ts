@@ -1,7 +1,12 @@
 import type { Config } from 'tailwindcss';
 
 const config: Config = {
-  content: ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
+  content: [
+    './src/app/**/page.tsx',
+    './src/app/**/layout.tsx',
+    './src/components/**/*.{js,ts,jsx,tsx}',
+    './src/lib/**/*.{js,ts,jsx,tsx}',
+  ],
   theme: {
     extend: {
       colors: {
@@ -48,7 +53,7 @@ const config: Config = {
         'on-secondary-fixed': '#002113',
         'on-secondary-fixed-variant': '#005236',
         'tertiary-fixed': '#ffddb8',
-        'tertiary-fixed-dim': '#ffb95f',
+        'tertiary-fixed-dim': '#b4c5ff',
         'on-tertiary-fixed': '#2a1700',
         'on-tertiary-fixed-variant': '#653e00',
       },
