@@ -63,9 +63,32 @@ public class MatchRecordRepositoryImpl implements MatchRecordRepository {
     public MatchRecord save(MatchRecord matchRecord) {
         MatchRecordPO po = toPO(matchRecord);
         if (matchRecord.getId() == null) {
-            matchRecordMapper.insert(po);
+            matchRecordMapper.insertWithJsonb(
+                po.getResumeId(),
+                po.getJobId(),
+                po.getMatchDirection(),
+                po.getOverallScore(),
+                po.getSkillScore(),
+                po.getExperienceScore(),
+                po.getCityScore(),
+                po.getEducationScore(),
+                po.getSalaryScore(),
+                po.getMatchDetail(),
+                po.getViewed()
+            );
         } else {
-            matchRecordMapper.updateById(po);
+            matchRecordMapper.updateWithJsonb(
+                po.getId(),
+                po.getMatchDirection(),
+                po.getOverallScore(),
+                po.getSkillScore(),
+                po.getExperienceScore(),
+                po.getCityScore(),
+                po.getEducationScore(),
+                po.getSalaryScore(),
+                po.getMatchDetail(),
+                po.getViewed()
+            );
         }
         return toDomain(po);
     }
@@ -87,9 +110,15 @@ public class MatchRecordRepositoryImpl implements MatchRecordRepository {
         record.setResumeId(po.getResumeId());
         record.setJobId(po.getJobId());
         record.setMatchDirection(po.getMatchDirection());
-        // match_detail jsonb -> JSON string
-        if (po.getMatchReport() != null) {
-            record.setMatchReason(JSONUtil.toJsonStr(po.getMatchReport()));
+        // match_detail jsonb -> JSON string -> 提取reason字段
+        if (po.getMatchDetail() != null && !po.getMatchDetail().isBlank()) {
+            try {
+                var detail = JSONUtil.parseObj(po.getMatchDetail());
+                record.setMatchReason(detail.getStr("reason", po.getMatchDetail()));
+            } catch (Exception e) {
+                // 如果不是JSON格式，直接设置为原文本
+                record.setMatchReason(po.getMatchDetail());
+            }
         }
         // 转换分数
         if (po.getSkillScore() != null || po.getExperienceScore() != null ||
@@ -113,9 +142,9 @@ public class MatchRecordRepositoryImpl implements MatchRecordRepository {
         po.setResumeId(record.getResumeId());
         po.setJobId(record.getJobId());
         po.setMatchDirection(record.getMatchDirection());
-        // JSON string -> match_detail jsonb
+        // matchReason是纯文本字符串，包装为JSON存储到match_detail字段
         if (record.getMatchReason() != null) {
-            po.setMatchReport(JSONUtil.toBean(record.getMatchReason(), Map.class));
+            po.setMatchDetail(JSONUtil.toJsonStr(Map.of("reason", record.getMatchReason())));
         }
         // 转换分数
         if (record.getScore() != null) {

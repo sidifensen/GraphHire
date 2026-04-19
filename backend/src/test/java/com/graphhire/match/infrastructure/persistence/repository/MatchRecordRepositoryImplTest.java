@@ -49,7 +49,7 @@ class MatchRecordRepositoryImplTest {
         samplePO.setCityScore(new BigDecimal("80.00"));
         samplePO.setEducationScore(new BigDecimal("75.00"));
         samplePO.setSalaryScore(new BigDecimal("95.00"));
-        samplePO.setMatchReport(JSONUtil.parseObj("{\"skills\": [\"Java\", \"Python\"]}"));
+        samplePO.setMatchDetail("{\"skills\": [\"Java\", \"Python\"]}");
         samplePO.setViewed(0);
         samplePO.setCreateTime(LocalDateTime.of(2026, 4, 15, 10, 30, 0));
 
@@ -184,7 +184,7 @@ class MatchRecordRepositoryImplTest {
             assertEquals(1L, captured.getId());
             assertEquals(10L, captured.getResumeId());
             assertEquals(20L, captured.getJobId());
-            assertEquals("{\"skills\": [\"Java\", \"Python\"]}", captured.getMatchReport());
+            assertEquals("{\"skills\": [\"Java\", \"Python\"]}", captured.getMatchDetail());
             assertEquals(0, captured.getViewed());
             assertNotNull(captured.getOverallScore());
             assertEquals(90.0, captured.getSkillScore().doubleValue());

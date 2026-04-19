@@ -42,7 +42,7 @@ public class PersonController {
         PersonInfo personInfo = personInfoRepository.findByUserId(userId)
             .orElse(null);
         if (personInfo == null) {
-            return Result.error("个人信息不存在");
+            return Result.success(null);
         }
         PersonInfoResponse response = new PersonInfoResponse(
             personInfo.getId(),

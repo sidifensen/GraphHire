@@ -63,7 +63,7 @@ cd backend && mvn spring-boot:run
 ## 项目概述
 
 **GraphHire 图谱智聘** — 基于AI智能匹配与能力图谱的招聘平台。核心功能：简历/职位文档智能解析、能力图谱构建、双向人岗匹配。
-**端口：** 8888(前端) / 7777(后端) / 5432(PostgreSQL) / 6379(Redis) / 7687(memgraph) / 9000(rustfs)
+**端口：** 8888(前端) / 7777(后端) / 5432(PostgreSQL) / 6379(Redis) / 7687(memgraph) / 9000(rustfs) 9001(rustfs控制台)
 
 ---
 

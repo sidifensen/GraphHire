@@ -115,12 +115,17 @@ public class DeepSeekClient {
         try {
             String response = HttpRequest.post(endpoint)
                 .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer " + apiKey)
                 .body(JSONUtil.toJsonStr(requestBody))
                 .timeout(30000)
                 .execute()
                 .body();
+            if (response == null || response.isBlank()) {
+                return fallbackCalculateMatch(userInfo, jobInfo);
+            }
             return parseDeepSeekResponse(response);
         } catch (Exception e) {
+            // AI不可用时降级到本地计算
             return fallbackCalculateMatch(userInfo, jobInfo);
         }
     }

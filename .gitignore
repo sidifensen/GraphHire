@@ -139,3 +139,6 @@ jacoco/
 
 # SpectrAI worktree isolation
 .spectrai-worktrees/
+/.tmp-logs/
+/.tmp-chrome-profile/
+/.spectrai-logs/

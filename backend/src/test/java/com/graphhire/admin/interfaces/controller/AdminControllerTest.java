@@ -306,7 +306,7 @@ class AdminControllerTest {
             when(adminAppService.getUserList(any(UserListQuery.class))).thenReturn(userIds);
 
             // When
-            var result = adminController.getUserList(query);
+            var result = adminController.getUserList(1, 10);
 
             // Then
             assertNotNull(result);
