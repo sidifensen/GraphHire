@@ -287,6 +287,29 @@ public class AuthAppService {
     }
 
     /**
+     * 重置密码
+     * 【功能说明】通过邮箱验证码重置用户密码（独立接口）。
+     * 【业务步骤】
+     * 步骤1：校验邮箱格式
+     * 步骤2：校验验证码
+     * 步骤3：查询用户并更新密码
+     */
+    public void resetPassword(String email, String code, String newPassword) {
+        // 步骤1：校验邮箱格式
+        if (!Validator.isEmail(email)) {
+            throw com.graphhire.common.vo.Exceptions.BusinessException.of("邮箱格式不正确");
+        }
+        // 步骤2：校验验证码
+        validateVerifyCode(email, code, "forgot_password");
+
+        // 步骤3：查询用户并更新密码
+        User user = userRepository.findByUsername(email)
+                .orElseThrow(() -> com.graphhire.common.vo.Exceptions.BusinessException.of("用户不存在"));
+        user.setPassword(com.graphhire.auth.domain.vo.EncryptedPassword.encode(newPassword));
+        userRepository.save(user);
+    }
+
+    /**
      * 修改密码
      * 【功能说明】已登录用户修改密码，需验证旧密码后才能更新。
      * 【业务步骤】

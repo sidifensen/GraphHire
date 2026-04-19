@@ -48,6 +48,15 @@ public class AdminController {
     }
 
     /**
+     * 获取系统统计数据
+     * @return 统计数据
+     */
+    @GetMapping("/statistics")
+    public Result<DashboardStatsResponse> getStatistics() {
+        return Result.success(adminAppService.getDashboardStats());
+    }
+
+    /**
      * 企业认证授权
      * @param id 企业ID
      * @param cmd 认证命令
@@ -84,11 +93,17 @@ public class AdminController {
 
     /**
      * 获取用户列表
-     * @param query 查询条件
+     * @param page 页码
+     * @param size 每页大小
      * @return 用户列表
      */
     @GetMapping("/user/list")
-    public Result<List<Long>> getUserList(@RequestBody UserListQuery query) {
+    public Result<List<Long>> getUserList(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        UserListQuery query = new UserListQuery();
+        query.setPage(page);
+        query.setPageSize(size);
         return Result.success(adminAppService.getUserList(query));
     }
 

@@ -2,6 +2,7 @@ package com.graphhire.auth.interfaces.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.graphhire.auth.application.command.ForgotPasswordCmd;
+import com.graphhire.auth.application.command.ResetPasswordCmd;
 import com.graphhire.auth.application.service.AuthAppService;
 import com.graphhire.auth.interfaces.dto.request.CompanyRegisterRequest;
 import com.graphhire.auth.interfaces.dto.request.LoginRequest;
@@ -87,19 +88,15 @@ public class AuthController {
     }
 
     /**
-     * 重置密码（已废弃，请使用 /forgot-password 接口）
-     * @param email 用户邮箱
-     * @param code 验证码
-     * @param newPassword 新密码
+     * 重置密码
+     * @param cmd 重置密码命令（email、code、newPassword）
      * @return void
      */
-    // @PostMapping("/reset-password")
-    // public Result<Void> resetPassword(@RequestParam String email,
-    //                                   @RequestParam String code,
-    //                                   @RequestParam String newPassword) {
-    //     authService.resetPassword(email, code, newPassword);
-    //     return Result.success();
-    // }
+    @PostMapping("/reset-password")
+    public Result<Void> resetPassword(@RequestBody ResetPasswordCmd cmd) {
+        authService.resetPassword(cmd.getEmail(), cmd.getCode(), cmd.getNewPassword());
+        return Result.success();
+    }
 
     /**
      * 登出
