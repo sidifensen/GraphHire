@@ -338,11 +338,17 @@ public class DeepSeekClient {
         try {
             String response = HttpRequest.post(endpoint)
                 .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer " + apiKey)
                 .body(JSONUtil.toJsonStr(requestBody))
                 .timeout(30000)
                 .execute()
                 .body();
-            return parseJsonResponse(response);
+
+            Map<String, Object> result = parseJsonResponse(response);
+            if (result == null || result.isEmpty()) {
+                return getMockParseResult(text);
+            }
+            return result;
         } catch (Exception e) {
             return getMockParseResult(text);
         }
@@ -350,11 +356,72 @@ public class DeepSeekClient {
 
     /** 解析简历API响应为结构化Map */
     private Map<String, Object> parseJsonResponse(String response) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("raw_response", response);
-        result.put("skills", new String[]{"Java", "Spring Boot", "MySQL"});
-        result.put("summary", "Experienced software developer");
-        return result;
+        try {
+            JSONObject jsonObj = JSONUtil.parseObj(response);
+
+            // 提取 AI 回复内容
+            String content = jsonObj
+                .getJSONArray("choices")
+                .getJSONObject(0)
+                .getJSONObject("message")
+                .getStr("content");
+
+            if (content == null || content.isBlank()) {
+                return getMockParseResult(content);
+            }
+
+            // 尝试解析 content 为 JSON（AI 可能返回的是纯文本）
+            Map<String, Object> result = new HashMap<>();
+            result.put("raw_response", content);
+
+            // 尝试将 content 解析为 JSON
+            try {
+                JSONObject resumeJson = JSONUtil.parseObj(content);
+                result.put("name", resumeJson.getStr("name", "Unknown"));
+                result.put("email", resumeJson.getStr("email", ""));
+                result.put("phone", resumeJson.getStr("phone", ""));
+                result.put("skills", resumeJson.getJSONArray("skills"));
+                result.put("experience", resumeJson.getJSONArray("experience"));
+                result.put("education", resumeJson.getJSONArray("education"));
+                result.put("summary", resumeJson.getStr("summary", ""));
+            } catch (Exception e) {
+                // 如果不是 JSON，尝试从文本中提取信息
+                result.put("name", extractNameFromText(content));
+                result.put("skills", extractSkillsFromText(content));
+                result.put("summary", content.substring(0, Math.min(200, content.length())));
+            }
+
+            return result;
+        } catch (Exception e) {
+            // 解析失败时返回空 result，让调用方决定是否用 mock
+            return null;
+        }
+    }
+
+    /** 从文本中提取姓名（简单的启发式方法） */
+    private String extractNameFromText(String text) {
+        // 简单处理：取第一行或前 50 个字符
+        if (text == null || text.isBlank()) return "Unknown";
+        String[] lines = text.split("\n");
+        return lines[0].trim().substring(0, Math.min(50, lines[0].trim().length()));
+    }
+
+    /** 从文本中提取技能标签（简单的启发式方法） */
+    private String[] extractSkillsFromText(String text) {
+        // 常见技能关键词
+        String[] commonSkills = {"Java", "Python", "JavaScript", "Go", "Rust", "C++", "C#",
+            "Spring", "Django", "React", "Vue", "Angular", "Node.js",
+            "MySQL", "PostgreSQL", "MongoDB", "Redis", "Elasticsearch",
+            "Docker", "Kubernetes", "AWS", "Azure", "GCP",
+            "Git", "Linux", "Agile", "Scrum", "AI", "ML", "Deep Learning"};
+        java.util.List<String> found = new java.util.ArrayList<>();
+        String upperText = text.toUpperCase();
+        for (String skill : commonSkills) {
+            if (upperText.contains(skill.toUpperCase())) {
+                found.add(skill);
+            }
+        }
+        return found.isEmpty() ? new String[]{"技能解析失败"} : found.toArray(new String[0]);
     }
 
     /** 获取模拟简历解析结果（当AI不可用时使用） */

@@ -1,4 +1,4 @@
-package com.graphhire.infrastructure.file;
+package com.graphhire.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

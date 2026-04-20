@@ -4,8 +4,6 @@ server:
 spring:
   application:
     name: graphhire-backend
-  config:
-    import: optional:file:.env
   autoconfigure:
     exclude: []
 
@@ -106,13 +104,14 @@ ai:
   provider: deepseek
   deepseek:
     api-key: ${DEEPSEEK_API_KEY:}
-    url: ${DEEPSEEK_URL:https://api.deepseek.com/v1}
+    url: https://api.deepseek.com/v1
 
 # RustFS Configuration
 rustfs:
   endpoint: http://localhost:9000
-  access-key-id: rustfsadmin
-  secret-access-key: rustfsadmin
+  access-key: rustfsadmin
+  secret-key: rustfsadmin
+  bucket: resumes
 
 # Memgraph Configuration
 memgraph:
