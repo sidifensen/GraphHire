@@ -7,8 +7,7 @@ spring:
   config:
     import: optional:file:.env
   autoconfigure:
-    exclude:
-      - org.apache.rocketmq.spring.autoconfigure.RocketMQAutoConfiguration
+    exclude: []
 
   datasource:
     driver-class-name: org.postgresql.Driver
@@ -97,6 +96,7 @@ mybatis-plus:
 
 # RocketMQ Configuration
 rocketmq:
+  enabled: true
   name-server: 127.0.0.1:9876
   producer:
     group: graphhire-producer-group
@@ -113,6 +113,12 @@ rustfs:
   endpoint: http://localhost:9000
   access-key-id: rustfsadmin
   secret-access-key: rustfsadmin
+
+# Memgraph Configuration
+memgraph:
+  bolt-url: bolt://localhost:7687
+  username:
+  password:
 
 # Logging Configuration
 logging:

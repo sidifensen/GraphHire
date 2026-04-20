@@ -197,11 +197,17 @@ public class ResumeAppService {
         if (!resume.getUserId().equals(userId)) {
             throw new RuntimeException("无权解析此简历");
         }
-        // 标记为解析中并发送MQ事件触发AI解析（如MQ已启用）
+        // 标记为解析中
         resume.markParsing();
         resumeRepository.save(resume);
+        // 创建解析任务并发送MQ消息触发AI解析（如MQ已启用）
         if (mqProducer != null) {
-            mqProducer.sendResumeUploadedEvent(resume);
+            ParseTask task = new ParseTask();
+            task.setResumeId(resumeId);
+            task.setTaskType("resume_parse");
+            task.setStatus(ParseTask.TaskStatus.PENDING);
+            parseTaskRepository.save(task);
+            mqProducer.sendResumeParseMessage(resumeId, task.getId());
         }
     }
 

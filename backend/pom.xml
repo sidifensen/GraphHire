@@ -112,6 +112,13 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Neo4j Bolt Driver (兼容Memgraph) -->
+        <dependency>
+            <groupId>org.neo4j.driver</groupId>
+            <artifactId>neo4j-java-driver</artifactId>
+            <version>5.27.0</version>
+        </dependency>
+
         <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>

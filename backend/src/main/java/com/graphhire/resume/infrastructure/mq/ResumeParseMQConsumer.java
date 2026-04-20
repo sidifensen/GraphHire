@@ -1,5 +1,6 @@
 package com.graphhire.resume.infrastructure.mq;
 
+import com.alibaba.fastjson.JSON;
 import com.graphhire.notification.domain.model.Notification;
 import com.graphhire.notification.domain.repository.NotificationRepository;
 import com.graphhire.notification.domain.vo.NotificationType;
@@ -12,6 +13,7 @@ import com.graphhire.resume.infrastructure.ai.DocumentParser;
 import com.graphhire.match.infrastructure.ai.DeepSeekClient;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -24,6 +26,8 @@ import java.util.Map;
 @ConditionalOnProperty(name = "rocketmq.enabled", havingValue = "true", matchIfMissing = false)
 @RocketMQMessageListener(topic = "resume-parse", consumerGroup = "resume-parse-consumer")
 public class ResumeParseMQConsumer implements RocketMQListener<String> {
+
+    private static final String TOPIC_RESUME_PARSED = "resume-parsed";
 
     @Autowired
     private ResumeRepository resumeRepository;
@@ -39,6 +43,9 @@ public class ResumeParseMQConsumer implements RocketMQListener<String> {
 
     @Autowired
     private NotificationRepository notificationRepository;
+
+    @Autowired
+    private RocketMQTemplate rocketMQTemplate;
 
     @Override
     public void onMessage(String message) {
@@ -67,7 +74,7 @@ public class ResumeParseMQConsumer implements RocketMQListener<String> {
             Map<String, Object> parseResult = deepSeekClient.parseResume(text);
 
             // 步骤5：用解析结果更新resume
-            resume.setParseResult(parseResult != null ? parseResult.toString() : "{}");
+            resume.setParseResult(parseResult != null ? JSON.toJSONString(parseResult) : "{}");
             resume.setStatus(ParseStatus.SUCCESS);
             resume.setConfidence(BigDecimal.valueOf(0.85));
             resumeRepository.save(resume);
@@ -86,8 +93,11 @@ public class ResumeParseMQConsumer implements RocketMQListener<String> {
             notification.setReferenceId(resumeId);
             notificationRepository.save(notification);
 
+            // 步骤8：发布简历解析完成事件（仅传resumeId），触发技能图谱构建
+            rocketMQTemplate.convertAndSend(TOPIC_RESUME_PARSED, String.valueOf(resumeId));
+
         } catch (Exception e) {
-            // 步骤8：失败时：将parse_status更新为FAILED(3)，保存错误信息
+            // 步骤9：失败时：将parse_status更新为FAILED(3)，保存错误信息
             resume.setStatus(ParseStatus.FAILED);
             resume.setParseError(e.getMessage());
             resumeRepository.save(resume);

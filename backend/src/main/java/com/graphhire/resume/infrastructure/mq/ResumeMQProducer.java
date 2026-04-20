@@ -23,7 +23,8 @@ public class ResumeMQProducer {
     }
 
     public void sendResumeParseMessage(Long resumeId, Long parseTaskId) {
-        ResumeParseMessage message = new ResumeParseMessage(resumeId, parseTaskId);
+        // 消息格式："resumeId,parseTaskId"（逗号分隔）
+        String message = resumeId + "," + parseTaskId;
         rocketMQTemplate.convertAndSend(TOPIC_RESUME_PARSE, message);
     }
 
