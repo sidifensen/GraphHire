@@ -1,0 +1,34 @@
+import { describe, it, expect } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import UploadPage from '@/app/resume/upload/page';
+
+describe('UploadPage', () => {
+  it('renders page title', () => {
+    render(<UploadPage />);
+    expect(screen.getByText('解析您的职业履历')).toBeDefined();
+  });
+
+  it('renders file info', () => {
+    render(<UploadPage />);
+    expect(screen.getByText(/简历_2024.pdf/)).toBeDefined();
+  });
+
+  it('renders progress indicator', () => {
+    render(<UploadPage />);
+    expect(screen.getByText('AI 认知引擎解析中...')).toBeDefined();
+    expect(screen.getByText('65%')).toBeDefined();
+  });
+
+  it('renders status timeline', () => {
+    render(<UploadPage />);
+    expect(screen.getByText('文件上传成功')).toBeDefined();
+    expect(screen.getByText('文本结构化处理与语义抽取')).toBeDefined();
+    expect(screen.getByText('生成多维认知图谱')).toBeDefined();
+  });
+
+  it('renders action buttons', () => {
+    render(<UploadPage />);
+    expect(screen.getByText('重新上传')).toBeDefined();
+    expect(screen.getByText('继续完善履历')).toBeDefined();
+  });
+});
