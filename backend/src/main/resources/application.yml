@@ -6,6 +6,8 @@ spring:
     name: graphhire-backend
   autoconfigure:
     exclude: []
+  config:
+    import: optional:file:.env
 
   datasource:
     driver-class-name: org.postgresql.Driver
@@ -18,7 +20,6 @@ spring:
       connection-timeout: 30000
       idle-timeout: 600000
       max-lifetime: 1800000
-
 
   data:
     redis:
