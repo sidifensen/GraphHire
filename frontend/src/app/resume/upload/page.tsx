@@ -1,41 +1,20 @@
 'use client';
 
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+
 export default function UploadPage() {
   return (
-    <body className="bg-surface text-on-surface min-h-screen flex flex-col antialiased">
-      {/* TopAppBar */}
-      <header className="bg-[#F8F9FF] dark:bg-slate-950 sticky top-0 z-50 shadow-sm dark:shadow-none bg-slate-50 dark:bg-slate-900/50">
-        <div className="flex justify-between items-center w-full px-8 py-4 max-w-[1440px] mx-auto">
-          <div className="flex items-center gap-12">
-            <div className="text-2xl font-black tracking-tighter text-[#003DA6] dark:text-blue-500 font-headline">GraphHire 图谱智聘</div>
-            <nav className="hidden md:flex gap-8 font-['Manrope'] font-medium tracking-tight">
-              <a className="text-[#394851] dark:text-slate-400 hover:text-[#0052D9] transition-colors active:scale-95 transform transition-transform" href="#">首页</a>
-              <a className="text-[#394851] dark:text-slate-400 hover:text-[#0052D9] transition-colors active:scale-95 transform transition-transform" href="#">职位</a>
-              <a className="text-[#394851] dark:text-slate-400 hover:text-[#0052D9] transition-colors active:scale-95 transform transition-transform" href="#">公司</a>
-              <a className="text-[#394851] dark:text-slate-400 hover:text-[#0052D9] transition-colors active:scale-95 transform transition-transform" href="#">能力图谱</a>
-            </nav>
-          </div>
-          <div className="flex items-center gap-4 text-[#003DA6] dark:text-blue-400">
-            <button className="hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-all duration-300 p-2 rounded-full active:scale-95 transform transition-transform">
-              <span className="material-symbols-outlined">notifications</span>
-            </button>
-            <button className="hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-all duration-300 p-2 rounded-full active:scale-95 transform transition-transform">
-              <span className="material-symbols-outlined">settings</span>
-            </button>
-            <div className="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden cursor-pointer hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-all duration-300 active:scale-95 transform transition-transform">
-              <img alt="User Avatar" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdKOW5RgWHcX_d7p10uWf703IC0_dBV9RHpeboy_-lzINmLlrgzq-uDZZkazX8SMYMFVaExhSEHskL29e50XZGDj2QodejiGAl6Nl5xprVJmI-_9JHA7ex3J2ZXdf1kq2yh-NCEOHbbp152biis9Bzp8ka90OwN238GT-P3j2Oa1oYxo66j9gPJ4qhmAZM9PGjlfDfsjRo6nuKFOToKYWQYrVjboiVA8DxC9i66CS-XG3DyyniH5fNrN8hUDlldnp_sOiINc_ZI8co" />
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="bg-surface text-on-surface min-h-screen flex flex-col antialiased">
+      <Header forceShowNotifications />
 
       {/* Main Content Canvas */}
       <main className="flex-1 flex flex-col items-center justify-center px-6 py-8">
         <div className="w-full max-w-6xl mb-6">
-          <button className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-primary font-medium bg-surface-container-low hover:bg-surface-container-high transition-all active:scale-95 group">
+          <a href="/resume/manage" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-primary font-medium bg-surface-container-low hover:bg-surface-container-high transition-all active:scale-95 group">
             <span className="material-symbols-outlined text-[20px] transition-transform group-hover:-translate-x-1">arrow_back</span>
             <span>返回</span>
-          </button>
+          </a>
         </div>
 
         <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
@@ -182,6 +161,8 @@ export default function UploadPage() {
           </div>
         </div>
       </main>
-    </body>
+
+      <Footer />
+    </div>
   );
 }

@@ -1,92 +1,62 @@
 'use client';
 
-const features = [
-  {
-    icon: 'psychology',
-    iconBg: 'bg-primary-fixed',
-    iconColor: 'text-primary',
-    title: '智能解析',
-    description: '深度语义理解简历与JD，提取核心技能与隐性经验要求。',
-  },
-  {
-    icon: 'hub',
-    iconBg: 'bg-tertiary-fixed',
-    iconColor: 'text-tertiary',
-    title: '图谱分析',
-    description: '构建行业知识图谱，发现跨领域职业路径与技能迁移关联。',
-  },
-  {
-    icon: 'my_location',
-    iconBg: 'bg-secondary-fixed',
-    iconColor: 'text-secondary',
-    title: '精准匹配',
-    description: '多维向量计算，消除信息噪音，直达最高契合度的职场机遇。',
-  },
-];
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
-const companies = [
-  { name: '云图数据', icon: 'cloud', color: 'text-primary' },
-  { name: '星河智联', icon: 'language', color: 'text-secondary' },
-  { name: '盾甲科技', icon: 'security', color: 'text-tertiary' },
-  { name: '元界互动', icon: 'view_in_ar', color: 'text-on-surface' },
+const menuItems = [
+  { href: '/profile', label: '个人资料', icon: 'account_circle' },
+  { href: '/resume/manage', label: '简历管理', icon: 'description' },
+  { href: '#', label: '投递记录', icon: 'assignment_turned_in' },
+  { href: '/skill-graph', label: '我的图谱', icon: 'hub' },
+  { href: '#', label: '账号设置', icon: 'settings' },
 ];
 
 export default function Sidebar() {
+  const pathname = usePathname();
+
   return (
-    <div className="lg:col-span-4 flex flex-col gap-8">
-      {/* Cognitive Guide System Card */}
-      <div className="bg-surface-container-low rounded-2xl p-8 relative overflow-hidden">
-        {/* Decorative node network background */}
-        <div
-          className="absolute inset-0 opacity-10 pointer-events-none"
-          style={{
-            backgroundImage: 'radial-gradient(circle at 20% 30%, #003da6 2px, transparent 2px), radial-gradient(circle at 80% 60%, #4a6ae7 2px, transparent 2px)',
-            backgroundSize: '60px 60px',
-          }}
-        />
-        <h2 className="font-headline text-xl font-bold text-on-surface mb-6 relative z-10">
-          认知导视体系
-        </h2>
-        <div className="flex flex-col gap-6 relative z-10">
-          {features.map((feature) => (
-            <div key={feature.title} className="flex gap-4 items-start">
-              <div className={`w-10 h-10 rounded-full ${feature.iconBg} flex flex-shrink-0 items-center justify-center ${feature.iconColor}`}>
-                <span className="material-symbols-outlined">{feature.icon}</span>
-              </div>
-              <div>
-                <h4 className="font-bold text-on-surface mb-1">{feature.title}</h4>
-                <p className="text-sm text-on-surface-variant">{feature.description}</p>
-              </div>
-            </div>
-          ))}
+    <aside className="hidden md:flex flex-col gap-2 w-64 h-screen p-4 bg-[#F8F9FF] dark:bg-slate-900 rounded-2xl my-4 ml-4 bg-slate-100/50 dark:bg-slate-800/50 border-none shadow-none sticky top-24 font-['Inter'] text-sm font-medium">
+      <div className="flex items-center gap-3 mb-6 p-4">
+        <div className="w-12 h-12 rounded-full bg-primary-container overflow-hidden">
+          <img
+            alt="用户头像"
+            className="w-full h-full object-cover"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRCzLBCfC87pehiueY8TPZuKuN3JAHxVoosCOsLCViKc-44vDTyUtmpleeUFvxq4NFTHAKvljXEuMkZVkrE1cziIdkxwv3OaMgBBCNzsj9Dvn5dX5KURhHAUX3hAOhbhfH1i0iDZnDzECjNh4Xx8-W268riVbTzDguhMYHCSPLr3JZiRA-fFRG7gXxzdDE-qo0LJmiw4wJrFr1b5yEf4hWNEq1_HnTTqp2nC4FUvEp6nQhOfz0fK0QsEwmYXYprh7FwOWZAFXiJMr8"
+          />
+        </div>
+        <div>
+          <h3 className="text-lg font-bold text-[#003DA6]">智聘空间</h3>
+          <p className="text-xs text-tertiary">AI 驱动的职业导航</p>
         </div>
       </div>
 
-      {/* Popular Companies */}
-      <div className="bg-surface-container-lowest rounded-2xl p-8">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="font-headline text-xl font-bold text-on-surface">热门企业</h2>
-          <button className="text-tertiary hover:text-primary text-sm transition-colors material-symbols-outlined">
-            more_horiz
-          </button>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          {companies.map((company) => (
-            <a
-              key={company.name}
-              href="#"
-              className="flex flex-col items-center justify-center p-4 bg-surface rounded-xl hover:bg-surface-container-low transition-colors group"
+      <nav className="flex flex-col gap-1 flex-1">
+        {menuItems.map((item) => {
+          const isActive = pathname === item.href;
+
+          return (
+            <Link
+              key={item.href + item.label}
+              href={item.href}
+              className={`flex items-center gap-3 ${
+                isActive
+                  ? 'bg-blue-50 dark:bg-blue-900/30 text-[#003DA6] dark:text-blue-300 rounded-xl px-4 py-3 font-bold'
+                  : 'text-[#394851] dark:text-slate-400 px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl'
+              } hover:translate-x-1 transition-transform duration-200`}
             >
-              <div className="w-12 h-12 bg-white rounded-lg shadow-sm flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
-                <span className={`material-symbols-outlined ${company.color} text-3xl`}>
-                  {company.icon}
-                </span>
-              </div>
-              <span className="text-sm font-medium text-on-surface">{company.name}</span>
-            </a>
-          ))}
-        </div>
-      </div>
-    </div>
+              <span className={`material-symbols-outlined ${isActive ? 'icon-fill' : ''}`}>
+                {item.icon}
+              </span>
+              {item.label}
+            </Link>
+          );
+        })}
+      </nav>
+
+      <button className="mt-auto bg-gradient-to-br from-primary to-primary-container text-white rounded-xl py-3 px-4 font-bold shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2">
+        <span className="material-symbols-outlined text-sm">edit</span>
+        更新简历
+      </button>
+    </aside>
   );
 }

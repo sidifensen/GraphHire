@@ -2,6 +2,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { authApi } from '@/lib/api/auth';
+import { authStore } from '@/lib/stores/auth-store';
+import type { LoginRequest } from '@/lib/types';
 
 // Material Symbols SVG icons
 const PersonIcon = () => (
@@ -34,10 +38,53 @@ const PsychologyIcon = () => (
   </svg>
 );
 
+const isDev = process.env.NODE_ENV === 'development';
+
+const DEV_ACCOUNTS = {
+  jobseeker: { username: '13800138001@phone.com', password: 'password123' },
+  recruiter: { username: 'hr@techchina.com', password: 'password123' },
+};
+
 export default function LoginPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
   const [activeRole, setActiveRole] = useState<'jobseeker' | 'recruiter'>('jobseeker');
+  const [username, setUsername] = useState(isDev ? DEV_ACCOUNTS.jobseeker.username : '');
+  const [password, setPassword] = useState(isDev ? DEV_ACCOUNTS.jobseeker.password : '');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleRoleSwitch = (role: 'jobseeker' | 'recruiter') => {
+    setActiveRole(role);
+    if (isDev) {
+      setUsername(DEV_ACCOUNTS[role].username);
+      setPassword(DEV_ACCOUNTS[role].password);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const data: LoginRequest = { username, password };
+      const response = await authApi.login(data);
+
+      authStore.getState().setAuth(
+        { accessToken: response.accessToken, refreshToken: response.refreshToken },
+        { id: response.userId, username, type: response.userType }
+      );
+
+      router.push('/');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : '登录失败，请检查用户名和密码';
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#f8f9ff] text-[#0e1c2c] font-body flex items-center justify-center relative overflow-hidden antialiased">
@@ -86,11 +133,18 @@ export default function LoginPage() {
             <div className="max-w-md w-full mx-auto lg:mx-0">
               <h2 className="font-headline text-2xl font-bold mb-8 text-[#0e1c2c]">欢迎回来</h2>
 
+              {/* Error Message */}
+              {error && (
+                <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-600 text-sm">
+                  {error}
+                </div>
+              )}
+
               {/* Role Switcher (Segmented Control) */}
               <div className="flex bg-[#eef4ff] p-1 rounded-lg w-fit mb-8" role="tablist">
                 <button
                   aria-selected={activeRole === 'jobseeker'}
-                  onClick={() => setActiveRole('jobseeker')}
+                  onClick={() => handleRoleSwitch('jobseeker')}
                   className={`shadow-sm rounded text-sm transition-all py-2 px-8 ${
                     activeRole === 'jobseeker'
                       ? 'bg-white shadow-sm text-[#003da6] font-bold'
@@ -102,7 +156,7 @@ export default function LoginPage() {
                 </button>
                 <button
                   aria-selected={activeRole === 'recruiter'}
-                  onClick={() => setActiveRole('recruiter')}
+                  onClick={() => handleRoleSwitch('recruiter')}
                   className={`rounded text-sm transition-colors py-2 px-8 ${
                     activeRole === 'recruiter'
                       ? 'bg-white shadow-sm text-[#003da6] font-bold'
@@ -114,7 +168,7 @@ export default function LoginPage() {
                 </button>
               </div>
 
-              <form className="flex flex-col gap-5">
+              <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
                 {/* Username/Email */}
                 <div className="flex flex-col gap-2">
                   <label className="text-sm font-medium text-[#0e1c2c]">用户名/邮箱</label>
@@ -126,6 +180,9 @@ export default function LoginPage() {
                       className="w-full bg-[#eef4ff] border-b-2 border-transparent focus:border-[#003da6] focus:bg-white focus:ring-0 pl-12 pr-4 py-3 rounded text-sm text-[#0e1c2c] placeholder:text-[#737686] transition-all outline-none"
                       placeholder="请输入用户名/邮箱"
                       type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      required
                     />
                   </div>
                 </div>
@@ -141,6 +198,9 @@ export default function LoginPage() {
                       className="w-full bg-[#eef4ff] border-b-2 border-transparent focus:border-[#003da6] focus:bg-white focus:ring-0 pl-12 pr-12 py-3 rounded text-sm text-[#0e1c2c] placeholder:text-[#737686] transition-all outline-none"
                       placeholder="请输入密码"
                       type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
                     />
                     <button
                       type="button"
@@ -166,18 +226,18 @@ export default function LoginPage() {
                       记住账号
                     </label>
                   </div>
-                  <a className="text-xs text-[#003da6] hover:text-[#0052d9] transition-colors" href="#">
+                  <Link className="text-xs text-[#003da6] hover:text-[#0052d9] transition-colors" href="#">
                     忘记密码？
-                  </a>
+                  </Link>
                 </div>
 
                 {/* Submit Button */}
                 <button
-                  className="w-full py-3.5 mt-4 rounded-lg bg-gradient-to-br from-[#003da6] to-[#0052d9] text-white font-semibold text-sm hover:opacity-90 transition-opacity shadow-sm flex items-center justify-center gap-2"
+                  className="w-full py-3.5 mt-4 rounded-lg bg-gradient-to-br from-[#003da6] to-[#0052d9] text-white font-semibold text-sm hover:opacity-90 transition-opacity shadow-sm flex items-center justify-center gap-2 disabled:opacity-50"
                   type="submit"
+                  disabled={loading}
                 >
-                  <span>登录</span>
-                  <ArrowForwardIcon />
+                  {loading ? '登录中...' : <><span>登录</span><ArrowForwardIcon /></>}
                 </button>
               </form>
 
