@@ -1,20 +1,30 @@
 <!DOCTYPE html>
 
-<html lang="zh-CN"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>登录 - 图谱智聘 (GraphHire)</title>
-<!-- Google Fonts -->
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@500;700;800&amp;display=swap" rel="stylesheet"/>
-<!-- Material Symbols -->
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<!-- Tailwind CSS -->
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<!-- Tailwind Configuration -->
-<script id="tailwind-config">
+<html class="light" lang="zh-CN"><head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>登录 - 图谱智聘</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+    <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
@@ -83,123 +93,91 @@
             }
         }
     </script>
-<style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-    </style>
 </head>
-<body class="bg-background text-on-surface font-body antialiased min-h-screen flex flex-col md:flex-row overflow-hidden">
-<!-- Left Content / Form Area -->
-<main class="w-full md:w-5/12 lg:w-1/3 bg-surface-container-lowest h-screen flex flex-col justify-between px-8 py-12 md:px-12 relative z-10 shadow-[12px_0_32px_-4px_rgba(14,28,44,0.06)] overflow-y-auto">
-<!-- Header / Logo -->
-<header>
-<div class="flex items-center gap-2 mb-16">
-<div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary-container flex items-center justify-center text-on-primary">
-<span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">hub</span>
+<body class="bg-surface text-on-surface font-body min-h-screen flex items-center justify-center relative overflow-hidden antialiased">
+<!-- Ambient Background Elements for Depth -->
+<div class="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-primary-fixed opacity-30 blur-[100px] pointer-events-none"></div>
+<div class="absolute bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-surface-container-highest opacity-40 blur-[120px] pointer-events-none"></div>
+<!-- Main Login Container (Asymmetrical Editorial Layout) -->
+<div class="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex items-center justify-center min-h-screen">
+    <div class="flex flex-col lg:flex-row w-full min-h-[calc(100vh-6rem)] bg-surface-container-lowest rounded-xl shadow-[0_12px_32px_-4px_rgba(14,28,44,0.06)] overflow-hidden">
+        <!-- Left Pane: Cognitive Branding (35% width on desktop) -->
+        <div class="hidden lg:flex flex-col w-[35%] bg-surface-container-low p-12 relative overflow-hidden justify-between border-r border-surface-container/50">
+            <!-- Abstract Graph Image representing the Cognitive System -->
+            <div class="absolute inset-0 z-0 opacity-20 bg-cover bg-center mix-blend-multiply" data-alt="Abstract connecting lines and nodes on a light background, symbolizing an intelligent network and cognitive graph connections, soft lighting" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDwmuoFo1R--r-fZ27-XSnwb4ddH66PLKTc255gbUUT9SXpj1uV3Euc-jFU3hFZvDL2H2811RjlIqb4OFsC1nGRkDNR2zvjCICuc0auRuGKT0tY3pNzEdhQInJK2-X8pjLQDE8tn5_aWmPFhqRvPHJHs65wXM390bk4-nKnoP-CyuY0Rcg_v93kOynUxXqLJwFe4qMbKwGe4bQn5FtsSFdYaXUIA75gEAjhFgUD6aYVOneZJRcLzX-VMUvHPDwdkMet-K0tEs2x7wqs');"></div>
+            <div class="relative z-10">
+                <h1 class="font-headline font-black text-2xl tracking-tighter text-primary mb-2">图谱智聘</h1>
+                <p class="text-tertiary text-sm tracking-wide font-medium">GraphHire</p>
+            </div>
+            <div class="relative z-10 mt-auto">
+                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary-fixed mb-6">
+                    <span class="material-symbols-outlined text-on-primary-fixed" style="font-size: 16px; font-variation-settings: 'FILL' 1;">psychology</span>
+                    <span class="text-xs font-semibold text-on-primary-fixed tracking-wide">AI 驱动的职业导航</span>
+                </div>
+                <h2 class="font-headline text-3xl font-bold leading-tight mb-4 text-on-surface">消除噪音<br/>发现深层关联</h2>
+                <p class="text-on-surface-variant text-sm leading-relaxed mb-8">
+                    GraphHire 通过构建全景式职业认知图谱，将海量简历与岗位数据转化为结构化洞察。不再是盲目的关键词匹配，而是基于能力基因的精准导航。
+                </p>
+            </div>
+        </div>
+        <!-- Right Pane: Form Area (65% width on desktop) -->
+        <div class="w-full lg:w-[65%] p-8 sm:p-12 lg:p-16 flex flex-col justify-center">
+            <div class="max-w-md w-full mx-auto lg:mx-0">
+                <h2 class="font-headline text-2xl font-bold mb-8 text-on-surface">欢迎回来</h2>
+                <!-- Role Switcher (Segmented Control) -->
+                <div class="flex bg-surface-container-low p-1 rounded-lg w-fit mb-8" role="tablist">
+                    <button aria-selected="true" class="bg-surface-container-lowest shadow-sm rounded text-primary font-bold py-2 px-8 text-sm transition-all" role="tab">
+                        求职者
+                    </button>
+                    <button aria-selected="false" class="text-tertiary hover:text-on-surface font-medium py-2 px-8 text-sm transition-colors rounded" role="tab">
+                        招聘者
+                    </button>
+                </div>
+                <form class="flex flex-col gap-5">
+                    <!-- Username/Email -->
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-on-surface">用户名/邮箱</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <span class="material-symbols-outlined text-on-surface-variant">person</span>
+                            </div>
+                            <input class="w-full bg-surface-container-low border-b-2 border-transparent focus:border-primary focus:bg-surface-container-lowest focus:ring-0 pl-12 pr-4 py-3 rounded text-sm text-on-surface placeholder:text-outline transition-all outline-none" placeholder="请输入用户名/邮箱" type="text"/>
+                        </div>
+                    </div>
+                    <!-- Password -->
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-on-surface">密码</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <span class="material-symbols-outlined text-on-surface-variant">lock</span>
+                            </div>
+                            <input class="w-full bg-surface-container-low border-b-2 border-transparent focus:border-primary focus:bg-surface-container-lowest focus:ring-0 pl-12 pr-12 py-3 rounded text-sm text-on-surface placeholder:text-outline transition-all outline-none" placeholder="请输入密码" type="password"/>
+                            <button class="absolute inset-y-0 right-0 pr-4 flex items-center text-on-surface-variant hover:text-primary transition-colors" type="button">
+                                <span class="material-symbols-outlined text-sm">visibility_off</span>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Utilities Row -->
+                    <div class="flex items-center justify-between mt-2">
+                        <div class="flex items-center">
+                            <input class="w-4 h-4 rounded text-primary border-outline-variant bg-surface-container-low focus:ring-primary focus:ring-offset-0 cursor-pointer" id="remember" type="checkbox"/>
+                            <label class="ml-2 text-xs text-on-surface-variant cursor-pointer" for="remember">记住账号</label>
+                        </div>
+                        <a class="text-xs text-primary hover:text-primary-container transition-colors" href="#">忘记密码？</a>
+                    </div>
+                    <!-- Submit Button -->
+                    <button class="w-full py-3.5 mt-4 rounded-lg bg-gradient-to-br from-primary to-primary-container text-on-primary font-semibold text-sm hover:opacity-90 transition-opacity shadow-sm flex items-center justify-center gap-2" type="submit">
+                        <span>登录</span>
+                        <span class="material-symbols-outlined" style="font-size: 18px;">arrow_forward</span>
+                    </button>
+                </form>
+                <div class="mt-8 text-center">
+                    <p class="text-sm text-tertiary">
+                        还没有账号？ <a class="text-primary font-medium hover:underline underline-offset-4" href="#">立即注册</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<h1 class="font-headline font-extrabold text-2xl tracking-tighter text-primary">图谱智聘</h1>
-</div>
-<div class="mb-10">
-<h2 class="font-headline text-3xl font-bold mb-3 text-on-surface">欢迎回来</h2>
-<p class="text-on-surface-variant text-sm">认知导视 AI 招聘系统，为您建立职业图谱。</p>
-</div>
-</header>
-<!-- Form Section -->
-<section class="flex-1 flex flex-col justify-center max-w-sm w-full mx-auto md:mx-0">
-<!-- Login Type Tabs -->
-<div class="flex gap-6 mb-8 border-b-2 border-surface-container-low pb-2">
-<button class="font-headline font-bold text-primary relative after:content-[''] after:absolute after:-bottom-[10px] after:left-0 after:w-full after:h-[2px] after:bg-primary transition-colors">
-                    密码登录
-                </button>
-<button class="font-headline font-medium text-tertiary hover:text-primary transition-colors">
-                    验证码登录
-                </button>
-</div>
-<!-- Form -->
-<form class="space-y-5">
-<!-- Phone Number -->
-<div class="group relative">
-<label class="sr-only">手机号码</label>
-<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-<span class="material-symbols-outlined text-on-surface-variant group-focus-within:text-primary transition-colors">smartphone</span>
-</div>
-<input class="w-full bg-surface-container-low text-on-surface placeholder:text-on-surface-variant/60 rounded-md py-3 pl-12 pr-4 border-none focus:ring-0 focus:shadow-[0_2px_0_0_theme(colors.primary)] transition-shadow duration-300 font-body text-sm" placeholder="请输入手机号码" type="tel"/>
-</div>
-<!-- Password -->
-<div class="group relative">
-<label class="sr-only">登录密码</label>
-<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-<span class="material-symbols-outlined text-on-surface-variant group-focus-within:text-primary transition-colors">lock</span>
-</div>
-<input class="w-full bg-surface-container-low text-on-surface placeholder:text-on-surface-variant/60 rounded-md py-3 pl-12 pr-12 border-none focus:ring-0 focus:shadow-[0_2px_0_0_theme(colors.primary)] transition-shadow duration-300 font-body text-sm" placeholder="请输入密码" type="password"/>
-<button class="absolute inset-y-0 right-0 pr-4 flex items-center text-on-surface-variant hover:text-primary transition-colors" type="button">
-<span class="material-symbols-outlined text-sm">visibility_off</span>
-</button>
-</div>
-<!-- Utilities Row -->
-<div class="flex items-center justify-between mt-2">
-<div class="flex items-center">
-<input class="w-4 h-4 rounded-sm border-none bg-surface-container-low text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer" id="remember" type="checkbox"/>
-<label class="ml-2 text-xs text-on-surface-variant cursor-pointer" for="remember">记住账号</label>
-</div>
-<a class="text-xs text-primary hover:text-primary-container transition-colors" href="#">忘记密码？</a>
-</div>
-<!-- Submit Button -->
-<button class="w-full bg-gradient-to-br from-primary to-primary-container text-on-primary font-headline font-bold py-3.5 rounded-lg mt-6 hover:opacity-90 hover:shadow-[0_8px_24px_-4px_rgba(0,61,166,0.3)] transition-all duration-300 flex justify-center items-center gap-2" type="submit">
-                    登录 <span class="material-symbols-outlined text-sm">arrow_forward</span>
-</button>
-</form>
-<div class="mt-8 text-center text-sm text-on-surface-variant">
-                还没有账号？ <a class="text-primary font-medium hover:underline underline-offset-4" href="#">立即注册</a>
-</div>
-<!-- Quick Login Options -->
-<div class="mt-12">
-<div class="relative flex py-5 items-center">
-<div class="flex-grow border-t border-surface-container-low"></div>
-<span class="flex-shrink-0 mx-4 text-on-surface-variant text-xs">其他快捷登录</span>
-<div class="flex-grow border-t border-surface-container-low"></div>
-</div>
-<div class="flex justify-center gap-4 mt-2">
-<button class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors">
-<span class="material-symbols-outlined">chat</span>
-</button>
-<button class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors">
-<span class="material-symbols-outlined">mail</span>
-</button>
-</div>
-</div>
-</section>
-<!-- Minimal Footer for Login -->
-<footer class="mt-12 text-center">
-<p class="text-[10px] text-tertiary">
-                © 2024 GraphHire 图谱智聘. 认知导视 AI 招聘系统
-            </p>
-<div class="flex justify-center gap-3 mt-2 text-[10px] text-tertiary/70">
-<a class="hover:text-primary transition-colors" href="#">关于我们</a>
-<a class="hover:text-primary transition-colors" href="#">服务条款</a>
-<a class="hover:text-primary transition-colors" href="#">隐私政策</a>
-</div>
-</footer>
-</main>
-<!-- Right Content / Visual Area -->
-<aside class="hidden md:flex flex-1 relative bg-inverse-surface overflow-hidden items-center justify-center">
-<!-- Abstract Tech Background -->
-<div class="absolute inset-0 z-0 opacity-40 mix-blend-luminosity bg-cover bg-center" data-alt="abstract deep blue network graph nodes and flowing glowing connecting lines representing artificial intelligence data structures in a dark premium corporate aesthetic" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDSb3S_vM5B6TSCtfCN5OY7fcg7PtXf8mAfz6WLxhr2jzJxRZx40ICia6ZXVDp6CZGHIHhV3GlNAAK4QR0s0cr7bQa_vqn4Z0bxxxrWCKAdfC69gcjdJojKA5IeJmXuBnhNqE4tQWJ8cIqiooL2FCJSpqqv3ypI0pKXd50_LcxA-UznFNvnLWzScYYh6O7-QqKdFzXmZ5Sro3_DVST_cr7jX3tJ_-UAyDnlz_NOg68Os5JEPpHnwrjnb432veNzaYAXSVxOv-XQ3twZ');"></div>
-<!-- Gradient Overlay for Depth -->
-<div class="absolute inset-0 z-10 bg-gradient-to-tr from-inverse-surface via-inverse-surface/80 to-transparent"></div>
-<!-- Content Overlay -->
-<div class="relative z-20 max-w-lg px-12">
-<div class="w-16 h-16 rounded-xl bg-surface-container-lowest/10 backdrop-blur-md flex items-center justify-center mb-8 border border-white/10">
-<span class="material-symbols-outlined text-4xl text-on-tertiary" style="font-variation-settings: 'FILL' 1;">insights</span>
-</div>
-<h2 class="font-headline font-extrabold text-5xl leading-tight text-on-tertiary mb-6 tracking-tight">
-                消除噪音<br/>
-<span class="text-inverse-primary">发现深层关联</span>
-</h2>
-<p class="font-body text-on-tertiary-container text-lg leading-relaxed">
-                GraphHire 通过构建全景式职业认知图谱，将海量简历与岗位数据转化为结构化洞察。不再是盲目的关键词匹配，而是基于能力基因的精准导航。
-            </p>
-</div>
-</aside>
 </body></html>
