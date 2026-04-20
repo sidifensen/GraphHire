@@ -1,4 +1,5 @@
-import NavBar from '@/components/NavBar';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import Hero from '@/components/Hero';
 import JobCard from '@/components/JobCard';
 import Sidebar from '@/components/Sidebar';
@@ -48,7 +49,7 @@ const mockJobs: HomeJobCard[] = [
 export default function HomePage() {
   return (
     <div className="flex-grow flex flex-col w-full">
-      <NavBar />
+      <Header />
 
       <main className="flex-grow flex flex-col w-full">
         <Hero />
@@ -79,26 +80,7 @@ export default function HomePage() {
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-white full-width border-t border-slate-100 flex flex-col md:flex-row justify-between items-center px-12 py-8 mt-20">
-        <div className="text-tertiary font-body text-xs tracking-wide">
-          © 2024 GraphHire 图谱智聘. 认知导视 AI 招聘系统
-        </div>
-        <div className="flex gap-6 mt-4 md:mt-0 font-body text-xs tracking-wide">
-          <a className="text-slate-400 hover:text-primary hover:underline underline-offset-4 transition-all" href="#">
-            关于我们
-          </a>
-          <a className="text-slate-400 hover:text-primary hover:underline underline-offset-4 transition-all" href="#">
-            联系方式
-          </a>
-          <a className="text-slate-400 hover:text-primary hover:underline underline-offset-4 transition-all" href="#">
-            服务条款
-          </a>
-          <a className="text-slate-400 hover:text-primary hover:underline underline-offset-4 transition-all" href="#">
-            隐私政策
-          </a>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
