@@ -23,12 +23,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -220,6 +224,8 @@ class AdminAppServiceTest {
             query.setPageSize(10);
             query.setUserType("PERSON");
             query.setStatus("1");
+
+            when(adminRepository.findUsersPage(anyInt(), anyInt())).thenReturn(new Page<>(1, 10));
 
             // When
             List<Long> result = adminAppService.getUserList(query);
