@@ -11,25 +11,53 @@ export interface Notification {
 }
 
 export const notificationApi = {
-  getList: async (userId: number, type?: string, page = 1): Promise<{ list: Notification[]; total: number }> => {
-    const response = await apiClient.get(`/notifications/${userId}`, { params: { type, page } });
+  /** GET /notifications/{id} */
+  getById: async (id: number): Promise<Notification> => {
+    const response = await apiClient.get(`/notifications/${id}`);
     return response.data;
   },
 
+  /** GET /notifications/user/{userId} */
+  getList: async (userId: number, type?: string, page = 1): Promise<{ list: Notification[]; total: number }> => {
+    const response = await apiClient.get(`/notifications/user/${userId}`, { params: { type, page } });
+    return response.data;
+  },
+
+  /** GET /notifications/user/{userId}/unread */
+  getUnread: async (userId: number): Promise<Notification[]> => {
+    const response = await apiClient.get(`/notifications/user/${userId}/unread`);
+    return response.data;
+  },
+
+  /** GET /notifications/user/{userId}/type/{type} */
+  getByType: async (userId: number, type: string): Promise<Notification[]> => {
+    const response = await apiClient.get(`/notifications/user/${userId}/type/${type}`);
+    return response.data;
+  },
+
+  /** GET /notifications/user/{userId}/unread-count */
+  getUnreadCount: async (userId: number): Promise<number> => {
+    const response = await apiClient.get(`/notifications/user/${userId}/unread-count`);
+    return response.data;
+  },
+
+  /** PUT /notifications/{id}/read */
   markAsRead: async (id: number): Promise<void> => {
     await apiClient.put(`/notifications/${id}/read`);
   },
 
-  markAllAsRead: async (userId: number): Promise<void> => {
-    await apiClient.put(`/notifications/read-all?userId=${userId}`);
+  /** PUT /notifications/{id}/unread */
+  markAsUnread: async (id: number): Promise<void> => {
+    await apiClient.put(`/notifications/${id}/unread`);
   },
 
+  /** PUT /notifications/user/{userId}/read-all */
+  markAllAsRead: async (userId: number): Promise<void> => {
+    await apiClient.put(`/notifications/user/${userId}/read-all`);
+  },
+
+  /** DELETE /notifications/{id} */
   delete: async (id: number): Promise<void> => {
     await apiClient.delete(`/notifications/${id}`);
-  },
-
-  getUnreadCount: async (userId: number): Promise<number> => {
-    const response = await apiClient.get(`/notifications/${userId}/unread-count`);
-    return response.data;
   },
 };

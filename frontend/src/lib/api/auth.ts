@@ -1,5 +1,16 @@
 import apiClient from './client';
-import type { LoginRequest, LoginResponse, PersonRegisterRequest, RegisterResponse } from '@/lib/types';
+import type {
+  LoginRequest,
+  LoginResponse,
+  PersonRegisterRequest,
+  RegisterResponse,
+  SendVerifyCodeRequest,
+  ForgotPasswordRequest,
+  ResetPasswordRequest,
+  RefreshTokenRequest,
+  ChangePasswordRequest,
+  SendResetCodeRequest,
+} from '@/lib/types';
 
 export const authApi = {
   login: async (data: LoginRequest): Promise<LoginResponse> => {
@@ -29,5 +40,35 @@ export const authApi = {
   validateToken: async (): Promise<boolean> => {
     const response = await apiClient.get<boolean>('/auth/validate');
     return response.data;
+  },
+
+  adminLogin: async (data: LoginRequest): Promise<LoginResponse> => {
+    const response = await apiClient.post<LoginResponse>('/auth/admin/login', data);
+    return response.data;
+  },
+
+  sendVerifyCode: async (data: SendVerifyCodeRequest): Promise<void> => {
+    await apiClient.post('/auth/send-verify-code', data);
+  },
+
+  forgotPassword: async (data: ForgotPasswordRequest): Promise<void> => {
+    await apiClient.post('/auth/forgot-password', data);
+  },
+
+  resetPassword: async (data: ResetPasswordRequest): Promise<void> => {
+    await apiClient.post('/auth/reset-password', data);
+  },
+
+  refreshToken: async (data: RefreshTokenRequest): Promise<LoginResponse> => {
+    const response = await apiClient.post<LoginResponse>('/auth/refresh-token', data);
+    return response.data;
+  },
+
+  changePassword: async (data: ChangePasswordRequest): Promise<void> => {
+    await apiClient.post('/auth/change-password', data);
+  },
+
+  sendResetCode: async (data: SendResetCodeRequest): Promise<void> => {
+    await apiClient.post('/auth/send-reset-code', data);
   },
 };
