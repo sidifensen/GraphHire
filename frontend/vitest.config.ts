@@ -1,14 +1,16 @@
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
-import next from '@next/vite-plugin-next'
+import tsconfigPaths from 'vite-tsconfig-paths'
 
 export default defineConfig({
   plugins: [
-    next(),
     react(),
+    tsconfigPaths(),
   ],
   test: {
     environment: 'jsdom',
     globals: true,
+    setupFiles: [],
+    include: ['tests/**/*.test.{ts,tsx}'],
   },
 })

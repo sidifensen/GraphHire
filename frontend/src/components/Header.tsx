@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { authStore } from '@/lib/stores/auth-store';
 
 const navLinks = [
   { label: '首页', href: '/' },
@@ -13,6 +14,7 @@ const navLinks = [
 
 export default function Header() {
   const pathname = usePathname();
+  const isAuthenticated = authStore((state) => state.isAuthenticated);
 
   return (
     <header className="bg-surface dark:bg-slate-950 backdrop-blur-xl top-0 z-50 sticky shadow-[inset_0_-1px_0_0_rgba(0,0,0,0.05)] shadow-sm dark:shadow-none">
