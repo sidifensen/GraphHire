@@ -42,22 +42,33 @@ export default function Header() {
             })}
           </nav>
         </div>
-        <div className="flex items-center gap-6 text-primary dark:text-blue-400">
-          <button className="hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-all duration-300 p-2 rounded-full active:scale-95 opacity-80 transition-transform">
-            <span className="material-symbols-outlined">notifications</span>
-          </button>
-          <button className="hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-all duration-300 p-2 rounded-full active:scale-95 opacity-80 transition-transform">
-            <span className="material-symbols-outlined">chat_bubble</span>
-          </button>
-          <div className="w-9 h-9 rounded-full bg-surface-container-high overflow-hidden border-2 border-surface cursor-pointer hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-all duration-300">
-            <Image
-              alt="用户头像"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIYa43L-pryRXbX_0CaMonCmGzAj_Dzj86nXpYHvCsDUbFn2dQwjVHfcA1GdViiDM0V1owjYEN1XNAGcQPWvvnopWW8B15Hk11yTWzHXhHNI9tPRzFjQfL1nK_qdGznxU0IEuNGSB6Dzkvy0iHn6T0ndOQS_YR29P48e_7xTcWYuAAA-gtna5DEpOs45XiHZphPUgHGq4fK8dk9PQU7_6KA5OPFmQEoQINO2OEvoo4-nFYRg5AmXUb1HWPDhiwBpSJ9Smazb5Un1y6"
-              width={36}
-              height={36}
-              className="w-full h-full object-cover"
-            />
-          </div>
+        <div className="flex items-center gap-6">
+          {isAuthenticated ? (
+            <>
+              <button className="hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-all duration-300 p-2 rounded-full active:scale-95 opacity-80 transition-transform">
+                <span className="material-symbols-outlined">notifications</span>
+              </button>
+              <button className="hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-all duration-300 p-2 rounded-full active:scale-95 opacity-80 transition-transform">
+                <span className="material-symbols-outlined">chat_bubble</span>
+              </button>
+              <div className="w-9 h-9 rounded-full bg-surface-container-high overflow-hidden border-2 border-surface cursor-pointer hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-all duration-300">
+                <Image
+                  alt="用户头像"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIYa43L-pryRXbX_0CaMonCmGzAj_Dzj86nXpYHvCsDUbFn2dQwjVHfcA1GdViiDM0V1owjYEN1XNAGcQPWvvnopWW8B15Hk11yTWzHXhHNI9tPRzFjQfL1nK_qdGznxU0IEuNGSB6Dzkvy0iHn6T0ndOQS_YR29P48e_7xTcWYuAAA-gtna5DEpOs45XiHZphPUgHGq4fK8dk9PQU7_6KA5OPFmQEoQINO2OEvoo4-nFYRg5AmXUb1HWPDhiwBpSJ9Smazb5Un1y6"
+                  width={36}
+                  height={36}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </>
+          ) : (
+            <Link
+              href="/login"
+              className="px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors"
+            >
+              登录
+            </Link>
+          )}
         </div>
       </div>
     </header>
