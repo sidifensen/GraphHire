@@ -1,16 +1,19 @@
 package com.graphhire.match.infrastructure.ai;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
+import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
-import cn.hutool.core.util.StrUtil;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * DeepSeek AI客户端
@@ -25,6 +28,10 @@ import java.util.Map;
 @Component
 public class DeepSeekClient {
 
+    private static final Logger log = LoggerFactory.getLogger(DeepSeekClient.class);
+    private static final String CHAT_COMPLETIONS_PATH = "/chat/completions";
+    private static final String DEFAULT_MATCH_REASON = "Based on skill and experience matching";
+
     /** DeepSeek API密钥 */
     @Value("${ai.deepseek.api-key:}")
     private String apiKey;
@@ -33,7 +40,6 @@ public class DeepSeekClient {
     @Value("${ai.deepseek.url:https://api.deepseek.com/v1}")
     private String baseUrl;
 
-    
     // =====================================================
     // 【第一部分】匹配计算
     // =====================================================
@@ -45,31 +51,22 @@ public class DeepSeekClient {
      * @return 匹配原因说明（AI生成或默认文本）
      */
     public String generateMatchReason(Long resumeId, Long jobId) {
-        if (apiKey == null || apiKey.isBlank()) {
-            return "Based on skill and experience matching";
+        if (!isAiAvailable("generateMatchReason")) {
+            return DEFAULT_MATCH_REASON;
         }
 
-        String endpoint = baseUrl + "/chat/completions";
-        Map<String, Object> requestBody = Map.of(
-            "model", "deepseek-chat",
-            "messages", new Object[]{
-                Map.of("role", "system", "content", "You are a recruitment assistant explaining why a candidate matches a job."),
-                Map.of("role", "user", "content", String.format("Explain why resume %d matches job %d", resumeId, jobId))
-            }
+        String content = invokeChatCompletion(
+            "generateMatchReason",
+            "You are a recruitment assistant explaining why a candidate matches a job.",
+            String.format("Explain why resume %d matches job %d", resumeId, jobId)
         );
-
-        try {
-            String response = HttpRequest.post(endpoint)
-                .header("Content-Type", "application/json")
-                .body(JSONUtil.toJsonStr(requestBody))
-                .timeout(30000)
-                .execute()
-                .body();
-            JSONObject jsonObj = JSONUtil.parseObj(response);
-            return jsonObj.getJSONArray("choices").getJSONObject(0).getJSONObject("message").getStr("content");
-        } catch (Exception e) {
-            return "Based on skill and experience matching";
+        if (StrUtil.isBlank(content)) {
+            log.warn("DeepSeek generateMatchReason fallback: missing AI content.");
+            return DEFAULT_MATCH_REASON;
         }
+
+        log.info("DeepSeek generateMatchReason success: using AI-generated explanation.");
+        return content.trim();
     }
 
     /**
@@ -82,52 +79,45 @@ public class DeepSeekClient {
      */
     @SuppressWarnings("unchecked")
     public Map<String, Object> calculateMatch(Map<String, Object> userInfo, Map<String, Object> jobInfo) {
-        // AI不可用时使用降级计算
-        if (apiKey == null || apiKey.isBlank()) {
+        if (!isAiAvailable("calculateMatch")) {
             return fallbackCalculateMatch(userInfo, jobInfo);
         }
 
-        String endpoint = baseUrl + "/chat/completions";
-        Map<String, Object> requestBody = Map.of(
-            "model", "deepseek-chat",
-            "messages", new Object[]{
-                Map.of("role", "system", "content", """
-                    You are a recruitment matching AI. Calculate match scores between a candidate and job.
-                    Return a JSON object with:
-                    - skill_score: 0-100 based on skill matching
-                    - experience_score: 0-100 based on experience matching
-                    - city_score: 0-100 based on city matching
-                    - education_score: 0-100 based on education matching
-                    - salary_score: 0-100 based on salary range matching
-                    - overall_score: weighted average (skill 50%, experience 20%, city 15%, education 10%, salary 5%)
-                    - match_reasons: explanation of why they match
-                    - gaps: areas where candidate doesn't meet requirements
-                    - suggestions: recommendations for improvement
-                    """),
-                Map.of("role", "user", "content", String.format("""
-                    User Info: %s
-                    Job Info: %s
-                    Calculate the match scores and return JSON.
-                    """, userInfo, jobInfo))
-            }
+        String content = invokeChatCompletion(
+            "calculateMatch",
+            """
+                You are a recruitment matching AI. Calculate match scores between a candidate and job.
+                Return a JSON object with:
+                - skill_score: 0-100 based on skill matching
+                - experience_score: 0-100 based on experience matching
+                - city_score: 0-100 based on city matching
+                - education_score: 0-100 based on education matching
+                - salary_score: 0-100 based on salary range matching
+                - overall_score: weighted average (skill 50%, experience 20%, city 15%, education 10%, salary 5%)
+                - match_reasons: explanation of why they match
+                - gaps: areas where candidate doesn't meet requirements
+                - suggestions: recommendations for improvement
+                """,
+            String.format("""
+                User Info: %s
+                Job Info: %s
+                Calculate the match scores and return JSON.
+                """, userInfo, jobInfo)
         );
 
-        try {
-            String response = HttpRequest.post(endpoint)
-                .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer " + apiKey)
-                .body(JSONUtil.toJsonStr(requestBody))
-                .timeout(30000)
-                .execute()
-                .body();
-            if (response == null || response.isBlank()) {
-                return fallbackCalculateMatch(userInfo, jobInfo);
-            }
-            return parseDeepSeekResponse(response);
-        } catch (Exception e) {
-            // AI不可用时降级到本地计算
+        if (StrUtil.isBlank(content)) {
+            log.warn("DeepSeek calculateMatch fallback: empty content.");
             return fallbackCalculateMatch(userInfo, jobInfo);
         }
+
+        Map<String, Object> result = parseDeepSeekResponse(content);
+        if (result == null || result.isEmpty()) {
+            log.warn("DeepSeek calculateMatch fallback: unable to parse AI JSON content.");
+            return fallbackCalculateMatch(userInfo, jobInfo);
+        }
+
+        log.info("DeepSeek calculateMatch success: using AI scoring result.");
+        return result;
     }
 
     // =====================================================
@@ -142,7 +132,6 @@ public class DeepSeekClient {
         var userSkills = (java.util.List<String>) userInfo.getOrDefault("skills", java.util.Collections.emptyList());
         var jobSkills = (java.util.List<String>) jobInfo.getOrDefault("required_skills", java.util.Collections.emptyList());
 
-        // 各维度分数计算
         double skillScore = calculateSkillOverlap(userSkills, jobSkills);
         double expScore = calculateExperienceScore(
             (Integer) userInfo.get("experience_years"),
@@ -161,7 +150,6 @@ public class DeepSeekClient {
             (java.util.List<Integer>) jobInfo.get("salary_range")
         );
 
-        // 加权总分计算（技能50%、经验20%、城市15%、学历10%、薪资5%）
         double overallScore = skillScore * 0.5 + expScore * 0.2 + cityScore * 0.15 + eduScore * 0.1 + salScore * 0.05;
 
         return Map.of(
@@ -256,10 +244,9 @@ public class DeepSeekClient {
     // =====================================================
 
     /** 解析DeepSeek API返回的响应，提取JSON结果 */
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> parseDeepSeekResponse(String response) {
+    private Map<String, Object> parseDeepSeekResponse(String content) {
         try {
-            JSONObject jsonObj = JSONUtil.parseObj(response);
+            JSONObject jsonObj = JSONUtil.parseObj(cleanJsonContent(content));
             Map<String, Object> result = new HashMap<>();
             result.put("skill_score", jsonObj.getDouble("skill_score", 75.0));
             result.put("experience_score", jsonObj.getDouble("experience_score", 75.0));
@@ -269,32 +256,22 @@ public class DeepSeekClient {
             result.put("match_reasons", jsonObj.getStr("match_reasons", "Based on profile matching"));
             result.put("gaps", jsonObj.containsKey("gaps") ? jsonObj.getJSONArray("gaps") : java.util.Collections.emptyList());
             result.put("suggestions", jsonObj.containsKey("suggestions") ? jsonObj.getJSONArray("suggestions") : java.util.Collections.emptyList());
-
-            // 如果没有overall_score，使用加权计算
-            if (!result.containsKey("overall_score")) {
-                double overall = 0;
-                overall += (Double) result.getOrDefault("skill_score", 75.0) * 0.5;
-                overall += (Double) result.getOrDefault("experience_score", 75.0) * 0.2;
-                overall += (Double) result.getOrDefault("city_score", 75.0) * 0.15;
-                overall += (Double) result.getOrDefault("education_score", 75.0) * 0.1;
-                overall += (Double) result.getOrDefault("salary_score", 75.0) * 0.05;
-                result.put("overall_score", overall);
-            }
+            result.put("overall_score", jsonObj.getDouble("overall_score", calculateOverallScore(result)));
             return result;
         } catch (Exception e) {
-            // 降级到默认分数
+            log.warn("DeepSeek calculateMatch parse failure: {}", safeMessage(e));
+            return null;
         }
-        return Map.of(
-            "skill_score", 75.0,
-            "experience_score", 75.0,
-            "city_score", 75.0,
-            "education_score", 75.0,
-            "salary_score", 75.0,
-            "overall_score", 75.0,
-            "match_reasons", "Based on profile matching",
-            "gaps", java.util.Collections.emptyList(),
-            "suggestions", java.util.Collections.emptyList()
-        );
+    }
+
+    private double calculateOverallScore(Map<String, Object> result) {
+        double overall = 0;
+        overall += ((Number) result.getOrDefault("skill_score", 75.0)).doubleValue() * 0.5;
+        overall += ((Number) result.getOrDefault("experience_score", 75.0)).doubleValue() * 0.2;
+        overall += ((Number) result.getOrDefault("city_score", 75.0)).doubleValue() * 0.15;
+        overall += ((Number) result.getOrDefault("education_score", 75.0)).doubleValue() * 0.1;
+        overall += ((Number) result.getOrDefault("salary_score", 75.0)).doubleValue() * 0.05;
+        return overall;
     }
 
     // =====================================================
@@ -308,11 +285,10 @@ public class DeepSeekClient {
      * @return 结构化信息Map
      */
     public Map<String, Object> parseResume(String text) {
-        if (apiKey == null || apiKey.isBlank()) {
+        if (!isAiAvailable("parseResume")) {
             return getMockParseResult(text);
         }
 
-        String endpoint = baseUrl + "/chat/completions";
         String prompt = """
             You are a resume parsing assistant. Extract structured information from the following resume text.
             Return a JSON object with the following fields:
@@ -327,88 +303,65 @@ public class DeepSeekClient {
             Resume text:
             """ + text;
 
-        Map<String, Object> requestBody = Map.of(
-            "model", "deepseek-chat",
-            "messages", new Object[]{
-                Map.of("role", "system", "content", "You are a professional resume parsing assistant. Always return valid JSON."),
-                Map.of("role", "user", "content", prompt)
-            }
+        String content = invokeChatCompletion(
+            "parseResume",
+            "You are a professional resume parsing assistant. Always return valid JSON.",
+            prompt
         );
-
-        try {
-            String response = HttpRequest.post(endpoint)
-                .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer " + apiKey)
-                .body(JSONUtil.toJsonStr(requestBody))
-                .timeout(30000)
-                .execute()
-                .body();
-
-            Map<String, Object> result = parseJsonResponse(response);
-            if (result == null || result.isEmpty()) {
-                return getMockParseResult(text);
-            }
-            return result;
-        } catch (Exception e) {
+        if (StrUtil.isBlank(content)) {
+            log.warn("DeepSeek parseResume fallback: empty content.");
             return getMockParseResult(text);
         }
+
+        Map<String, Object> result = parseResumeContent(content);
+        if (result == null || result.isEmpty()) {
+            log.warn("DeepSeek parseResume fallback: unable to build structured result.");
+            return getMockParseResult(text);
+        }
+
+        log.info("DeepSeek parseResume success: using AI parsing result.");
+        return result;
     }
 
-    /** 解析简历API响应为结构化Map */
-    private Map<String, Object> parseJsonResponse(String response) {
+    /** 从文本中解析简历结构 */
+    private Map<String, Object> parseResumeContent(String content) {
+        String cleanedContent = cleanJsonContent(content);
         try {
-            JSONObject jsonObj = JSONUtil.parseObj(response);
-
-            // 提取 AI 回复内容
-            String content = jsonObj
-                .getJSONArray("choices")
-                .getJSONObject(0)
-                .getJSONObject("message")
-                .getStr("content");
-
-            if (content == null || content.isBlank()) {
-                return getMockParseResult(content);
-            }
-
-            // 尝试解析 content 为 JSON（AI 可能返回的是纯文本）
+            JSONObject resumeJson = JSONUtil.parseObj(cleanedContent);
             Map<String, Object> result = new HashMap<>();
             result.put("raw_response", content);
-
-            // 尝试将 content 解析为 JSON
-            try {
-                JSONObject resumeJson = JSONUtil.parseObj(content);
-                result.put("name", resumeJson.getStr("name", "Unknown"));
-                result.put("email", resumeJson.getStr("email", ""));
-                result.put("phone", resumeJson.getStr("phone", ""));
-                result.put("skills", resumeJson.getJSONArray("skills"));
-                result.put("experience", resumeJson.getJSONArray("experience"));
-                result.put("education", resumeJson.getJSONArray("education"));
-                result.put("summary", resumeJson.getStr("summary", ""));
-            } catch (Exception e) {
-                // 如果不是 JSON，尝试从文本中提取信息
-                result.put("name", extractNameFromText(content));
-                result.put("skills", extractSkillsFromText(content));
-                result.put("summary", content.substring(0, Math.min(200, content.length())));
-            }
-
+            result.put("name", resumeJson.getStr("name", "Unknown"));
+            result.put("email", resumeJson.getStr("email", ""));
+            result.put("phone", resumeJson.getStr("phone", ""));
+            result.put("skills", resumeJson.containsKey("skills") ? resumeJson.getJSONArray("skills") : new JSONArray());
+            result.put("experience", resumeJson.containsKey("experience") ? resumeJson.getJSONArray("experience") : new JSONArray());
+            result.put("education", resumeJson.containsKey("education") ? resumeJson.getJSONArray("education") : new JSONArray());
+            result.put("summary", resumeJson.getStr("summary", ""));
             return result;
         } catch (Exception e) {
-            // 解析失败时返回空 result，让调用方决定是否用 mock
-            return null;
+            log.warn("DeepSeek parseResume JSON parse failure, using text extraction fallback: {}", safeMessage(e));
+            Map<String, Object> result = new HashMap<>();
+            result.put("raw_response", content);
+            result.put("name", extractNameFromText(content));
+            result.put("email", "");
+            result.put("phone", "");
+            result.put("skills", extractSkillsFromText(content));
+            result.put("experience", new Object[0]);
+            result.put("education", new Object[0]);
+            result.put("summary", content.substring(0, Math.min(200, content.length())));
+            return result;
         }
     }
 
     /** 从文本中提取姓名（简单的启发式方法） */
     private String extractNameFromText(String text) {
-        // 简单处理：取第一行或前 50 个字符
         if (text == null || text.isBlank()) return "Unknown";
-        String[] lines = text.split("\n");
+        String[] lines = text.split("\\n");
         return lines[0].trim().substring(0, Math.min(50, lines[0].trim().length()));
     }
 
     /** 从文本中提取技能标签（简单的启发式方法） */
     private String[] extractSkillsFromText(String text) {
-        // 常见技能关键词
         String[] commonSkills = {"Java", "Python", "JavaScript", "Go", "Rust", "C++", "C#",
             "Spring", "Django", "React", "Vue", "Angular", "Node.js",
             "MySQL", "PostgreSQL", "MongoDB", "Redis", "Elasticsearch",
@@ -449,11 +402,10 @@ public class DeepSeekClient {
      * @return 结构化信息Map
      */
     public Map<String, Object> parseJob(String text, String jobTitle) {
-        if (apiKey == null || apiKey.isBlank()) {
+        if (!isAiAvailable("parseJob")) {
             return getMockJobParseResult(text, jobTitle);
         }
 
-        String endpoint = baseUrl + "/chat/completions";
         String prompt = """
             You are a job description parsing assistant. Extract structured information from the following job description.
             Return a JSON object with the following fields:
@@ -468,50 +420,52 @@ public class DeepSeekClient {
             Job title: %s
 
             Job description text:
-            """ .formatted(jobTitle) + text;
+            """.formatted(jobTitle) + text;
 
-        Map<String, Object> requestBody = Map.of(
-            "model", "deepseek-chat",
-            "messages", new Object[]{
-                Map.of("role", "system", "content", "You are a professional job description parsing assistant. Always return valid JSON."),
-                Map.of("role", "user", "content", prompt)
-            }
+        String content = invokeChatCompletion(
+            "parseJob",
+            "You are a professional job description parsing assistant. Always return valid JSON.",
+            prompt
         );
-
-        try {
-            String response = HttpRequest.post(endpoint)
-                .header("Content-Type", "application/json")
-                .body(JSONUtil.toJsonStr(requestBody))
-                .timeout(30000)
-                .execute()
-                .body();
-            return parseJobJsonResponse(response);
-        } catch (Exception e) {
+        if (StrUtil.isBlank(content)) {
+            log.warn("DeepSeek parseJob fallback: empty content.");
             return getMockJobParseResult(text, jobTitle);
         }
+
+        Map<String, Object> result = parseJobJsonResponse(content);
+        if (result == null || result.isEmpty()) {
+            log.warn("DeepSeek parseJob fallback: unable to parse AI JSON content.");
+            return getMockJobParseResult(text, jobTitle);
+        }
+
+        log.info("DeepSeek parseJob success: using AI parsing result.");
+        return result;
     }
 
     /** 解析职位API响应为结构化Map */
-    private Map<String, Object> parseJobJsonResponse(String response) {
+    private Map<String, Object> parseJobJsonResponse(String content) {
         try {
-            JSONObject jsonObj = JSONUtil.parseObj(response);
+            JSONObject jsonObj = JSONUtil.parseObj(cleanJsonContent(content));
             Map<String, Object> result = new HashMap<>();
-            result.put("raw_response", response);
-            result.put("skills", jsonObj.getJSONArray("skills"));
+            result.put("raw_response", content);
+            result.put("skills", jsonObj.containsKey("skills") ? jsonObj.getJSONArray("skills") : new JSONArray());
             result.put("requiredExperience", jsonObj.getStr("requiredExperience"));
             result.put("education", jsonObj.getStr("education"));
             result.put("summary", jsonObj.getStr("summary"));
+            if (jsonObj.containsKey("title")) {
+                result.put("title", jsonObj.getStr("title"));
+            }
+            if (jsonObj.containsKey("responsibilities")) {
+                result.put("responsibilities", jsonObj.getJSONArray("responsibilities"));
+            }
+            if (jsonObj.containsKey("salaryRange")) {
+                result.put("salaryRange", jsonObj.get("salaryRange"));
+            }
             return result;
         } catch (Exception e) {
-            // 降级到默认结果
+            log.warn("DeepSeek parseJob JSON parse failure: {}", safeMessage(e));
+            return null;
         }
-        Map<String, Object> result = new HashMap<>();
-        result.put("raw_response", response);
-        result.put("skills", new String[]{"Java", "Spring Boot", "MySQL"});
-        result.put("requiredExperience", "3-5年");
-        result.put("education", "本科");
-        result.put("summary", "We are looking for an experienced developer");
-        return result;
     }
 
     /** 获取模拟职位解析结果（当AI不可用时使用） */
@@ -528,5 +482,94 @@ public class DeepSeekClient {
         });
         result.put("summary", "We are looking for a skilled software engineer to join our team");
         return result;
+    }
+
+    private boolean isAiAvailable(String operation) {
+        boolean available = StrUtil.isNotBlank(apiKey);
+        if (!available) {
+            log.info("DeepSeek {} fallback: api key missing.", operation);
+        }
+        return available;
+    }
+
+    private String invokeChatCompletion(String operation, String systemPrompt, String userPrompt) {
+        String endpoint = StrUtil.removeSuffix(baseUrl, "/") + CHAT_COMPLETIONS_PATH;
+        Map<String, Object> requestBody = Map.of(
+            "model", "deepseek-chat",
+            "messages", new Object[]{
+                Map.of("role", "system", "content", systemPrompt),
+                Map.of("role", "user", "content", userPrompt)
+            }
+        );
+
+        try {
+            HttpResponse response = HttpRequest.post(endpoint)
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer " + apiKey)
+                .body(JSONUtil.toJsonStr(requestBody))
+                .timeout(30000)
+                .execute();
+
+            int status = response.getStatus();
+            String responseBody = response.body();
+            if (status < 200 || status >= 300) {
+                log.warn("DeepSeek {} fallback: non-2xx response status={}, bodySummary={}", operation, status, summarize(responseBody));
+                return null;
+            }
+            if (StrUtil.isBlank(responseBody)) {
+                log.warn("DeepSeek {} fallback: empty response body.", operation);
+                return null;
+            }
+
+            String content = extractMessageContent(responseBody, operation);
+            if (StrUtil.isBlank(content)) {
+                log.warn("DeepSeek {} fallback: empty content.", operation);
+                return null;
+            }
+            return content;
+        } catch (Exception e) {
+            log.warn("DeepSeek {} fallback: request failed: {}", operation, safeMessage(e));
+            return null;
+        }
+    }
+
+    private String extractMessageContent(String responseBody, String operation) {
+        try {
+            JSONObject jsonObj = JSONUtil.parseObj(responseBody);
+            JSONArray choices = jsonObj.getJSONArray("choices");
+            if (choices == null || choices.isEmpty()) {
+                log.warn("DeepSeek {} fallback: choices missing in response.", operation);
+                return null;
+            }
+            JSONObject message = choices.getJSONObject(0).getJSONObject("message");
+            if (message == null) {
+                log.warn("DeepSeek {} fallback: message missing in first choice.", operation);
+                return null;
+            }
+            return message.getStr("content");
+        } catch (Exception e) {
+            log.warn("DeepSeek {} fallback: response parse failure: {}", operation, safeMessage(e));
+            return null;
+        }
+    }
+
+    private String cleanJsonContent(String content) {
+        String trimmed = StrUtil.trim(content);
+        if (StrUtil.startWith(trimmed, "```")) {
+            trimmed = trimmed.replaceFirst("^```(?:json)?\\s*", "");
+            trimmed = trimmed.replaceFirst("\\s*```$", "");
+        }
+        return StrUtil.trim(trimmed);
+    }
+
+    private String summarize(String text) {
+        if (StrUtil.isBlank(text)) {
+            return "<empty>";
+        }
+        return StrUtil.maxLength(text.replace("`r", " ").replace("`n", " "), 160);
+    }
+
+    private String safeMessage(Exception e) {
+        return StrUtil.blankToDefault(e.getMessage(), e.getClass().getSimpleName());
     }
 }
