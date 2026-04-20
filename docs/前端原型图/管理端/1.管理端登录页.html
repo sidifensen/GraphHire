@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GraphHire - 平台治理中心登录</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed": "#00174b",
+                        "inverse-on-surface": "#eaf1ff",
+                        "surface-tint": "#0353da",
+                        "inverse-surface": "#243142",
+                        "outline": "#737686",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "tertiary-container": "#506069",
+                        "on-tertiary-fixed-variant": "#394952",
+                        "error": "#ba1a1a",
+                        "background": "#f8f9ff",
+                        "on-primary": "#ffffff",
+                        "surface-variant": "#d5e4fa",
+                        "on-surface": "#0e1c2c",
+                        "on-secondary-fixed-variant": "#0737b8",
+                        "primary-container": "#0052d9",
+                        "surface": "#f8f9ff",
+                        "on-tertiary-container": "#c9dae5",
+                        "on-background": "#0e1c2c",
+                        "surface-dim": "#cddbf1",
+                        "surface-container-low": "#eef4ff",
+                        "secondary": "#2d50cd",
+                        "surface-container": "#e5eeff",
+                        "on-surface-variant": "#434654",
+                        "secondary-container": "#4a6ae7",
+                        "surface-container-high": "#dbe9ff",
+                        "on-tertiary-fixed": "#0d1d25",
+                        "primary": "#003da6",
+                        "outline-variant": "#c3c6d7",
+                        "tertiary": "#394851",
+                        "surface-bright": "#f8f9ff",
+                        "secondary-fixed": "#dde1ff",
+                        "inverse-primary": "#b4c5ff",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed": "#d4e5f0",
+                        "on-error": "#ffffff",
+                        "surface-container-highest": "#d5e4fa",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed": "#dbe1ff",
+                        "on-secondary-container": "#fffbff",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#b8c9d3",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#b8c4ff",
+                        "on-primary-container": "#cbd6ff",
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed": "#001354",
+                        "primary-fixed-dim": "#b4c5ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {},
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter", "PingFang SC", "Microsoft YaHei", "sans-serif"],
+                        "label": ["Inter", "PingFang SC", "Microsoft YaHei", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', "PingFang SC", "Microsoft YaHei", sans-serif;
+            background-color: #f8f9ff;
+            background-image: 
+                radial-gradient(circle at 0% 0%, #dbe9ff 0%, #f8f9ff 50%), 
+                radial-gradient(circle at 100% 100%, #e5eeff 0%, #f8f9ff 50%);
+        }
+        h1, h2, h3, h4, h5, h6, .headline {
+            font-family: 'Manrope', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between items-center text-on-surface antialiased">
+<!-- Top AppBar (Suppressed per Nav Logic for Transactional Page, but brand element kept for context) -->
+<header class="w-full flex justify-between items-center px-12 py-6 max-w-full">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined fill text-primary text-3xl">hub</span>
+<span class="font-headline text-2xl font-extrabold tracking-tighter text-primary">GraphHire 图谱智聘</span>
+<span class="ml-4 px-2 py-1 rounded bg-primary-container text-on-primary-container text-xs font-semibold tracking-wider uppercase border border-primary/20">管理后台</span>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="w-full flex-grow flex items-center justify-center p-6">
+<div class="w-full max-w-md bg-surface-container-lowest rounded-xl p-10 relative overflow-hidden" style="box-shadow: 0 24px 64px -12px rgba(0, 23, 75, 0.1);">
+<!-- Ambient Glow -->
+<div class="absolute top-0 right-0 w-48 h-48 bg-primary opacity-5 rounded-full blur-3xl -mr-20 -mt-20"></div>
+<div class="text-center mb-10 relative z-10">
+<h1 class="font-headline text-3xl font-extrabold text-on-surface mb-2">管理后台</h1>
+<p class="text-on-surface-variant text-sm font-body tracking-wide">登录以访问系统控制台</p>
+</div>
+<form class="space-y-6 relative z-10">
+<!-- Account Input -->
+<div class="space-y-2">
+<label class="block text-sm font-medium text-on-surface-variant font-label" for="account">管理员账号 / 手机号</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline-variant text-xl">person</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-3 border-0 bg-surface-container-low text-on-surface rounded-DEFAULT focus:ring-0 focus:bg-surface-container-lowest focus:shadow-[0_2px_0_0_#003da6] transition-all" id="account" name="account" placeholder="请输入账号" type="text"/>
+</div>
+</div>
+<!-- Password Input -->
+<div class="space-y-2">
+<label class="block text-sm font-medium text-on-surface-variant font-label" for="password">密码</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline-variant text-xl">lock</span>
+</div>
+<input class="block w-full pl-10 pr-10 py-3 border-0 bg-surface-container-low text-on-surface rounded-DEFAULT focus:ring-0 focus:bg-surface-container-lowest focus:shadow-[0_2px_0_0_#003da6] transition-all" id="password" name="password" placeholder="请输入密码" type="password"/>
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer">
+<span class="material-symbols-outlined text-outline-variant text-xl hover:text-on-surface-variant transition-colors">visibility_off</span>
+</div>
+</div>
+</div>
+<!-- Captcha Input -->
+<!-- Remember & Forgot -->
+<div class="flex items-center justify-between mt-4">
+<div class="flex items-center">
+<input class="h-4 w-4 text-primary bg-surface-container-low border-outline-variant rounded focus:ring-primary focus:ring-offset-surface-container-lowest" id="remember-me" name="remember-me" type="checkbox"/>
+<label class="ml-2 block text-sm text-on-surface-variant font-label" for="remember-me">
+                            记住账号
+                        </label>
+</div>
+<div class="text-sm">
+<a class="font-medium text-primary hover:text-primary-container transition-colors" href="#">忘记密码?</a>
+</div>
+</div>
+<!-- Submit Button -->
+<div class="pt-4">
+<button class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md text-sm font-medium text-on-primary bg-gradient-to-br from-primary to-primary-container hover:opacity-90 focus:outline-none transition-all shadow-[0_8px_16px_-4px_rgba(0,61,166,0.2)]" type="submit">
+                        登录
+                    </button>
+</div>
+</form>
+</div>
+</main>
+<!-- Footer Component Execution -->
+<footer class="w-full px-12 py-8 flex justify-between items-center text-on-surface/60 font-['Inter'] text-sm tracking-wide border-t border-outline/20">
+<div>© 2024 GraphHire 管理后台</div>
+<div class="flex gap-6"><a class="hover:text-primary transition-opacity" href="#">隐私协议</a>
+<a class="hover:text-primary transition-opacity" href="#">法律声明</a></div>
+</footer>
+</body></html>

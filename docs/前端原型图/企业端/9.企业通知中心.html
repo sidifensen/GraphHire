@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>企业通知中心 - GraphHire</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-primary": "#b4c5ff",
+                        "tertiary": "#394851",
+                        "surface-container-highest": "#d5e4fa",
+                        "on-surface": "#0e1c2c",
+                        "surface-bright": "#f8f9ff",
+                        "on-background": "#0e1c2c",
+                        "surface-dim": "#cddbf1",
+                        "surface-container": "#e5eeff",
+                        "inverse-on-surface": "#eaf1ff",
+                        "surface-variant": "#d5e4fa",
+                        "on-tertiary-fixed-variant": "#394952",
+                        "on-tertiary-fixed": "#0d1d25",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed": "#d4e5f0",
+                        "primary-container": "#0052d9",
+                        "on-primary-container": "#cbd6ff",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#b8c4ff",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "on-secondary-fixed-variant": "#0737b8",
+                        "inverse-surface": "#243142",
+                        "tertiary-container": "#506069",
+                        "on-primary-fixed": "#00174b",
+                        "outline": "#737686",
+                        "on-secondary-fixed": "#001354",
+                        "surface-tint": "#0353da",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed": "#dde1ff",
+                        "primary": "#003da6",
+                        "on-secondary-container": "#fffbff",
+                        "surface": "#f8f9ff",
+                        "tertiary-fixed-dim": "#b8c9d3",
+                        "surface-container-high": "#dbe9ff",
+                        "surface-container-low": "#eef4ff",
+                        "on-secondary": "#ffffff",
+                        "secondary": "#2d50cd",
+                        "secondary-container": "#4a6ae7",
+                        "outline-variant": "#c3c6d7",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "background": "#f8f9ff",
+                        "error": "#ba1a1a",
+                        "on-surface-variant": "#434654",
+                        "primary-fixed": "#dbe1ff",
+                        "on-tertiary-container": "#c9dae5"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter", "PingFang SC", "Microsoft YaHei", "sans-serif"],
+                        "label": ["Inter", "PingFang SC", "Microsoft YaHei", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', "PingFang SC", "Microsoft YaHei", sans-serif; background-color: #f8f9ff; color: #0e1c2c; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="flex bg-surface text-on-surface h-screen overflow-hidden">
+<!-- SideNavBar -->
+<nav class="h-screen w-64 flex flex-col fixed left-0 top-0 bg-[#F8F9FF] border-r border-transparent bg-slate-100/50 z-20">
+<div class="flex flex-col gap-2 p-4 h-full">
+<div class="flex items-center gap-3 mb-8 px-2 mt-4">
+<img alt="Enterprise Logo" class="w-10 h-10" data-alt="Minimalist abstract geometric logo for enterprise in deep blue and white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSAY3xi0Hq8iRSGDVPMMFrPqu1d7I6AjNUtDwSaB_C3of5Gmvm0qmtMjufuWCFq1GRbOVCb7Y-KTLaloabUiiNSzbShJbMqdXwUEoAIKMUc4m2YhwEUbCGppxMf4VqIRjhW0ScTiXOKh8NRUIq2QG3ek4fjLln22OOuN4X_C01xWaHUImfStQnOEeoLfuyarGFgeW8V2CXVBYuRtLJEchM4-nGtg6ovmgxQ0GTGuxaewO3ToqRA2UgXpoQnKCXymzs8SiFEJ9Oowsf"/>
+<div>
+<h1 class="text-lg font-black text-[#003DA6] tracking-tight">GraphHire</h1>
+<p class="text-xs text-tertiary font-medium">企业管理中心</p>
+</div>
+</div>
+<a class="flex items-center gap-3 px-4 py-3 text-[#394851] hover:bg-[#F1F3F9] rounded-xl font-['Manrope'] text-sm font-medium transition-transform duration-200 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#394851] hover:bg-[#F1F3F9] rounded-xl font-['Manrope'] text-sm font-medium transition-transform duration-200 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">work</span>
+<span>职位管理</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#394851] hover:bg-[#F1F3F9] rounded-xl font-['Manrope'] text-sm font-medium transition-transform duration-200 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">psychology</span>
+<span>候选人推荐</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#394851] hover:bg-[#F1F3F9] rounded-xl font-['Manrope'] text-sm font-medium transition-transform duration-200 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">group</span>
+<span>员工管理</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#394851] hover:bg-[#F1F3F9] rounded-xl font-['Manrope'] text-sm font-medium transition-transform duration-200 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings</span>
+<span>设置</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 ml-64 flex flex-col h-screen overflow-hidden bg-surface-container-low relative z-10">
+<!-- TopAppBar -->
+<header class="docked full-width top-0 bg-[#F8F9FF] text-[#003DA6] font-['Manrope'] font-semibold text-sm tracking-tight border-b-0 shadow-none z-30">
+<div class="flex justify-between items-center w-full px-6 py-3 h-16 bg-[#F1F3F9]">
+<div class="flex-1">
+<h2 class="text-xl font-bold text-on-surface">通知中心</h2>
+</div>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 rounded-full hover:bg-blue-50 transition-colors flex items-center justify-center text-[#394851] relative active:opacity-80 active:scale-[0.98]">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="w-10 h-10 rounded-full hover:bg-blue-50 transition-colors flex items-center justify-center text-[#394851] active:opacity-80 active:scale-[0.98]">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Canvas -->
+<main class="flex-1 overflow-y-auto p-8 layout-content">
+<div class="max-w-5xl mx-auto flex flex-col gap-6">
+<!-- Header Actions & Tabs -->
+<div class="flex justify-between items-end mb-4">
+<div class="flex gap-2 bg-surface-container-highest p-1 rounded-lg">
+<button class="px-4 py-2 bg-surface-container-lowest text-primary font-medium rounded-DEFAULT shadow-sm text-sm transition-colors">全部</button>
+<button class="px-4 py-2 text-on-surface-variant hover:bg-surface-container-lowest/50 font-medium rounded-DEFAULT text-sm transition-colors relative">
+                            新推荐
+                            <span class="absolute top-2 right-1.5 w-1.5 h-1.5 bg-error rounded-full"></span>
+</button>
+<button class="px-4 py-2 text-on-surface-variant hover:bg-surface-container-lowest/50 font-medium rounded-DEFAULT text-sm transition-colors">简历投递</button>
+<button class="px-4 py-2 text-on-surface-variant hover:bg-surface-container-lowest/50 font-medium rounded-DEFAULT text-sm transition-colors">认证反馈</button>
+<button class="px-4 py-2 text-on-surface-variant hover:bg-surface-container-lowest/50 font-medium rounded-DEFAULT text-sm transition-colors">系统公告</button>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-tertiary bg-surface-container-high hover:bg-surface-variant rounded-lg transition-colors">
+<span class="material-symbols-outlined text-sm">done_all</span>
+                            全部标记已读
+                        </button>
+<button class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-tertiary bg-surface-container-high hover:bg-surface-variant rounded-lg transition-colors">
+<span class="material-symbols-outlined text-sm">delete</span>
+                            清空已读
+                        </button>
+</div>
+</div>
+<!-- Notifications List -->
+<div class="flex flex-col gap-4">
+<!-- Item 1: Unread New Recommendation -->
+<div class="bg-surface-container-lowest rounded-xl p-6 flex gap-5 hover:shadow-[0_12px_32px_-4px_rgba(14,28,44,0.06)] transition-shadow relative cursor-pointer group">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary to-primary-container rounded-l-xl"></div>
+<div class="flex-shrink-0 w-12 h-12 bg-primary-fixed rounded-full flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">psychology</span>
+</div>
+<div class="flex-1 flex flex-col gap-2">
+<div class="flex justify-between items-start">
+<h3 class="text-base font-bold text-on-surface group-hover:text-primary transition-colors flex items-center gap-2">
+                                    AI 智能推荐：高级前端工程师岗位有新的高匹配度候选人
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-fixed text-on-primary-fixed">匹配度 98%</span>
+</h3>
+<span class="text-xs text-on-surface-variant font-medium">10 分钟前</span>
+</div>
+<p class="text-sm text-on-surface-variant leading-relaxed">系统已为您匹配到候选人 <strong>李明</strong>，具备 5 年 React 架构经验，图谱分析显示其技术栈与岗位需求高度契合。点击查看详细认知图谱与评估报告。</p>
+<div class="mt-2">
+<button class="text-sm text-primary font-medium flex items-center gap-1 hover:underline">
+                                    查看候选人详情 <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Item 2: Read Resume Delivery -->
+<div class="bg-surface-container-lowest rounded-xl p-6 flex gap-5 hover:shadow-[0_12px_32px_-4px_rgba(14,28,44,0.06)] transition-shadow relative cursor-pointer group opacity-75 hover:opacity-100">
+<div class="flex-shrink-0 w-12 h-12 bg-surface-variant rounded-full flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">description</span>
+</div>
+<div class="flex-1 flex flex-col gap-2">
+<div class="flex justify-between items-start">
+<h3 class="text-base font-medium text-on-surface group-hover:text-primary transition-colors">
+                                    收到新的简历投递：产品经理
+                                </h3>
+<span class="text-xs text-on-surface-variant font-medium">2 小时前</span>
+</div>
+<p class="text-sm text-on-surface-variant leading-relaxed">候选人王小伟通过内部推荐渠道投递了您的“高级产品经理（AI方向）”职位。简历已通过初步格式解析。</p>
+<div class="mt-2">
+<button class="text-sm text-tertiary font-medium flex items-center gap-1 hover:text-primary transition-colors">
+                                    进入人才库处理 <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Item 3: System Announcement -->
+<div class="bg-surface-container-lowest rounded-xl p-6 flex gap-5 hover:shadow-[0_12px_32px_-4px_rgba(14,28,44,0.06)] transition-shadow relative cursor-pointer group opacity-75 hover:opacity-100">
+<div class="flex-shrink-0 w-12 h-12 bg-secondary-fixed rounded-full flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">campaign</span>
+</div>
+<div class="flex-1 flex flex-col gap-2">
+<div class="flex justify-between items-start">
+<h3 class="text-base font-medium text-on-surface group-hover:text-primary transition-colors">
+                                    系统升级公告：企业版知识图谱模型 V2.0 上线
+                                </h3>
+<span class="text-xs text-on-surface-variant font-medium">昨天 14:30</span>
+</div>
+<p class="text-sm text-on-surface-variant leading-relaxed">尊敬的企业用户，我们已于今日凌晨完成认知计算引擎的升级。新版模型显著提升了跨行业技能的隐性关联分析能力，匹配精准度提升 15%。</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

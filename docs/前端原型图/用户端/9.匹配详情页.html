@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>匹配详情 - 图谱智聘</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#d4e5f0",
+                        "on-tertiary": "#ffffff",
+                        "inverse-surface": "#243142",
+                        "on-error": "#ffffff",
+                        "on-tertiary-container": "#c9dae5",
+                        "surface-dim": "#cddbf1",
+                        "primary-fixed": "#dbe1ff",
+                        "outline-variant": "#c3c6d7",
+                        "on-primary-container": "#cbd6ff",
+                        "on-background": "#0e1c2c",
+                        "on-surface": "#0e1c2c",
+                        "tertiary-container": "#506069",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#eef4ff",
+                        "secondary-container": "#4a6ae7",
+                        "on-secondary-fixed-variant": "#0737b8",
+                        "outline": "#737686",
+                        "on-secondary": "#ffffff",
+                        "surface-tint": "#0353da",
+                        "secondary-fixed": "#dde1ff",
+                        "error-container": "#ffdad6",
+                        "surface": "#f8f9ff",
+                        "surface-container-highest": "#d5e4fa",
+                        "surface-variant": "#d5e4fa",
+                        "on-secondary-fixed": "#001354",
+                        "inverse-primary": "#b4c5ff",
+                        "primary-container": "#0052d9",
+                        "on-tertiary-fixed-variant": "#394952",
+                        "on-primary": "#ffffff",
+                        "tertiary": "#394851",
+                        "surface-container": "#e5eeff",
+                        "on-primary-fixed": "#00174b",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "background": "#f8f9ff",
+                        "tertiary-fixed-dim": "#b8c9d3",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#eaf1ff",
+                        "primary": "#003da6",
+                        "error": "#ba1a1a",
+                        "surface-container-high": "#dbe9ff",
+                        "surface-bright": "#f8f9ff",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-secondary-container": "#fffbff",
+                        "secondary": "#2d50cd",
+                        "secondary-fixed-dim": "#b8c4ff",
+                        "on-tertiary-fixed": "#0d1d25",
+                        "on-surface-variant": "#434654"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter", "PingFang SC", "Microsoft YaHei", "sans-serif"],
+                        "label": ["Inter", "PingFang SC", "Microsoft YaHei", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface font-body antialiased selection:bg-primary-container selection:text-on-primary-container min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="bg-[#F8F9FF] dark:bg-slate-950 backdrop-blur-xl docked full-width top-0 z-50 sticky no-line-rule shadow-[inset_0_-1px_0_0_rgba(0,0,0,0.05)] shadow-sm dark:shadow-none">
+<div class="flex items-center justify-between px-8 py-4 max-w-[1440px] mx-auto w-full">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-black tracking-tighter text-[#003DA6] dark:text-blue-500 font-headline">图谱智聘</span>
+<nav class="hidden md:flex gap-6">
+<a class="text-[#394851] dark:text-slate-400 hover:text-[#0052D9] transition-colors font-['Manrope'] antialiased tracking-tight" href="#">首页</a>
+<a class="text-[#003DA6] dark:text-blue-400 font-bold border-b-2 border-[#003DA6] pb-1 font-['Manrope'] antialiased tracking-tight" href="#">职位</a>
+<a class="text-[#394851] dark:text-slate-400 hover:text-[#0052D9] transition-colors font-['Manrope'] antialiased tracking-tight" href="#">公司</a>
+<a class="text-[#394851] dark:text-slate-400 hover:text-[#0052D9] transition-colors font-['Manrope'] antialiased tracking-tight" href="#">能力图谱</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-[#003DA6] dark:text-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-all duration-300 p-2 rounded-full Active: scale-95 opacity-80 transition-transform">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-[#003DA6] dark:text-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-all duration-300 p-2 rounded-full Active: scale-95 opacity-80 transition-transform">
+<span class="material-symbols-outlined">chat_bubble</span>
+</button>
+<div class="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden cursor-pointer">
+<img alt="用户头像" class="w-full h-full object-cover" data-alt="professional portrait of a young man smiling slightly against a soft blue background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuADqZ0Xai8136Kf7TZZJ-Ij84ZVU3TSyEhSL1FD6WyomcmMtUICEoRtCS73_Cgx4gLinRjOkbcHe9uWdz1XJ9VmQL87M1rVjUrRD40JF72-gIjlGoHXnCJGB3cudJoLh4WVP_uGK-yPCn2yC0UVS1UsU7Go3IyG-Te1qyfNKZO3kmw7QnA_Nq0GsztWaLTb6tX4OUlINmnjF3GUDnNbOLthZHuNn7C8aXojbOr0XVwdVU3tgbCVe7o9WmiFWeNGnsLvnwXLybOHZOD6"/>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-[1440px] mx-auto px-4 md:px-8 py-12">
+<div class="flex flex-col lg:flex-row gap-8">
+<!-- Left Column (65%) -->
+<div class="w-full lg:w-[65%] space-y-8">
+<!-- Match Overview Card -->
+<section class="bg-surface-container-low rounded-xl p-8 relative overflow-hidden group">
+<!-- Ambient Glow -->
+<div class="absolute -right-20 -top-20 w-64 h-64 bg-primary-container rounded-full blur-[100px] opacity-20 group-hover:opacity-30 transition-opacity duration-700"></div>
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 relative z-10">
+<div>
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">hub</span>
+<h1 class="text-3xl font-headline font-bold text-on-surface">高级认知交互设计师</h1>
+</div>
+<p class="text-tertiary text-lg mb-6">星海人工智能研究院 · 杭州</p>
+<div class="flex flex-wrap gap-3">
+<span class="bg-surface-variant text-on-surface-variant px-4 py-2 rounded-full text-sm font-medium">15k - 25k</span>
+<span class="bg-surface-variant text-on-surface-variant px-4 py-2 rounded-full text-sm font-medium">3-5年</span>
+<span class="bg-surface-variant text-on-surface-variant px-4 py-2 rounded-full text-sm font-medium">本科及以上</span>
+<span class="bg-primary-fixed text-on-primary-fixed px-4 py-2 rounded-full text-sm font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">auto_awesome</span> AI 极力推荐
+                                </span>
+</div>
+</div>
+<!-- Circular Match Score -->
+<div class="relative w-40 h-40 flex-shrink-0 flex flex-col items-center justify-center">
+<svg class="w-full h-full transform -rotate-90 absolute top-0 left-0" viewbox="0 0 100 100">
+<circle class="stroke-surface-container-highest" cx="50" cy="50" fill="none" r="45" stroke-width="8"></circle>
+<circle class="stroke-primary" cx="50" cy="50" fill="none" r="45" stroke-dasharray="283" stroke-dashoffset="22.64" stroke-linecap="round" stroke-width="8"></circle> <!-- 92% of 283 -->
+</svg>
+<div class="text-center z-10 mt-2">
+<span class="text-5xl font-headline font-bold text-primary block leading-none">92<span class="text-2xl">%</span></span>
+<span class="text-xs text-tertiary font-medium uppercase tracking-widest mt-1 block">总匹配度</span>
+</div>
+</div>
+</div>
+</section>
+<!-- AI Reasoning -->
+<section class="bg-surface-container-lowest rounded-xl p-8 hover:shadow-[0_12px_32px_-4px_rgba(14,28,44,0.06)] transition-shadow duration-300 border border-outline-variant/15">
+<h2 class="text-xl font-headline font-bold mb-6 flex items-center gap-2 text-on-surface">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">insights</span>
+                        AI 深度认知解析
+                    </h2>
+<div class="space-y-6">
+<p class="text-on-surface-variant leading-relaxed text-base font-body">
+                            基于您的图谱节点数据，系统认为您是该职位的**极佳候选人**。您在复杂数据可视化和系统架构设计方面的深厚积累，完美契合了该职位的核心诉求。
+                        </p>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="bg-surface-container-low p-5 rounded-lg flex items-start gap-4">
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-primary">done_all</span>
+</div>
+<div>
+<h3 class="font-medium text-on-surface mb-1">核心技能完美覆盖</h3>
+<p class="text-sm text-tertiary">要求 Figma、Principle 及数据洞察能力，您的历史项目中均有深度应用记录。</p>
+</div>
+</div>
+<div class="bg-surface-container-low p-5 rounded-lg flex items-start gap-4">
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-primary">trending_up</span>
+</div>
+<div>
+<h3 class="font-medium text-on-surface mb-1">行业经验高度吻合</h3>
+<p class="text-sm text-tertiary">您过去在企业级 SaaS 领域的经验，为认知交互设计提供了扎实的业务视角。</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Skill Comparison Detail -->
+<section class="bg-surface-container-lowest rounded-xl p-8 hover:shadow-[0_12px_32px_-4px_rgba(14,28,44,0.06)] transition-shadow duration-300 border border-outline-variant/15">
+<h2 class="text-xl font-headline font-bold mb-8 flex items-center gap-2 text-on-surface">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">compare_arrows</span>
+                        技能维度明细对比
+                    </h2>
+<div class="space-y-8">
+<!-- Skill Item 1 -->
+<div>
+<div class="flex justify-between items-center mb-2">
+<span class="font-medium text-on-surface">系统化设计思维</span>
+<span class="text-primary font-bold">高匹配</span>
+</div>
+<div class="flex gap-4">
+<div class="flex-1 bg-surface-container rounded-full h-2 overflow-hidden">
+<div class="bg-primary/40 w-full h-full"></div>
+</div>
+<div class="flex-1 bg-surface-container rounded-full h-2 overflow-hidden">
+<div class="bg-primary w-[95%] h-full"></div>
+</div>
+</div>
+<div class="flex justify-between text-xs text-tertiary mt-2">
+<span class="w-1/2">职位期望：精通</span>
+<span class="w-1/2 pl-4">您的图谱：资深专家</span>
+</div>
+</div>
+<!-- Skill Item 2 -->
+<div>
+<div class="flex justify-between items-center mb-2">
+<span class="font-medium text-on-surface">AI 交互模式创新</span>
+<span class="text-primary font-bold">高匹配</span>
+</div>
+<div class="flex gap-4">
+<div class="flex-1 bg-surface-container rounded-full h-2 overflow-hidden">
+<div class="bg-primary/40 w-[80%] h-full"></div>
+</div>
+<div class="flex-1 bg-surface-container rounded-full h-2 overflow-hidden">
+<div class="bg-primary w-[85%] h-full"></div>
+</div>
+</div>
+<div class="flex justify-between text-xs text-tertiary mt-2">
+<span class="w-1/2">职位期望：熟练</span>
+<span class="w-1/2 pl-4">您的图谱：熟练且有实操案例</span>
+</div>
+</div>
+<!-- Skill Item 3 -->
+<div>
+<div class="flex justify-between items-center mb-2">
+<span class="font-medium text-on-surface">前端代码基础 (React/Vue)</span>
+<span class="text-tertiary font-medium">部分匹配</span>
+</div>
+<div class="flex gap-4">
+<div class="flex-1 bg-surface-container rounded-full h-2 overflow-hidden">
+<div class="bg-primary/40 w-[60%] h-full"></div>
+</div>
+<div class="flex-1 bg-surface-container rounded-full h-2 overflow-hidden">
+<div class="bg-tertiary-container w-[40%] h-full"></div>
+</div>
+</div>
+<div class="flex justify-between text-xs text-tertiary mt-2">
+<span class="w-1/2">职位期望：了解即可</span>
+<span class="w-1/2 pl-4">您的图谱：基础了解</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column (35%) -->
+<div class="w-full lg:w-[35%] space-y-8">
+<!-- 5-Dimension Radar Chart Proxy -->
+<section class="bg-surface-container-low rounded-xl p-8 sticky top-24">
+<h3 class="text-lg font-headline font-bold mb-6 text-on-surface">五维匹配雷达分析</h3>
+<div class="space-y-5">
+<div class="flex items-center gap-4">
+<span class="w-12 text-sm text-tertiary font-medium">技能</span>
+<div class="flex-1 bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary w-[95%] h-full rounded-full"></div>
+</div>
+<span class="w-8 text-right text-sm font-bold text-primary">95%</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="w-12 text-sm text-tertiary font-medium">经验</span>
+<div class="flex-1 bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary w-[90%] h-full rounded-full"></div>
+</div>
+<span class="w-8 text-right text-sm font-bold text-primary">90%</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="w-12 text-sm text-tertiary font-medium">学历</span>
+<div class="flex-1 bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary w-[100%] h-full rounded-full"></div>
+</div>
+<span class="w-8 text-right text-sm font-bold text-primary">100%</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="w-12 text-sm text-tertiary font-medium">薪资</span>
+<div class="flex-1 bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary w-[85%] h-full rounded-full"></div>
+</div>
+<span class="w-8 text-right text-sm font-bold text-primary">85%</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="w-12 text-sm text-tertiary font-medium">地点</span>
+<div class="flex-1 bg-surface-container-highest rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary w-[90%] h-full rounded-full"></div>
+</div>
+<span class="w-8 text-right text-sm font-bold text-primary">90%</span>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+<!-- Fixed Bottom CTA -->
+<div class="fixed bottom-0 left-0 w-full bg-surface-container-lowest/95 backdrop-blur-md border-t border-outline-variant/20 p-6 z-50 shadow-[0_-8px_30px_rgb(0,0,0,0.08)]">
+<div class="max-w-[1440px] mx-auto flex justify-center">
+<button class="bg-gradient-to-r from-primary to-primary-container text-white px-12 py-4 rounded-xl text-lg font-bold font-headline shadow-lg shadow-primary/20 hover:opacity-90 transition-all duration-300 w-full md:w-auto md:min-w-[400px] flex justify-center items-center gap-2 hover:-translate-y-0.5 active:scale-95">
+<span class="material-symbols-outlined">send</span>
+                立即投递
+            </button>
+</div>
+</div>
+</body></html>

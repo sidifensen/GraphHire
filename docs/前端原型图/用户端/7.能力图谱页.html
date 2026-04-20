@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>图谱智聘 - 能力图谱</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#d4e5f0",
+                        "on-tertiary": "#ffffff",
+                        "inverse-surface": "#243142",
+                        "on-error": "#ffffff",
+                        "on-tertiary-container": "#c9dae5",
+                        "surface-dim": "#cddbf1",
+                        "primary-fixed": "#dbe1ff",
+                        "outline-variant": "#c3c6d7",
+                        "on-primary-container": "#cbd6ff",
+                        "on-background": "#0e1c2c",
+                        "on-surface": "#0e1c2c",
+                        "tertiary-container": "#506069",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#eef4ff",
+                        "secondary-container": "#4a6ae7",
+                        "on-secondary-fixed-variant": "#0737b8",
+                        "outline": "#737686",
+                        "on-secondary": "#ffffff",
+                        "surface-tint": "#0353da",
+                        "secondary-fixed": "#dde1ff",
+                        "error-container": "#ffdad6",
+                        "surface": "#f8f9ff",
+                        "surface-container-highest": "#d5e4fa",
+                        "surface-variant": "#d5e4fa",
+                        "on-secondary-fixed": "#001354",
+                        "inverse-primary": "#b4c5ff",
+                        "primary-container": "#0052d9",
+                        "on-tertiary-fixed-variant": "#394952",
+                        "on-primary": "#ffffff",
+                        "tertiary": "#394851",
+                        "surface-container": "#e5eeff",
+                        "on-primary-fixed": "#00174b",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "background": "#f8f9ff",
+                        "tertiary-fixed-dim": "#b8c9d3",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#eaf1ff",
+                        "primary": "#003da6",
+                        "error": "#ba1a1a",
+                        "surface-container-high": "#dbe9ff",
+                        "surface-bright": "#f8f9ff",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-secondary-container": "#fffbff",
+                        "secondary": "#2d50cd",
+                        "secondary-fixed-dim": "#b8c4ff",
+                        "on-tertiary-fixed": "#0d1d25",
+                        "on-surface-variant": "#434654"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope", "sans-serif"],
+                        "body": ["Inter", "PingFang SC", "Microsoft YaHei", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .gradient-primary {
+            background: linear-gradient(135deg, #003da6 0%, #0052d9 100%);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body antialiased min-h-screen flex flex-col">
+<!-- TopAppBar Component -->
+<header class="bg-[#F8F9FF] dark:bg-slate-950 backdrop-blur-xl docked full-width top-0 z-50 sticky no-line-rule shadow-[inset_0_-1px_0_0_rgba(0,0,0,0.05)] shadow-sm dark:shadow-none">
+<div class="flex items-center justify-between px-8 py-4 max-w-[1440px] mx-auto w-full">
+<div class="flex items-center gap-12">
+<div class="text-2xl font-black tracking-tighter text-[#003DA6] dark:text-blue-500 font-['Manrope'] antialiased tracking-tight">
+                    图谱智聘
+                </div>
+<nav class="hidden md:flex gap-8">
+<a class="text-[#394851] dark:text-slate-400 hover:text-[#0052D9] transition-colors font-['Manrope'] antialiased tracking-tight text-sm font-medium" href="#">首页</a>
+<a class="text-[#394851] dark:text-slate-400 hover:text-[#0052D9] transition-colors font-['Manrope'] antialiased tracking-tight text-sm font-medium" href="#">职位</a>
+<a class="text-[#394851] dark:text-slate-400 hover:text-[#0052D9] transition-colors font-['Manrope'] antialiased tracking-tight text-sm font-medium" href="#">公司</a>
+<a class="text-[#003DA6] dark:text-blue-400 font-bold border-b-2 border-[#003DA6] pb-1 font-['Manrope'] antialiased tracking-tight text-sm" href="#">能力图谱</a>
+</nav>
+</div>
+<div class="flex items-center gap-6 text-[#003DA6] dark:text-blue-400">
+<button class="hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-all duration-300 p-2 rounded-full relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-error"></span>
+</button>
+<button class="hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-all duration-300 p-2 rounded-full">
+<span class="material-symbols-outlined">chat_bubble</span>
+</button>
+<img alt="用户头像" class="w-9 h-9 rounded-full object-cover ml-2 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-all duration-300" data-alt="professional headshot of a young asian woman with neutral background, bright soft lighting, modern corporate style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmbJiX6ZIHVKNiY0Ei6esVL597C-ZU1nYj3ACq_4sqaxCac9AOVokwKw77eKVBUMm_wdef5MmY2jD6kPXnm1zxWKxT_x_JcB5Y15Q6H5vYaZ42usKbjFc4-ipuxyJIJldaSxqooy5odmfB1DX0TMy0JSGZiJk8CJTHQeM6qZVY4mCqOSYDRGA8NxG-MUJfNiHrso-_hSzGkUGZy8vSrsA8yl4uguog50zFUjET3z1KA9HXUoqbvsDzeuTM0cJyAfBxf62UB_r9XShA"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow w-full max-w-[1440px] mx-auto px-8 py-10">
+<!-- Header & Action Row -->
+<div class="flex justify-between items-end mb-10">
+<div>
+<h1 class="font-headline text-4xl font-extrabold text-on-surface mb-2 tracking-tight">认知导视体系</h1>
+<p class="text-on-surface-variant text-base">AI 深度解析您的职业技能网络，发现潜在关联与价值</p>
+</div>
+<div class="flex items-center gap-4 bg-surface-container-low px-4 py-2 rounded-xl">
+<span class="text-sm font-medium text-on-surface-variant">对比目标职位</span>
+<button class="relative inline-flex h-6 w-11 items-center rounded-full bg-primary transition-colors focus:outline-none">
+<span class="inline-block h-4 w-4 translate-x-6 rounded-full bg-surface-container-lowest transition-transform"></span>
+</button>
+<span class="text-xs text-primary font-bold ml-2">高级前端架构师</span>
+</div>
+</div>
+<!-- Layout Grid: 65% Graph / 35% Panel -->
+<div class="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-8">
+<!-- Left: Centralized Interactive Graph -->
+<section class="bg-surface-container-lowest rounded-[2rem] p-8 relative overflow-hidden flex flex-col min-h-[600px] shadow-[0_12px_32px_-4px_rgba(14,28,44,0.06)] group">
+<!-- Decorative ambient glow -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary-fixed-dim/20 rounded-full blur-[100px] pointer-events-none"></div>
+<div class="flex justify-between items-center mb-4 z-10 relative">
+<h2 class="font-headline text-xl font-bold text-on-surface">核心技能图谱</h2>
+<div class="flex gap-2">
+<span class="material-symbols-outlined text-outline-variant hover:text-primary cursor-pointer transition-colors" data-weight="fill">zoom_in</span>
+<span class="material-symbols-outlined text-outline-variant hover:text-primary cursor-pointer transition-colors" data-weight="fill">zoom_out</span>
+</div>
+</div>
+<!-- Graph Canvas -->
+<div class="flex-grow relative w-full h-full mt-4">
+<!-- SVG Connections (Lines) -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none z-0" style="overflow: visible;">
+<!-- Center to Nodes -->
+<line class="opacity-60" stroke="var(--color-outline-variant)" stroke-dasharray="4 4" stroke-width="1.5" x1="50%" x2="25%" y1="50%" y2="25%"></line>
+<line stroke="var(--color-primary-fixed-dim)" stroke-width="2" x1="50%" x2="75%" y1="50%" y2="20%"></line>
+<line stroke="var(--color-primary)" stroke-width="3" x1="50%" x2="85%" y1="50%" y2="55%"></line>
+<line stroke="var(--color-primary-fixed-dim)" stroke-width="2" x1="50%" x2="70%" y1="50%" y2="80%"></line>
+<line stroke="var(--color-outline-variant)" stroke-width="1.5" x1="50%" x2="30%" y1="50%" y2="75%"></line>
+<line class="opacity-60" stroke="var(--color-outline-variant)" stroke-dasharray="4 4" stroke-width="1.5" x1="50%" x2="15%" y1="50%" y2="45%"></line>
+<!-- Inter-node connections -->
+<line stroke="var(--color-surface-variant)" stroke-width="1" x1="85%" x2="75%" y1="55%" y2="20%"></line>
+<line stroke="var(--color-surface-variant)" stroke-width="1" x1="85%" x2="70%" y1="55%" y2="80%"></line>
+</svg>
+<!-- Center Avatar Node -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center">
+<div class="relative">
+<div class="absolute inset-0 rounded-full border-2 border-primary animate-pulse opacity-50 scale-110"></div>
+<img alt="用户头像" class="w-20 h-20 rounded-full object-cover border-4 border-surface-container-lowest ring-4 ring-primary-fixed shadow-sm" data-alt="professional headshot of a young asian woman with neutral background, bright soft lighting, modern corporate style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBCYbiB_RRR4JLhJv9rLIVIw6eW5ysmYeZJFTzoz4MlRjYcVS6LN-XfxA_wbs3f9BmklLmVX43qufYJlJDAMQIaDHPPRbXP09vR46avH6UkJROtJJo4IjSrhEKg0bPf55SgcrSrHSpTrcyCLgpmOOH7tRgDf4mP6xUvncSc4roOq0aQtJ3ZxDBVbxCBTqwsv0hCfhPn7KTHH6pMDycI0iPggl7H7aELFl_P4MaeINHrdQDJyq3upG0S1KQ1ZNPjKFV8t0YeodoDhu6"/>
+</div>
+<span class="mt-3 font-headline font-bold text-on-surface bg-surface-container-lowest/80 backdrop-blur-sm px-3 py-1 rounded-full text-sm">当前状态</span>
+</div>
+<!-- Surrounding Skill Nodes -->
+<!-- Node 1: High Match -->
+<div class="absolute top-[55%] left-[85%] -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center">
+<div class="w-14 h-14 rounded-full bg-primary flex items-center justify-center text-on-primary shadow-sm hover:scale-110 transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-3xl">code</span>
+</div>
+<div class="mt-2 text-center">
+<span class="block font-bold text-on-surface text-sm">前端架构</span>
+<span class="text-xs text-primary font-medium bg-primary-fixed px-2 py-0.5 rounded-full mt-1 inline-block">98% 匹配</span>
+</div>
+</div>
+<!-- Node 2: Medium Match -->
+<div class="absolute top-[20%] left-[75%] -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center">
+<div class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container shadow-sm hover:scale-110 transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-2xl">speed</span>
+</div>
+<div class="mt-2 text-center">
+<span class="block font-semibold text-on-surface text-sm">性能优化</span>
+<span class="text-xs text-on-surface-variant mt-1 block">核心领域</span>
+</div>
+</div>
+<!-- Node 3: Medium Match -->
+<div class="absolute top-[80%] left-[70%] -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center">
+<div class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container shadow-sm hover:scale-110 transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-2xl">view_quilt</span>
+</div>
+<div class="mt-2 text-center">
+<span class="block font-semibold text-on-surface text-sm">工程化构建</span>
+</div>
+</div>
+<!-- Node 4: Normal/Peripheral -->
+<div class="absolute top-[75%] left-[30%] -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center opacity-80">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant shadow-sm hover:scale-110 transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-xl">database</span>
+</div>
+<div class="mt-2 text-center">
+<span class="block text-on-surface text-xs">Node.js</span>
+</div>
+</div>
+<!-- Node 5: Low/Potential -->
+<div class="absolute top-[25%] left-[25%] -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center opacity-60">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant shadow-sm border border-dashed border-outline-variant hover:scale-110 transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-xl">brush</span>
+</div>
+<div class="mt-2 text-center">
+<span class="block text-on-surface text-xs">交互设计</span>
+<span class="text-[10px] text-tertiary mt-0.5 block">跨界拓展</span>
+</div>
+</div>
+<!-- Node 6: Low/Potential -->
+<div class="absolute top-[45%] left-[15%] -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center opacity-60">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant shadow-sm border border-dashed border-outline-variant hover:scale-110 transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-xl">analytics</span>
+</div>
+<div class="mt-2 text-center">
+<span class="block text-on-surface text-xs">数据可视</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Right: AI Analysis Panel -->
+<aside class="flex flex-col gap-6">
+<!-- Score Card -->
+<div class="bg-surface-container-low rounded-2xl p-6 flex flex-col justify-between">
+<div class="flex justify-between items-start mb-6">
+<h3 class="font-headline font-bold text-on-surface">AI 综合能力评估</h3>
+<span class="material-symbols-outlined text-primary">psychology</span>
+</div>
+<div class="flex items-end gap-3 mb-2">
+<span class="font-headline text-6xl font-black text-primary tracking-tighter leading-none">87</span>
+<span class="text-on-surface-variant font-medium pb-1">/ 100</span>
+</div>
+<p class="text-sm text-on-surface-variant mt-2">您的技能组合在目标岗位池中处于<span class="text-primary font-bold">前 15%</span>的领先水平。</p>
+</div>
+<!-- Skill Radar/Bars -->
+<div class="bg-surface-container-low rounded-2xl p-6 flex-grow">
+<h3 class="font-headline font-bold text-on-surface mb-6">核心维度重合度</h3>
+<div class="flex flex-col gap-5">
+<!-- Bar 1 -->
+<div>
+<div class="flex justify-between text-sm mb-2">
+<span class="font-medium text-on-surface">前端架构体系</span>
+<span class="text-primary font-bold">95%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full w-[95%]"></div>
+</div>
+</div>
+<!-- Bar 2 -->
+<div>
+<div class="flex justify-between text-sm mb-2">
+<span class="font-medium text-on-surface">工程化与 DevOps</span>
+<span class="text-primary font-bold">82%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full gradient-primary rounded-full w-[82%]"></div>
+</div>
+</div>
+<!-- Bar 3 -->
+<div>
+<div class="flex justify-between text-sm mb-2">
+<span class="font-medium text-on-surface">团队与技术管理</span>
+<span class="text-on-surface-variant font-medium">60%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-tertiary-fixed-dim rounded-full w-[60%]"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Suggestions Card -->
+<div class="bg-surface-container-lowest rounded-2xl p-6 shadow-[0_12px_32px_-4px_rgba(14,28,44,0.06)]">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary text-xl" data-weight="fill">lightbulb</span>
+<h3 class="font-headline font-bold text-on-surface">技能提升建议</h3>
+</div>
+<ul class="flex flex-col gap-4 text-sm text-on-surface-variant">
+<li class="flex items-start gap-3">
+<span class="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0"></span>
+<span>距离目标职位，您的<strong>团队管理</strong>经验略显不足。建议补充敏捷管理相关的理论体系学习。</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0"></span>
+<span>图谱侦测到您的 <strong>Node.js</strong> 技能节点处于边缘，若强化该领域，将解锁“全栈架构”新路径。</span>
+</li>
+</ul>
+<button class="mt-6 w-full gradient-primary text-on-primary font-medium py-3 rounded-xl hover:opacity-90 transition-opacity">
+                        生成专属学习路线
+                    </button>
+</div>
+</aside>
+</div>
+</main>
+<!-- Footer Component -->
+<footer class="bg-white dark:bg-slate-950 full-width border-t border-slate-100 dark:border-slate-900 border-t border-slate-100 dark:border-slate-800 flat mt-auto">
+<div class="flex flex-col md:flex-row justify-between items-center px-12 py-8 w-full mt-20 max-w-[1440px] mx-auto">
+<div class="text-[#394851] dark:text-slate-500 font-['Inter'] text-xs tracking-wide">
+                © 2024 GraphHire 图谱智聘. 认知导视 AI 招聘系统
+            </div>
+<div class="flex gap-6 mt-4 md:mt-0">
+<a class="font-['Inter'] text-xs tracking-wide text-slate-400 hover:text-[#003DA6] hover:underline underline-offset-4 transition-all" href="#">关于我们</a>
+<a class="font-['Inter'] text-xs tracking-wide text-slate-400 hover:text-[#003DA6] hover:underline underline-offset-4 transition-all" href="#">联系方式</a>
+<a class="font-['Inter'] text-xs tracking-wide text-slate-400 hover:text-[#003DA6] hover:underline underline-offset-4 transition-all" href="#">服务条款</a>
+<a class="font-['Inter'] text-xs tracking-wide text-slate-400 hover:text-[#003DA6] hover:underline underline-offset-4 transition-all" href="#">隐私政策</a>
+</div>
+</div>
+</footer>
+</body></html>

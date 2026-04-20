@@ -110,7 +110,7 @@ ai:
   parser:
     ocr:
       enabled: true
-      provider: tencent
+      provider: aliyun
       fallback-min-text-length: 20
       tencent:
         secret-id: ${TENCENT_OCR_SECRET_ID:}

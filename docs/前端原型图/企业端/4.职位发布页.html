@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>职位发布 - GraphHire</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "inverse-primary": "#b4c5ff",
+                      "tertiary": "#394851",
+                      "surface-container-highest": "#d5e4fa",
+                      "on-surface": "#0e1c2c",
+                      "surface-bright": "#f8f9ff",
+                      "on-background": "#0e1c2c",
+                      "surface-dim": "#cddbf1",
+                      "surface-container": "#e5eeff",
+                      "inverse-on-surface": "#eaf1ff",
+                      "surface-variant": "#d5e4fa",
+                      "on-tertiary-fixed-variant": "#394952",
+                      "on-tertiary-fixed": "#0d1d25",
+                      "error-container": "#ffdad6",
+                      "tertiary-fixed": "#d4e5f0",
+                      "primary-container": "#0052d9",
+                      "on-primary-container": "#cbd6ff",
+                      "primary-fixed-dim": "#b4c5ff",
+                      "on-primary": "#ffffff",
+                      "secondary-fixed-dim": "#b8c4ff",
+                      "on-primary-fixed-variant": "#003ea8",
+                      "on-secondary-fixed-variant": "#0737b8",
+                      "inverse-surface": "#243142",
+                      "tertiary-container": "#506069",
+                      "on-primary-fixed": "#00174b",
+                      "outline": "#737686",
+                      "on-secondary-fixed": "#001354",
+                      "surface-tint": "#0353da",
+                      "on-error-container": "#93000a",
+                      "secondary-fixed": "#dde1ff",
+                      "primary": "#003da6",
+                      "on-secondary-container": "#fffbff",
+                      "surface": "#f8f9ff",
+                      "tertiary-fixed-dim": "#b8c9d3",
+                      "surface-container-high": "#dbe9ff",
+                      "surface-container-low": "#eef4ff",
+                      "on-secondary": "#ffffff",
+                      "secondary": "#2d50cd",
+                      "secondary-container": "#4a6ae7",
+                      "outline-variant": "#c3c6d7",
+                      "surface-container-lowest": "#ffffff",
+                      "on-error": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "background": "#f8f9ff",
+                      "error": "#ba1a1a",
+                      "on-surface-variant": "#434654",
+                      "primary-fixed": "#dbe1ff",
+                      "on-tertiary-container": "#c9dae5"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {},
+              "fontFamily": {
+                      "headline": [
+                              "Manrope"
+                      ],
+                      "body": [
+                              "Inter",
+                              "PingFang SC",
+                              "Microsoft YaHei",
+                              "sans-serif"
+                      ],
+                      "label": [
+                              "Inter"
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+          body { font-family: 'Inter', "PingFang SC", "Microsoft YaHei", sans-serif; }
+          h1, h2, h3, h4, h5, h6, .font-headline { font-family: 'Manrope', sans-serif; }
+      </style>
+</head>
+<body class="bg-surface text-on-surface flex min-h-screen">
+<!-- SideNavBar -->
+<nav class="bg-[#F8F9FF] dark:bg-slate-950 h-screen w-64 flex flex-col fixed left-0 top-0 border-r border-transparent bg-slate-100/50 dark:bg-slate-900/50 hidden md:flex z-10">
+<div class="p-6">
+<h1 class="text-lg font-black text-[#003DA6] font-headline tracking-tight">GraphHire</h1>
+<p class="text-xs text-tertiary mt-1">企业管理中心</p>
+</div>
+<div class="flex flex-col gap-2 p-4 h-full">
+<a class="text-[#394851] dark:text-slate-400 hover:bg-[#F1F3F9] dark:hover:bg-slate-800 rounded-xl hover:translate-x-1 transition-transform duration-200 flex items-center px-4 py-3 gap-3 font-['Manrope'] text-sm font-medium" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </a>
+<a class="bg-gradient-to-r from-[#003DA6] to-[#0052D9] text-white rounded-xl shadow-lg shadow-blue-500/20 scale-95 flex items-center px-4 py-3 gap-3 font-['Manrope'] text-sm font-medium" href="#">
+<span class="material-symbols-outlined">work</span>
+                职位管理
+            </a>
+<a class="text-[#394851] dark:text-slate-400 hover:bg-[#F1F3F9] dark:hover:bg-slate-800 rounded-xl hover:translate-x-1 transition-transform duration-200 flex items-center px-4 py-3 gap-3 font-['Manrope'] text-sm font-medium" href="#">
+<span class="material-symbols-outlined">psychology</span>
+                候选人推荐
+            </a>
+<a class="text-[#394851] dark:text-slate-400 hover:bg-[#F1F3F9] dark:hover:bg-slate-800 rounded-xl hover:translate-x-1 transition-transform duration-200 flex items-center px-4 py-3 gap-3 font-['Manrope'] text-sm font-medium" href="#">
+<span class="material-symbols-outlined">group</span>
+                员工管理
+            </a>
+<a class="text-[#394851] dark:text-slate-400 hover:bg-[#F1F3F9] dark:hover:bg-slate-800 rounded-xl hover:translate-x-1 transition-transform duration-200 flex items-center px-4 py-3 gap-3 font-['Manrope'] text-sm font-medium" href="#">
+<span class="material-symbols-outlined">settings</span>
+                设置
+            </a>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="flex-1 md:ml-64 relative overflow-hidden">
+<!-- TopAppBar (Mobile & Web Header equivalent) -->
+<header class="bg-[#F8F9FF] dark:bg-slate-950 docked full-width top-0 bg-[#F1F3F9] dark:bg-slate-900 flat no shadows flex justify-between items-center w-full px-6 py-3 h-16 sticky z-10 md:hidden">
+<div class="text-xl font-bold text-[#003DA6] dark:text-blue-500 font-headline">GraphHire</div>
+<div class="flex items-center gap-4 text-[#003DA6] dark:text-blue-400">
+<button class="hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors p-2 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors p-2 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<div class="p-6 md:p-10 max-w-5xl mx-auto pb-32">
+<div class="mb-10">
+<h2 class="text-3xl font-headline font-bold text-on-surface mb-2">发布新职位</h2>
+<p class="text-on-surface-variant font-body">利用 AI 图谱能力，快速精准定义您的招聘需求。</p>
+</div>
+<!-- Notice -->
+<div class="bg-[#FFF8E1] border border-[#FFECB3] rounded-lg p-4 mb-8 flex items-start gap-3">
+<span class="material-symbols-outlined text-[#FFB300] mt-0.5" style="font-variation-settings: 'FILL' 1;">info</span>
+<div>
+<h4 class="font-semibold text-[#FF8F00] text-sm">账号认证提示</h4>
+<p class="text-sm text-[#F57C00] mt-1">您所在的企业尚未完成主体认证。发布后需经审核通过才可对候选人展示。</p>
+</div>
+</div>
+<!-- Stepper -->
+<div class="flex items-center mb-12 w-full">
+<div class="flex items-center text-primary relative">
+<div class="w-10 h-10 rounded-full bg-primary-container text-white flex items-center justify-center font-bold font-headline shadow-md">1</div>
+<div class="absolute top-12 left-1/2 -translate-x-1/2 whitespace-nowrap text-sm font-semibold">基础信息</div>
+</div>
+<div class="flex-1 h-1 bg-surface-container mx-4 rounded-full relative">
+<div class="absolute top-0 left-0 h-full w-1/2 bg-gradient-to-r from-primary to-primary-container rounded-full opacity-30"></div>
+</div>
+<div class="flex items-center text-outline relative">
+<div class="w-10 h-10 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center font-bold font-headline">2</div>
+<div class="absolute top-12 left-1/2 -translate-x-1/2 whitespace-nowrap text-sm font-medium">能力要求</div>
+</div>
+<div class="flex-1 h-1 bg-surface-container mx-4 rounded-full"></div>
+<div class="flex items-center text-outline relative">
+<div class="w-10 h-10 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center font-bold font-headline">3</div>
+<div class="absolute top-12 left-1/2 -translate-x-1/2 whitespace-nowrap text-sm font-medium">职位描述</div>
+</div>
+</div>
+<!-- Content Area - Step 1: 基础信息 -->
+<div class="bg-surface-container-lowest rounded-xl p-8 mb-8">
+<h3 class="text-xl font-headline font-semibold text-on-surface mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">feed</span>
+                    基础信息
+                </h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="flex flex-col gap-2">
+<label class="text-sm font-semibold text-on-surface">职位名称</label>
+<input class="w-full bg-surface-container-lowest border-0 rounded-sm focus:ring-0 px-4 py-3 text-on-surface font-body outline outline-1 outline-outline-variant focus:outline-primary shadow-sm" placeholder="如：高级前端工程师" type="text" value="资深前端架构师"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-sm font-semibold text-on-surface">所属部门</label>
+<select class="w-full bg-surface-container-lowest border-0 rounded-sm focus:ring-0 px-4 py-3 text-on-surface font-body outline outline-1 outline-outline-variant focus:outline-primary shadow-sm appearance-none">
+<option>研发中心 - 架构部</option>
+<option>产品运营部</option>
+</select>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-sm font-semibold text-on-surface">职位类别</label>
+<select class="w-full bg-surface-container-lowest border-0 rounded-sm focus:ring-0 px-4 py-3 text-on-surface font-body outline outline-1 outline-outline-variant focus:outline-primary shadow-sm appearance-none">
+<option>技术 / 前端开发 / 架构师</option>
+</select>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-sm font-semibold text-on-surface">招聘人数</label>
+<input class="w-full bg-surface-container-lowest border-0 rounded-sm focus:ring-0 px-4 py-3 text-on-surface font-body outline outline-1 outline-outline-variant focus:outline-primary shadow-sm" type="number" value="1"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-sm font-semibold text-on-surface">工作城市</label>
+<input class="w-full bg-surface-container-lowest border-0 rounded-sm focus:ring-0 px-4 py-3 text-on-surface font-body outline outline-1 outline-outline-variant focus:outline-primary shadow-sm" type="text" value="北京 / 杭州"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-sm font-semibold text-on-surface">薪资范围 (月薪)</label>
+<div class="flex items-center gap-2">
+<input class="w-full bg-surface-container-lowest border-0 rounded-sm focus:ring-0 px-4 py-3 text-on-surface font-body outline outline-1 outline-outline-variant focus:outline-primary shadow-sm" placeholder="最低(k)" type="number" value="40"/>
+<span class="text-tertiary">-</span>
+<input class="w-full bg-surface-container-lowest border-0 rounded-sm focus:ring-0 px-4 py-3 text-on-surface font-body outline outline-1 outline-outline-variant focus:outline-primary shadow-sm" placeholder="最高(k)" type="number" value="70"/>
+<select class="w-32 bg-surface-container-lowest border-0 rounded-sm focus:ring-0 px-4 py-3 text-on-surface font-body outline outline-1 outline-outline-variant focus:outline-primary shadow-sm appearance-none">
+<option>14薪</option>
+<option>15薪</option>
+</select>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Area -->
+<div class="flex justify-end gap-4 mt-8">
+<button class="px-6 py-3 bg-surface-container-high text-primary rounded-md font-semibold hover:bg-surface-variant transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">drafts</span>
+                    存为草稿
+                </button>
+<button class="px-8 py-3 bg-gradient-to-br from-primary to-primary-container text-white rounded-md font-semibold hover:opacity-90 transition-opacity flex items-center gap-2 shadow-lg shadow-blue-900/10">
+                    下一步
+                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+</main>
+</body></html>
