@@ -106,6 +106,20 @@ ai:
     api-key: ${DEEPSEEK_API_KEY:}
     url: https://api.deepseek.com/v1
 
+
+  parser:
+    ocr:
+      enabled: true
+      provider: tencent
+      fallback-min-text-length: 20
+      tencent:
+        secret-id: ${TENCENT_OCR_SECRET_ID:}
+        secret-key: ${TENCENT_OCR_SECRET_KEY:}
+        region: ap-guangzhou
+      aliyun:
+        access-key-id: ${ALIYUN_OCR_ACCESS_KEY_ID:}
+        access-key-secret: ${ALIYUN_OCR_ACCESS_KEY_SECRET:}
+        endpoint: ocr-api.cn-hangzhou.aliyuncs.com
 # RustFS Configuration
 rustfs:
   endpoint: http://localhost:9000
@@ -138,3 +152,4 @@ springdoc:
     doc-expansion: none
     filter: true
     display-request-duration: true
+

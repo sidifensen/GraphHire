@@ -1,5 +1,6 @@
 package com.graphhire.resume.infrastructure.mq;
 
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.graphhire.notification.domain.model.Notification;
 import com.graphhire.notification.domain.repository.NotificationRepository;
@@ -69,6 +70,11 @@ public class ResumeParseMQConsumer implements RocketMQListener<String> {
         try {
             // 步骤3：从RustFS读取文件并用Tika提取文本
             String text = documentParser.extractText(resume.getFilePath());
+
+            // 步骤3.1：空文本保护
+            if (StrUtil.isBlank(text)) {
+                throw new RuntimeException("文档未提取到有效文本");
+            }
 
             // 步骤4：调用DeepSeek提取结构化信息
             Map<String, Object> parseResult = deepSeekClient.parseResume(text);

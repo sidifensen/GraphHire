@@ -20,6 +20,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -29,6 +31,8 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ResumeParseMQConsumerTest {
+
+    private static final String RESUME_PARSED_TOPIC = "resume-parsed";
 
     @Mock
     private ResumeRepository resumeRepository;
@@ -44,6 +48,9 @@ class ResumeParseMQConsumerTest {
 
     @Mock
     private NotificationRepository notificationRepository;
+
+    @Mock
+    private org.apache.rocketmq.spring.core.RocketMQTemplate rocketMQTemplate;
 
     @InjectMocks
     private ResumeParseMQConsumer consumer;
@@ -81,8 +88,21 @@ class ResumeParseMQConsumerTest {
             when(resumeRepository.findById(resumeId)).thenReturn(Optional.of(resume));
             when(documentParser.extractText(anyString())).thenReturn("This is resume content");
             when(deepSeekClient.parseResume(anyString())).thenReturn(parseResult);
-            when(resumeRepository.save(any(Resume.class))).thenReturn(resume);
-            when(parseTaskRepository.save(any(ParseTask.class))).thenReturn(task);
+
+            List<ParseTask> savedTasks = new ArrayList<>();
+            when(parseTaskRepository.save(any(ParseTask.class))).thenAnswer(invocation -> {
+                ParseTask saved = invocation.getArgument(0);
+                savedTasks.add(snapshot(saved));
+                return saved;
+            });
+
+            List<Resume> savedResumes = new ArrayList<>();
+            when(resumeRepository.save(any(Resume.class))).thenAnswer(invocation -> {
+                Resume saved = invocation.getArgument(0);
+                savedResumes.add(snapshot(saved));
+                return saved;
+            });
+
             when(notificationRepository.save(any(Notification.class))).thenAnswer(invocation -> {
                 Notification n = invocation.getArgument(0);
                 n.setId(1L);
@@ -93,23 +113,21 @@ class ResumeParseMQConsumerTest {
             consumer.onMessage(resumeId + "," + parseTaskId);
 
             // Then
-            ArgumentCaptor<ParseTask> taskCaptor = ArgumentCaptor.forClass(ParseTask.class);
-            verify(parseTaskRepository, times(2)).save(taskCaptor.capture());
-
-            ParseTask savedTask = taskCaptor.getAllValues().get(0);
+            verify(parseTaskRepository, times(2)).save(any(ParseTask.class));
+            ParseTask savedTask = savedTasks.get(0);
             assertEquals(ParseTask.TaskStatus.RUNNING, savedTask.getStatus());
+            assertNull(savedTask.getCompletedAt());
 
-            savedTask = taskCaptor.getAllValues().get(1);
+            savedTask = savedTasks.get(1);
             assertEquals(ParseTask.TaskStatus.SUCCESS, savedTask.getStatus());
             assertNotNull(savedTask.getCompletedAt());
 
-            ArgumentCaptor<Resume> resumeCaptor = ArgumentCaptor.forClass(Resume.class);
-            verify(resumeRepository, times(2)).save(resumeCaptor.capture());
-
-            Resume savedResume = resumeCaptor.getAllValues().get(0);
+            verify(resumeRepository, times(2)).save(any(Resume.class));
+            Resume savedResume = savedResumes.get(0);
             assertEquals(ParseStatus.PARSING, savedResume.getStatus());
+            assertNull(savedResume.getParseResult());
 
-            savedResume = resumeCaptor.getAllValues().get(1);
+            savedResume = savedResumes.get(1);
             assertEquals(ParseStatus.SUCCESS, savedResume.getStatus());
             assertNotNull(savedResume.getParseResult());
             assertEquals(BigDecimal.valueOf(0.85), savedResume.getConfidence());
@@ -249,5 +267,79 @@ class ResumeParseMQConsumerTest {
             assertEquals(ParseStatus.SUCCESS, savedResume.getStatus());
             assertEquals("{}", savedResume.getParseResult());
         }
+
+        @Test
+        @DisplayName("文档提取文本为空时标记为失败，不创建通知也不发送事件")
+        void consumeResumeParse_BlankText_Fails() {
+            // Given
+            Long resumeId = 1L;
+            Long parseTaskId = 1L;
+
+            Resume resume = new Resume();
+            resume.setId(resumeId);
+            resume.setUserId(100L);
+            resume.setFilePath("/path/to/resume.pdf");
+            resume.setStatus(ParseStatus.PENDING);
+
+            ParseTask task = new ParseTask();
+            task.setId(parseTaskId);
+            task.setResumeId(resumeId);
+            task.setStatus(ParseTask.TaskStatus.PENDING);
+
+            when(parseTaskRepository.findById(parseTaskId)).thenReturn(Optional.of(task));
+            when(resumeRepository.findById(resumeId)).thenReturn(Optional.of(resume));
+            when(documentParser.extractText(anyString())).thenReturn("   ");
+            when(resumeRepository.save(any(Resume.class))).thenReturn(resume);
+            when(parseTaskRepository.save(any(ParseTask.class))).thenReturn(task);
+
+            // When
+            consumer.onMessage(resumeId + "," + parseTaskId);
+
+            // Then: deepSeekClient不应被调用
+            verify(deepSeekClient, never()).parseResume(anyString());
+
+            // 验证状态为FAILED
+            ArgumentCaptor<Resume> resumeCaptor = ArgumentCaptor.forClass(Resume.class);
+            verify(resumeRepository, times(2)).save(resumeCaptor.capture());
+            Resume savedResume = resumeCaptor.getAllValues().get(1);
+            assertEquals(ParseStatus.FAILED, savedResume.getStatus());
+            assertTrue(savedResume.getParseError().contains("未提取到有效文本"));
+
+            ArgumentCaptor<ParseTask> taskCaptor = ArgumentCaptor.forClass(ParseTask.class);
+            verify(parseTaskRepository, times(2)).save(taskCaptor.capture());
+            ParseTask savedTask = taskCaptor.getAllValues().get(1);
+            assertEquals(ParseTask.TaskStatus.FAILED, savedTask.getStatus());
+            assertTrue(savedTask.getErrorMessage().contains("未提取到有效文本"));
+
+            // 不创建通知
+            verify(notificationRepository, never()).save(any(Notification.class));
+            // 不发送resume-parsed事件
+            verify(rocketMQTemplate, never()).convertAndSend(eq(RESUME_PARSED_TOPIC), anyString());
+        }
+    }
+
+    private static ParseTask snapshot(ParseTask source) {
+        ParseTask copy = new ParseTask();
+        copy.setId(source.getId());
+        copy.setResumeId(source.getResumeId());
+        copy.setJobId(source.getJobId());
+        copy.setTaskType(source.getTaskType());
+        copy.setStatus(source.getStatus());
+        copy.setErrorMessage(source.getErrorMessage());
+        copy.setStartedAt(source.getStartedAt());
+        copy.setCompletedAt(source.getCompletedAt());
+        return copy;
+    }
+
+    private static Resume snapshot(Resume source) {
+        Resume copy = new Resume();
+        copy.setId(source.getId());
+        copy.setUserId(source.getUserId());
+        copy.setFilePath(source.getFilePath());
+        copy.setStatus(source.getStatus());
+        copy.setParseResult(source.getParseResult());
+        copy.setParseError(source.getParseError());
+        copy.setConfidence(source.getConfidence());
+        return copy;
     }
 }
