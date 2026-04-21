@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import '@/styles/globals.css';
 
 export const metadata: Metadata = {
   title: 'GraphHire 图谱智聘 - 管理端',

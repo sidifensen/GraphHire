@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { fetchPublicJobs } from '@/lib/api/homeApi';
 import type { HomeJobCard } from '@/lib/types/home';
 
-export default function JobsPage() {
+function JobsContent() {
   const searchParams = useSearchParams();
   const [keyword, setKeyword] = useState(searchParams.get('keyword') ?? '');
   const [city, setCity] = useState(searchParams.get('city') ?? '');
@@ -121,5 +121,13 @@ export default function JobsPage() {
         </section>
       </main>
     </div>
+  );
+}
+
+export default function JobsPage() {
+  return (
+    <Suspense fallback={<div className="flex-grow flex flex-col min-h-screen items-center justify-center">加载中...</div>}>
+      <JobsContent />
+    </Suspense>
   );
 }

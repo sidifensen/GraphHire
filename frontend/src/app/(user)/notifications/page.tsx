@@ -53,7 +53,7 @@ function getAction(notification: Notification) {
   }
 }
 
-function formatTime(value: string) {
+function formatTime(value: string | undefined) {
   if (!value) return '未知时间';
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? value : date.toLocaleString('zh-CN', { hour12: false });

@@ -46,7 +46,7 @@ export default function JobCard({ job }: JobCardProps) {
         <div className="flex items-center gap-3">
           {hrAvatar ? (
             <Image
-              alt={hrName}
+              alt={hrName ?? ''}
               src={hrAvatar}
               width={32}
               height={32}
@@ -57,7 +57,7 @@ export default function JobCard({ job }: JobCardProps) {
               HR
             </div>
           )}
-          <span className="text-sm text-on-surface-variant">{hrName} · {hrTitle}</span>
+          <span className="text-sm text-on-surface-variant">{hrName ?? ''} · {hrTitle ?? ''}</span>
         </div>
 
         {matchScore !== undefined ? (

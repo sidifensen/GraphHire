@@ -118,13 +118,19 @@ class CompanyStaffRepositoryImplTest {
             staff.setUserId(1L);
             staff.setPost("HR");
 
-            when(companyStaffMapper.insert(any(CompanyStaffPO.class))).thenReturn(1);
+            // 模拟 MyBatis-Plus AUTO strategy 的 ID 回填行为
+            doAnswer(invocation -> {
+                CompanyStaffPO po = invocation.getArgument(0);
+                po.setId(1L);
+                return 1;
+            }).when(companyStaffMapper).insert(any(CompanyStaffPO.class));
 
             // When
             CompanyStaff result = companyStaffRepository.save(staff);
 
             // Then
             assertNotNull(result.getId());
+            assertEquals(1L, result.getId());
             verify(companyStaffMapper).insert(any(CompanyStaffPO.class));
         }
 

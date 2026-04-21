@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import UserLayout from '@/components/UserLayout';
 import { resumeApi, type Resume } from '@/lib/api/resume';
 
 function getStatusText(status: Resume['parseStatus']) {
@@ -64,7 +63,7 @@ export default function ManagePage() {
   };
 
   return (
-    <UserLayout contentClassName="flex flex-col h-full overflow-y-auto relative p-4 md:p-8">
+    <div className="flex flex-col h-full overflow-y-auto relative p-4 md:p-8">
       <header className="mb-8 flex justify-between items-end shrink-0">
         <div>
           <h1 className="text-3xl font-headline font-extrabold text-primary tracking-tighter">简历管理</h1>
@@ -131,6 +130,6 @@ export default function ManagePage() {
           )}
         </div>
       </div>
-    </UserLayout>
+    </div>
   );
 }

@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import UserLayout from '@/components/UserLayout';
 import { authStore } from '@/lib/stores/auth-store';
 import { personApi, type PersonProfile } from '@/lib/api/person';
 
@@ -68,7 +67,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <UserLayout>
+    <>
       <div className="flex justify-between items-end mb-10">
         <div>
           <h1 className="text-3xl font-headline font-bold text-on-surface mb-2">个人资料</h1>
@@ -175,7 +174,7 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
-    </UserLayout>
+    </>
   );
 }
 

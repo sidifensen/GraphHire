@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import EnterpriseContent from '@/components/enterprise/EnterpriseContent';
 import EnterprisePageHeader from '@/components/enterprise/EnterprisePageHeader';
@@ -8,7 +8,7 @@ import { companyApi } from '@/lib/api/company';
 import { recommendationName, recommendationScore } from '@/lib/mappers/enterpriseMapper';
 import type { EnterpriseJobListItem, EnterpriseRecommendation } from '@/lib/types/enterprise';
 
-export default function RecommendationsPage() {
+function RecommendationsContent() {
   const searchParams = useSearchParams();
   const [jobs, setJobs] = useState<EnterpriseJobListItem[]>([]);
   const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
@@ -93,7 +93,7 @@ export default function RecommendationsPage() {
     <EnterpriseContent>
       <EnterprisePageHeader
         title="智能推荐引擎"
-        description={selectedJob ? `基于职位“${selectedJob.title}”展示真实候选人匹配结果。` : '请选择已发布职位查看真实推荐结果。'}
+        description={selectedJob ? `基于职位"${selectedJob.title}"展示真实候选人匹配结果。` : '请选择已发布职位查看真实推荐结果。'}
         action={
           <div className="relative">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-tertiary text-[20px]">search</span>
@@ -140,7 +140,7 @@ export default function RecommendationsPage() {
               <h3 className="font-headline font-semibold text-on-surface mb-4 text-base">推荐说明</h3>
               <div className="space-y-3 text-sm text-on-surface-variant">
                 <p>推荐列表来自后端真实匹配接口，当前按所选职位实时刷新。</p>
-                <p>“邀请面试”尚未接入专用后端流程，因此本页仅展示推荐结果，不伪造成功提示。</p>
+                <p>"邀请面试"尚未接入专用后端流程，因此本页仅展示推荐结果，不伪造成功提示。</p>
               </div>
             </div>
           </aside>
@@ -223,5 +223,13 @@ export default function RecommendationsPage() {
         </div>
       )}
     </EnterpriseContent>
+  );
+}
+
+export default function RecommendationsPage() {
+  return (
+    <Suspense fallback={<div className="flex-grow flex items-center justify-center">加载中...</div>}>
+      <RecommendationsContent />
+    </Suspense>
   );
 }

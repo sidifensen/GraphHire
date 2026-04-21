@@ -1,6 +1,14 @@
 /// <reference types="vitest/globals" />
 import '@testing-library/jest-dom';
 
+// Polyfill ResizeObserver for recharts in jsdom
+class ResizeObserverMock {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+window.ResizeObserver = ResizeObserverMock;
+
 // Mock next/navigation - must use vi.mock at module level
 vi.mock('next/navigation', () => ({
   useRouter: () => ({

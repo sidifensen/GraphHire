@@ -1,5 +1,6 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Sidebar from '@/components/Sidebar';
@@ -9,12 +10,17 @@ interface UserLayoutProps {
   contentClassName?: string;
 }
 
+const SIDEBAR_ROUTE_PREFIXES = ['/profile', '/resume'];
+
 export default function UserLayout({ children, contentClassName = '' }: UserLayoutProps) {
+  const pathname = usePathname();
+  const showSidebar = SIDEBAR_ROUTE_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+
   return (
     <div className="bg-surface text-on-surface min-h-screen flex flex-col antialiased">
       <Header />
       <div className="flex flex-1 max-w-[1440px] mx-auto w-full">
-        <Sidebar />
+        {showSidebar ? <Sidebar /> : null}
         <main className={`flex-1 p-8 md:p-12 pb-24 ${contentClassName}`}>
           {children}
         </main>

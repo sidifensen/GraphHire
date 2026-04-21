@@ -26,7 +26,10 @@ export default function AdminHeader({ title }: AdminHeaderProps) {
   }, []);
 
   const handleLogout = async () => {
-    await logoutWithServerInvalidation(router.push, '/admin/login');
+    await logoutWithServerInvalidation((path) => {
+      // 使用 window.location.href 强制页面重新加载，确保状态完全重置
+      window.location.href = path;
+    }, '/admin/login');
   };
 
   return (

@@ -51,9 +51,9 @@
 
 ## 文档布局
 
-- `docs/superpowers/specs/` — 设计规格文档（`YYYY-MM-DD-<topic>-design.md`）
-- `docs/superpowers/plans/` — 实现计划（`YYYY-MM-DD-<feature>.md`）
-- `docs/superpowers/acceptance/` — 验收标准文档（`YYYY-MM-DD-<feature>-acceptance.md`）
+- `docs/superpowers/specs/` — 设计规格文档（`YYYY-MM-DD-HHMMSS-<topic>-design.md`）
+- `docs/superpowers/plans/` — 实现计划（`YYYY-MM-DD-HHMMSS-<feature>.md`）
+- `docs/superpowers/acceptance/` — 验收标准文档（`YYYY-MM-DD-HHMMSS-<feature>-acceptance.md`）
 - `RELEASE-NOTES.md` — 版本历史记录
 
 ---

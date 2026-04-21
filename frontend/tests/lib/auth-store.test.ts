@@ -1,4 +1,61 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+
+// Mock localStorage
+const localStorageMock = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
+};
+vi.stubGlobal('localStorage', localStorageMock);
+
+// Mock the auth-store before importing it
+vi.mock('@/lib/stores/auth-store', () => {
+  const { create } = require('zustand');
+  const { persist } = require('zustand/middleware');
+
+  interface AuthState {
+    accessToken: string | null;
+    refreshToken: string | null;
+    user: { id: number; username: string; type: 'PERSON' | 'COMPANY' } | null;
+    isAuthenticated: boolean;
+    setAuth: (tokens: { accessToken: string; refreshToken?: string }, user: { id: number; username: string; type: 'PERSON' | 'COMPANY' }) => void;
+    logout: () => void;
+  }
+
+  const authStore = create<AuthState>()(
+    persist(
+      (set) => ({
+        accessToken: null,
+        refreshToken: null,
+        user: null,
+        isAuthenticated: false,
+
+        setAuth: (tokens, user) =>
+          set({
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken || null,
+            user,
+            isAuthenticated: true,
+          }),
+
+        logout: () =>
+          set({
+            accessToken: null,
+            refreshToken: null,
+            user: null,
+            isAuthenticated: false,
+          }),
+      }),
+      {
+        name: 'auth-storage',
+      }
+    )
+  );
+
+  return { authStore };
+});
+
 import { authStore } from '@/lib/stores/auth-store';
 
 describe('authStore', () => {
@@ -10,6 +67,9 @@ describe('authStore', () => {
       user: null,
       isAuthenticated: false,
     });
+    localStorageMock.getItem.mockReturnValue(null);
+    localStorageMock.setItem.mockClear();
+    localStorageMock.removeItem.mockClear();
   });
 
   it('初始状态未认证', () => {
