@@ -55,7 +55,6 @@ const config: Config = {
         'on-primary-fixed-variant': '#003EA8',
         'secondary-fixed-dim': '#B8C4FF',
         'tertiary-fixed-dim': '#B8C9D3',
-        'on-secondary-container': '#FFFBFF',
       },
       fontFamily: {
         headline: ['Manrope', 'sans-serif'],

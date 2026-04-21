@@ -33,9 +33,47 @@ export interface PersonRegisterRequest {
   verifyCode: string;
 }
 
+export interface CompanyRegisterRequest {
+  username: string;
+  password: string;
+  verifyCode: string;
+  companyName?: string;
+  unifiedSocialCreditCode?: string;
+}
+
 export interface RegisterResponse {
   userId: number;
   message: string;
+}
+
+export interface SendVerifyCodeRequest {
+  email: string;
+  type: 'register' | 'reset';
+}
+
+export interface ForgotPasswordRequest {
+  email: string;
+  verifyCode: string;
+  newPassword: string;
+}
+
+export interface ResetPasswordRequest {
+  email: string;
+  verifyCode: string;
+  newPassword: string;
+}
+
+export interface RefreshTokenRequest {
+  refreshToken: string;
+}
+
+export interface ChangePasswordRequest {
+  oldPassword: string;
+  newPassword: string;
+}
+
+export interface SendResetCodeRequest {
+  email: string;
 }
 
 // API Result wrapper (for type extraction)

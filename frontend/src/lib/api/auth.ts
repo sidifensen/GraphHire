@@ -3,6 +3,7 @@ import type {
   LoginRequest,
   LoginResponse,
   PersonRegisterRequest,
+  CompanyRegisterRequest,
   RegisterResponse,
   SendVerifyCodeRequest,
   ForgotPasswordRequest,
@@ -23,7 +24,7 @@ export const authApi = {
     return response.data;
   },
 
-  companyRegister: async (data: PersonRegisterRequest): Promise<LoginResponse> => {
+  companyRegister: async (data: CompanyRegisterRequest): Promise<LoginResponse> => {
     const response = await apiClient.post<LoginResponse>('/auth/register/company', data);
     return response.data;
   },
