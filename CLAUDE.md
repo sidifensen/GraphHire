@@ -7,23 +7,44 @@
 - 允许的前缀：`feat`、`fix`、`docs`、`refactor`、`test`、`chore`
 - 示例：`feat: 新增职位详情页筛选条件`
 
-> **强制要求：开发前必须严格按照以下 superpowers-plus 流程执行，禁止跳过任何步骤**
+> **强制要求：除符合简单任务豁免规则外，开发前必须遵循以下 superpowers-plus 流程，禁止跳过。**
+
+## superpowers-plus 简单任务豁免规则
+
+默认按完整流程执行。满足"低风险 + 非行为变更 + 无需设计/计划/测试"可豁免直接修改。
+
+- 可豁免：文档/注释/排版/格式化、元信息、局部小修正
+- 不可豁免：新功能、业务逻辑/接口/缓存变更、UI交互、多模块
+- 存疑时：默认走完整流程
 
 ## superpowers-plus 标准流程
 
-1. **brainstorming** — 需求澄清（编写代码前激活）
-2. **writing-plans** — 任务分解（设计批准后激活）
-3. **executing-plans** — 计划执行（含并行/串行子代理自动路由）
-4. **test-driven-development** — 测试驱动（RED-GREEN-REFACTOR）
-5. **requesting-code-review** — 代码评审（任务间隙激活）
-6. **finishing-a-development-branch** — 分支完成（任务完成后激活）
+1. **brainstorming** — 需求澄清
+2. **writing-plans** — 任务分解
+3. **test-driven-development** — 先写失败测试，再写生产代码，遵循 RED-GREEN-REFACTOR
+4. **executing-plans** — 按计划执行实现，过程严格遵循 TDD，并优先使用子 agent 分工推进
+5. **requesting-code-review** — 关键里程碑完成后、提交前或合并前进行代码评审
+6. **finishing-a-development-branch** — 任务完成后收尾
+
+### 执行约束
+
+- 默认情况下，**executing-plans** 阶段不开启分支树/工作树；如确需开启，必须先询问用户并获得明确同意。
+- 如任务可安全拆分，应尽量使用子 agent 并行/分工执行，减少主会话上下文污染。
+- 子 agent 仅用于边界清晰、职责独立、写入范围可控的子任务；若处于关键路径且结果需立即依赖，优先主会话直接处理。
 
 ### 核心原则
 
-- **Iron Law (TDD)** — 没有失败测试就不写生产代码；遵循 RED-GREEN-REFACTOR 节奏
-- **Iron Law (Debugging)** — 没有根因分析就不修 bug，禁止猜测修复
-- **流程优于猜测** — 先验证再断言，禁止跳过步骤
-- **自我评估** — 使用内联检查表自检，而非发起子代理 review 循环
+- **TDD 铁律**：没有失败测试就不写生产代码。
+- **Debug 铁律**：没有根因分析就不修 bug。
+- **流程优于猜测**：先验证再断言。
+- **自我评估**：使用内联检查表自检，不发起子代理 review 循环。
+
+### 规则优先级
+
+- 用户当前回合明确要求最高。
+- 仓库规范优先于通用 superpowers 默认行为。
+- 若规则冲突，以本仓库规范为准。
+- 若有疑问，选择更保守、更可验证的执行方式。
 
 ### Hutool 工具规范
 
