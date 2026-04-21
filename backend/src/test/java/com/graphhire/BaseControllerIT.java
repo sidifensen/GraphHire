@@ -105,18 +105,23 @@ public abstract class BaseControllerIT {
     }
 
     private static Long createUserViaJdbc(JdbcTemplate jdbc, String username, String password, String userType) {
+        String encryptedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
+        int ut = "PERSON".equals(userType) ? 1 : ("COMPANY".equals(userType) ? 2 : 3);
+
         // Check if user already exists
         Integer count = jdbc.queryForObject(
             "SELECT COUNT(*) FROM sys_user WHERE username = ?", Integer.class, username);
         if (count != null && count > 0) {
-            // Return existing user ID
-            return jdbc.queryForObject(
+            Long existingUserId = jdbc.queryForObject(
                 "SELECT id FROM sys_user WHERE username = ?", Long.class, username);
+            jdbc.update(
+                "UPDATE sys_user SET password = ?, user_type = ?, status = 1, deleted = 0, update_time = NOW() WHERE id = ?",
+                encryptedPassword, ut, existingUserId
+            );
+            return existingUserId;
         }
 
-        String encryptedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
         // user_type: 1=PERSON, 2=COMPANY, 3=ADMIN; status: 1=VERIFIED
-        int ut = "PERSON".equals(userType) ? 1 : ("COMPANY".equals(userType) ? 2 : 3);
         jdbc.update(
             "INSERT INTO sys_user (username, password, user_type, status, deleted, last_login_time, create_time, update_time) " +
             "VALUES (?, ?, ?, 1, 0, NULL, NOW(), NOW())",

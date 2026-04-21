@@ -1,180 +1,140 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import EnterpriseContent from '@/components/enterprise/EnterpriseContent';
+import { companyApi } from '@/lib/api/company';
+import type { EnterpriseDashboard } from '@/lib/types/enterprise';
+import { dashboardStatusText } from '@/lib/mappers/enterpriseMapper';
+
 export default function EnterpriseDashboardPage() {
+  const [data, setData] = useState<EnterpriseDashboard | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadDashboard = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await companyApi.getDashboard();
+      setData(response);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '企业仪表盘加载失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadDashboard();
+  }, []);
+
   return (
-    <div className="flex-1 overflow-y-auto p-8 space-y-8 pb-20 max-w-[1440px] mx-auto w-full">
-      {/* Welcome Header */}
+    <EnterpriseContent>
       <div>
         <h2 className="text-3xl font-bold font-headline text-on-surface">欢迎回来，GraphHire 企业管理中心</h2>
         <p className="text-on-surface-variant mt-2 text-sm max-w-2xl">您的AI智能招聘助手已就绪。正在为您实时分析人才图谱与职位匹配度。</p>
       </div>
-      {/* Bento Grid Layout */}
-      <div className="grid grid-cols-12 gap-6">
-        {/* Main Stats (Left 8 cols) */}
-        <div className="col-span-12 lg:col-span-8 space-y-6">
-          {/* Stat Cards Row */}
-          <div className="grid grid-cols-3 gap-6">
-            <div className="bg-surface-container-lowest rounded-xl p-6 relative overflow-hidden group">
-              <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary-fixed rounded-full opacity-20 blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
-              <p className="text-sm text-on-surface-variant font-medium mb-2">待处理投递</p>
-              <div className="flex items-end gap-2">
-                <span className="text-4xl font-headline font-bold text-primary">24</span>
-                <span className="text-xs text-secondary-container mb-1">+3 今日</span>
-              </div>
+
+      {loading ? (
+        <div className="rounded-xl bg-surface-container-lowest p-6 text-sm text-on-surface-variant">企业仪表盘加载中...</div>
+      ) : error ? (
+        <div className="rounded-xl bg-error-container p-6 text-sm text-error space-y-3">
+          <div>{error}</div>
+          <button className="px-4 py-2 rounded-lg bg-white text-error" onClick={() => void loadDashboard()}>重试</button>
+        </div>
+      ) : !data ? (
+        <div className="rounded-xl bg-surface-container-lowest p-6 text-sm text-on-surface-variant">暂无企业仪表盘数据</div>
+      ) : (
+        <div className="grid grid-cols-12 gap-6">
+          <div className="col-span-12 lg:col-span-8 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <StatCard title="待处理投递" value={data.pendingApplicationCount} highlight="真实数据" />
+              <StatCard title="新匹配候选人" value={data.newMatchCandidateCount} highlight="自动推荐" />
+              <StatCard title="在招职位" value={data.activeJobCount} highlight="已发布" />
             </div>
-            <div className="bg-surface-container-lowest rounded-xl p-6 relative overflow-hidden group">
-              <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary-container rounded-full opacity-10 blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
-              <p className="text-sm text-on-surface-variant font-medium mb-2 flex items-center gap-1">
-                <span className="material-symbols-outlined text-sm text-primary">auto_awesome</span>
-                新匹配候选人
-              </p>
-              <div className="flex items-end gap-2">
-                <span className="text-4xl font-headline font-bold text-primary">156</span>
+
+            <div className="bg-surface-container-lowest rounded-xl p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="font-headline font-semibold text-lg">职位浏览与转化趋势</h3>
+                <span className="text-xs text-on-surface-variant bg-surface-container px-3 py-1 rounded-full">近 7 天</span>
               </div>
-            </div>
-            <div className="bg-surface-container-lowest rounded-xl p-6 relative overflow-hidden group">
-              <div className="absolute -right-4 -top-4 w-24 h-24 bg-tertiary-fixed rounded-full opacity-30 blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
-              <p className="text-sm text-on-surface-variant font-medium mb-2">在招职位</p>
-              <div className="flex items-end gap-2">
-                <span className="text-4xl font-headline font-bold text-on-surface">8</span>
+              <div className="rounded-xl bg-surface-container-low p-6 text-sm text-on-surface-variant">
+                当前后端已接通真实仪表盘数据，趋势统计后续可在此基础上继续扩展。
               </div>
             </div>
           </div>
-          {/* Trend Chart Area */}
-          <div className="bg-surface-container-lowest rounded-xl p-6 h-80 flex flex-col relative overflow-hidden">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="font-headline font-semibold text-lg">职位浏览与转化趋势</h3>
-              <span className="text-xs text-on-surface-variant bg-surface-container px-3 py-1 rounded-full">近 7 天</span>
+
+          <div className="col-span-12 lg:col-span-4 space-y-6">
+            <div className="bg-gradient-to-br from-primary to-primary-container rounded-xl p-6 text-white shadow-lg">
+              <h3 className="font-headline font-semibold text-xl mb-2">启动新招聘</h3>
+              <p className="text-primary-fixed-dim text-sm mb-6">使用AI图谱技术，一键生成岗位描述并精准匹配人才池。</p>
+              <a className="inline-flex items-center gap-2 bg-white text-primary px-5 py-2.5 rounded-lg text-sm font-medium" href="/enterprise/jobs">
+                <span className="material-symbols-outlined text-sm">add</span>
+                发布新职位
+              </a>
             </div>
-            {/* Bar Chart */}
-            <div className="flex-1 bg-surface-container-low rounded-lg relative flex items-end p-4 gap-4">
-              <div className="w-full bg-primary-fixed/50 rounded-t-sm h-[40%] hover:bg-primary-fixed transition-colors"></div>
-              <div className="w-full bg-primary-fixed/50 rounded-t-sm h-[60%] hover:bg-primary-fixed transition-colors"></div>
-              <div className="w-full bg-primary-fixed/50 rounded-t-sm h-[30%] hover:bg-primary-fixed transition-colors"></div>
-              <div className="w-full bg-primary-container/80 rounded-t-sm h-[85%] hover:bg-primary-container transition-colors relative">
-                <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-surface-container-highest text-xs px-2 py-1 rounded">峰值</div>
+            <div className="bg-surface-container-lowest rounded-xl p-6 flex flex-col gap-4">
+              <h3 className="font-headline font-semibold text-lg">快捷操作</h3>
+              <a className="w-full flex items-center justify-between p-4 rounded-lg bg-surface-container-low" href="/enterprise/recommendations">
+                <span className="text-sm font-medium text-on-surface">查看智能推荐</span>
+                <span className="material-symbols-outlined text-tertiary">chevron_right</span>
+              </a>
+              <a className="w-full flex items-center justify-between p-4 rounded-lg bg-surface-container-low" href="/enterprise/employees">
+                <span className="text-sm font-medium text-on-surface">员工管理</span>
+                <span className="material-symbols-outlined text-tertiary">chevron_right</span>
+              </a>
+            </div>
+          </div>
+
+          <div className="col-span-12">
+            <div className="bg-surface-container-lowest rounded-xl p-6 overflow-hidden">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="font-headline font-semibold text-lg">近期发布职位</h3>
+                <a className="text-primary text-sm font-medium hover:underline" href="/enterprise/jobs">查看全部</a>
               </div>
-              <div className="w-full bg-primary-fixed/50 rounded-t-sm h-[50%] hover:bg-primary-fixed transition-colors"></div>
-              <div className="w-full bg-primary-fixed/50 rounded-t-sm h-[70%] hover:bg-primary-fixed transition-colors"></div>
-              <div className="w-full bg-primary-fixed/50 rounded-t-sm h-[45%] hover:bg-primary-fixed transition-colors"></div>
+              {data.recentJobs.length === 0 ? (
+                <div className="text-sm text-on-surface-variant">暂无近期职位</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead>
+                      <tr className="text-on-surface-variant">
+                        <th className="pb-4 font-medium">职位名称</th>
+                        <th className="pb-4 font-medium">发布部门</th>
+                        <th className="pb-4 font-medium text-right">投递数</th>
+                        <th className="pb-4 font-medium text-right">AI 匹配候选人</th>
+                        <th className="pb-4 font-medium text-right">状态</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.recentJobs.map((job) => (
+                        <tr key={job.id} className="border-t border-surface-container-high">
+                          <td className="py-4 font-medium text-on-surface">{job.title}</td>
+                          <td className="py-4 text-on-surface-variant">{job.department || '未填写部门'}</td>
+                          <td className="py-4 text-right">{job.applyCount}</td>
+                          <td className="py-4 text-right">{job.matchCount}</td>
+                          <td className="py-4 text-right">{dashboardStatusText(job)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
         </div>
-        {/* Quick Actions (Right 4 cols) */}
-        <div className="col-span-12 lg:col-span-4 space-y-6 flex flex-col">
-          <div className="bg-gradient-to-br from-primary to-primary-container rounded-xl p-6 text-white shadow-lg relative overflow-hidden flex-shrink-0">
-            <div className="absolute right-0 bottom-0 opacity-10">
-            </div>
-            <h3 className="font-headline font-semibold text-xl mb-2 relative z-10">启动新招聘</h3>
-            <p className="text-primary-fixed-dim text-sm mb-6 relative z-10 max-w-[80%]">使用AI图谱技术，一键生成岗位描述并精准匹配人才池。</p>
-            <button className="bg-white text-primary px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-surface-bright transition-colors relative z-10 flex items-center gap-2">
-              <span className="material-symbols-outlined text-sm">add</span>
-              发布新职位
-            </button>
-          </div>
-          <div className="bg-surface-container-lowest rounded-xl p-6 flex-1 flex flex-col gap-4">
-            <h3 className="font-headline font-semibold text-lg">快捷操作</h3>
-            <button className="w-full flex items-center justify-between p-4 rounded-lg bg-surface-container-low hover:bg-surface-container-high transition-colors group">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-primary">
-                  <span className="material-symbols-outlined">hub</span>
-                </div>
-                <div className="text-left">
-                  <p className="text-sm font-medium text-on-surface group-hover:text-primary transition-colors">查看智能推荐</p>
-                  <p className="text-xs text-on-surface-variant">AI图谱每日推送优质候选</p>
-                </div>
-              </div>
-              <span className="material-symbols-outlined text-tertiary">chevron_right</span>
-            </button>
-            <button className="w-full flex items-center justify-between p-4 rounded-lg bg-surface-container-low hover:bg-surface-container-high transition-colors group">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-tertiary">
-                  <span className="material-symbols-outlined">event</span>
-                </div>
-                <div className="text-left">
-                  <p className="text-sm font-medium text-on-surface">邀请面试</p>
-                  <p className="text-xs text-on-surface-variant">批量安排并同步日历</p>
-                </div>
-              </div>
-              <span className="material-symbols-outlined text-tertiary">chevron_right</span>
-            </button>
-          </div>
-        </div>
-        {/* Recent Jobs Table (Full Width) */}
-        <div className="col-span-12">
-          <div className="bg-surface-container-lowest rounded-xl p-6 overflow-hidden">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="font-headline font-semibold text-lg">近期发布职位</h3>
-              <button className="text-primary text-sm font-medium hover:underline">查看全部</button>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="text-on-surface-variant border-b-0">
-                    <th className="pb-4 font-medium pl-2">职位名称</th>
-                    <th className="pb-4 font-medium">发布部门</th>
-                    <th className="pb-4 font-medium text-right">投递数</th>
-                    <th className="pb-4 font-medium text-right">AI匹配候选人</th>
-                    <th className="pb-4 font-medium text-right pr-2">状态</th>
-                  </tr>
-                </thead>
-                <tbody className="space-y-4">
-                  {/* Row 1 */}
-                  <tr className="group">
-                    <td className="py-4 pl-2">
-                      <div className="font-medium text-on-surface group-hover:text-primary transition-colors">高级前端工程师 (React)</div>
-                      <div className="text-xs text-on-surface-variant mt-1">2天前发布</div>
-                    </td>
-                    <td className="py-4 text-on-surface-variant">研发中心</td>
-                    <td className="py-4 text-right font-medium">45</td>
-                    <td className="py-4 text-right">
-                      <span className="bg-primary-fixed text-on-primary-fixed px-2 py-1 rounded-full text-xs font-medium">12 人极度匹配</span>
-                    </td>
-                    <td className="py-4 text-right pr-2">
-                      <span className="inline-flex items-center gap-1.5 text-secondary">
-                        <span className="w-2 h-2 rounded-full bg-secondary"></span>招聘中
-                      </span>
-                    </td>
-                  </tr>
-                  {/* Row 2 */}
-                  <tr className="group">
-                    <td className="py-4 pl-2">
-                      <div className="font-medium text-on-surface group-hover:text-primary transition-colors">数据分析专家</div>
-                      <div className="text-xs text-on-surface-variant mt-1">5天前发布</div>
-                    </td>
-                    <td className="py-4 text-on-surface-variant">商业智能部</td>
-                    <td className="py-4 text-right font-medium">128</td>
-                    <td className="py-4 text-right">
-                      <span className="bg-surface-variant text-on-surface-variant px-2 py-1 rounded-full text-xs font-medium">34 人匹配</span>
-                    </td>
-                    <td className="py-4 text-right pr-2">
-                      <span className="inline-flex items-center gap-1.5 text-secondary">
-                        <span className="w-2 h-2 rounded-full bg-secondary"></span>招聘中
-                      </span>
-                    </td>
-                  </tr>
-                  {/* Row 3 */}
-                  <tr className="group opacity-60">
-                    <td className="py-4 pl-2">
-                      <div className="font-medium text-on-surface">产品运营经理</div>
-                      <div className="text-xs text-on-surface-variant mt-1">上周发布</div>
-                    </td>
-                    <td className="py-4 text-on-surface-variant">运营部</td>
-                    <td className="py-4 text-right font-medium">210</td>
-                    <td className="py-4 text-right">
-                      <span className="bg-surface-variant text-on-surface-variant px-2 py-1 rounded-full text-xs font-medium">89 人匹配</span>
-                    </td>
-                    <td className="py-4 text-right pr-2">
-                      <span className="inline-flex items-center gap-1.5 text-tertiary">
-                        <span className="w-2 h-2 rounded-full bg-outline-variant"></span>已结束
-                      </span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+      )}
+    </EnterpriseContent>
+  );
+}
+
+function StatCard({ title, value, highlight }: { title: string; value: number; highlight: string }) {
+  return (
+    <div className="bg-surface-container-lowest rounded-xl p-6">
+      <p className="text-sm text-on-surface-variant font-medium mb-2">{title}</p>
+      <div className="flex items-end gap-2">
+        <span className="text-4xl font-headline font-bold text-primary">{value}</span>
+        <span className="text-xs text-secondary-container mb-1">{highlight}</span>
       </div>
     </div>
   );

@@ -140,6 +140,7 @@ public class NotificationRepositoryImpl implements NotificationRepository {
         BeanUtil.copyProperties(po, n);
         // 手动映射 relatedId -> referenceId（字段名不同）
         n.setReferenceId(po.getRelatedId());
+        n.setCreatedAt(po.getCreateTime());
         // 枚举类型需要单独转换
         n.setType(NotificationType.fromValue(po.getType()));
         // isRead: Integer(0/1) -> Boolean
@@ -157,6 +158,7 @@ public class NotificationRepositoryImpl implements NotificationRepository {
         BeanUtil.copyProperties(n, po);
         // 手动映射 referenceId -> relatedId（字段名不同）
         po.setRelatedId(n.getReferenceId());
+        po.setCreateTime(n.getCreatedAt());
         // 枚举类型需要单独转换
         po.setType(n.getType() != null ? n.getType().getValue() : null);
         // isRead: Boolean -> Integer(0/1)

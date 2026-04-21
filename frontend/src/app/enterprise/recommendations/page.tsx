@@ -1,224 +1,227 @@
 'use client';
 
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import EnterpriseContent from '@/components/enterprise/EnterpriseContent';
 import EnterprisePageHeader from '@/components/enterprise/EnterprisePageHeader';
+import { companyApi } from '@/lib/api/company';
+import { recommendationName, recommendationScore } from '@/lib/mappers/enterpriseMapper';
+import type { EnterpriseJobListItem, EnterpriseRecommendation } from '@/lib/types/enterprise';
 
 export default function RecommendationsPage() {
+  const searchParams = useSearchParams();
+  const [jobs, setJobs] = useState<EnterpriseJobListItem[]>([]);
+  const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
+  const [recommendations, setRecommendations] = useState<EnterpriseRecommendation[]>([]);
+  const [keyword, setKeyword] = useState('');
+  const [expandedResumeId, setExpandedResumeId] = useState<number | null>(null);
+  const [loadingJobs, setLoadingJobs] = useState(true);
+  const [loadingRecommendations, setLoadingRecommendations] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadRecommendations = async (jobId: number) => {
+    setLoadingRecommendations(true);
+    setError(null);
+    try {
+      const response = await companyApi.getRecommendedResumes({ jobId });
+      setRecommendations(response);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '推荐结果加载失败');
+      setRecommendations([]);
+    } finally {
+      setLoadingRecommendations(false);
+    }
+  };
+
+  const loadJobs = async () => {
+    setLoadingJobs(true);
+    setError(null);
+    try {
+      const response = await companyApi.getJobList({ status: 'PUBLISHED' });
+      setJobs(response);
+      if (response.length === 0) {
+        setSelectedJobId(null);
+        setRecommendations([]);
+        return;
+      }
+
+      const queryJobId = Number(searchParams.get('jobId'));
+      const matchedJobId = Number.isFinite(queryJobId) && response.some((job) => job.id === queryJobId)
+        ? queryJobId
+        : response[0].id;
+      setSelectedJobId(matchedJobId);
+      await loadRecommendations(matchedJobId);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '职位列表加载失败');
+      setJobs([]);
+      setRecommendations([]);
+      setSelectedJobId(null);
+    } finally {
+      setLoadingJobs(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadJobs();
+  }, []);
+
+  const filteredRecommendations = useMemo(() => {
+    const normalized = keyword.trim().toLowerCase();
+    if (!normalized) {
+      return recommendations;
+    }
+    return recommendations.filter((item) => {
+      const haystacks = [
+        recommendationName(item),
+        item.matchReason || '',
+        item.resume?.fileName || '',
+        item.job?.title || '',
+      ];
+      return haystacks.some((value) => value.toLowerCase().includes(normalized));
+    });
+  }, [keyword, recommendations]);
+
+  const selectedJob = jobs.find((job) => job.id === selectedJobId) ?? null;
+
+  const handleSelectJob = async (jobId: number) => {
+    setSelectedJobId(jobId);
+    setExpandedResumeId(null);
+    await loadRecommendations(jobId);
+  };
+
   return (
     <EnterpriseContent>
       <EnterprisePageHeader
         title="智能推荐引擎"
-        description="正在为您从 12,400 份简历中进行深度图谱匹配"
+        description={selectedJob ? `基于职位“${selectedJob.title}”展示真实候选人匹配结果。` : '请选择已发布职位查看真实推荐结果。'}
         action={
           <div className="relative">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-tertiary text-[20px]">search</span>
             <input
               className="pl-10 pr-4 py-2 bg-surface-container-lowest border-none rounded-sm text-sm focus:ring-0 focus:border-b-2 focus:border-primary w-64 placeholder:text-outline shadow-sm"
-              placeholder="搜索候选人或技能..."
+              placeholder="搜索候选人或匹配理由..."
               type="text"
+              value={keyword}
+              onChange={(event) => setKeyword(event.target.value)}
             />
           </div>
         }
       />
-      {/* Content Layout: Two Columns */}
-      <div className="flex-1 flex overflow-hidden px-8 pb-8 gap-8 max-w-[1440px] mx-auto w-full">
-        {/* Left Column: Filters */}
-        <aside className="w-64 flex-shrink-0 flex flex-col gap-6 overflow-y-auto pr-4">
-          {/* Filter Group: Position */}
-          <div className="bg-surface-container-lowest rounded-xl p-6 ambient-shadow">
-            <h3 className="font-headline font-semibold text-on-surface mb-4 text-base">在招职位目标</h3>
-            <div className="flex flex-col gap-3">
-              <label className="flex items-center gap-3 cursor-pointer group">
-                <input checked className="form-radio text-primary focus:ring-primary h-4 w-4 border-outline-variant bg-surface" name="position" type="radio" />
-                <span className="text-sm text-on-surface-variant group-hover:text-primary transition-colors">高级前端工程师 (React)</span>
-              </label>
-              <label className="flex items-center gap-3 cursor-pointer group">
-                <input className="form-radio text-primary focus:ring-primary h-4 w-4 border-outline-variant bg-surface" name="position" type="radio" />
-                <span className="text-sm text-on-surface-variant group-hover:text-primary transition-colors">AI 算法工程师 (NLP)</span>
-              </label>
-              <label className="flex items-center gap-3 cursor-pointer group">
-                <input className="form-radio text-primary focus:ring-primary h-4 w-4 border-outline-variant bg-surface" name="position" type="radio" />
-                <span className="text-sm text-on-surface-variant group-hover:text-primary transition-colors">产品总监</span>
-              </label>
-            </div>
-          </div>
-          {/* Filter Group: Match Score */}
-          <div className="bg-surface-container-lowest rounded-xl p-6 ambient-shadow">
-            <h3 className="font-headline font-semibold text-on-surface mb-4 text-base">AI 认知匹配度</h3>
-            <div className="flex flex-col gap-3">
-              <label className="flex items-center justify-between cursor-pointer group p-2 -mx-2 rounded-lg hover:bg-surface-container-low transition-colors">
-                <div className="flex items-center gap-3">
-                  <input checked className="form-checkbox text-primary focus:ring-primary h-4 w-4 rounded-sm border-outline-variant bg-surface" type="checkbox" />
-                  <span className="text-sm text-on-surface-variant group-hover:text-on-surface font-medium">极度契合 (&gt;80%)</span>
-                </div>
-                <span className="text-xs bg-primary-fixed text-on-primary-fixed px-2 py-0.5 rounded-full">12</span>
-              </label>
-              <label className="flex items-center justify-between cursor-pointer group p-2 -mx-2 rounded-lg hover:bg-surface-container-low transition-colors">
-                <div className="flex items-center gap-3">
-                  <input checked className="form-checkbox text-primary focus:ring-primary h-4 w-4 rounded-sm border-outline-variant bg-surface" type="checkbox" />
-                  <span className="text-sm text-on-surface-variant group-hover:text-on-surface">高度相关 (60-80%)</span>
-                </div>
-                <span className="text-xs bg-surface-variant text-on-surface-variant px-2 py-0.5 rounded-full">45</span>
-              </label>
-            </div>
-          </div>
-          {/* Filter Group: Experience & Education */}
-          <div className="bg-surface-container-lowest rounded-xl p-6 ambient-shadow">
-            <h3 className="font-headline font-semibold text-on-surface mb-4 text-base">硬性指标</h3>
-            <div className="mb-5">
-              <p className="text-xs text-on-surface-variant mb-2">工作经验</p>
-              <div className="flex flex-wrap gap-2">
-                <button className="px-3 py-1.5 text-xs font-medium rounded-full bg-surface-variant text-on-surface-variant hover:bg-surface-container-highest transition-colors">1-3年</button>
-                <button className="px-3 py-1.5 text-xs font-medium rounded-full bg-primary-fixed text-on-primary-fixed border border-transparent">3-5年</button>
-                <button className="px-3 py-1.5 text-xs font-medium rounded-full bg-primary-fixed text-on-primary-fixed border border-transparent">5-10年</button>
-                <button className="px-3 py-1.5 text-xs font-medium rounded-full bg-surface-variant text-on-surface-variant hover:bg-surface-container-highest transition-colors">10年以上</button>
+
+      {loadingJobs ? (
+        <div className="rounded-xl bg-surface-container-lowest p-6 text-sm text-on-surface-variant">推荐职位加载中...</div>
+      ) : error ? (
+        <div className="rounded-xl bg-error-container p-6 text-sm text-error space-y-3">
+          <div>{error}</div>
+          <button className="px-4 py-2 rounded-lg bg-white text-error" onClick={() => void loadJobs()}>重试</button>
+        </div>
+      ) : jobs.length === 0 ? (
+        <div className="rounded-xl bg-surface-container-lowest p-6 text-sm text-on-surface-variant">当前没有已发布职位，暂时无法生成候选人推荐。</div>
+      ) : (
+        <div className="flex-1 flex overflow-hidden gap-8 max-w-[1440px] mx-auto w-full">
+          <aside className="w-72 flex-shrink-0 flex flex-col gap-6 overflow-y-auto pr-2">
+            <div className="bg-surface-container-lowest rounded-xl p-6 ambient-shadow">
+              <h3 className="font-headline font-semibold text-on-surface mb-4 text-base">在招职位目标</h3>
+              <div className="flex flex-col gap-3">
+                {jobs.map((job) => (
+                  <button
+                    key={job.id}
+                    className={`text-left rounded-lg border px-4 py-3 transition-colors ${selectedJobId === job.id ? 'border-primary bg-primary-fixed/40 text-on-surface' : 'border-surface-container-high bg-surface text-on-surface-variant hover:border-primary/40 hover:text-on-surface'}`}
+                    onClick={() => void handleSelectJob(job.id)}
+                  >
+                    <div className="font-medium">{job.title}</div>
+                    <div className="mt-1 text-xs text-tertiary">{job.department || '未填写部门'} · {job.city || '城市待定'}</div>
+                  </button>
+                ))}
               </div>
             </div>
-            <div>
-              <p className="text-xs text-on-surface-variant mb-2">学历要求</p>
-              <div className="flex flex-wrap gap-2">
-                <button className="px-3 py-1.5 text-xs font-medium rounded-full bg-surface-variant text-on-surface-variant hover:bg-surface-container-highest transition-colors">大专</button>
-                <button className="px-3 py-1.5 text-xs font-medium rounded-full bg-primary-fixed text-on-primary-fixed border border-transparent">本科</button>
-                <button className="px-3 py-1.5 text-xs font-medium rounded-full bg-primary-fixed text-on-primary-fixed border border-transparent">硕士及以上</button>
+
+            <div className="bg-surface-container-lowest rounded-xl p-6 ambient-shadow">
+              <h3 className="font-headline font-semibold text-on-surface mb-4 text-base">推荐说明</h3>
+              <div className="space-y-3 text-sm text-on-surface-variant">
+                <p>推荐列表来自后端真实匹配接口，当前按所选职位实时刷新。</p>
+                <p>“邀请面试”尚未接入专用后端流程，因此本页仅展示推荐结果，不伪造成功提示。</p>
               </div>
             </div>
-          </div>
-        </aside>
-        {/* Right Column: Candidate Feed */}
-        <div className="flex-1 flex flex-col overflow-hidden bg-surface-container-low rounded-xl p-6">
-          <div className="flex-1 flex flex-col h-full min-w-0">
-            {/* Action Bar */}
-            <div className="flex justify-between items-center mb-6">
+          </aside>
+
+          <div className="flex-1 flex flex-col overflow-hidden bg-surface-container-low rounded-xl p-6">
+            <div className="flex justify-between items-center mb-6 gap-4 flex-wrap">
               <div className="flex items-center gap-2 text-sm text-on-surface-variant">
-                <span className="font-semibold text-primary">57</span> 份推荐简历
+                <span className="font-semibold text-primary">{filteredRecommendations.length}</span>
+                <span>份推荐简历</span>
+                {selectedJob && <span className="text-outline">· {selectedJob.title}</span>}
               </div>
               <div className="flex gap-3">
-                <button className="flex items-center gap-2 px-4 py-2 bg-surface-container-lowest text-primary rounded-md font-medium text-sm hover:bg-surface-container transition-colors shadow-sm">
+                <button className="flex items-center gap-2 px-4 py-2 bg-surface-container-high text-outline rounded-md font-medium text-sm cursor-not-allowed" disabled>
                   <span className="material-symbols-outlined text-[18px]">download</span>
-                  批量导出
-                </button>
-                <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-primary to-primary-container text-on-primary rounded-md font-medium text-sm hover:opacity-90 transition-opacity shadow-sm">
-                  <span className="material-symbols-outlined text-[18px]">mail</span>
-                  一键邀请 (前10名)
+                  批量导出（待接入）
                 </button>
               </div>
             </div>
-            {/* Card List */}
-            <div className="flex-1 overflow-y-auto flex flex-col gap-4 pr-2">
-              {/* Candidate Card 1 */}
-              <div className="bg-surface-container-lowest rounded-xl p-6 flex items-start gap-6 ambient-shadow relative overflow-hidden group">
-                <div className="absolute -right-20 -top-20 w-64 h-64 bg-primary-fixed/20 rounded-full blur-3xl group-hover:bg-primary-fixed/30 transition-colors pointer-events-none"></div>
-                {/* Left: Avatar & Basic Info */}
-                <div className="flex gap-4 w-52 flex-shrink-0">
-                  <img
-                    alt="Candidate Avatar"
-                    className="w-16 h-16 rounded-full object-cover shadow-sm border-2 border-surface"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0cNGknQ0xzkjevWLbvD6h-Bigi94gK9guMhP8Wg1Ov7SuT2fuvu0drt-1EYRXUTnPw1QCMrEefvgjY9P7-jrid0VDN0dRw1TytUxEcN8ouYCMMb4-tp70qAExZDSczw-Y3J6JQbRV55g5Qi2zx76QAL_r5KrUiN8nCutba9AdL6kOgl4w9jea97syz0ZFyFtOgpDq67EfMxfvvSxgsipAoalvHeix7NFtRtemsSMhL_4h8zFHYNHwqHj9xGgrEEwejoPYsB0S2Bt2"
-                  />
-                  <div>
-                    <h3 className="text-lg font-headline font-bold text-on-surface leading-tight">林晓静</h3>
-                    <p className="text-sm text-primary font-medium mt-1">资深前端开发专家</p>
-                    <p className="text-xs text-on-surface-variant mt-0.5">字节跳动 · 5年经验 · 硕士</p>
-                  </div>
-                </div>
-                {/* Center: Tags & Highlights */}
-                <div className="flex-1 flex flex-col justify-center gap-4 border-l border-surface-container-high pl-6 min-w-0">
-                  <div className="flex flex-wrap gap-2">
-                    <span className="px-3 py-1 bg-surface-variant text-on-surface-variant text-xs rounded-full whitespace-nowrap">React Ecosystem</span>
-                    <span className="px-3 py-1 bg-surface-variant text-on-surface-variant text-xs rounded-full whitespace-nowrap">微前端架构</span>
-                    <span className="px-3 py-1 bg-surface-variant text-on-surface-variant text-xs rounded-full whitespace-nowrap">性能优化</span>
-                  </div>
-                  <div className="flex flex-col gap-2.5">
-                    <div className="flex items-start gap-2 text-sm">
-                      <span className="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">check_circle</span>
-                      <div>
-                        <span className="text-on-surface font-semibold whitespace-nowrap">大厂背景契合：</span>
-                        <span className="text-on-surface-variant">具备高并发、大流量 C 端产品架构经验。</span>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-2 text-sm">
-                      <span className="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">lightbulb</span>
-                      <div>
-                        <span className="text-on-surface font-semibold whitespace-nowrap">技能高度重合：</span>
-                        <span className="text-on-surface-variant">JD 要求的核心技术栈覆盖率达 95%。</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                {/* Right: Match Score & Actions */}
-                <div className="w-36 flex flex-col items-center justify-between flex-shrink-0 border-l border-surface-container-high pl-6 gap-4">
-                  <div className="relative w-20 h-20 flex items-center justify-center">
-                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                      <circle className="text-surface-container-highest stroke-current" cx="50" cy="50" fill="transparent" r="40" strokeWidth="8"></circle>
-                      <circle className="text-primary stroke-current" cx="50" cy="50" fill="transparent" r="40" strokeDasharray="251.2" strokeDashoffset="20" strokeLinecap="round" strokeWidth="8"></circle>
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-2xl font-headline font-bold text-primary leading-none">92<span className="text-sm">%</span></span>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 w-full">
-                    <button className="flex-1 py-1.5 bg-surface-container-highest text-primary text-xs font-medium rounded-md hover:bg-surface-container transition-colors">详情</button>
-                    <button className="flex-1 py-1.5 bg-primary text-on-primary text-xs font-medium rounded-md hover:bg-primary-container transition-colors shadow-sm">邀请</button>
-                  </div>
-                </div>
+
+            {loadingRecommendations ? (
+              <div className="rounded-xl bg-surface-container-lowest p-6 text-sm text-on-surface-variant">推荐结果加载中...</div>
+            ) : filteredRecommendations.length === 0 ? (
+              <div className="rounded-xl bg-surface-container-lowest p-6 text-sm text-on-surface-variant">
+                {recommendations.length === 0 ? '当前职位暂无推荐候选人。' : '没有匹配搜索条件的候选人。'}
               </div>
-              {/* Candidate Card 2 */}
-              <div className="bg-surface-container-lowest rounded-xl p-6 flex items-start gap-6 ambient-shadow relative overflow-hidden group">
-                <div className="flex gap-4 w-52 flex-shrink-0">
-                  <img
-                    alt="Candidate Avatar"
-                    className="w-16 h-16 rounded-full object-cover shadow-sm border-2 border-surface"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIJSxia5o079-nJ4XYjwa5KTLh5km8NvdXLANoJ5_Spfz0u2OmX4gVspbHbCMA9WaaEK7DKmU9HPtQxuhA8BqcQHRnF4g9poYWIV12OxlZjtbb980iX4SG9il2rXYl_KQfEWrSnMgd-3HU4mWfIT03tRO7pODcssSZOn9XUOWovmvmMB0Arcuo6d_BkCoSeZYMNIMVECm_U97YL5fe0alylG_urj9csbn0V_ifBgeUrpmEa6Gcshwcpz-75rF9aIMcLrbiQXYFpn-Q"
-                  />
-                  <div>
-                    <h3 className="text-lg font-headline font-bold text-on-surface leading-tight">张伟</h3>
-                    <p className="text-sm text-primary font-medium mt-1">前端技术组长</p>
-                    <p className="text-xs text-on-surface-variant mt-0.5">网易 · 6年经验 · 本科</p>
-                  </div>
-                </div>
-                <div className="flex-1 flex flex-col justify-center gap-4 border-l border-surface-container-high pl-6 min-w-0">
-                  <div className="flex flex-wrap gap-2">
-                    <span className="px-3 py-1 bg-surface-variant text-on-surface-variant text-xs rounded-full whitespace-nowrap">Vue/React</span>
-                    <span className="px-3 py-1 bg-surface-variant text-on-surface-variant text-xs rounded-full whitespace-nowrap">团队管理</span>
-                    <span className="px-3 py-1 bg-surface-variant text-on-surface-variant text-xs rounded-full whitespace-nowrap">工程化建设</span>
-                  </div>
-                  <div className="flex flex-col gap-2.5">
-                    <div className="flex items-start gap-2 text-sm">
-                      <span className="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">group_add</span>
-                      <div>
-                        <span className="text-on-surface font-semibold whitespace-nowrap">带队经验丰富：</span>
-                        <span className="text-on-surface-variant">有 10+ 人前端团队管理与重构经验。</span>
+            ) : (
+              <div className="flex-1 overflow-y-auto flex flex-col gap-4 pr-2">
+                {filteredRecommendations.map((item) => {
+                  const score = recommendationScore(item);
+                  const expanded = expandedResumeId === item.resumeId;
+                  return (
+                    <div key={`${item.jobId}-${item.resumeId}`} className="bg-surface-container-lowest rounded-xl p-6 flex flex-col gap-4 ambient-shadow relative overflow-hidden group">
+                      <div className="flex flex-col xl:flex-row gap-6">
+                        <div className="xl:w-56 flex-shrink-0">
+                          <h3 className="text-lg font-headline font-bold text-on-surface leading-tight">{recommendationName(item)}</h3>
+                          <p className="text-sm text-primary font-medium mt-1">简历 ID：{item.resumeId}</p>
+                          <p className="text-xs text-on-surface-variant mt-1">目标职位：{item.job?.title || selectedJob?.title || `职位 #${item.jobId}`}</p>
+                        </div>
+
+                        <div className="flex-1 flex flex-col justify-center gap-4 border-l border-surface-container-high pl-6 min-w-0">
+                          <div className="flex flex-wrap gap-2">
+                            <span className="px-3 py-1 bg-surface-variant text-on-surface-variant text-xs rounded-full whitespace-nowrap">技能匹配 {Math.round(item.score?.skillScore ?? 0)}%</span>
+                            <span className="px-3 py-1 bg-surface-variant text-on-surface-variant text-xs rounded-full whitespace-nowrap">经验匹配 {Math.round(item.score?.expScore ?? 0)}%</span>
+                            <span className="px-3 py-1 bg-surface-variant text-on-surface-variant text-xs rounded-full whitespace-nowrap">学历匹配 {Math.round(item.score?.eduScore ?? 0)}%</span>
+                          </div>
+                          <div className="rounded-lg bg-surface-container-low p-4 text-sm text-on-surface-variant leading-6">
+                            {item.matchReason || '后端暂未返回匹配理由，当前仅展示真实匹配分数。'}
+                          </div>
+                          {expanded && (
+                            <div className="rounded-lg border border-surface-container-high p-4 text-sm text-on-surface-variant space-y-2">
+                              <div>城市匹配：{Math.round(item.score?.cityScore ?? 0)}%</div>
+                              <div>薪资匹配：{Math.round(item.score?.salScore ?? 0)}%</div>
+                              <div>附件名称：{item.resume?.fileName || '未提供'}</div>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="xl:w-40 flex flex-col items-center justify-between flex-shrink-0 border-l border-surface-container-high pl-6 gap-4">
+                          <div className="relative w-20 h-20 flex items-center justify-center rounded-full bg-primary-fixed text-primary">
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                              <span className="text-2xl font-headline font-bold text-primary leading-none">{score}<span className="text-sm">%</span></span>
+                            </div>
+                          </div>
+                          <div className="flex gap-2 w-full">
+                            <button className="flex-1 py-2 bg-surface-container-highest text-primary text-xs font-medium rounded-md hover:bg-surface-container transition-colors" onClick={() => setExpandedResumeId(expanded ? null : item.resumeId)}>
+                              {expanded ? '收起' : '详情'}
+                            </button>
+                            <button className="flex-1 py-2 bg-surface-container-high text-outline text-xs font-medium rounded-md cursor-not-allowed" disabled title="后端暂无面试邀请接口">
+                              邀请
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-start gap-2 text-sm">
-                      <span className="material-symbols-outlined text-tertiary text-[18px] shrink-0 mt-0.5">info</span>
-                      <div>
-                        <span className="text-on-surface font-semibold whitespace-nowrap">潜在弱项：</span>
-                        <span className="text-on-surface-variant">英文文档阅读能力评级为中等。</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="w-36 flex flex-col items-center justify-between flex-shrink-0 border-l border-surface-container-high pl-6 gap-4">
-                  <div className="relative w-20 h-20 flex items-center justify-center">
-                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                      <circle className="text-surface-container-highest stroke-current" cx="50" cy="50" fill="transparent" r="40" strokeWidth="8"></circle>
-                      <circle className="text-primary stroke-current" cx="50" cy="50" fill="transparent" r="40" strokeDasharray="251.2" strokeDashoffset="37.6" strokeLinecap="round" strokeWidth="8"></circle>
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-2xl font-headline font-bold text-primary leading-none">85<span className="text-sm">%</span></span>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 w-full">
-                    <button className="flex-1 py-1.5 bg-surface-container-highest text-primary text-xs font-medium rounded-md hover:bg-surface-container transition-colors">详情</button>
-                    <button className="flex-1 py-1.5 bg-primary text-on-primary text-xs font-medium rounded-md hover:bg-primary-container transition-colors shadow-sm">邀请</button>
-                  </div>
-                </div>
+                  );
+                })}
               </div>
-            </div>
+            )}
           </div>
         </div>
-      </div>
+      )}
     </EnterpriseContent>
   );
 }

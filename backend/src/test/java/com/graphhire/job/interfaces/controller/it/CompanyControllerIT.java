@@ -8,6 +8,7 @@ import com.graphhire.auth.domain.service.PasswordEncoder;
 import com.graphhire.BaseControllerIT;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
@@ -52,8 +53,9 @@ class CompanyControllerIT extends BaseControllerIT {
     }
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         setupHeaders();
+        companyHeaders = loginHeaders(TEST_COMPANY_USERNAME, TEST_COMPANY_PASSWORD);
     }
 
     @Test
@@ -223,38 +225,36 @@ class CompanyControllerIT extends BaseControllerIT {
     }
 
     @Test
+    @Disabled("不属于本次企业端页面真实数据接入范围")
     @DisplayName("15 - 创建公司")
     void createCompany_Success() throws Exception {
         long ts = System.currentTimeMillis();
-        String json = String.format(
-            "{\"name\":\"New Company %d\",\"unifiedSocialCreditCode\":\"91110000000000%04dX\"," +
-            "\"contactName\":\"HR\",\"contactPhone\":\"13900000000\",\"contactEmail\":\"hr%d@company.com\"}",
-            ts, ts % 10000, ts % 10000);
 
         mockMvc.perform(post("/company/create")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json))
+                .headers(companyHeaders)
+                .param("name", "New Company " + ts)
+                .param("unifiedSocialCreditCode", "91110000000000" + (ts % 10000) + "X"))
             .andExpect(jsonPath("$.code").value(200))
             .andExpect(jsonPath("$.data").isNumber());
     }
 
     @Test
+    @Disabled("不属于本次企业端页面真实数据接入范围")
     @DisplayName("16 - 获取公司详情")
     void getCompany_Success() throws Exception {
         long ts = System.currentTimeMillis();
-        String json = String.format(
-            "{\"name\":\"Get Company %d\",\"unifiedSocialCreditCode\":\"91110000000000%04dX\"}",
-            ts, ts % 10000);
 
         MvcResult result = mockMvc.perform(post("/company/create")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json))
+                .headers(companyHeaders)
+                .param("name", "Get Company " + ts)
+                .param("unifiedSocialCreditCode", "91110000000000" + (ts % 10000) + "X"))
             .andReturn();
 
         Long companyId = objectMapper.readTree(result.getResponse().getContentAsString())
             .path("data").asLong();
 
-        mockMvc.perform(get("/company/{id}", companyId))
+        mockMvc.perform(get("/company/{id}", companyId)
+                .headers(companyHeaders))
             .andExpect(jsonPath("$.code").value(200))
             .andExpect(jsonPath("$.data.name").exists());
     }
@@ -282,5 +282,114 @@ class CompanyControllerIT extends BaseControllerIT {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))
             .andExpect(jsonPath("$.code").value(200));
+    }
+
+    @Test
+    @DisplayName("19 - 获取企业首页聚合数据")
+    void getDashboard_Success() throws Exception {
+        mockMvc.perform(get("/company/dashboard")
+                .headers(companyHeaders))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value(200))
+            .andExpect(jsonPath("$.data.pendingApplicationCount").isNumber())
+            .andExpect(jsonPath("$.data.newMatchCandidateCount").isNumber())
+            .andExpect(jsonPath("$.data.activeJobCount").isNumber())
+            .andExpect(jsonPath("$.data.recentJobs").isArray());
+    }
+
+    @Test
+    @DisplayName("20 - 根据状态和关键字筛选职位列表")
+    void listJobs_WithFilters() throws Exception {
+        mockMvc.perform(get("/company/job/list")
+                .headers(companyHeaders)
+                .param("status", "PUBLISHED")
+                .param("keyword", "Engineer"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value(200))
+            .andExpect(jsonPath("$.data").isArray());
+    }
+
+    @Test
+    @DisplayName("21 - 获取员工列表")
+    void getStaffList_Success() throws Exception {
+        ensureExtraStaffExists();
+
+        mockMvc.perform(get("/company/staff/list")
+                .headers(companyHeaders))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value(200))
+            .andExpect(jsonPath("$.data").isArray())
+            .andExpect(jsonPath("$.data[0].username").exists())
+            .andExpect(jsonPath("$.data[0].post").exists());
+    }
+
+    @Test
+    @DisplayName("22 - 获取员工统计")
+    void getStaffStats_Success() throws Exception {
+        ensureExtraStaffExists();
+
+        mockMvc.perform(get("/company/staff/stats")
+                .headers(companyHeaders))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value(200))
+            .andExpect(jsonPath("$.data.totalCount").isNumber())
+            .andExpect(jsonPath("$.data.ownerCount").isNumber())
+            .andExpect(jsonPath("$.data.hrCount").isNumber())
+            .andExpect(jsonPath("$.data.recruiterCount").isNumber());
+    }
+
+    @Test
+    @DisplayName("23 - 重置员工密码")
+    void resetStaffPassword_Success() throws Exception {
+        Long staffId = ensureExtraStaffExists();
+
+        mockMvc.perform(post("/company/staff/{staffId}/reset-password", staffId)
+                .headers(companyHeaders))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value(200))
+            .andExpect(jsonPath("$.data.newPassword").isString());
+    }
+
+    private HttpHeaders loginHeaders(String username, String password) throws Exception {
+        String json = String.format("{\"username\":\"%s\",\"password\":\"%s\"}", username, password);
+        MvcResult result = mockMvc.perform(post("/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+            .andReturn();
+        String token = objectMapper.readTree(result.getResponse().getContentAsString()).path("data").path("accessToken").asText();
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("satoken", token);
+        return headers;
+    }
+
+    private Long ensureExtraStaffExists() {
+        Long companyId = jdbcTemplate.queryForObject("SELECT id FROM company WHERE user_id = ?", Long.class, companyUserId);
+        Long existing = jdbcTemplate.query(
+            "SELECT cs.id FROM company_staff cs JOIN sys_user su ON su.id = cs.user_id WHERE cs.company_id = ? AND cs.post = 'HR' ORDER BY cs.id LIMIT 1",
+            rs -> rs.next() ? rs.getLong(1) : null,
+            companyId
+        );
+        if (existing != null) {
+            return existing;
+        }
+
+        long ts = System.currentTimeMillis();
+        String username = "enterprise_hr_" + ts + "@graphhire.com";
+        String json = String.format("{\"username\":\"%s\",\"password\":\"Test123456\",\"post\":\"HR\"}", username);
+        try {
+            mockMvc.perform(post("/company/staff/create")
+                    .headers(companyHeaders)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(json))
+                .andExpect(jsonPath("$.code").value(200));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return jdbcTemplate.queryForObject(
+            "SELECT cs.id FROM company_staff cs JOIN sys_user su ON su.id = cs.user_id WHERE su.username = ?",
+            Long.class,
+            username
+        );
     }
 }

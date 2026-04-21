@@ -7,7 +7,7 @@ export interface Notification {
   title: string;
   content: string;
   isRead: boolean;
-  createdAt: string;
+  createdAt?: string;
   referenceId?: number;
   metadata?: string;
 }
@@ -38,6 +38,26 @@ export const notificationApi = {
     return response.data;
   },
 
+  getMyList: async (): Promise<Notification[]> => {
+    const response = await apiClient.get('/notifications/me');
+    return response.data;
+  },
+
+  getMyUnread: async (): Promise<Notification[]> => {
+    const response = await apiClient.get('/notifications/me/unread');
+    return response.data;
+  },
+
+  getMyByType: async (type: string): Promise<Notification[]> => {
+    const response = await apiClient.get(`/notifications/me/type/${type}`);
+    return response.data;
+  },
+
+  getMyUnreadCount: async (): Promise<number> => {
+    const response = await apiClient.get('/notifications/me/unread-count');
+    return response.data;
+  },
+
   markAsRead: async (id: number): Promise<void> => {
     await apiClient.put(`/notifications/${id}/read`);
   },
@@ -48,6 +68,10 @@ export const notificationApi = {
 
   markAllAsRead: async (userId: number): Promise<void> => {
     await apiClient.put(`/notifications/user/${userId}/read-all`);
+  },
+
+  markAllMyAsRead: async (): Promise<void> => {
+    await apiClient.put('/notifications/me/read-all');
   },
 
   delete: async (id: number): Promise<void> => {
