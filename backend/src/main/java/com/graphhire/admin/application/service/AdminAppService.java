@@ -6,10 +6,19 @@ import com.graphhire.admin.application.command.DisableUserCmd;
 import com.graphhire.admin.application.query.UserListQuery;
 import com.graphhire.admin.domain.repository.AdminRepository;
 import com.graphhire.admin.domain.service.AdminDomainService;
+import com.graphhire.admin.interfaces.dto.response.AdminCompanyAuthItemResponse;
+import com.graphhire.admin.interfaces.dto.response.AdminPageResponse;
+import com.graphhire.admin.interfaces.dto.response.AdminSkillItemResponse;
+import com.graphhire.admin.interfaces.dto.response.AdminTaskItemResponse;
+import com.graphhire.admin.interfaces.dto.response.AdminTaskListResponse;
+import com.graphhire.admin.interfaces.dto.response.AdminTaskSummaryResponse;
+import com.graphhire.admin.interfaces.dto.response.AdminUserItemResponse;
+import com.graphhire.admin.interfaces.dto.response.DashboardStatsResponse;
 import com.graphhire.auth.domain.model.User;
 import com.graphhire.auth.domain.repository.UserRepository;
 import com.graphhire.auth.domain.vo.AuthStatus;
 import com.graphhire.common.vo.PageResult;
+import com.graphhire.job.application.service.CompanyAppService;
 import com.graphhire.job.domain.model.Company;
 import com.graphhire.job.domain.model.Job;
 import com.graphhire.job.domain.repository.CompanyRepository;
@@ -17,19 +26,19 @@ import com.graphhire.job.domain.repository.JobRepository;
 import com.graphhire.notification.domain.model.Notification;
 import com.graphhire.notification.domain.repository.NotificationRepository;
 import com.graphhire.notification.domain.vo.NotificationType;
-import com.graphhire.admin.interfaces.dto.response.DashboardStatsResponse;
 import com.graphhire.resume.application.service.ResumeAppService;
 import com.graphhire.resume.domain.model.ParseTask;
 import com.graphhire.resume.domain.repository.ParseTaskRepository;
 import com.graphhire.skill.application.service.SkillTagAppService;
 import com.graphhire.skill.domain.model.SkillTag;
-import com.graphhire.job.application.service.CompanyAppService;
-import com.graphhire.common.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,229 +49,184 @@ import java.util.Optional;
 @Service
 public class AdminAppService {
 
-    /** 管理员仓储 */
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+
     @Autowired
     private AdminRepository adminRepository;
 
-    /** 企业仓储 */
     @Autowired
     private CompanyRepository companyRepository;
 
-    /** 通知仓储 */
     @Autowired
     private NotificationRepository notificationRepository;
 
-    /** 用户仓储 */
     @Autowired
     private UserRepository userRepository;
 
-    /** 管理员领域服务 */
     @Autowired
     private AdminDomainService adminDomainService;
 
-    /** 简历应用服务 */
     @Autowired
     private ResumeAppService resumeAppService;
 
-    /** 解析任务仓储 */
     @Autowired
     private ParseTaskRepository parseTaskRepository;
 
-    /** 技能标签应用服务 */
     @Autowired
     private SkillTagAppService skillTagAppService;
 
-    /** 职位仓储 */
     @Autowired
     private JobRepository jobRepository;
 
-    /** 企业应用服务 */
     @Autowired
     private CompanyAppService companyAppService;
 
-    /**
-     * 获取仪表盘统计数据
-     * 【功能说明】统计平台各项关键数据：用户数、企业数、简历数、职位数、匹配记录数
-     * @return DashboardStatsResponse 包含personCount、companyCount、resumeCount、jobCount、matchCount的统计数据
-     */
     public DashboardStatsResponse getDashboardStats() {
-        long personCount = adminRepository.countPersons();
-        long companyCount = adminRepository.countCompanies();
-        long resumeCount = adminRepository.countResumes();
-        long jobCount = adminRepository.countPublishedJobs();
+        long totalUsers = adminRepository.countPersons();
+        long totalCompanies = adminRepository.countCompanies();
+        long totalResumes = adminRepository.countResumes();
+        long totalJobs = adminRepository.countPublishedJobs();
         long matchCount = adminRepository.countMatchRecords();
-        return new DashboardStatsResponse(personCount, companyCount, resumeCount, jobCount, matchCount);
+        long pendingCompanyAudit = companyRepository.countByAuthStatus(AuthStatus.PENDING_VERIFY);
+
+        List<ParseTask> tasks = parseTaskRepository.findAll();
+        long pendingTaskCount = tasks.stream()
+            .filter(task -> task.getStatus() == ParseTask.TaskStatus.PENDING || task.getStatus() == ParseTask.TaskStatus.RUNNING)
+            .count();
+        long failedTaskCount = tasks.stream()
+            .filter(task -> task.getStatus() == ParseTask.TaskStatus.FAILED)
+            .count();
+        long completedTaskCount = tasks.stream()
+            .filter(task -> task.getStatus() == ParseTask.TaskStatus.SUCCESS)
+            .count();
+        long totalTaskCount = tasks.size();
+
+        DashboardStatsResponse response = new DashboardStatsResponse();
+        response.setTotalUsers(totalUsers);
+        response.setTotalCompanies(totalCompanies);
+        response.setTotalResumes(totalResumes);
+        response.setTotalJobs(totalJobs);
+        response.setTodayNewUsers(0L);
+        response.setTodayNewJobs(0L);
+        response.setPendingCompanyAudit(pendingCompanyAudit);
+        response.setPendingTaskCount(pendingTaskCount);
+        response.setFailedTaskCount(failedTaskCount);
+        response.setMatchCount(matchCount);
+        response.setTaskSuccessRate(totalTaskCount == 0 ? 0D : completedTaskCount * 100.0 / totalTaskCount);
+        response.setWeeklyNewCompanies(0L);
+        response.setPendingSkillSuggestions(0L);
+        response.setTrend(new ArrayList<>());
+        return response;
     }
 
-    /**
-     * 企业认证审批/拒绝
-     * 【功能说明】审核企业资质，调用company.approve()或company.reject()后保存
-     * 【业务步骤】
-     * 步骤1：从仓库获取企业，不存在则抛异常
-     * 步骤2：校验认证操作参数
-     * 步骤3：执行认证操作（通过/拒绝）
-     * 步骤4：保存企业
-     * 步骤5：创建通知消息
-     * @param companyId 企业ID
-     * @param cmd 认证操作命令（包含审批结果和原因）
-     * @return void
-     */
     @Transactional
     public void authCompany(Long companyId, AuthCompanyCmd cmd) {
-        // 步骤1：从仓库获取企业
         Optional<Company> companyOpt = companyRepository.findById(companyId);
         if (companyOpt.isEmpty()) {
             throw new RuntimeException("企业不存在");
         }
 
         Company company = companyOpt.get();
-
-        // 步骤2：校验认证操作参数
         adminDomainService.validateCompanyAuth(company, cmd.isApproved(), cmd.getReason());
 
-        // 步骤3：执行认证操作
         if (cmd.isApproved()) {
             company.approve();
         } else {
             company.reject();
         }
 
-        // 步骤4：保存企业
         companyRepository.save(company);
 
-        // 步骤5：创建通知消息
-        // 注意：Company模型没有userId字段，使用company.id作为userId
-        Long userId = company.getId(); // 使用company.id作为用户标识
+        Long userId = company.getId();
         String title = cmd.isApproved() ? "企业认证通过" : "企业认证拒绝";
         String content = adminDomainService.buildAuthNotificationText(company, cmd.isApproved(), cmd.getReason());
-
         Notification notification = new Notification(userId, NotificationType.SYSTEM_NOTIFICATION, title, content);
         notificationRepository.save(notification);
     }
 
-    /**
-     * 禁用用户账号
-     * 【功能说明】管理员禁用或启用用户账号
-     * 【业务步骤】
-     * 步骤1：从仓库获取用户，不存在则抛异常
-     * 步骤2：根据disabled标志设置用户状态
-     * 步骤3：保存用户
-     * @param cmd 禁用用户命令（包含用户ID和禁用标志）
-     * @return void
-     */
     @Transactional
     public void disableUser(DisableUserCmd cmd) {
-        // 步骤1：从仓库获取用户
         Optional<User> userOpt = userRepository.findById(cmd.getUserId());
         if (userOpt.isEmpty()) {
             throw new RuntimeException("用户不存在");
         }
 
         User user = userOpt.get();
-
-        // 步骤2：根据disabled标志设置用户状态
         if (Boolean.TRUE.equals(cmd.getDisabled())) {
             user.setStatus(AuthStatus.DISABLED);
         } else {
             user.setStatus(AuthStatus.VERIFIED);
         }
-
-        // 步骤3：保存用户
         userRepository.save(user);
     }
 
-    /**
-     * 分页获取用户列表
-     * 【功能说明】管理员分页查询平台注册用户
-     * @param query 分页查询参数（包含页码和每页大小）
-     * @return List<Long> 用户ID列表
-     */
-    public List<Long> getUserList(UserListQuery query) {
-        // 从仓库获取分页用户
+    public AdminPageResponse<AdminUserItemResponse> getUserList(UserListQuery query) {
         IPage<User> page = adminRepository.findUsersPage(query.getPage(), query.getPageSize());
-        return page.getRecords().stream()
-            .map(User::getId)
+        List<AdminUserItemResponse> list = page.getRecords().stream()
+            .filter(user -> matchesUser(user, query))
+            .map(this::toAdminUserItem)
             .toList();
+        return new AdminPageResponse<>(list, list.size(), query.getPage(), query.getPageSize());
     }
 
-    /**
-     * 修改用户状态（启用/禁用）
-     * 【功能说明】管理员修改用户账号状态为启用或禁用
-     * @param userId 用户ID
-     * @param enabled 是否启用（true启用，false禁用）
-     * @return void
-     */
     @Transactional
-    public void modifyUserStatus(Long userId, boolean enabled) {
+    public void modifyUserStatus(Long userId, String status) {
         Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) {
             throw new RuntimeException("用户不存在");
         }
         User user = userOpt.get();
-        user.setStatus(enabled ? AuthStatus.VERIFIED : AuthStatus.DISABLED);
+        user.setStatus(mapUserStatus(status));
         userRepository.save(user);
     }
 
-    /**
-     * 分页获取简历列表（管理员）
-     * 【功能说明】管理员分页查询平台所有简历
-     * @param page 页码
-     * @param size 每页大小
-     * @return PageResult<?> 分页结果
-     */
     public PageResult<?> getResumeList(int page, int size) {
         return resumeAppService.getList(page, size);
     }
 
-    /**
-     * 分页获取职位列表（管理员）
-     * 【功能说明】管理员分页查询平台所有已发布职位
-     * @param page 页码
-     * @param size 每页大小
-     * @return PageResult<Job> 分页结果
-     */
     public PageResult<Job> getJobList(int page, int size) {
-        // 简化实现：返回所有职位后进行分页
-        // 正式环境应给JobRepository添加分页支持
         List<Job> allJobs = jobRepository.findAll();
-        int start = (page - 1) * size;
+        int start = Math.max((page - 1) * size, 0);
         int end = Math.min(start + size, allJobs.size());
         List<Job> pageJobs = start < allJobs.size() ? allJobs.subList(start, end) : new ArrayList<>();
         return new PageResult<>(pageJobs, (long) allJobs.size(), page, size);
     }
 
-    /**
-     * 获取技能标签列表（管理员）
-     * 【功能说明】管理员查询平台所有技能标签
-     * @return List<SkillTag> 技能标签列表
-     */
-    public List<SkillTag> getSkillList() {
-        return skillTagAppService.getAllSkillTags();
+    public AdminPageResponse<AdminSkillItemResponse> getSkillList(String category, String keyword, int page, int pageSize) {
+        List<AdminSkillItemResponse> list = skillTagAppService.getAllSkillTags().stream()
+            .filter(skill -> matchesSkill(skill, category, keyword))
+            .map(this::toAdminSkillItem)
+            .toList();
+        return paginateList(list, page, pageSize);
     }
 
-    /**
-     * 分页获取解析任务列表（管理员）
-     * 【功能说明】管理员分页查询平台所有简历解析任务
-     * @param page 页码
-     * @param size 每页大小
-     * @return PageResult<ParseTask> 分页结果
-     */
-    public PageResult<ParseTask> getTaskList(int page, int size) {
-        // 简化实现：返回所有任务后进行分页
-        // 正式环境应给ParseTaskRepository添加分页支持
+    public AdminTaskListResponse getTaskList(String type, String status, int page, int pageSize) {
         List<ParseTask> allTasks = parseTaskRepository.findAll();
-        int start = (page - 1) * size;
-        int end = Math.min(start + size, allTasks.size());
-        List<ParseTask> pageTasks = start < allTasks.size() ? allTasks.subList(start, end) : new ArrayList<>();
-        return new PageResult<>(pageTasks, (long) allTasks.size(), page, size);
+        AdminTaskSummaryResponse summary = new AdminTaskSummaryResponse();
+        summary.setPending(allTasks.stream().filter(task -> task.getStatus() == ParseTask.TaskStatus.PENDING).count());
+        summary.setProcessing(allTasks.stream().filter(task -> task.getStatus() == ParseTask.TaskStatus.RUNNING).count());
+        summary.setCompleted(allTasks.stream().filter(task -> task.getStatus() == ParseTask.TaskStatus.SUCCESS).count());
+        summary.setFailed(allTasks.stream().filter(task -> task.getStatus() == ParseTask.TaskStatus.FAILED).count());
+
+        List<AdminTaskItemResponse> items = allTasks.stream()
+            .filter(task -> matchesTask(task, type, status))
+            .sorted(Comparator.comparing(ParseTask::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
+            .map(this::toAdminTaskItem)
+            .toList();
+
+        int start = Math.max((page - 1) * pageSize, 0);
+        int end = Math.min(start + pageSize, items.size());
+        List<AdminTaskItemResponse> pageList = start < items.size() ? items.subList(start, end) : new ArrayList<>();
+
+        AdminTaskListResponse response = new AdminTaskListResponse();
+        response.setSummary(summary);
+        response.setList(pageList);
+        response.setTotal(items.size());
+        response.setPage(page);
+        response.setPageSize(pageSize);
+        return response;
     }
 
-    /**
-     * 重试失败的任务
-     * 【功能说明】将FAILED状态的任务重置为PENDING重新执行
-     * @param taskId 任务ID
-     * @return void
-     */
     @Transactional
     public void retryTask(Long taskId) {
         Optional<ParseTask> taskOpt = parseTaskRepository.findById(taskId);
@@ -276,64 +240,35 @@ public class AdminAppService {
         task.setStatus(ParseTask.TaskStatus.PENDING);
         task.setErrorMessage(null);
         parseTaskRepository.save(task);
-        // TODO(sidifensen: 2026-04-16): 发送MQ消息重新触发解析
     }
 
-    /**
-     * 获取企业认证列表（待审核企业）
-     * 【功能说明】查询所有待认证审核的企业列表
-     * @return List<Company> 待审核企业列表
-     */
-    public List<Company> getCompanyAuthList() {
-        return companyAppService.getPendingCompanies();
+    public AdminPageResponse<AdminCompanyAuthItemResponse> getCompanyAuthList(String status, String keyword, int page, int pageSize) {
+        List<Company> companies = loadCompaniesByStatus(status);
+        List<AdminCompanyAuthItemResponse> list = companies.stream()
+            .filter(company -> matchesCompany(company, keyword))
+            .map(this::toAdminCompanyAuthItem)
+            .toList();
+        return paginateList(list, page, pageSize);
     }
 
-    /**
-     * 审批通过公司
-     * 【功能说明】管理员审批通过公司申请，将公司认证状态更新为已认证
-     * @param id 公司ID
-     * @return void
-     */
     @Transactional
     public void approveCompany(Long id) {
         companyAppService.approveCompany(id);
     }
 
-    /**
-     * 拒绝公司
-     * 【功能说明】管理员拒绝公司申请，将公司认证状态更新为已拒绝
-     * @param id 公司ID
-     * @return void
-     */
     @Transactional
     public void rejectCompany(Long id) {
         companyAppService.rejectCompany(id);
     }
 
-    /**
-     * 获取待审批公司列表
-     * 【功能说明】查询所有认证状态为待审核的企业列表
-     * @return List<Company> 待审批公司列表
-     */
     public List<Company> getPendingCompanies() {
         return companyAppService.getPendingCompanies();
     }
 
-    /**
-     * 根据认证状态获取公司列表
-     * 【功能说明】根据指定的认证状态查询所有符合条件的企业
-     * @param authStatus 认证状态（0-待审核, 1-已认证, 2-已拒绝）
-     * @return List<Company> 公司列表
-     */
     public List<Company> getCompaniesByAuthStatus(Integer authStatus) {
         return companyAppService.getCompaniesByAuthStatus(AuthStatus.values()[authStatus]);
     }
 
-    /**
-     * 批量审批通过公司
-     * 【功能说明】管理员批量审批通过多个公司申请，将公司认证状态更新为已认证
-     * @param ids 公司ID列表
-     */
     @Transactional
     public void batchApproveCompany(List<Long> ids) {
         for (Long id : ids) {
@@ -341,23 +276,18 @@ public class AdminAppService {
         }
     }
 
-    /**
-     * 批量拒绝公司
-     * 【功能说明】管理员批量拒绝多个公司申请，将公司认证状态更新为已拒绝
-     * @param ids 公司ID列表
-     */
     @Transactional
-    public void batchRejectCompany(List<Long> ids) {
+    public void batchRejectCompany(List<Long> ids, String reason) {
         for (Long id : ids) {
             companyAppService.rejectCompany(id);
         }
     }
 
-    /**
-     * 批量禁用用户
-     * 【功能说明】管理员批量禁用多个用户账号
-     * @param userIds 用户ID列表
-     */
+    @Transactional
+    public void batchRejectCompany(List<Long> ids) {
+        batchRejectCompany(ids, null);
+    }
+
     @Transactional
     public void batchDisableUser(List<Long> userIds) {
         for (Long userId : userIds) {
@@ -370,11 +300,6 @@ public class AdminAppService {
         }
     }
 
-    /**
-     * 批量重试任务
-     * 【功能说明】批量重试多个失败的任务，将任务状态重置为PENDING
-     * @param taskIds 任务ID列表
-     */
     @Transactional
     public void batchRetryTask(List<Long> taskIds) {
         for (Long taskId : taskIds) {
@@ -388,5 +313,198 @@ public class AdminAppService {
                 }
             }
         }
+    }
+
+    private boolean matchesUser(User user, UserListQuery query) {
+        if (query.getUserType() != null && user.getUserType() != null && !query.getUserType().equalsIgnoreCase(user.getUserType().name())) {
+            return false;
+        }
+        if (query.getStatus() != null && !mapFrontendStatus(user.getStatus()).equalsIgnoreCase(query.getStatus())) {
+            return false;
+        }
+        if (query.getKeyword() == null || query.getKeyword().isBlank()) {
+            return true;
+        }
+        String keyword = query.getKeyword().toLowerCase();
+        String username = user.getUsername() == null ? "" : user.getUsername().getValue();
+        return username.toLowerCase().contains(keyword);
+    }
+
+    private boolean matchesSkill(SkillTag skill, String category, String keyword) {
+        if (category != null && !category.isBlank()) {
+            String skillCategory = skill.getCategory() == null ? "" : skill.getCategory().getDescription();
+            if (!category.equalsIgnoreCase(skillCategory)) {
+                return false;
+            }
+        }
+        if (keyword == null || keyword.isBlank()) {
+            return true;
+        }
+        String lowered = keyword.toLowerCase();
+        return (skill.getName() != null && skill.getName().toLowerCase().contains(lowered))
+            || skill.getSynonyms().stream().anyMatch(synonym -> synonym.toLowerCase().contains(lowered));
+    }
+
+    private boolean matchesTask(ParseTask task, String type, String status) {
+        if (type != null && !type.isBlank() && !mapTaskType(task.getTaskType()).equalsIgnoreCase(type)) {
+            return false;
+        }
+        if (status != null && !status.isBlank() && !mapTaskStatus(task.getStatus()).equalsIgnoreCase(status)) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean matchesCompany(Company company, String keyword) {
+        if (keyword == null || keyword.isBlank()) {
+            return true;
+        }
+        String lowered = keyword.toLowerCase();
+        return (company.getName() != null && company.getName().toLowerCase().contains(lowered))
+            || (company.getUnifiedSocialCreditCode() != null && company.getUnifiedSocialCreditCode().toLowerCase().contains(lowered));
+    }
+
+    private List<Company> loadCompaniesByStatus(String status) {
+        if (status == null || status.isBlank()) {
+            List<Company> list = new ArrayList<>();
+            list.addAll(companyRepository.findByAuthStatus(AuthStatus.PENDING_VERIFY));
+            list.addAll(companyRepository.findByAuthStatus(AuthStatus.VERIFIED));
+            list.addAll(companyRepository.findByAuthStatus(AuthStatus.REJECTED));
+            return list;
+        }
+        return switch (status.toUpperCase()) {
+            case "APPROVED" -> companyRepository.findByAuthStatus(AuthStatus.VERIFIED);
+            case "REJECTED" -> companyRepository.findByAuthStatus(AuthStatus.REJECTED);
+            case "PENDING" -> companyRepository.findByAuthStatus(AuthStatus.PENDING_VERIFY);
+            default -> new ArrayList<>();
+        };
+    }
+
+    private AdminCompanyAuthItemResponse toAdminCompanyAuthItem(Company company) {
+        AdminCompanyAuthItemResponse item = new AdminCompanyAuthItemResponse();
+        item.setId(company.getId());
+        item.setCompanyId(company.getId());
+        item.setCompanyName(company.getName());
+        item.setUnifiedSocialCreditCode(company.getUnifiedSocialCreditCode());
+        item.setLegalPerson(company.getContactName());
+        item.setPhone(company.getContactPhone());
+        item.setBusinessLicenseUrl(company.getLicenseUrl());
+        item.setSubmittedAt(null);
+        item.setStatus(mapCompanyStatus(company.getAuthStatus()));
+        item.setReviewedAt(null);
+        item.setReviewerId(null);
+        item.setRejectReason(null);
+        return item;
+    }
+
+    private AdminUserItemResponse toAdminUserItem(User user) {
+        AdminUserItemResponse item = new AdminUserItemResponse();
+        String username = user.getUsername() == null ? null : user.getUsername().getValue();
+        item.setId(user.getId());
+        item.setUsername(username);
+        item.setEmail(username);
+        item.setPhone(null);
+        item.setType(user.getUserType() == null ? null : user.getUserType().name());
+        item.setStatus(mapFrontendStatus(user.getStatus()));
+        item.setCreatedAt(null);
+        item.setLastLoginAt(null);
+        item.setAvatarUrl(null);
+        return item;
+    }
+
+    private AdminSkillItemResponse toAdminSkillItem(SkillTag skill) {
+        AdminSkillItemResponse item = new AdminSkillItemResponse();
+        item.setId(skill.getId());
+        item.setName(skill.getName());
+        item.setCategory(skill.getCategory() == null ? null : skill.getCategory().getDescription());
+        item.setSynonyms(new ArrayList<>(skill.getSynonyms()));
+        item.setJobCount(skill.getUsageCount() == null ? 0 : skill.getUsageCount());
+        return item;
+    }
+
+    private AdminTaskItemResponse toAdminTaskItem(ParseTask task) {
+        AdminTaskItemResponse item = new AdminTaskItemResponse();
+        item.setId(task.getId());
+        item.setType(mapTaskType(task.getTaskType()));
+        item.setStatus(mapTaskStatus(task.getStatus()));
+        item.setProgress(task.getStatus() == ParseTask.TaskStatus.SUCCESS ? 100 : task.getStatus() == ParseTask.TaskStatus.RUNNING ? 50 : 0);
+        item.setTotal(100);
+        item.setSuccessCount(task.getStatus() == ParseTask.TaskStatus.SUCCESS ? 1 : 0);
+        item.setFailCount(task.getStatus() == ParseTask.TaskStatus.FAILED ? 1 : 0);
+        item.setCreatedAt(format(task.getCreatedAt()));
+        item.setStartedAt(format(task.getStartedAt()));
+        item.setCompletedAt(format(task.getCompletedAt()));
+        item.setErrorMessage(task.getErrorMessage());
+        return item;
+    }
+
+    private String mapCompanyStatus(AuthStatus status) {
+        if (status == null) {
+            return "PENDING";
+        }
+        return switch (status) {
+            case VERIFIED -> "APPROVED";
+            case REJECTED -> "REJECTED";
+            default -> "PENDING";
+        };
+    }
+
+    private String mapFrontendStatus(AuthStatus status) {
+        if (status == null) {
+            return "ACTIVE";
+        }
+        return switch (status) {
+            case DISABLED -> "DISABLED";
+            case LOCKED -> "LOCKED";
+            default -> "ACTIVE";
+        };
+    }
+
+    private AuthStatus mapUserStatus(String status) {
+        if (status == null) {
+            return AuthStatus.VERIFIED;
+        }
+        return switch (status.toUpperCase()) {
+            case "DISABLED" -> AuthStatus.DISABLED;
+            case "LOCKED" -> AuthStatus.LOCKED;
+            default -> AuthStatus.VERIFIED;
+        };
+    }
+
+    private String mapTaskType(String rawType) {
+        if (rawType == null || rawType.isBlank()) {
+            return "IMPORT";
+        }
+        String normalized = rawType.trim().toLowerCase();
+        if (normalized.contains("resume")) {
+            return "RESUME_PARSE";
+        }
+        if (normalized.contains("job") || normalized.contains("match")) {
+            return "JOB_MATCH";
+        }
+        return "IMPORT";
+    }
+
+    private String mapTaskStatus(ParseTask.TaskStatus status) {
+        if (status == null) {
+            return "QUEUED";
+        }
+        return switch (status) {
+            case PENDING -> "QUEUED";
+            case RUNNING -> "PROCESSING";
+            case SUCCESS -> "COMPLETED";
+            case FAILED -> "FAILED";
+        };
+    }
+
+    private String format(LocalDateTime time) {
+        return time == null ? null : time.format(DATE_TIME_FORMATTER);
+    }
+
+    private <T> AdminPageResponse<T> paginateList(List<T> list, int page, int pageSize) {
+        int start = Math.max((page - 1) * pageSize, 0);
+        int end = Math.min(start + pageSize, list.size());
+        List<T> pageList = start < list.size() ? list.subList(start, end) : new ArrayList<>();
+        return new AdminPageResponse<>(pageList, list.size(), page, pageSize);
     }
 }

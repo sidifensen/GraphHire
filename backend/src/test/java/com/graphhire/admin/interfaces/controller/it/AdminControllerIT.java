@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -51,7 +52,7 @@ class AdminControllerIT extends BaseControllerIT {
 
     @Test
     @DisplayName("01 - 管理员登录")
-    void adminLogin_Success() throws Exception {
+    void adminLoginSuccess() throws Exception {
         String json = String.format("{\"username\":\"%s\",\"password\":\"%s\"}",
             TEST_ADMIN_USERNAME, TEST_ADMIN_PASSWORD);
 
@@ -64,86 +65,165 @@ class AdminControllerIT extends BaseControllerIT {
     }
 
     @Test
-    @DisplayName("02 - 获取仪表盘统计")
-    void getDashboardStats_Success() throws Exception {
-        mockMvc.perform(get("/admin/dashboard/stats")
-                .headers(adminHeaders))
+    @DisplayName("02 - 仪表盘统计")
+    void dashboardStatsSuccess() throws Exception {
+        mockMvc.perform(get("/admin/dashboard/stats").headers(adminHeaders))
             .andExpect(jsonPath("$.code").value(200))
-            .andExpect(jsonPath("$.data").exists());
+            .andExpect(jsonPath("$.data.totalUsers").exists())
+            .andExpect(jsonPath("$.data.pendingCompanyAudit").exists())
+            .andExpect(jsonPath("$.data.trend").isArray());
     }
 
     @Test
-    @DisplayName("03 - 获取用户列表")
-    void getUserList_Success() throws Exception {
-        String json = "{\"page\":1,\"size\":10}";
-
-        mockMvc.perform(post("/admin/user/list")
-                .headers(adminHeaders)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json))
-            .andExpect(jsonPath("$.code").value(200));
-    }
-
-    @Test
-    @DisplayName("04 - 获取简历列表")
-    void getResumeList_Success() throws Exception {
-        mockMvc.perform(get("/admin/resume/list")
-                .headers(adminHeaders)
-                .param("page", "1")
-                .param("size", "10"))
-            .andExpect(jsonPath("$.code").value(200));
-    }
-
-    @Test
-    @DisplayName("05 - 获取职位列表")
-    void getJobList_Success() throws Exception {
-        mockMvc.perform(get("/admin/job/list")
-                .headers(adminHeaders)
-                .param("page", "1")
-                .param("size", "10"))
-            .andExpect(jsonPath("$.code").value(200));
-    }
-
-    @Test
-    @DisplayName("06 - 获取技能标签列表")
-    void getSkillList_Success() throws Exception {
-        mockMvc.perform(get("/admin/skill/list")
-                .headers(adminHeaders))
-            .andExpect(jsonPath("$.code").value(200));
-    }
-
-    @Test
-    @DisplayName("07 - 获取任务列表")
-    void getTaskList_Success() throws Exception {
-        mockMvc.perform(get("/admin/task/list")
-                .headers(adminHeaders)
-                .param("page", "1")
-                .param("size", "10"))
-            .andExpect(jsonPath("$.code").value(200));
-    }
-
-    @Test
-    @DisplayName("08 - 获取企业认证列表")
-    void getCompanyAuthList_Success() throws Exception {
-        mockMvc.perform(get("/admin/company/auth/list")
-                .headers(adminHeaders))
-            .andExpect(jsonPath("$.code").value(200));
-    }
-
-    @Test
-    @DisplayName("09 - 获取待审批公司列表")
-    void getPendingCompanies_Success() throws Exception {
-        mockMvc.perform(get("/admin/company/pending")
-                .headers(adminHeaders))
-            .andExpect(jsonPath("$.code").value(200));
-    }
-
-    @Test
-    @DisplayName("10 - 根据认证状态获取公司列表")
-    void getCompaniesByAuthStatus_Success() throws Exception {
+    @DisplayName("03 - 企业审核列表")
+    void companyAuthListSuccess() throws Exception {
         mockMvc.perform(get("/admin/company/auth-list")
                 .headers(adminHeaders)
-                .param("authStatus", "0"))
+                .param("status", "PENDING")
+                .param("page", "1")
+                .param("pageSize", "10"))
+            .andExpect(jsonPath("$.code").value(200))
+            .andExpect(jsonPath("$.data.list").isArray())
+            .andExpect(jsonPath("$.data.total").exists());
+    }
+
+    @Test
+    @DisplayName("04 - 更新企业审核状态")
+    void updateCompanyAuthSuccess() throws Exception {
+        Long pendingCompanyId = findPendingCompanyId();
+        assumeTrue(pendingCompanyId != null, "无可审批企业，跳过用例");
+
+        String body = "{\"status\":\"APPROVED\"}";
+        mockMvc.perform(put("/admin/company/auth/" + pendingCompanyId)
+                .headers(adminHeaders)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(jsonPath("$.code").isNumber());
+    }
+
+    @Test
+    @DisplayName("05 - 用户列表")
+    void userListSuccess() throws Exception {
+        mockMvc.perform(get("/admin/user/list")
+                .headers(adminHeaders)
+                .param("type", "PERSON")
+                .param("status", "ACTIVE")
+                .param("page", "1")
+                .param("pageSize", "10"))
+            .andExpect(jsonPath("$.code").value(200))
+            .andExpect(jsonPath("$.data.list").isArray())
+            .andExpect(jsonPath("$.data.total").exists());
+    }
+
+    @Test
+    @DisplayName("06 - 更新用户状态")
+    void updateUserStatusSuccess() throws Exception {
+        String body = "{\"status\":\"DISABLED\"}";
+        mockMvc.perform(put("/admin/user/1/status")
+                .headers(adminHeaders)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
             .andExpect(jsonPath("$.code").value(200));
+    }
+
+    @Test
+    @DisplayName("07 - 技能标签列表")
+    void skillListSuccess() throws Exception {
+        mockMvc.perform(get("/admin/skill/list")
+                .headers(adminHeaders)
+                .param("category", "技术技能")
+                .param("keyword", "Java")
+                .param("page", "1")
+                .param("pageSize", "10"))
+            .andExpect(jsonPath("$.code").value(200))
+            .andExpect(jsonPath("$.data.list").isArray());
+    }
+
+    @Test
+    @DisplayName("08 - 任务列表")
+    void taskListSuccess() throws Exception {
+        mockMvc.perform(get("/admin/task/list")
+                .headers(adminHeaders)
+                .param("type", "RESUME_PARSE")
+                .param("status", "FAILED")
+                .param("page", "1")
+                .param("pageSize", "10"))
+            .andExpect(jsonPath("$.code").value(200))
+            .andExpect(jsonPath("$.data.summary").exists())
+            .andExpect(jsonPath("$.data.list").isArray());
+    }
+
+    @Test
+    @DisplayName("09 - 单任务重试")
+    void retryTaskSuccess() throws Exception {
+        Long failedTaskId = findFailedTaskId();
+        assumeTrue(failedTaskId != null, "无失败任务，跳过用例");
+
+        mockMvc.perform(post("/admin/task/" + failedTaskId + "/retry")
+                .headers(adminHeaders))
+            .andExpect(jsonPath("$.code").value(200));
+    }
+
+    @Test
+    @DisplayName("10 - 批量通过企业")
+    void batchApproveCompanySuccess() throws Exception {
+        Long pendingCompanyId = findPendingCompanyId();
+        assumeTrue(pendingCompanyId != null, "无可审批企业，跳过用例");
+
+        String body = "{\"ids\":[" + pendingCompanyId + "]}";
+        mockMvc.perform(post("/admin/company/batch/approve")
+                .headers(adminHeaders)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(jsonPath("$.code").value(200));
+    }
+
+    @Test
+    @DisplayName("11 - 批量拒绝企业")
+    void batchRejectCompanySuccess() throws Exception {
+        Long pendingCompanyId = findPendingCompanyId();
+        assumeTrue(pendingCompanyId != null, "无可审批企业，跳过用例");
+
+        String body = "{\"ids\":[" + pendingCompanyId + "],\"reason\":\"材料不完整\"}";
+        mockMvc.perform(post("/admin/company/batch/reject")
+                .headers(adminHeaders)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(jsonPath("$.code").value(200));
+    }
+
+    @Test
+    @DisplayName("12 - 批量禁用用户")
+    void batchDisableUserSuccess() throws Exception {
+        String body = "{\"userIds\":[1]}";
+        mockMvc.perform(post("/admin/user/batch/disable")
+                .headers(adminHeaders)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(jsonPath("$.code").value(200));
+    }
+
+    @Test
+    @DisplayName("13 - 批量重试任务")
+    void batchRetryTaskSuccess() throws Exception {
+        Long failedTaskId = findFailedTaskId();
+        assumeTrue(failedTaskId != null, "无失败任务，跳过用例");
+
+        String body = "{\"taskIds\":[" + failedTaskId + "]}";
+        mockMvc.perform(post("/admin/task/batch/retry")
+                .headers(adminHeaders)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(jsonPath("$.code").value(200));
+    }
+
+    private Long findPendingCompanyId() {
+        return jdbcTemplate.query("SELECT id FROM company WHERE auth_status = 0 ORDER BY id LIMIT 1",
+            rs -> rs.next() ? rs.getLong(1) : null);
+    }
+
+    private Long findFailedTaskId() {
+        return jdbcTemplate.query("SELECT id FROM parse_task WHERE status = 3 ORDER BY id LIMIT 1",
+            rs -> rs.next() ? rs.getLong(1) : null);
     }
 }

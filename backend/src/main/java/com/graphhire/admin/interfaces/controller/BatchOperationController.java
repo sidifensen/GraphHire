@@ -15,8 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
  * 批量操作接口
  * 提供管理员批量审批企业、批量禁用用户、批量重试任务等功能
  */
-@RestController
-@RequestMapping("/admin")
+@Deprecated
 public class BatchOperationController {
 
     @Autowired

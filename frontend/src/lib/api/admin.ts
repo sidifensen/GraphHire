@@ -14,30 +14,28 @@ export interface AdminLoginResponse {
   userId: number;
 }
 
-// ============ Dashboard & Statistics ============
+// ============ Dashboard ============
+export interface DashboardTrendPoint {
+  date: string;
+  activeUsers: number;
+  newData: number;
+}
+
 export interface AdminDashboardStats {
   totalUsers: number;
   totalCompanies: number;
+  totalResumes: number;
   totalJobs: number;
-  totalApplications: number;
   todayNewUsers: number;
   todayNewJobs: number;
   pendingCompanyAudit: number;
-  pendingResumeParse: number;
-}
-
-export interface AdminStatistics {
-  userCount: number;
-  companyCount: number;
-  jobCount: number;
-  applicationCount: number;
-  resumeCount: number;
-  activeUserCount: number;
-  activeCompanyCount: number;
-  newUsersToday: number;
-  newCompaniesToday: number;
-  newJobsToday: number;
-  newApplicationsToday: number;
+  pendingTaskCount: number;
+  failedTaskCount: number;
+  matchCount: number;
+  taskSuccessRate: number;
+  weeklyNewCompanies: number;
+  pendingSkillSuggestions: number;
+  trend: DashboardTrendPoint[];
 }
 
 // ============ Company Auth ============
@@ -54,6 +52,13 @@ export interface CompanyAuthItem {
   reviewedAt?: string;
   reviewerId?: number;
   rejectReason?: string;
+}
+
+export interface CompanyAuthListResponse {
+  list: CompanyAuthItem[];
+  total: number;
+  page: number;
+  pageSize: number;
 }
 
 // ============ User Management ============
@@ -76,38 +81,23 @@ export interface UserListResponse {
   pageSize: number;
 }
 
-// ============ Resume Management ============
-export interface ResumeListItem {
+// ============ Skill ============
+export interface SkillTagItem {
   id: number;
-  userId: number;
-  userName: string;
-  fileName: string;
-  parseStatus: 'PENDING' | 'PARSING' | 'COMPLETED' | 'FAILED';
-  createdAt: string;
-  parsedAt?: string;
+  name: string;
+  category: string;
+  synonyms: string[];
+  jobCount: number;
 }
 
-// ============ Job Management ============
-export interface JobListItem {
-  id: number;
-  companyId: number;
-  companyName: string;
-  title: string;
-  status: 'DRAFT' | 'PUBLISHED' | 'CLOSED';
-  viewCount: number;
-  applicationCount: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface JobListResponse {
-  list: JobListItem[];
+export interface SkillListResponse {
+  list: SkillTagItem[];
   total: number;
   page: number;
   pageSize: number;
 }
 
-// ============ Task Management ============
+// ============ Task ============
 export interface TaskListItem {
   id: number;
   type: 'RESUME_PARSE' | 'JOB_MATCH' | 'IMPORT';
@@ -122,7 +112,15 @@ export interface TaskListItem {
   errorMessage?: string;
 }
 
+export interface TaskSummary {
+  pending: number;
+  processing: number;
+  completed: number;
+  failed: number;
+}
+
 export interface TaskListResponse {
+  summary: TaskSummary;
   list: TaskListItem[];
   total: number;
   page: number;
@@ -147,33 +145,19 @@ export interface BatchRetryRequest {
   taskIds: number[];
 }
 
-// ============ API ============
 export const adminApi = {
-  // ---- Admin Login ----
   login: async (data: AdminLoginRequest): Promise<AdminLoginResponse> => {
     const response = await apiClient.post('/admin/login', data);
     return response.data;
   },
 
-  // ---- Dashboard & Statistics ----
   getDashboardStats: async (): Promise<AdminDashboardStats> => {
     const response = await apiClient.get('/admin/dashboard/stats');
     return response.data;
   },
 
-  getStatistics: async (): Promise<AdminStatistics> => {
-    const response = await apiClient.get('/admin/statistics');
-    return response.data;
-  },
-
-  // ---- Company Auth ----
-  getCompanyAuthList: async (params?: { status?: string; page?: number }): Promise<{ list: CompanyAuthItem[]; total: number }> => {
+  getCompanyAuthList: async (params?: { status?: string; keyword?: string; page?: number; pageSize?: number }): Promise<CompanyAuthListResponse> => {
     const response = await apiClient.get('/admin/company/auth-list', { params });
-    return response.data;
-  },
-
-  getCompanyAuth: async (id: number): Promise<CompanyAuthItem> => {
-    const response = await apiClient.get(`/admin/company/auth/${id}`);
     return response.data;
   },
 
@@ -181,21 +165,7 @@ export const adminApi = {
     await apiClient.put(`/admin/company/auth/${id}`, data);
   },
 
-  getPendingCompanies: async (): Promise<CompanyAuthItem[]> => {
-    const response = await apiClient.get('/admin/company/pending');
-    return response.data;
-  },
-
-  approveCompany: async (companyId: number): Promise<void> => {
-    await apiClient.post(`/admin/company/${companyId}/approve`);
-  },
-
-  rejectCompany: async (companyId: number, reason: string): Promise<void> => {
-    await apiClient.post(`/admin/company/${companyId}/reject`, { reason });
-  },
-
-  // ---- User Management ----
-  getUserList: async (params?: { type?: string; status?: string; page?: number; pageSize?: number }): Promise<UserListResponse> => {
+  getUserList: async (params?: { type?: string; status?: string; keyword?: string; page?: number; pageSize?: number }): Promise<UserListResponse> => {
     const response = await apiClient.get('/admin/user/list', { params });
     return response.data;
   },
@@ -204,29 +174,11 @@ export const adminApi = {
     await apiClient.put(`/admin/user/${userId}/status`, { status });
   },
 
-  disableUser: async (userId: number): Promise<void> => {
-    await apiClient.post(`/admin/user/disable`, { userId });
-  },
-
-  // ---- Resume Management ----
-  getResumeList: async (params?: { parseStatus?: string; page?: number; pageSize?: number }): Promise<{ list: ResumeListItem[]; total: number }> => {
-    const response = await apiClient.get('/admin/resume/list', { params });
-    return response.data;
-  },
-
-  // ---- Job Management ----
-  getJobList: async (params?: { status?: string; page?: number; pageSize?: number }): Promise<JobListResponse> => {
-    const response = await apiClient.get('/admin/job/list', { params });
-    return response.data;
-  },
-
-  // ---- Skill Management ----
-  getSkillList: async (params?: { category?: string; page?: number; pageSize?: number }): Promise<{ list: SkillTagItem[]; total: number }> => {
+  getSkillList: async (params?: { category?: string; keyword?: string; page?: number; pageSize?: number }): Promise<SkillListResponse> => {
     const response = await apiClient.get('/admin/skill/list', { params });
     return response.data;
   },
 
-  // ---- Task Management ----
   getTaskList: async (params?: { type?: string; status?: string; page?: number; pageSize?: number }): Promise<TaskListResponse> => {
     const response = await apiClient.get('/admin/task/list', { params });
     return response.data;
@@ -236,7 +188,6 @@ export const adminApi = {
     await apiClient.post(`/admin/task/${taskId}/retry`);
   },
 
-  // ---- Batch Operations ----
   batchApproveCompanies: async (data: BatchApproveRequest): Promise<void> => {
     await apiClient.post('/admin/company/batch/approve', data);
   },
@@ -253,31 +204,3 @@ export const adminApi = {
     await apiClient.post('/admin/task/batch/retry', data);
   },
 };
-
-// ============ Skill Tags (deprecated - use skillTag.ts) ============
-export interface SkillTagItem {
-  id: number;
-  name: string;
-  category: string;
-  synonyms: string[];
-  jobCount: number;
-}
-
-export interface SkillTag {
-  id: number;
-  name: string;
-  category: string;
-  synonyms: string[];
-  jobCount: number;
-}
-
-export interface ParseTask {
-  id: number;
-  resumeId: number;
-  fileName: string;
-  status: 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
-  progress: number;
-  createdAt: string;
-  completedAt?: string;
-  error?: string;
-}

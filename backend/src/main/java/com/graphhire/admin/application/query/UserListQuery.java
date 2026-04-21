@@ -2,18 +2,17 @@ package com.graphhire.admin.application.query;
 
 /**
  * 用户列表查询参数
- * 【模块说明】封装用户分页查询条件：页码、页大小、用户类型、账号状态
  */
 public class UserListQuery {
 
-    /** 当前页码，从1开始 */
     private Integer page = 1;
-    /** 每页记录数，默认20 */
     private Integer pageSize = 20;
-    /** 用户类型筛选：PERSON-个人用户，COMPANY-企业用户 */
+    /** PERSON / COMPANY / ADMIN */
     private String userType;
-    /** 账号状态筛选 */
+    /** ACTIVE / DISABLED / LOCKED 或 AuthStatus 名称 */
     private String status;
+    /** 关键字：用户名/邮箱/手机号 */
+    private String keyword;
 
     public UserListQuery() {
     }
@@ -55,5 +54,13 @@ public class UserListQuery {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getKeyword() {
+        return keyword;
+    }
+
+    public void setKeyword(String keyword) {
+        this.keyword = keyword;
     }
 }
