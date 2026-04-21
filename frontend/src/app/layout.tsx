@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   title: 'GraphHire 图谱智聘 - AI驱动的认知导视招聘系统',
   description: '基于AI智能匹配与能力图谱的招聘平台，精准匹配理想职业节点',
   icons: {
-    icon: '/favicon.ico',
+    icon: '/favicon.svg',
   },
 };
 
