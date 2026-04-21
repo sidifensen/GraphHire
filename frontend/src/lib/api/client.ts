@@ -7,6 +7,28 @@ const apiClient = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
+function getAccessToken() {
+  const stateToken = authStore.getState().accessToken;
+  if (stateToken) {
+    return stateToken;
+  }
+
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  try {
+    const persisted = window.localStorage.getItem('auth-storage');
+    if (!persisted) {
+      return null;
+    }
+    const parsed = JSON.parse(persisted) as { state?: { accessToken?: string | null } };
+    return parsed.state?.accessToken ?? null;
+  } catch {
+    return null;
+  }
+}
+
 // Response interceptor to unwrap Result<T>
 apiClient.interceptors.response.use(
   (response) => {
@@ -30,9 +52,9 @@ apiClient.interceptors.response.use(
 
 // Request interceptor to add auth token
 apiClient.interceptors.request.use((config) => {
-  const token = authStore.getState().accessToken;
+  const token = getAccessToken();
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    config.headers.satoken = token;
   }
   return config;
 });

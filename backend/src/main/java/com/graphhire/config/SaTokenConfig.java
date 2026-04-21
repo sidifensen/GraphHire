@@ -1,5 +1,6 @@
 package com.graphhire.config;
 
+import cn.dev33.satoken.context.SaHolder;
 import cn.dev33.satoken.interceptor.SaInterceptor;
 import cn.dev33.satoken.stp.StpUtil;
 import org.springframework.context.annotation.Configuration;
@@ -16,8 +17,10 @@ public class SaTokenConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new SaInterceptor(handle -> {
-            // 基础登录校验
-            StpUtil.checkLogin();
+            // 浏览器跨域预检请求直接放行，避免前端真实接口在 OPTIONS 阶段被拦截成 Network Error
+            if (!"OPTIONS".equalsIgnoreCase(SaHolder.getRequest().getMethod())) {
+                StpUtil.checkLogin();
+            }
         }))
         .addPathPatterns("/**")
         // 放行路径

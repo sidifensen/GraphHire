@@ -12,12 +12,11 @@
 ## superpowers-plus 标准流程
 
 1. **brainstorming** — 需求澄清（编写代码前激活）
-2. **using-git-worktrees** — 隔离工作区（设计批准后激活）
-3. **writing-plans** — 任务分解（设计批准后激活）
-4. **executing-plans** — 计划执行（含并行/串行子代理自动路由）
-5. **test-driven-development** — 测试驱动（RED-GREEN-REFACTOR）
-6. **requesting-code-review** — 代码评审（任务间隙激活）
-7. **finishing-a-development-branch** — 分支完成（任务完成后激活）
+2. **writing-plans** — 任务分解（设计批准后激活）
+3. **executing-plans** — 计划执行（含并行/串行子代理自动路由）
+4. **test-driven-development** — 测试驱动（RED-GREEN-REFACTOR）
+5. **requesting-code-review** — 代码评审（任务间隙激活）
+6. **finishing-a-development-branch** — 分支完成（任务完成后激活）
 
 ### 核心原则
 

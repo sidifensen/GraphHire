@@ -1,55 +1,75 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 import ProfilePage from '@/app/(user)/profile/page';
 
-// Mock next/navigation
-vi.mock('next/navigation', () => ({
-  usePathname: () => '/profile',
-  useRouter: () => ({
-    push: vi.fn(),
-    replace: vi.fn(),
-    refresh: vi.fn(),
-    back: vi.fn(),
-    forward: vi.fn(),
-  }),
+const getProfile = vi.fn();
+const updateProfile = vi.fn();
+const authStoreMock = vi.fn();
+
+vi.mock('@/components/UserLayout', () => ({
+  default: ({ children }: { children: React.ReactNode }) => <div data-testid="user-layout">{children}</div>,
 }));
 
-// Mock next/image
-vi.mock('next/image', () => ({
-  default: (props: any) => <img {...props} />,
+vi.mock('@/lib/stores/auth-store', () => ({
+  authStore: (selector: (state: any) => unknown) => authStoreMock(selector),
+}));
+
+vi.mock('@/lib/api/person', () => ({
+  personApi: {
+    getProfile: (...args: unknown[]) => getProfile(...args),
+    updateProfile: (...args: unknown[]) => updateProfile(...args),
+  },
 }));
 
 describe('ProfilePage', () => {
-  it('renders page title', () => {
-    render(<ProfilePage />);
-    expect(screen.getAllByText(/个人资料/).length).toBeGreaterThan(0);
+  beforeEach(() => {
+    vi.clearAllMocks();
+    authStoreMock.mockImplementation((selector) => selector({ user: { id: 1, username: 'real@example.com', type: 'PERSON' } }));
+    getProfile.mockResolvedValue({
+      id: 1,
+      userId: 1,
+      realName: '林静宜',
+      gender: 2,
+      age: 28,
+      phone: '13800138000',
+      education: '硕士',
+      city: '杭州',
+      targetCity: '上海',
+      expectedSalary: 30000,
+    });
+    updateProfile.mockResolvedValue(undefined);
   });
 
-  it('renders sidebar navigation', () => {
+  it('loads and renders profile from api', async () => {
     render(<ProfilePage />);
-    expect(screen.getAllByText(/个人资料/).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/简历管理/).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/投递记录/).length).toBeGreaterThan(0);
+    expect(screen.getByText('个人资料加载中...')).toBeDefined();
+    await screen.findByDisplayValue('林静宜');
+    expect(screen.getByDisplayValue('13800138000')).toBeDefined();
+    expect(screen.getByDisplayValue('real@example.com')).toBeDefined();
+    expect(screen.getByText('图谱认知引擎就绪')).toBeDefined();
   });
 
-  it('renders basic info section', () => {
+  it('saves profile changes', async () => {
     render(<ProfilePage />);
-    expect(screen.getByText('基础资料')).toBeDefined();
+    await screen.findByDisplayValue('林静宜');
+    screen.getByDisplayValue('林静宜').dispatchEvent(new Event('input', { bubbles: true }));
+    (screen.getByDisplayValue('林静宜') as HTMLInputElement).value = '林静宜P7';
+    screen.getByText('保存全部修改').click();
+    await waitFor(() => expect(updateProfile).toHaveBeenCalled());
   });
 
-  it('renders education section', () => {
+  it('renders error and retry states', async () => {
+    getProfile.mockRejectedValueOnce(new Error('profile failed'));
     render(<ProfilePage />);
-    expect(screen.getByText(/教育背景/)).toBeDefined();
+    await screen.findByText('profile failed');
+    screen.getByText('重试').click();
+    await waitFor(() => expect(getProfile).toHaveBeenCalledTimes(2));
   });
 
-  it('renders job intentions section', () => {
+  it('shows save feedback', async () => {
     render(<ProfilePage />);
-    expect(screen.getByText('求职意向')).toBeDefined();
-  });
-
-  it('renders action buttons', () => {
-    render(<ProfilePage />);
-    expect(screen.getByText('预览图谱')).toBeDefined();
-    expect(screen.getByText('保存全部修改')).toBeDefined();
+    await screen.findByDisplayValue('林静宜');
+    screen.getByText('保存全部修改').click();
+    await screen.findByText('个人资料已保存');
   });
 });

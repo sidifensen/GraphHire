@@ -1,126 +1,109 @@
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 import MatchDetailPage from '@/app/(user)/match/[id]/page';
 
-describe('MatchDetailPage 匹配详情页测试', () => {
-  describe('匹配概览测试', () => {
-    test('渲染职位标题', () => {
-      render(<MatchDetailPage />);
-      const title = screen.getByRole('heading', { name: '高级认知交互设计师' });
-      expect(title).toBeInTheDocument();
-    });
+const getMatchDetail = vi.fn();
+const getJobById = vi.fn();
+const getGraphScore = vi.fn();
+const authStoreMock = vi.fn();
+const useParamsMock = vi.fn();
 
-    test('渲染公司信息', () => {
-      render(<MatchDetailPage />);
-      const companyInfo = screen.getByText(/星海人工智能研究院/);
-      expect(companyInfo).toBeInTheDocument();
-    });
+vi.mock('next/navigation', () => ({
+  useParams: () => useParamsMock(),
+}));
 
-    test('渲染匹配分数', () => {
-      render(<MatchDetailPage />);
-      // 92% 被分成 "92" 和 "%" 两个元素
-      expect(screen.getByText('92')).toBeInTheDocument();
-      expect(screen.getByText('%')).toBeInTheDocument();
-      const scoreLabel = screen.getByText('总匹配度');
-      expect(scoreLabel).toBeInTheDocument();
-    });
+vi.mock('@/lib/stores/auth-store', () => ({
+  authStore: (selector: (state: any) => unknown) => authStoreMock(selector),
+}));
 
-    test('渲染薪资信息', () => {
-      render(<MatchDetailPage />);
-      const salary = screen.getByText('15k - 25k');
-      expect(salary).toBeInTheDocument();
-    });
+vi.mock('@/lib/api/person', () => ({
+  personApi: {
+    getMatchDetail: (...args: unknown[]) => getMatchDetail(...args),
+  },
+}));
 
-    test('渲染 AI 推荐标签', () => {
-      render(<MatchDetailPage />);
-      const recommendedTag = screen.getByText('AI 极力推荐');
-      expect(recommendedTag).toBeInTheDocument();
+vi.mock('@/lib/api/public', () => ({
+  publicApi: {
+    jobs: {
+      getById: (...args: unknown[]) => getJobById(...args),
+    },
+  },
+}));
+
+vi.mock('@/lib/api/match', () => ({
+  matchApi: {
+    getGraphScore: (...args: unknown[]) => getGraphScore(...args),
+  },
+}));
+
+describe('MatchDetailPage', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useParamsMock.mockReturnValue({ id: '9' });
+    authStoreMock.mockImplementation((selector) => selector({ user: { id: 1, username: 'real@example.com', type: 'PERSON' } }));
+    getMatchDetail.mockResolvedValue({
+      matchId: 101,
+      resumeId: 201,
+      jobId: 9,
+      score: { total: 92, skillScore: 95, expScore: 90, cityScore: 85, eduScore: 100, salScore: 88 },
+      level: 'HIGH',
+      matchReason: '基于真实简历和岗位要求，当前匹配度较高。',
+      isRead: false,
+      job: { id: 9, title: '高级 Java 工程师', companyName: '星海人工智能研究院' },
+    });
+    getJobById.mockResolvedValue({
+      id: 9,
+      companyId: 5,
+      companyName: '星海人工智能研究院',
+      title: '高级 Java 工程师',
+      city: '杭州',
+      salaryMin: 15000,
+      salaryMax: 25000,
+      requiredSkills: ['Java', 'Spring Boot', 'MySQL'],
+    });
+    getGraphScore.mockResolvedValue({
+      personId: 1,
+      jobId: 9,
+      totalScore: 92,
+      matchLevel: '极力推荐',
+      matchedSkills: ['Java', 'Spring Boot'],
+      missingSkills: ['MySQL'],
+      matchRate: 95,
+      reason: '候选人的核心技能和目标岗位高度匹配。',
     });
   });
 
-  describe('职位信息测试', () => {
-    test('渲染职位详情标签', () => {
-      render(<MatchDetailPage />);
-      expect(screen.getByText('3-5年')).toBeInTheDocument();
-      expect(screen.getByText('本科及以上')).toBeInTheDocument();
-    });
-
-    test('渲染地点信息', () => {
-      render(<MatchDetailPage />);
-      const location = screen.getByText(/杭州/);
-      expect(location).toBeInTheDocument();
-    });
+  it('loads and renders combined real api data', async () => {
+    render(<MatchDetailPage />);
+    expect(screen.getByText('匹配详情加载中...')).toBeDefined();
+    await screen.findByText('高级 Java 工程师');
+    expect(getMatchDetail).toHaveBeenCalledWith(9);
+    expect(getJobById).toHaveBeenCalledWith(9);
+    expect(getGraphScore).toHaveBeenCalledWith(1, 9);
+    expect(screen.getByText(/星海人工智能研究院/)).toBeDefined();
+    expect(screen.getByText('15k - 25k')).toBeDefined();
+    expect(screen.getByText('AI 极力推荐')).toBeDefined();
+    expect(screen.getByText('Java')).toBeDefined();
+    expect(screen.getAllByText('MySQL').length).toBeGreaterThan(0);
   });
 
-  describe('AI 分析测试', () => {
-    test('渲染 AI 深度认知解析标题', () => {
-      render(<MatchDetailPage />);
-      const aiTitle = screen.getByText('AI 深度认知解析');
-      expect(aiTitle).toBeInTheDocument();
-    });
-
-    test('渲染 AI 分析总结', () => {
-      render(<MatchDetailPage />);
-      const summary = screen.getByText(/基于您的图谱节点数据/);
-      expect(summary).toBeInTheDocument();
-    });
-
-    test('渲染 AI 洞察卡片', () => {
-      render(<MatchDetailPage />);
-      expect(screen.getByText('核心技能完美覆盖')).toBeInTheDocument();
-      expect(screen.getByText('行业经验高度吻合')).toBeInTheDocument();
-    });
+  it('renders error and retry states', async () => {
+    getMatchDetail.mockRejectedValueOnce(new Error('match failed'));
+    render(<MatchDetailPage />);
+    await screen.findByText('match failed');
+    screen.getByText('重试').click();
+    await waitFor(() => expect(getMatchDetail).toHaveBeenCalledTimes(2));
   });
 
-  describe('技能对比测试', () => {
-    test('渲染技能维度明细对比标题', () => {
-      render(<MatchDetailPage />);
-      const title = screen.getByText('技能维度明细对比');
-      expect(title).toBeInTheDocument();
-    });
-
-    test('渲染技能对比列表', () => {
-      render(<MatchDetailPage />);
-      expect(screen.getByText('系统化设计思维')).toBeInTheDocument();
-      expect(screen.getByText('AI 交互模式创新')).toBeInTheDocument();
-      expect(screen.getByText('前端代码基础 (React/Vue)')).toBeInTheDocument();
-    });
-
-    test('渲染匹配等级标签', () => {
-      render(<MatchDetailPage />);
-      const highMatch = screen.getAllByText('高匹配');
-      expect(highMatch.length).toBeGreaterThan(0);
-    });
+  it('renders invalid param state', async () => {
+    useParamsMock.mockReturnValue({ id: 'abc' });
+    render(<MatchDetailPage />);
+    await screen.findByText('无效的职位参数');
+    useParamsMock.mockReturnValue({ id: '9' });
   });
 
-  describe('五维雷达分析测试', () => {
-    test('渲染五维匹配雷达分析标题', () => {
-      render(<MatchDetailPage />);
-      const title = screen.getByText('五维匹配雷达分析');
-      expect(title).toBeInTheDocument();
-    });
-
-    test('渲染维度评分条', () => {
-      render(<MatchDetailPage />);
-      expect(screen.getByText('技能')).toBeInTheDocument();
-      expect(screen.getByText('经验')).toBeInTheDocument();
-      expect(screen.getByText('学历')).toBeInTheDocument();
-      expect(screen.getByText('薪资')).toBeInTheDocument();
-      expect(screen.getByText('地点')).toBeInTheDocument();
-    });
-
-    test('渲染具体分数', () => {
-      render(<MatchDetailPage />);
-      expect(screen.getAllByText('95%').length).toBeGreaterThan(0);
-      expect(screen.getAllByText('90%').length).toBeGreaterThan(0);
-      expect(screen.getAllByText('100%').length).toBeGreaterThan(0);
-    });
-  });
-
-  describe('操作按钮测试', () => {
-    test('渲染立即投递按钮', () => {
-      render(<MatchDetailPage />);
-      const applyButton = screen.getByRole('button', { name: /立即投递/i });
-      expect(applyButton).toBeInTheDocument();
-    });
+  it('renders apply button', async () => {
+    render(<MatchDetailPage />);
+    await screen.findByRole('button', { name: /立即投递/i });
   });
 });

@@ -1,48 +1,51 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 import SkillGraphPage from '@/app/(user)/skill-graph/page';
 
-// Mock next/navigation
-vi.mock('next/navigation', () => ({
-  usePathname: () => '/skill-graph',
-  useRouter: () => ({
-    push: vi.fn(),
-    replace: vi.fn(),
-    refresh: vi.fn(),
-    back: vi.fn(),
-    forward: vi.fn(),
-  }),
+const getGraph = vi.fn();
+const authStoreMock = vi.fn();
+
+vi.mock('@/lib/stores/auth-store', () => ({
+  authStore: (selector: (state: any) => unknown) => authStoreMock(selector),
 }));
 
-// Mock next/image
-vi.mock('next/image', () => ({
-  default: (props: any) => <img {...props} />,
+vi.mock('@/lib/api/person', () => ({
+  personApi: {
+    getGraph: (...args: unknown[]) => getGraph(...args),
+  },
 }));
 
 describe('SkillGraphPage', () => {
-  it('renders page title', () => {
-    render(<SkillGraphPage />);
-    expect(screen.getByText('认知导视体系')).toBeDefined();
+  beforeEach(() => {
+    vi.clearAllMocks();
+    authStoreMock.mockImplementation((selector) => selector({ user: { id: 1, username: 'real@example.com', type: 'PERSON' } }));
+    getGraph.mockResolvedValue({
+      personId: 1,
+      skills: ['Java', 'Spring Boot', 'React'],
+      success: true,
+    });
   });
 
-  it('renders AI evaluation section', () => {
+  it('loads and renders graph data from api', async () => {
     render(<SkillGraphPage />);
+    expect(screen.getByText('图谱数据加载中...')).toBeDefined();
+    await screen.findByText('Java');
+    expect(screen.getByText('Spring Boot')).toBeDefined();
+    expect(screen.getByText('React')).toBeDefined();
     expect(screen.getByText('AI 综合能力评估')).toBeDefined();
   });
 
-  it('renders skill dimensions', () => {
+  it('renders empty state', async () => {
+    getGraph.mockResolvedValueOnce({ personId: 1, skills: [], success: true });
     render(<SkillGraphPage />);
-    expect(screen.getByText('核心维度重合度')).toBeDefined();
-    expect(screen.getByText('前端架构体系')).toBeDefined();
+    await screen.findByText('暂无技能图谱数据，请先上传并解析简历。');
   });
 
-  it('renders skill suggestions', () => {
+  it('renders error and retry states', async () => {
+    getGraph.mockRejectedValueOnce(new Error('graph failed'));
     render(<SkillGraphPage />);
-    expect(screen.getByText('技能提升建议')).toBeDefined();
-  });
-
-  it('renders learning route button', () => {
-    render(<SkillGraphPage />);
-    expect(screen.getByText('生成专属学习路线')).toBeDefined();
+    await screen.findByText('graph failed');
+    screen.getByText('重试').click();
+    await waitFor(() => expect(getGraph).toHaveBeenCalledTimes(2));
   });
 });
