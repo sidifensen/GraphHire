@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { authStore } from '@/lib/stores/auth-store';
+import { logoutWithServerInvalidation } from '@/lib/logout';
 
 export default function EnterpriseHeader() {
   const pathname = usePathname();
@@ -28,9 +29,8 @@ export default function EnterpriseHeader() {
     return 'text-[#394851] hover:text-primary hover:bg-surface-container-low rounded-md transition-colors';
   };
 
-  const handleLogout = () => {
-    authStore.getState().logout();
-    router.push('/login');
+  const handleLogout = async () => {
+    await logoutWithServerInvalidation(router.push, '/login');
   };
 
   useEffect(() => {

@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { authStore } from '@/lib/stores/auth-store';
+import { logoutWithServerInvalidation } from '@/lib/logout';
 
 interface AdminHeaderProps {
   title?: string;
@@ -24,9 +25,8 @@ export default function AdminHeader({ title }: AdminHeaderProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
-    authStore.getState().logout();
-    router.push('/admin/login');
+  const handleLogout = async () => {
+    await logoutWithServerInvalidation(router.push, '/admin/login');
   };
 
   return (

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { authStore } from '@/lib/stores/auth-store';
+import { logoutWithServerInvalidation } from '@/lib/logout';
 
 const navLinks = [
   { label: '首页', href: '/' },
@@ -36,9 +37,8 @@ export default function Header({ forceShowNotifications }: HeaderProps = {}) {
     return () => document.removeEventListener('click', handleClickOutside);
   }, [showDropdown]);
 
-  const handleLogout = () => {
-    authStore.getState().logout();
-    router.push('/');
+  const handleLogout = async () => {
+    await logoutWithServerInvalidation(router.push, '/');
   };
 
   return (
