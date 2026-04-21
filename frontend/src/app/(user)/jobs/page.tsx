@@ -1,8 +1,5 @@
 'use client';
 
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-
 const mockJobs = [
   {
     id: 1,
@@ -80,7 +77,6 @@ function CircularProgress({ score, color = 'text-primary' }: { score: number; co
 export default function JobsPage() {
   return (
     <div className="flex-grow flex flex-col min-h-screen">
-      <Header />
 
       <main className="flex-grow max-w-[1200px] w-full mx-auto px-6 py-12">
         {/* Search & Cognitive Filters Area */}
@@ -215,7 +211,6 @@ export default function JobsPage() {
         </nav>
       </main>
 
-      <Footer />
     </div>
   );
 }

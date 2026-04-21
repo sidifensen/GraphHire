@@ -1,8 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 
 type NotificationCategory = 'all' | 'resume' | 'job' | 'application';
 
@@ -174,8 +172,6 @@ export default function NotificationsPage() {
 
   return (
     <div className="flex-grow flex flex-col min-h-screen">
-      <Header forceShowNotifications={true} />
-
       <main className="flex-grow flex justify-center max-w-[1440px] mx-auto w-full px-4 sm:px-8 py-8">
         <div className="flex-1 max-w-4xl w-full flex flex-col gap-8">
           {/* Page Header & Filters */}
@@ -243,8 +239,6 @@ export default function NotificationsPage() {
           )}
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

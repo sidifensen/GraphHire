@@ -1,66 +1,66 @@
 <!DOCTYPE html>
 
 <html lang="zh-CN"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>候选人详情页 - 智能匹配报告</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>候选人详情 - GraphHire</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
                     "colors": {
-                        "inverse-primary": "#b4c5ff",
-                        "tertiary": "#394851",
-                        "surface-container-highest": "#d5e4fa",
-                        "on-surface": "#0e1c2c",
-                        "surface-bright": "#f8f9ff",
-                        "on-background": "#0e1c2c",
-                        "surface-dim": "#cddbf1",
-                        "surface-container": "#e5eeff",
-                        "inverse-on-surface": "#eaf1ff",
-                        "surface-variant": "#d5e4fa",
-                        "on-tertiary-fixed-variant": "#394952",
                         "on-tertiary-fixed": "#0d1d25",
                         "error-container": "#ffdad6",
-                        "tertiary-fixed": "#d4e5f0",
-                        "primary-container": "#0052d9",
-                        "on-primary-container": "#cbd6ff",
-                        "primary-fixed-dim": "#b4c5ff",
-                        "on-primary": "#ffffff",
-                        "secondary-fixed-dim": "#b8c4ff",
-                        "on-primary-fixed-variant": "#003ea8",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary": "#2d50cd",
+                        "on-tertiary": "#ffffff",
                         "on-secondary-fixed-variant": "#0737b8",
+                        "tertiary-fixed-dim": "#b8c9d3",
+                        "surface-bright": "#f8f9ff",
+                        "surface": "#f8f9ff",
+                        "secondary-container": "#4a6ae7",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "primary-fixed": "#dbe1ff",
+                        "primary-container": "#0052d9",
+                        "surface-variant": "#d5e4fa",
+                        "secondary-fixed-dim": "#b8c4ff",
+                        "on-error-container": "#93000a",
+                        "on-primary": "#ffffff",
+                        "on-secondary-fixed": "#001354",
+                        "surface-container": "#e5eeff",
                         "inverse-surface": "#243142",
                         "tertiary-container": "#506069",
-                        "on-primary-fixed": "#00174b",
-                        "outline": "#737686",
-                        "on-secondary-fixed": "#001354",
-                        "surface-tint": "#0353da",
-                        "on-error-container": "#93000a",
-                        "secondary-fixed": "#dde1ff",
-                        "primary": "#003da6",
+                        "on-tertiary-fixed-variant": "#394952",
                         "on-secondary-container": "#fffbff",
-                        "surface": "#f8f9ff",
-                        "tertiary-fixed-dim": "#b8c9d3",
+                        "on-surface": "#0e1c2c",
+                        "inverse-on-surface": "#eaf1ff",
+                        "tertiary": "#394851",
+                        "on-primary-container": "#cbd6ff",
+                        "on-primary-fixed-variant": "#003ea8",
                         "surface-container-high": "#dbe9ff",
+                        "secondary-fixed": "#dde1ff",
+                        "outline-variant": "#c3c6d7",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#b4c5ff",
+                        "background": "#f8f9ff",
                         "surface-container-low": "#eef4ff",
                         "on-secondary": "#ffffff",
-                        "secondary": "#2d50cd",
-                        "secondary-container": "#4a6ae7",
-                        "outline-variant": "#c3c6d7",
-                        "surface-container-lowest": "#ffffff",
-                        "on-error": "#ffffff",
-                        "on-tertiary": "#ffffff",
-                        "background": "#f8f9ff",
+                        "surface-dim": "#cddbf1",
+                        "surface-container-highest": "#d5e4fa",
+                        "on-tertiary-container": "#c9dae5",
+                        "on-background": "#0e1c2c",
+                        "outline": "#737686",
+                        "on-primary-fixed": "#00174b",
+                        "tertiary-fixed": "#d4e5f0",
+                        "surface-tint": "#0353da",
                         "error": "#ba1a1a",
-                        "on-surface-variant": "#434654",
-                        "primary-fixed": "#dbe1ff",
-                        "on-tertiary-container": "#c9dae5"
+                        "primary": "#003da6",
+                        "on-surface-variant": "#434654"
                     },
                     "borderRadius": {
                         "DEFAULT": "0.25rem",
@@ -70,321 +70,269 @@
                     },
                     "fontFamily": {
                         "headline": ["Manrope"],
-                        "body": ["Inter", "PingFang SC", "Microsoft YaHei", "sans-serif"],
-                        "label": ["Inter", "PingFang SC", "Microsoft YaHei", "sans-serif"]
+                        "body": ["Inter"],
+                        "label": ["Inter"]
                     }
-                }
-            }
+                },
+            },
         }
     </script>
-<style>
-        body { font-family: 'Inter', "PingFang SC", "Microsoft YaHei", sans-serif; background-color: #f8f9ff; color: #0e1c2c; }
-        h1, h2, h3, h4, h5, h6 { font-family: 'Manrope', "PingFang SC", "Microsoft YaHei", sans-serif; }
-        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-        .glass-panel { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
-        .ambient-shadow:hover { box-shadow: 0 12px 32px -4px rgba(14, 28, 44, 0.06); }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .fill-icon {
+            font-variation-settings: 'FILL' 1;
+        }
     </style>
 </head>
-<body class="bg-surface flex flex-col min-h-screen no-scrollbar relative overflow-x-hidden">
-<!-- Top App Bar (Shared Component) -->
-<header class="flex justify-between items-center w-full px-6 py-3 h-16 bg-[#F8F9FF] border-none shadow-sm fixed top-0 z-50">
-<div class="flex items-center gap-4">
-<span class="text-xl font-bold text-[#003DA6] font-headline tracking-tight">GraphHire</span>
-</div>
-<div class="flex items-center gap-6">
-<button class="text-[#394851] hover:bg-blue-50 transition-colors p-2 rounded-full relative">
-<span class="material-symbols-outlined">notifications</span>
-<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
-</button>
-<button class="text-[#394851] hover:bg-blue-50 transition-colors p-2 rounded-full">
-<span class="material-symbols-outlined">account_circle</span>
-</button>
-</div>
-</header>
-<!-- Side Navigation (Shared Component) -->
-<nav class="h-screen w-64 flex flex-col fixed left-0 top-16 bg-surface-container-low border-r border-transparent z-40 p-4 gap-2">
-<div class="mb-6 px-4">
-<h2 class="text-lg font-black text-[#003DA6] font-headline">企业管理中心</h2>
-</div>
-<a class="flex items-center gap-3 px-4 py-3 text-[#394851] hover:bg-surface-variant rounded-xl transition-all font-medium text-sm" href="#">
-<span class="material-symbols-outlined">dashboard</span>
-<span>Dashboard</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 text-[#394851] hover:bg-surface-variant rounded-xl transition-all font-medium text-sm" href="#">
-<span class="material-symbols-outlined">work</span>
-<span>职位管理</span>
-</a>
-<!-- Active Tab: 候选人推荐 (Candidate Recommendation) maps best to candidate details -->
-<a class="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-[#003DA6] to-[#0052D9] text-white rounded-xl shadow-lg shadow-blue-500/20 font-medium text-sm transform scale-95 transition-transform duration-200" href="#">
-<span class="material-symbols-outlined">psychology</span>
-<span>候选人推荐</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 text-[#394851] hover:bg-surface-variant rounded-xl transition-all font-medium text-sm" href="#">
-<span class="material-symbols-outlined">group</span>
-<span>员工管理</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 text-[#394851] hover:bg-surface-variant rounded-xl transition-all font-medium text-sm mt-auto" href="#">
-<span class="material-symbols-outlined">settings</span>
-<span>设置</span>
-</a>
+<body class="bg-surface text-on-surface font-body antialiased min-h-screen flex flex-col">
+<!-- TopNavBar (Shared Component) -->
+<nav class="bg-[#F8F9FF] dark:bg-slate-950 font-['Manrope'] font-semibold tracking-tight docked full-width top-0 z-50 bg-gradient-to-b from-slate-100/50 to-transparent dark:from-slate-900/50 flat no shadows flex justify-between items-center w-full px-8 h-16 max-w-[1920px] mx-auto sticky">
+    <div class="flex items-center gap-8">
+        <div class="text-2xl font-black text-[#003DA6] dark:text-blue-500 tracking-tighter">GraphHire</div>
+        <ul class="hidden md:flex gap-6 h-full items-center">
+            <li><a class="text-[#394851] dark:text-slate-400 hover:text-[#0052D9] transition-colors hover:bg-blue-50/50 dark:hover:bg-blue-900/20 rounded-lg transition-all Active: scale-95 transition-transform duration-200 px-3 py-2" href="#">控制台</a></li>
+            <li><a class="text-[#394851] dark:text-slate-400 hover:text-[#0052D9] transition-colors hover:bg-blue-50/50 dark:hover:bg-blue-900/20 rounded-lg transition-all Active: scale-95 transition-transform duration-200 px-3 py-2" href="#">职位管理</a></li>
+            <li class="h-full flex items-center"><a class="text-[#003DA6] dark:text-blue-400 border-b-2 border-[#003DA6] pb-1 px-3 py-2 mt-1" href="#">候选人推荐</a></li>
+            <li><a class="text-[#394851] dark:text-slate-400 hover:text-[#0052D9] transition-colors hover:bg-blue-50/50 dark:hover:bg-blue-900/20 rounded-lg transition-all Active: scale-95 transition-transform duration-200 px-3 py-2" href="#">员工管理</a></li>
+            <li><a class="text-[#394851] dark:text-slate-400 hover:text-[#0052D9] transition-colors hover:bg-blue-50/50 dark:hover:bg-blue-900/20 rounded-lg transition-all Active: scale-95 transition-transform duration-200 px-3 py-2" href="#">设置</a></li>
+        </ul>
+    </div>
+    <div class="flex items-center gap-4">
+        <button class="text-tertiary hover:text-primary transition-colors p-2 rounded-full hover:bg-surface-container"><span class="material-symbols-outlined">notifications</span></button>
+        <button class="text-tertiary hover:text-primary transition-colors p-2 rounded-full hover:bg-surface-container"><span class="material-symbols-outlined">help</span></button>
+        <div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant/30">
+            <img alt="企业管理员头像" class="w-full h-full object-cover" data-alt="Corporate administrator professional headshot portrait, friendly confident expression, modern office lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMrKIMBgBGvWRjhmS_6BWzI33v9sZRhiWJMYVH2eKEUnMlIWPrtHe66V5v5eTv-hhYAVs2qf_bKGcX0Y1dI7GGWXf64oZS80pvFw1I6Tzf6LHaVqUuPXmr00MiDE9MV7iKDp4DUQdXX3XAfEl-29UGsE3if9RXcbTYz2YM4Nzr8Dl-JZ0mzjSPDyYv07wmxTFPqukrbUcsRem7wsHCx0I3ziOAVFD9Na_nhW9mFTVatGnC0SrHHBlgUwxSNxIbMVkuzTObMvdBlvyj"/>
+        </div>
+    </div>
 </nav>
-<!-- Main Content Canvas -->
-<main class="ml-64 mt-16 p-8 flex-1 flex flex-col lg:flex-row gap-8 pb-24">
-<!-- Left Column: AI Analysis & Data (65%) -->
-<div class="flex-1 flex flex-col gap-8 w-full lg:w-[65%]">
-<!-- Hero / Header Panel -->
-<section class="bg-surface-container-lowest rounded-xl p-8 ambient-shadow relative overflow-hidden">
-<!-- Decorative AI Glow -->
-<div class="absolute -top-24 -right-24 w-64 h-64 bg-primary-fixed-dim rounded-full blur-[80px] opacity-40"></div>
-<div class="flex flex-col md:flex-row justify-between items-start gap-6 relative z-10">
-<div class="flex gap-6 items-center">
-<img alt="Profile Picture" class="w-24 h-24 rounded-full object-cover border-4 border-surface" data-alt="professional portrait of an asian woman in a modern office smiling subtly" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD95z0HZ0vN1IhYN6059CEK6u9DRHqJi3kEXzUeg1JOWZ1U3g9bioAMjp7wUM0GpY1_2v5D9J7MvNGcUoqFlQSH87U49B9dh6Nsi8amlhkJOPrC3y8lTVd2wGtFm6V20190x6tNi4mjYEipFye-vsgUbA309WwvB5qzKMDlVo0g3lC9geHhG03gN8fQHTneL6I0n1UJ49IrOgs9UM53398CwfDdnRepo6aDYlRMiERptE1zf7nTd4R9WO0ibjZxIhaICzZJ1UeU89YI"/>
-<div>
-<div class="flex items-center gap-3 mb-2">
-<h1 class="text-3xl font-bold font-headline text-on-surface">林晓月 (Lin Xiaoyue)</h1>
-<span class="bg-surface-variant text-on-surface-variant px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-<span class="material-symbols-outlined text-sm">verified</span> 实名认证
-                                </span>
-</div>
-<p class="text-on-surface-variant font-medium mb-3 flex items-center gap-4">
-<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">work</span> 资深前端工程师</span>
-<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">location_on</span> 深圳市</span>
-<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">school</span> 硕士 (985)</span>
-</p>
-<div class="flex gap-2">
-<span class="bg-primary-fixed text-on-primary-fixed px-3 py-1 rounded-full text-xs font-semibold">Vue.js</span>
-<span class="bg-primary-fixed text-on-primary-fixed px-3 py-1 rounded-full text-xs font-semibold">React</span>
-<span class="bg-primary-fixed text-on-primary-fixed px-3 py-1 rounded-full text-xs font-semibold">架构设计</span>
-</div>
-</div>
-</div>
-<div class="flex flex-col items-end gap-3">
-<div class="bg-surface-container-high px-4 py-2 rounded-lg flex flex-col items-end">
-<span class="text-xs text-on-surface-variant mb-1">当前投递状态</span>
-<span class="font-bold text-primary flex items-center gap-2">
-<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span> 业务面阶段
-                            </span>
-</div>
-<span class="text-xs text-tertiary">投递时间: 2023-10-24 14:30</span>
-</div>
-</div>
-</section>
-<!-- Bento Grid: Match Analysis -->
-<section class="grid grid-cols-1 md:grid-cols-2 gap-6">
-<!-- Match Score & Radar (Bento Box 1) -->
-<div class="bg-surface-container-lowest rounded-xl p-8 ambient-shadow flex flex-col items-center justify-center relative overflow-hidden">
-<div class="absolute inset-0 bg-gradient-to-br from-surface to-surface-container-lowest z-0"></div>
-<div class="relative z-10 w-full flex flex-col items-center">
-<h3 class="text-lg font-bold font-headline mb-6 self-start text-on-surface flex items-center gap-2">
-<span class="material-symbols-outlined text-primary">analytics</span> 综合匹配度
-                        </h3>
-<!-- Circular Progress Simulation -->
-<div class="relative w-40 h-40 flex items-center justify-center mb-6">
-<svg class="w-full h-full transform -rotate-90" viewbox="0 0 100 100">
-<circle class="text-surface-variant" cx="50" cy="50" fill="none" r="45" stroke="currentColor" stroke-width="8"></circle>
-<circle class="text-primary" cx="50" cy="50" fill="none" r="45" stroke="currentColor" stroke-dasharray="283" stroke-dashoffset="35" stroke-linecap="round" stroke-width="8"></circle>
-</svg>
-<div class="absolute flex flex-col items-center justify-center">
-<span class="text-4xl font-black font-headline text-primary">88%</span>
-<span class="text-xs text-on-surface-variant">极高匹配</span>
-</div>
-</div>
-<!-- Radar Chart Placeholder (Textual alternative for visual) -->
-<div class="w-full grid grid-cols-5 gap-2 text-center text-xs font-medium mt-4">
-<div class="flex flex-col items-center gap-1">
-<div class="h-16 w-3 bg-surface-container relative rounded-full overflow-hidden"><div class="absolute bottom-0 w-full bg-primary rounded-full" style="height: 90%;"></div></div>
-<span>技能</span>
-</div>
-<div class="flex flex-col items-center gap-1">
-<div class="h-16 w-3 bg-surface-container relative rounded-full overflow-hidden"><div class="absolute bottom-0 w-full bg-primary rounded-full" style="height: 85%;"></div></div>
-<span>经验</span>
-</div>
-<div class="flex flex-col items-center gap-1">
-<div class="h-16 w-3 bg-surface-container relative rounded-full overflow-hidden"><div class="absolute bottom-0 w-full bg-primary rounded-full" style="height: 95%;"></div></div>
-<span>学历</span>
-</div>
-<div class="flex flex-col items-center gap-1">
-<div class="h-16 w-3 bg-surface-container relative rounded-full overflow-hidden"><div class="absolute bottom-0 w-full bg-primary rounded-full" style="height: 80%;"></div></div>
-<span>薪资</span>
-</div>
-<div class="flex flex-col items-center gap-1">
-<div class="h-16 w-3 bg-surface-container relative rounded-full overflow-hidden"><div class="absolute bottom-0 w-full bg-primary rounded-full" style="height: 100%;"></div></div>
-<span>地点</span>
-</div>
-</div>
-</div>
-</div>
-<!-- AI Reasoning (Bento Box 2) -->
-<div class="bg-surface-container-lowest rounded-xl p-8 ambient-shadow flex flex-col">
-<h3 class="text-lg font-bold font-headline mb-4 text-on-surface flex items-center gap-2">
-<span class="material-symbols-outlined text-primary">psychology</span> AI 深度解读
-                    </h3>
-<div class="flex-1 flex flex-col gap-4">
-<div class="bg-surface-container-low p-4 rounded-lg">
-<h4 class="text-sm font-semibold text-primary mb-2 flex items-center gap-2">
-<span class="material-symbols-outlined text-sm">thumb_up</span> 推荐理由
-                            </h4>
-<p class="text-sm text-on-surface-variant leading-relaxed">该候选人拥有8年大型互联网架构经验，核心技能树与当前【高级前端架构师】岗位需求高度吻合。曾主导过类似百万级DAU项目重构，具备极强的复杂系统治理能力。</p>
-</div>
-<div class="grid grid-cols-2 gap-4">
-<div class="bg-surface-container-low p-4 rounded-lg flex flex-col">
-<span class="text-xs text-tertiary mb-1">稳定性预测</span>
-<span class="text-xl font-bold font-headline text-on-surface mb-1">极高</span>
-<span class="text-xs text-on-surface-variant">平均在职 3.5 年</span>
-</div>
-<div class="bg-surface-container-low p-4 rounded-lg flex flex-col">
-<span class="text-xs text-tertiary mb-1">潜力评分 (Graph)</span>
-<span class="text-xl font-bold font-headline text-on-surface mb-1">9.2<span class="text-sm font-normal">/10</span></span>
-<span class="text-xs text-on-surface-variant">具备技术管理潜能</span>
-</div>
-</div>
-</div>
-</div>
-</section>
-<!-- Skill Tree Comparison -->
-<section class="bg-surface-container-lowest rounded-xl p-8 ambient-shadow">
-<h3 class="text-lg font-bold font-headline mb-6 text-on-surface flex items-center gap-2">
-<span class="material-symbols-outlined text-primary">account_tree</span> 技能树对比 (候选人 vs 职位要求)
-                </h3>
-<div class="flex flex-col gap-6">
-<!-- Core Skills -->
-<div>
-<h4 class="text-sm font-semibold text-on-surface mb-3 border-l-4 border-primary pl-2">核心要求</h4>
-<div class="flex flex-col gap-4">
-<div class="flex items-center justify-between text-sm">
-<span class="w-32 font-medium">微前端架构</span>
-<div class="flex-1 mx-4 h-2 bg-surface-container rounded-full overflow-hidden">
-<div class="h-full bg-primary" style="width: 100%;"></div>
-</div>
-<span class="w-16 text-right text-primary font-bold">精通</span>
-</div>
-<div class="flex items-center justify-between text-sm">
-<span class="w-32 font-medium">性能调优</span>
-<div class="flex-1 mx-4 h-2 bg-surface-container rounded-full overflow-hidden">
-<div class="h-full bg-primary" style="width: 85%;"></div>
-</div>
-<span class="w-16 text-right text-on-surface-variant font-medium">熟练</span>
-</div>
-</div>
-</div>
-<!-- Nice to have -->
-<div>
-<h4 class="text-sm font-semibold text-on-surface mb-3 border-l-4 border-tertiary pl-2">加分项</h4>
-<div class="flex flex-col gap-4">
-<div class="flex items-center justify-between text-sm">
-<span class="w-32 font-medium">Node.js 资深</span>
-<div class="flex-1 mx-4 h-2 bg-surface-container rounded-full overflow-hidden">
-<div class="h-full bg-tertiary" style="width: 60%;"></div>
-</div>
-<span class="w-16 text-right text-on-surface-variant font-medium">良好</span>
-</div>
-</div>
-</div>
-</div>
-</section>
-<!-- Interview & History Records -->
-<section class="bg-surface-container-lowest rounded-xl p-8 ambient-shadow">
-<h3 class="text-lg font-bold font-headline mb-6 text-on-surface flex items-center gap-2">
-<span class="material-symbols-outlined text-primary">history</span> 处理历史与面试评价
-                </h3>
-<div class="relative border-l border-surface-variant ml-3 pl-6 flex flex-col gap-8">
-<!-- Record Item -->
-<div class="relative">
-<div class="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-primary-container border-2 border-surface-container-lowest"></div>
-<div class="flex justify-between items-start mb-2">
-<h4 class="font-semibold text-on-surface">一面（技术初试）通过</h4>
-<span class="text-xs text-tertiary">2023-10-26 16:00</span>
-</div>
-<div class="bg-surface-container-low p-4 rounded-lg">
-<p class="text-sm text-on-surface-variant leading-relaxed">基础扎实，对Vue3源码有深入了解。沟通顺畅，逻辑清晰。建议进入复试，考察系统设计能力。</p>
-<div class="mt-3 flex items-center gap-2 text-xs text-tertiary">
-<span class="material-symbols-outlined text-sm">person</span> 面试官: 张建国 (前端负责人)
+<!-- Main Content Area -->
+<main class="flex-grow w-full max-w-[1920px] mx-auto px-8 py-6 flex flex-col gap-6">
+    <!-- Header / Back -->
+    <header class="flex items-center gap-4">
+        <button class="flex items-center justify-center w-10 h-10 rounded-full bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors shadow-sm border border-surface-container-high">
+            <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <h1 class="text-3xl font-headline font-bold text-on-surface">候选人详情</h1>
+    </header>
+    <!-- Asymmetric Grid Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <!-- Left Column (Wide - 65%) -->
+        <div class="lg:col-span-8 flex flex-col gap-8">
+            <!-- Candidate Profile Header -->
+            <section class="bg-surface-container-lowest rounded-xl p-8 flex items-start gap-6 border-0">
+                <div class="w-24 h-24 rounded-full overflow-hidden shrink-0 border-4 border-surface-container">
+                    <img alt="林晓静" class="w-full h-full object-cover" data-alt="Professional headshot of a young Asian woman, friendly smile, tech professional, soft studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIu_ydvEnp5uMVsKUwO4Umy3raOodTY0h-IUmWkCyeINMXL8J9GN9dnH9bdLE4oHxlgYrfZiBVl5wdzcbg-DrICyEYsOfqamcHN6ZxzUO2rTsEpR8fJJQL_S4P7En6-F0TJWI1nZmRys1i0tr8JuQQSYB5wIb-p9ilENdtTGBrIX4Ny8v7h9nFvw2ZvD_kvK7nl2rULteFh78TXnT16O7gk3Rqo7Di3Gp2QtbQp9GepFq-64GrYssfuEVcTmQemCmV5v1ksvUCvTdK"/>
+                </div>
+                <div class="flex-grow flex flex-col gap-3">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h2 class="text-2xl font-headline font-bold text-on-surface">林晓静</h2>
+                            <p class="text-on-surface-variant text-base mt-1">资深前端开发工程师 · 目前在职</p>
+                        </div>
+                        <div class="bg-primary-fixed text-on-primary-fixed px-4 py-1.5 rounded-full text-sm font-medium flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-sm">robot_2</span> AI 强推
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-4 mt-2">
+                        <div class="flex items-center gap-1.5 text-on-surface-variant text-sm">
+                            <span class="material-symbols-outlined text-[18px]">work</span> 5年经验
+                        </div>
+                        <div class="flex items-center gap-1.5 text-on-surface-variant text-sm">
+                            <span class="material-symbols-outlined text-[18px]">school</span> 硕士 · 浙江大学
+                        </div>
+                        <div class="flex items-center gap-1.5 text-on-surface-variant text-sm">
+                            <span class="material-symbols-outlined text-[18px]">location_on</span> 杭州市
+                        </div>
+                        <div class="flex items-center gap-1.5 text-on-surface-variant text-sm">
+                            <span class="material-symbols-outlined text-[18px]">payments</span> 25k-30k
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- AI Analysis Report Bento Box -->
+            <section class="bg-surface-container-low rounded-xl p-8 border-0 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
+                <div class="flex items-center gap-2 mb-6">
+                    <span class="material-symbols-outlined text-primary fill-icon">analytics</span>
+                    <h3 class="text-xl font-headline font-bold text-on-surface">AI 匹配分析报告</h3>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Left: Circular Progress & Radar -->
+                    <div class="flex flex-col items-center gap-6 bg-surface-container-lowest rounded-lg p-6 relative">
+                        <!-- Abstract Match Score Vis -->
+                        <div class="relative w-40 h-40 flex items-center justify-center">
+                            <svg class="w-full h-full -rotate-90" viewbox="0 0 100 100">
+                                <circle class="text-surface-variant" cx="50" cy="50" fill="none" r="45" stroke="currentColor" stroke-width="8"></circle>
+                                <circle class="text-primary" cx="50" cy="50" fill="none" r="45" stroke="currentColor" stroke-dasharray="282.7" stroke-dashoffset="14.1" stroke-linecap="round" stroke-width="8"></circle>
+                            </svg>
+                            <div class="absolute flex flex-col items-center justify-center">
+                                <span class="text-4xl font-headline font-extrabold text-primary">95<span class="text-2xl">%</span></span>
+                                <span class="text-xs text-on-surface-variant uppercase tracking-wider mt-1">Match</span>
                             </div>
-</div>
-</div>
-<!-- Record Item -->
-<div class="relative">
-<div class="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-surface-variant border-2 border-surface-container-lowest"></div>
-<div class="flex justify-between items-start mb-2">
-<h4 class="font-semibold text-on-surface">HR 初筛通过</h4>
-<span class="text-xs text-tertiary">2023-10-25 09:30</span>
-</div>
-<p class="text-sm text-on-surface-variant">学历履历核实无误，薪资预期在预算内。</p>
-</div>
-</div>
-</section>
-</div>
-<!-- Right Column: Resume Preview (35%) -->
-<aside class="w-full lg:w-[35%] flex flex-col sticky top-24 h-[calc(100vh-8rem)]">
-<div class="bg-surface-container-lowest rounded-xl shadow-sm flex flex-col h-full overflow-hidden border border-surface-variant">
-<!-- Resume Header Controls -->
-<div class="bg-surface-container-high px-4 py-3 flex justify-between items-center border-b border-surface-variant">
-<h3 class="font-semibold text-on-surface flex items-center gap-2">
-<span class="material-symbols-outlined text-primary">description</span> 原始简历预览
-                    </h3>
-<div class="flex gap-2">
-<button class="p-1 hover:bg-surface-container rounded transition-colors text-on-surface-variant"><span class="material-symbols-outlined text-sm">zoom_out</span></button>
-<button class="p-1 hover:bg-surface-container rounded transition-colors text-on-surface-variant"><span class="material-symbols-outlined text-sm">zoom_in</span></button>
-<button class="p-1 hover:bg-surface-container rounded transition-colors text-on-surface-variant"><span class="material-symbols-outlined text-sm">download</span></button>
-</div>
-</div>
-<!-- Resume Document Viewer Area -->
-<div class="flex-1 bg-[#e5e7eb] p-6 overflow-y-auto no-scrollbar flex justify-center">
-<!-- Simulated PDF Page -->
-<div class="bg-white w-full max-w-[800px] shadow-md p-8 aspect-[1/1.4] flex flex-col gap-6 text-sm text-[#333]">
-<!-- PDF Content Simulation -->
-<div class="border-b-2 border-[#2c3e50] pb-4">
-<h1 class="text-2xl font-bold font-serif text-[#2c3e50] mb-2">林晓月</h1>
-<p class="text-gray-600">linxiaoyue@email.com | 138-xxxx-xxxx | 广东深圳</p>
-</div>
-<div>
-<h2 class="text-lg font-bold text-[#2c3e50] bg-gray-100 p-1 mb-3">教育背景</h2>
-<div class="flex justify-between font-semibold">
-<span>华南理工大学</span>
-<span>2013.09 - 2016.06</span>
-</div>
-<div class="flex justify-between text-gray-700">
-<span>计算机科学与技术 (硕士)</span>
-<span>GPA: 3.8/4.0</span>
-</div>
-</div>
-<div>
-<h2 class="text-lg font-bold text-[#2c3e50] bg-gray-100 p-1 mb-3">工作经历</h2>
-<div class="mb-4">
-<div class="flex justify-between font-semibold">
-<span>某知名科技大厂</span>
-<span>2019.07 - 至今</span>
-</div>
-<div class="text-gray-700 italic mb-2">高级前端开发工程师 / 架构组</div>
-<ul class="list-disc pl-5 text-gray-600 space-y-1">
-<li>负责公司核心业务线的前端架构设计与演进。</li>
-<li>主导微前端架构落地，提升多团队协同开发效率30%。</li>
-<li>优化首屏加载时间，从2.5s降低至0.8s。</li>
-</ul>
-</div>
-</div>
-</div>
-</div>
-</div>
-</aside>
+                        </div>
+                        <!-- Pseudo Radar Chart Data -->
+                        <div class="w-full flex justify-between px-4 text-xs text-on-surface-variant">
+                            <div class="flex flex-col items-center"><span class="font-bold text-primary">98%</span><span>技能</span></div>
+                            <div class="flex flex-col items-center"><span class="font-bold text-primary">90%</span><span>经验</span></div>
+                            <div class="flex flex-col items-center"><span class="font-bold text-primary">100%</span><span>学历</span></div>
+                            <div class="flex flex-col items-center"><span class="font-bold text-primary">85%</span><span>薪资</span></div>
+                        </div>
+                    </div>
+                    <!-- Right: Match Reasons -->
+                    <div class="flex flex-col gap-4">
+                        <h4 class="text-sm font-semibold text-on-surface-variant uppercase tracking-widest mb-1">匹配解析</h4>
+                        <div class="bg-surface-container-lowest p-4 rounded-lg flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center text-primary shrink-0 mt-0.5">
+                                <span class="material-symbols-outlined text-[18px]">code</span>
+                            </div>
+                            <div>
+                                <h5 class="text-on-surface font-semibold text-sm">技术栈高度重合</h5>
+                                <p class="text-on-surface-variant text-sm mt-1 leading-relaxed">候选人精通 React 生态与 TypeScript，且有主导大型微前端架构重构经验，与岗位 JD 中“需负责前端基建”要求完美契合。</p>
+                            </div>
+                        </div>
+                        <div class="bg-surface-container-lowest p-4 rounded-lg flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant shrink-0 mt-0.5">
+                                <span class="material-symbols-outlined text-[18px]">domain</span>
+                            </div>
+                            <div>
+                                <h5 class="text-on-surface font-semibold text-sm">一线大厂背景加持</h5>
+                                <p class="text-on-surface-variant text-sm mt-1 leading-relaxed">过往履历包含字节跳动核心业务线 3 年经验，具备高并发场景下的性能调优能力及成熟的工程化思维。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- Resume Preview (Document Canvas) -->
+            <section class="bg-surface-container-lowest rounded-xl border-0 overflow-hidden flex flex-col h-[800px]">
+                <div class="bg-surface-container-low px-6 py-4 flex justify-between items-center">
+                    <h3 class="text-lg font-headline font-bold text-on-surface">在线简历预览</h3>
+                    <div class="flex gap-2">
+                        <button class="text-tertiary hover:text-primary p-1.5 rounded hover:bg-surface-container transition-colors"><span class="material-symbols-outlined text-[20px]">zoom_in</span></button>
+                        <button class="text-tertiary hover:text-primary p-1.5 rounded hover:bg-surface-container transition-colors"><span class="material-symbols-outlined text-[20px]">zoom_out</span></button>
+                    </div>
+                </div>
+                <!-- Fake Document Area -->
+                <div class="flex-grow bg-surface p-8 overflow-y-auto flex justify-center">
+                    <div class="bg-white w-full max-w-[800px] min-h-[1000px] shadow-sm border border-outline-variant/20 p-12 text-on-surface font-body space-y-8">
+                        <div class="border-b border-surface-container pb-6">
+                            <h1 class="text-3xl font-bold mb-2">林晓静</h1>
+                            <p class="text-tertiary text-sm">前端架构师 / 资深开发工程师</p>
+                            <div class="flex gap-4 mt-4 text-sm text-tertiary">
+                                <span>linxiaojing@example.com</span>
+                                <span>+86 138-0000-0000</span>
+                            </div>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold text-primary mb-4 flex items-center gap-2"><span class="material-symbols-outlined text-[20px]">terminal</span> 专业技能</h2>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="bg-surface-variant text-on-surface-variant px-3 py-1 rounded-full text-sm">React / Next.js</span>
+                                <span class="bg-surface-variant text-on-surface-variant px-3 py-1 rounded-full text-sm">TypeScript</span>
+                                <span class="bg-surface-variant text-on-surface-variant px-3 py-1 rounded-full text-sm">Node.js</span>
+                                <span class="bg-surface-variant text-on-surface-variant px-3 py-1 rounded-full text-sm">Webpack / Vite</span>
+                                <span class="bg-surface-variant text-on-surface-variant px-3 py-1 rounded-full text-sm">Micro-frontends</span>
+                            </div>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold text-primary mb-4 flex items-center gap-2"><span class="material-symbols-outlined text-[20px]">corporate_fare</span> 工作经历</h2>
+                            <div class="space-y-6">
+                                <div>
+                                    <div class="flex justify-between items-baseline mb-1">
+                                        <h3 class="font-bold text-lg">某头部互联网科技公司</h3>
+                                        <span class="text-sm text-tertiary">2020.07 - 至今</span>
+                                    </div>
+                                    <p class="font-medium text-tertiary text-sm mb-3">高级前端工程师 (T6)</p>
+                                    <ul class="list-disc pl-5 space-y-2 text-sm text-on-surface-variant leading-relaxed">
+                                        <li>主导电商中后台从 0 到 1 的微前端架构演进，提升多团队协同开发效率，降低核心系统构建时间 40%。</li>
+                                        <li>开发并维护基于 React 的内部组件库，覆盖 50+ 业务系统，提升整体 UI 研发一致性。</li>
+                                        <li>负责核心交易链路的性能调优，首屏加载时间 (FCP) 降低至 1.2s 内，提升用户转化率。</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between items-baseline mb-1">
+                                        <h3 class="font-bold text-lg">创新型 SaaS 创业公司</h3>
+                                        <span class="text-sm text-tertiary">2018.06 - 2020.06</span>
+                                    </div>
+                                    <p class="font-medium text-tertiary text-sm mb-3">前端开发工程师</p>
+                                    <ul class="list-disc pl-5 space-y-2 text-sm text-on-surface-variant leading-relaxed">
+                                        <li>参与数据可视化大屏产品的开发，使用 ECharts 和 WebGL 实现百万级数据的流畅渲染。</li>
+                                        <li>推动旧版 jQuery 项目向 Vue.js 生态的平滑迁移。</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold text-primary mb-4 flex items-center gap-2"><span class="material-symbols-outlined text-[20px]">history_edu</span> 教育背景</h2>
+                            <div>
+                                <div class="flex justify-between items-baseline mb-1">
+                                    <h3 class="font-bold text-lg">浙江大学</h3>
+                                    <span class="text-sm text-tertiary">2015.09 - 2018.06</span>
+                                </div>
+                                <p class="text-sm text-on-surface-variant">计算机科学与技术 · 硕士</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <!-- Right Column (Narrow - 35%) -->
+        <div class="lg:col-span-4 flex flex-col gap-6">
+            <!-- Action Card -->
+            <div class="bg-surface-container-lowest rounded-xl p-6 border-0 sticky top-24 flex flex-col gap-4 shadow-[0_12px_32px_-4px_rgba(14,28,44,0.06)]">
+                <button class="w-full bg-gradient-to-br from-primary to-primary-container text-white py-3.5 px-4 rounded-lg font-bold text-base hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined">send</span> 邀请面试
+                </button>
+                <div class="grid grid-cols-2 gap-3">
+                    <button class="bg-surface-container-high text-primary py-2.5 px-4 rounded-lg font-medium text-sm hover:bg-surface-container-highest transition-colors flex items-center justify-center gap-1.5">
+                        <span class="material-symbols-outlined text-[18px]">download</span> 下载简历
+                    </button>
+                    <button class="bg-surface-container-high text-primary py-2.5 px-4 rounded-lg font-medium text-sm hover:bg-surface-container-highest transition-colors flex items-center justify-center gap-1.5">
+                        <span class="material-symbols-outlined text-[18px]">share</span> 转发评估
+                    </button>
+                </div>
+                <button class="w-full text-error text-sm font-medium py-2 hover:bg-error-container/30 rounded transition-colors mt-2">
+                    标记不合适
+                </button>
+            </div>
+            <!-- Target Job Card -->
+            <div class="bg-surface-container-low rounded-xl p-6 border-0">
+                <h3 class="text-sm font-semibold text-on-surface-variant uppercase tracking-widest mb-4">匹配职位</h3>
+                <div class="bg-surface-container-lowest p-4 rounded-lg flex flex-col gap-2 cursor-pointer hover:bg-surface-bright transition-colors border border-transparent hover:border-outline-variant/30">
+                    <div class="flex justify-between items-start">
+                        <h4 class="font-bold text-on-surface">高级前端工程师 (React方向)</h4>
+                        <span class="text-primary font-bold text-sm">25k-40k</span>
+                    </div>
+                    <p class="text-xs text-on-surface-variant flex items-center gap-2">
+                        <span>技术部</span> • <span>杭州总部</span>
+                    </p>
+                </div>
+            </div>
+            <!-- Activity Timeline -->
+            <div class="bg-surface-container-lowest rounded-xl p-6 border-0 flex-grow">
+                <h3 class="text-sm font-semibold text-on-surface-variant uppercase tracking-widest mb-6">处理流转记录</h3>
+                <div class="relative pl-6 border-l-2 border-surface-container space-y-8">
+                    <!-- Timeline Item 1 -->
+                    <div class="relative">
+                        <div class="absolute w-4 h-4 rounded-full bg-primary-container border-4 border-surface-container-lowest -left-[35px] top-1"></div>
+                        <p class="text-sm font-bold text-on-surface">AI 智能匹配推荐</p>
+                        <p class="text-xs text-tertiary mt-1">系统基于技能图谱自动推荐</p>
+                        <p class="text-xs text-outline mt-1.5">今天 09:30</p>
+                    </div>
+                    <!-- Timeline Item 2 -->
+                    <div class="relative">
+                        <div class="absolute w-4 h-4 rounded-full bg-surface-container-highest border-4 border-surface-container-lowest -left-[35px] top-1"></div>
+                        <p class="text-sm font-bold text-on-surface">HR (李梅) 查看了简历</p>
+                        <p class="text-xs text-outline mt-1.5">今天 10:15</p>
+                    </div>
+                    <!-- Timeline Item 3 (Current/Pending) -->
+                    <div class="relative">
+                        <div class="absolute w-4 h-4 rounded-full bg-transparent border-2 border-primary -left-[35px] top-1 bg-surface-container-lowest"></div>
+                        <p class="text-sm font-medium text-primary">等待操作：评估或邀请面试</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </main>
-<!-- Bottom Fixed Action Bar -->
-<div class="fixed bottom-0 left-64 right-0 h-20 glass-panel border-t-0 shadow-[0_-4px_24px_rgba(0,0,0,0.02)] flex items-center justify-end px-8 z-50">
-<div class="flex items-center gap-4">
-<button class="px-6 py-2.5 rounded-lg text-primary font-medium hover:bg-surface-container transition-colors flex items-center gap-2">
-<span class="material-symbols-outlined text-sm">share</span> 转发评审
-            </button>
-<button class="px-6 py-2.5 rounded-lg text-primary font-medium hover:bg-surface-container transition-colors flex items-center gap-2">
-<span class="material-symbols-outlined text-sm">close</span> 不合适
-            </button>
-<button class="px-6 py-2.5 rounded-lg bg-surface-container-high text-primary font-medium hover:bg-surface-container transition-colors flex items-center gap-2">
-<span class="material-symbols-outlined text-sm">folder_shared</span> 加入人才池
-            </button>
-<button class="px-8 py-2.5 rounded-lg bg-gradient-to-r from-primary to-primary-container text-white font-bold shadow-lg shadow-blue-500/20 hover:opacity-90 transition-opacity flex items-center gap-2 ml-2">
-<span class="material-symbols-outlined text-sm">schedule</span> 邀请面试 (二面)
-            </button>
-</div>
-</div>
 </body></html>

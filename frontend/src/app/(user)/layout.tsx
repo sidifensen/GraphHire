@@ -1,18 +1,14 @@
-'use client';
+import type { Metadata } from 'next';
+import UserLayoutClient from './UserLayoutClient';
 
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+export const metadata: Metadata = {
+  title: 'GraphHire 图谱智聘 - 用户端',
+};
 
 export default function UserLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="flex-grow flex flex-col min-h-screen bg-surface">
-      <Header />
-      <main className="flex-grow">{children}</main>
-      <Footer />
-    </div>
-  );
+  return <UserLayoutClient>{children}</UserLayoutClient>;
 }

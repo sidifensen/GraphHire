@@ -7,10 +7,11 @@ export interface AdminLoginRequest {
 }
 
 export interface AdminLoginResponse {
-  token: string;
-  adminId: number;
-  username: string;
-  role: string;
+  accessToken: string;
+  refreshToken?: string;
+  expiresIn: number;
+  userType: 'PERSON' | 'COMPANY' | 'ADMIN';
+  userId: number;
 }
 
 // ============ Dashboard & Statistics ============

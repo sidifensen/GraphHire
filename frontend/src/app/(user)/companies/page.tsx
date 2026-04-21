@@ -1,8 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 
 const companies = [
   {
@@ -62,8 +60,6 @@ function CircularScore({ score }: { score: number }) {
 export default function CompaniesPage() {
   return (
     <div className="flex-grow flex flex-col min-h-screen bg-surface">
-      <Header />
-
       <main className="flex-grow max-w-[1440px] mx-auto w-full px-8 py-12 flex flex-col gap-12">
         {/* Search & Filter Area */}
         <section className="bg-surface-container-low rounded-xl p-8 flex flex-col gap-8">
@@ -202,8 +198,6 @@ export default function CompaniesPage() {
           </button>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

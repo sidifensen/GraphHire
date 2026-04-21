@@ -77,7 +77,11 @@ export default function LoginPage() {
         { id: response.userId, username, type: response.userType }
       );
 
-      router.push('/');
+      if (activeRole === 'recruiter') {
+        router.push('/enterprise/dashboard');
+      } else {
+        router.push('/');
+      }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : '登录失败，请检查用户名和密码';
       setError(message);

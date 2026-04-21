@@ -1,8 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 
 const skills = [
   { id: 1, name: '前端架构', match: 98, level: 'high', icon: 'code', top: '55%', left: '85%' },
@@ -61,8 +59,6 @@ function SkillNode({ skill }: { skill: typeof skills[0] }) {
 export default function SkillGraphPage() {
   return (
     <div className="flex-grow flex flex-col min-h-screen bg-surface">
-      <Header />
-
       <main className="flex-grow w-full max-w-[1440px] mx-auto px-8 py-10">
         {/* Header & Action Row */}
         <div className="flex justify-between items-end mb-10">
@@ -210,8 +206,6 @@ export default function SkillGraphPage() {
           </aside>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

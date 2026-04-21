@@ -1,7 +1,6 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import Header from '@/components/Header';
 
 const matchData = {
   id: '1',
@@ -138,7 +137,6 @@ export default function MatchDetailPage() {
 
   return (
     <div className="flex-grow flex flex-col min-h-screen pb-24">
-      <Header />
 
       <main className="max-w-[1440px] mx-auto px-4 md:px-8 py-12">
         <div className="flex flex-col lg:flex-row gap-8">

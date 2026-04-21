@@ -1,6 +1,8 @@
+'use client';
+
 export default function EnterpriseDashboardPage() {
   return (
-    <div className="p-8 max-w-[1440px] mx-auto w-full space-y-8">
+    <div className="flex-1 overflow-y-auto p-8 space-y-8 pb-20 max-w-[1440px] mx-auto w-full">
       {/* Welcome Header */}
       <div>
         <h2 className="text-3xl font-bold font-headline text-on-surface">欢迎回来，GraphHire 企业管理中心</h2>
@@ -62,7 +64,6 @@ export default function EnterpriseDashboardPage() {
         <div className="col-span-12 lg:col-span-4 space-y-6 flex flex-col">
           <div className="bg-gradient-to-br from-primary to-primary-container rounded-xl p-6 text-white shadow-lg relative overflow-hidden flex-shrink-0">
             <div className="absolute right-0 bottom-0 opacity-10">
-              <span className="material-symbols-outlined text-[120px] leading-none">add_circle</span>
             </div>
             <h3 className="font-headline font-semibold text-xl mb-2 relative z-10">启动新招聘</h3>
             <p className="text-primary-fixed-dim text-sm mb-6 relative z-10 max-w-[80%]">使用AI图谱技术，一键生成岗位描述并精准匹配人才池。</p>

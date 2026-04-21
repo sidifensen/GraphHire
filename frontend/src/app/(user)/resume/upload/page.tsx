@@ -1,13 +1,8 @@
 'use client';
 
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-
 export default function UploadPage() {
   return (
     <div className="bg-surface text-on-surface min-h-screen flex flex-col antialiased">
-      <Header forceShowNotifications />
-
       {/* Main Content Canvas */}
       <main className="flex-1 flex flex-col items-center justify-center px-6 py-8">
         <div className="w-full max-w-6xl mb-6">
@@ -161,8 +156,6 @@ export default function UploadPage() {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

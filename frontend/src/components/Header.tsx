@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { authStore } from '@/lib/stores/auth-store';
 
 const navLinks = [
@@ -17,26 +17,24 @@ interface HeaderProps {
   forceShowNotifications?: boolean;
 }
 
-const defaultAvatar = '/default-avatar.svg';
-
 export default function Header({ forceShowNotifications }: HeaderProps = {}) {
   const pathname = usePathname();
   const router = useRouter();
   const isAuthenticated = authStore((state) => state.isAuthenticated);
+  const user = authStore((state) => state.user);
   const showNotificationBadge = forceShowNotifications || isAuthenticated;
   const [showDropdown, setShowDropdown] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setShowDropdown(false);
-      }
+    function handleClickOutside() {
+      setShowDropdown(false);
     }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    if (showDropdown) {
+      document.addEventListener('click', handleClickOutside);
+    }
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [showDropdown]);
 
   const handleLogout = () => {
     authStore.getState().logout();
@@ -45,10 +43,10 @@ export default function Header({ forceShowNotifications }: HeaderProps = {}) {
 
   return (
     <header className="bg-surface dark:bg-slate-950 backdrop-blur-xl top-0 z-50 sticky shadow-[inset_0_-1px_0_0_rgba(0,0,0,0.05)] shadow-sm dark:shadow-none">
-      <div className="flex items-center justify-between px-8 py-4 max-w-[1440px] mx-auto w-full">
+      <div className="flex items-center justify-between px-8 py-2 max-w-[1440px] mx-auto w-full">
         <div className="flex items-center gap-12">
-          <Link href="/" className="text-2xl font-black tracking-tighter text-primary dark:text-blue-500 font-headline antialiased tracking-tight">
-            图谱智聘
+          <Link href="/" className="text-lg font-black text-[#003DA6] font-headline antialiased tracking-tight">
+            GraphHire 图谱智聘
           </Link>
           <nav className="hidden md:flex gap-8">
             {navLinks.map((link) => {
@@ -79,43 +77,50 @@ export default function Header({ forceShowNotifications }: HeaderProps = {}) {
               <button className="hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-all duration-300 p-2 rounded-full active:scale-95 opacity-80 transition-transform">
                 <span className="material-symbols-outlined">chat_bubble</span>
               </button>
-              <div className="relative" ref={dropdownRef}>
-                <button
-                  onClick={() => setShowDropdown(!showDropdown)}
-                  className="w-9 h-9 rounded-full bg-surface-container-high overflow-hidden border-2 border-surface cursor-pointer hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary flex items-center justify-center"
-                >
+              <div className="flex items-center gap-4">
+              <button
+                onClick={() => setShowDropdown(!showDropdown)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-high hover:bg-surface-container-low transition-colors cursor-pointer"
+              >
+                <span className="text-sm font-medium text-on-surface truncate max-w-[120px]">{user?.username}</span>
+                <div className="w-7 h-7 rounded-full bg-surface-container-low overflow-hidden border border-surface-variant flex-shrink-0">
                   {avatarError ? (
-                    <span className="material-symbols-outlined text-tertiary">person</span>
+                    <span className="material-symbols-outlined text-tertiary w-full h-full flex items-center justify-center">person</span>
                   ) : (
                     <Image
                       alt="用户头像"
                       src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIYa43L-pryRXbX_0CaMonCmGzAj_Dzj86nXpYHvCsDUbFn2dQwjVHfcA1GdViiDM0V1owjYEN1XNAGcQPWvvnopWW8B15Hk11yTWzHXhHNI9tPRzFjQfL1nK_qdGznxU0IEuNGSB6Dzkvy0iHn6T0ndOQS_YR29P48e_7xTcWYuAAA-gtna5DEpOs45XiHZphPUgHGq4fK8dk9PQU7_6KA5OPFmQEoQINO2OEvoo4-nFYRg5AmXUb1HWPDhiwBpSJ9Smazb5Un1y6"
-                      width={36}
-                      height={36}
+                      width={28}
+                      height={28}
                       className="w-full h-full object-cover"
                       onError={() => setAvatarError(true)}
                     />
                   )}
-                </button>
-                {showDropdown && (
-                  <div className="absolute right-0 mt-2 w-48 bg-surface-container-lowest rounded-xl shadow-lg border border-surface-variant overflow-hidden z-50">
-                    <button
-                      onClick={() => { router.push('/profile'); setShowDropdown(false); }}
-                      className="w-full px-4 py-3 text-left text-sm text-on-surface hover:bg-surface-container-low transition-colors flex items-center gap-2"
-                    >
-                      <span className="material-symbols-outlined text-lg">account_circle</span>
-                      个人空间
-                    </button>
-                    <div className="border-t border-surface-variant"></div>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full px-4 py-3 text-left text-sm text-on-surface hover:bg-surface-container-low transition-colors flex items-center gap-2"
-                    >
-                      <span className="material-symbols-outlined text-lg">logout</span>
-                      退出登录
-                    </button>
+                </div>
+              </button>
+              {showDropdown && (
+                <div className="absolute right-8 top-full mt-2 w-56 bg-surface-container-lowest rounded-xl shadow-lg border border-surface-variant overflow-hidden z-50">
+                  <div className="px-4 py-3 border-b border-surface-variant">
+                    <p className="text-sm font-medium text-on-surface truncate">{user?.username}</p>
+                    <p className="text-xs text-tertiary mt-0.5">{user?.type === 'PERSON' ? '个人用户' : '企业用户'}</p>
                   </div>
-                )}
+                  <button
+                    onClick={() => { router.push('/profile'); setShowDropdown(false); }}
+                    className="w-full px-4 py-3 text-left text-sm text-on-surface hover:bg-surface-container-low transition-colors flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-lg">account_circle</span>
+                    个人空间
+                  </button>
+                  <div className="border-t border-surface-variant"></div>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full px-4 py-3 text-left text-sm text-on-surface hover:bg-surface-container-low transition-colors flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-lg">logout</span>
+                    退出登录
+                  </button>
+                </div>
+              )}
               </div>
             </>
           ) : showNotificationBadge ? (
