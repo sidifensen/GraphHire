@@ -41,7 +41,7 @@ export default function RegisterPage() {
     setError('');
 
     try {
-      await authApi.sendVerifyCode({ email, type: 'register' });
+      await authApi.sendVerifyCode(email, 'register');
       setVerifyCodeCooldown(60);
       const timer = setInterval(() => {
         setVerifyCodeCooldown((prev) => {

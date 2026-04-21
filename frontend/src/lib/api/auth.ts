@@ -48,8 +48,10 @@ export const authApi = {
     return response.data;
   },
 
-  sendVerifyCode: async (data: SendVerifyCodeRequest): Promise<void> => {
-    await apiClient.post('/auth/send-verify-code', data);
+  sendVerifyCode: async (email: string, type: string = 'register'): Promise<void> => {
+    await apiClient.post('/auth/send-verify-code', null, {
+      params: { email, type },
+    });
   },
 
   forgotPassword: async (data: ForgotPasswordRequest): Promise<void> => {
