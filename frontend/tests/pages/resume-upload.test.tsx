@@ -1,6 +1,23 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import UploadPage from '@/app/resume/upload/page';
+
+// Mock next/navigation
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/resume/upload',
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    refresh: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+  }),
+}));
+
+// Mock next/image
+vi.mock('next/image', () => ({
+  default: (props: any) => <img {...props} />,
+}));
 
 describe('UploadPage', () => {
   it('renders page title', () => {

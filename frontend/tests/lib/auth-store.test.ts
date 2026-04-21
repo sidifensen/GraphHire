@@ -1,0 +1,89 @@
+import { describe, it, expect, beforeEach } from 'vitest';
+import { authStore } from '@/lib/stores/auth-store';
+
+describe('authStore', () => {
+  beforeEach(() => {
+    // 重置 store 状态
+    authStore.setState({
+      accessToken: null,
+      refreshToken: null,
+      user: null,
+      isAuthenticated: false,
+    });
+  });
+
+  it('初始状态未认证', () => {
+    const state = authStore.getState();
+    expect(state.isAuthenticated).toBe(false);
+    expect(state.accessToken).toBeNull();
+    expect(state.user).toBeNull();
+  });
+
+  it('setAuth 设置认证状态', () => {
+    authStore.getState().setAuth(
+      { accessToken: 'test-token', refreshToken: 'refresh-token' },
+      { id: 1, username: 'testuser', type: 'PERSON' as const }
+    );
+
+    const state = authStore.getState();
+    expect(state.isAuthenticated).toBe(true);
+    expect(state.accessToken).toBe('test-token');
+    expect(state.refreshToken).toBe('refresh-token');
+    expect(state.user?.username).toBe('testuser');
+  });
+
+  it('logout 清除所有状态', () => {
+    authStore.getState().setAuth(
+      { accessToken: 'token' },
+      { id: 1, username: 'user', type: 'PERSON' as const }
+    );
+
+    authStore.getState().logout();
+
+    const state = authStore.getState();
+    expect(state.isAuthenticated).toBe(false);
+    expect(state.accessToken).toBeNull();
+    expect(state.user).toBeNull();
+  });
+
+  it('setAuth 不传 refreshToken 时设置为 null', () => {
+    authStore.getState().setAuth(
+      { accessToken: 'token' },
+      { id: 1, username: 'user', type: 'COMPANY' as const }
+    );
+
+    expect(authStore.getState().refreshToken).toBeNull();
+  });
+
+  it('setAuth 接受空字符串 refreshToken 时设置为 null', () => {
+    authStore.getState().setAuth(
+      { accessToken: 'token', refreshToken: '' },
+      { id: 1, username: 'user', type: 'PERSON' as const }
+    );
+
+    expect(authStore.getState().refreshToken).toBeNull();
+  });
+
+  it('logout 清除 refreshToken', () => {
+    authStore.getState().setAuth(
+      { accessToken: 'token', refreshToken: 'refresh' },
+      { id: 1, username: 'user', type: 'PERSON' as const }
+    );
+
+    authStore.getState().logout();
+
+    expect(authStore.getState().refreshToken).toBeNull();
+  });
+
+  it('user 包含正确的信息', () => {
+    authStore.getState().setAuth(
+      { accessToken: 'token' },
+      { id: 42, username: 'john', type: 'PERSON' as const }
+    );
+
+    const state = authStore.getState();
+    expect(state.user?.id).toBe(42);
+    expect(state.user?.username).toBe('john');
+    expect(state.user?.type).toBe('PERSON');
+  });
+});

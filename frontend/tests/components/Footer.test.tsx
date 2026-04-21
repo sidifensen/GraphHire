@@ -5,7 +5,7 @@ import Footer from '@/components/Footer';
 describe('Footer', () => {
   it('renders copyright text', () => {
     render(<Footer />);
-    expect(screen.getByText(/© 2024 GraphHire 图谱智聘/i)).toBeDefined();
+    expect(screen.getByText(/© 2026 GraphHire 图谱智聘/i)).toBeDefined();
   });
 
   it('renders navigation links', () => {

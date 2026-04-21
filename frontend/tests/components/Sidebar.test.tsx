@@ -1,30 +1,41 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import Sidebar from '@/components/Sidebar';
 
+// Mock next/navigation for Sidebar
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/profile',
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    refresh: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+  }),
+}));
+
 describe('Sidebar', () => {
-  it('renders cognitive guide system card', () => {
+  it('renders sidebar title', () => {
     render(<Sidebar />);
-    expect(screen.getByText('认知导视体系')).toBeDefined();
+    expect(screen.getByText('智聘空间')).toBeDefined();
   });
 
-  it('renders feature items', () => {
+  it('renders sidebar subtitle', () => {
     render(<Sidebar />);
-    expect(screen.getByText('智能解析')).toBeDefined();
-    expect(screen.getByText('图谱分析')).toBeDefined();
-    expect(screen.getByText('精准匹配')).toBeDefined();
+    expect(screen.getByText('AI 驱动的职业导航')).toBeDefined();
   });
 
-  it('renders popular companies section', () => {
+  it('renders navigation items', () => {
     render(<Sidebar />);
-    expect(screen.getByText('热门企业')).toBeDefined();
+    expect(screen.getByText('个人资料')).toBeDefined();
+    expect(screen.getByText('简历管理')).toBeDefined();
+    expect(screen.getByText('投递记录')).toBeDefined();
+    expect(screen.getByText('我的图谱')).toBeDefined();
+    expect(screen.getByText('账号设置')).toBeDefined();
   });
 
-  it('renders company names', () => {
+  it('renders update resume button', () => {
     render(<Sidebar />);
-    expect(screen.getByText('云图数据')).toBeDefined();
-    expect(screen.getByText('星河智联')).toBeDefined();
-    expect(screen.getByText('盾甲科技')).toBeDefined();
-    expect(screen.getByText('元界互动')).toBeDefined();
+    expect(screen.getByText('更新简历')).toBeDefined();
   });
 });

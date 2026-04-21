@@ -1,6 +1,23 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import CompaniesPage from '@/app/companies/page';
+
+// Mock next/navigation
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/companies',
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    refresh: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+  }),
+}));
+
+// Mock next/image
+vi.mock('next/image', () => ({
+  default: (props: any) => <img {...props} />,
+}));
 
 describe('CompaniesPage', () => {
   it('renders search input', () => {

@@ -54,4 +54,66 @@ describe('JobCard', () => {
     render(<JobCard job={mockJob} />);
     expect(screen.getByText(/AI匹配度：85%/)).toBeDefined();
   });
+
+  it('renders job card as a clickable element', () => {
+    render(<JobCard job={mockJob} />);
+    const card = document.querySelector('.cursor-pointer');
+    expect(card).toBeTruthy();
+  });
+
+  it('renders all skills as tags', () => {
+    render(<JobCard job={mockJob} />);
+    const skillTags = document.querySelectorAll('span.rounded-full');
+    expect(skillTags.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('renders title with heading style', () => {
+    render(<JobCard job={mockJob} />);
+    const heading = document.querySelector('h3');
+    expect(heading?.textContent).toBe('前端工程师');
+  });
+
+  it('renders salary with primary color', () => {
+    render(<JobCard job={mockJob} />);
+    const salary = document.querySelector('.text-primary');
+    expect(salary?.textContent).toBe('20k-30k');
+  });
+
+  it('renders HR section with avatar placeholder', () => {
+    render(<JobCard job={mockJob} />);
+    const hrSection = document.querySelector('.rounded-full');
+    expect(hrSection).toBeTruthy();
+  });
+
+  it('handles job without district', () => {
+    const jobWithoutDistrict: HomeJobCard = {
+      ...mockJob,
+      district: undefined,
+    };
+    render(<JobCard job={jobWithoutDistrict} />);
+    expect(screen.getByText('北京')).toBeDefined();
+  });
+
+  it('handles job without match score', () => {
+    const jobWithoutScore: HomeJobCard = {
+      ...mockJob,
+      matchScore: undefined,
+    };
+    render(<JobCard job={jobWithoutScore} />);
+    expect(screen.getByText(/匹配度：0%/)).toBeDefined();
+  });
+
+  it('renders correct number of skill tags', () => {
+    render(<JobCard job={mockJob} />);
+    const skills = mockJob.requiredSkills;
+    skills.forEach(skill => {
+      expect(screen.getByText(skill)).toBeDefined();
+    });
+  });
+
+  it('renders with hover effect class', () => {
+    render(<JobCard job={mockJob} />);
+    const card = document.querySelector('.hover\\:ambient-shadow');
+    expect(card).toBeTruthy();
+  });
 });
