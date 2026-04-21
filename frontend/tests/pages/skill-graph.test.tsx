@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import SkillGraphPage from '@/app/skill-graph/page';
+import SkillGraphPage from '@/app/(user)/skill-graph/page';
 
 // Mock next/navigation
 vi.mock('next/navigation', () => ({

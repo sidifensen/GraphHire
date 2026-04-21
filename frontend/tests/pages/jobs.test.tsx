@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import JobsPage from '@/app/jobs/page';
+import JobsPage from '@/app/(user)/jobs/page';
 
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
