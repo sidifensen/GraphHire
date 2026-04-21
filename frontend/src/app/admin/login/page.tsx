@@ -36,17 +36,14 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between items-center text-on-surface antialiased bg-background">
-      {/* 左上角和右下角四分之一圆渐变背景 */}
-      <div
-        data-testid="admin-login-background"
-        className="fixed inset-0 -z-10"
-        style={{
-          backgroundImage:
-            'radial-gradient(circle at 0% 0%, #003da6 0%, rgba(0, 82, 217, 0.22) 18%, rgba(155, 191, 255, 0.14) 34%, rgba(248, 249, 255, 0) 52%), radial-gradient(circle at 100% 100%, #e5eeff 0%, #f8f9ff 50%)',
-          backgroundColor: '#f8f9ff',
-        }}
-      ></div>
+    <div
+      data-testid="admin-login-page"
+      className="min-h-screen flex flex-col justify-between items-center text-on-surface antialiased"
+      style={{
+        backgroundImage: 'radial-gradient(circle at 0% 0%, #dbe9ff 0%, #f8f9ff 50%), radial-gradient(circle at 100% 100%, #e5eeff 0%, #f8f9ff 50%)',
+        backgroundColor: '#f8f9ff',
+      }}
+    >
 
       {/* Top AppBar */}
       <header className="w-full flex justify-between items-center px-12 py-6 max-w-full">
@@ -62,7 +59,7 @@ export default function AdminLoginPage() {
         <div className="w-full max-w-md bg-surface-container-lowest rounded-xl p-10 relative overflow-hidden" style={{ boxShadow: '0 24px 64px -12px rgba(0, 23, 75, 0.1)' }}>
           <div
             data-testid="admin-login-card-glow"
-            className="absolute top-0 right-0 h-48 w-48 rounded-full bg-primary opacity-[0.08] blur-3xl -mr-20 -mt-20"
+            className="absolute top-0 right-0 w-48 h-48 bg-primary opacity-5 rounded-full blur-3xl -mr-20 -mt-20"
           ></div>
           <div className="text-center mb-10 relative z-10">
             <h1 className="font-headline text-3xl font-extrabold text-on-surface mb-2">管理后台</h1>

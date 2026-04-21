@@ -33,18 +33,23 @@ describe('AdminLoginPage', () => {
     expect(screen.getAllByText('管理后台').length).toBeGreaterThan(0);
   });
 
-  it('renders stronger page background gradient hooks', () => {
+  it('applies prototype page background directly on page root', () => {
     render(<AdminLoginPage />);
-    const background = screen.getByTestId('admin-login-background');
-    const style = background.getAttribute('style') ?? '';
+    const pageRoot = screen.getByTestId('admin-login-page');
+    const style = pageRoot.getAttribute('style') ?? '';
 
     expect(style).toContain('circle at 0% 0%');
-    expect(style).toContain('rgb(0, 61, 166)');
+    expect(style).toContain('rgb(219, 233, 255)');
     expect(style).toContain('circle at 100% 100%');
+    expect(style).toContain('rgb(229, 238, 255)');
+    expect(style).toContain('background-color: rgb(248, 249, 255)');
   });
 
-  it('renders card ambient glow decoration', () => {
+  it('matches prototype card ambient glow decoration', () => {
     render(<AdminLoginPage />);
-    expect(screen.getByTestId('admin-login-card-glow')).toBeDefined();
+    const glow = screen.getByTestId('admin-login-card-glow');
+    expect(glow.className).toContain('w-48');
+    expect(glow.className).toContain('h-48');
+    expect(glow.className).toContain('opacity-5');
   });
 });
