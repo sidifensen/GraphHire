@@ -1,48 +1,61 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 import HomePage from '@/app/page';
 
-// Mock next/navigation
+const push = vi.fn();
+const fetchHomeOverview = vi.fn();
+
 vi.mock('next/navigation', () => ({
   usePathname: () => '/',
-  useRouter: () => ({
-    push: vi.fn(),
-    replace: vi.fn(),
-    refresh: vi.fn(),
-    back: vi.fn(),
-    forward: vi.fn(),
-  }),
+  useRouter: () => ({ push, replace: vi.fn(), refresh: vi.fn(), back: vi.fn(), forward: vi.fn() }),
 }));
 
-// Mock next/image
-vi.mock('next/image', () => ({
-  default: (props: any) => <img {...props} />,
+vi.mock('@/lib/api/homeApi', () => ({
+  fetchHomeOverview: (...args: unknown[]) => fetchHomeOverview(...args),
+}));
+
+vi.mock('@/components/Header', () => ({
+  default: () => <div>MockHeader</div>,
+}));
+
+vi.mock('@/components/Footer', () => ({
+  default: () => <div>MockFooter</div>,
 }));
 
 describe('HomePage', () => {
-  it('renders hero section', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    fetchHomeOverview.mockResolvedValue({
+      featuredJobs: [
+        { id: 1, title: '真实高级工程师', companyName: '真实科技', city: '杭州', salaryText: '30k-45k', requiredSkills: ['Java'] },
+      ],
+      popularCompanies: [
+        { id: 11, name: '真实科技', city: '杭州', jobCount: 3, summary: '已认证企业，当前开放 3 个职位' },
+      ],
+      hotCities: ['杭州', '上海'],
+    });
+  });
+
+  it('renders real overview data from api', async () => {
     render(<HomePage />);
     expect(screen.getByText(/AI 驱动/)).toBeDefined();
+    await screen.findByText('真实高级工程师');
+    expect(screen.getAllByText('真实科技').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('杭州').length).toBeGreaterThan(0);
   });
 
-  it('renders navigation header', () => {
+  it('renders loading and retry states', async () => {
+    fetchHomeOverview.mockRejectedValueOnce(new Error('boom'));
     render(<HomePage />);
-    expect(screen.getByText('图谱智聘')).toBeDefined();
+    expect(screen.getByText('首页数据加载中...')).toBeDefined();
+    await screen.findByText('boom');
+    expect(screen.getByText('重试')).toBeDefined();
   });
 
-  it('renders recommended jobs section', () => {
+  it('navigates to jobs when search button clicked', async () => {
     render(<HomePage />);
-    expect(screen.getByText('为您精选职位')).toBeDefined();
-  });
-
-  it('renders sidebar', () => {
-    render(<HomePage />);
-    expect(screen.getByText('认知导视体系')).toBeDefined();
-    expect(screen.getByText('热门企业')).toBeDefined();
-  });
-
-  it('renders footer', () => {
-    render(<HomePage />);
-    expect(screen.getByText(/© 2026 GraphHire/)).toBeDefined();
+    await waitFor(() => expect(fetchHomeOverview).toHaveBeenCalled());
+    screen.getByText('智能搜索').click();
+    expect(push).toHaveBeenCalledWith('/jobs');
   });
 });

@@ -1,50 +1,51 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 import JobsPage from '@/app/(user)/jobs/page';
 
-// Mock next/navigation
+const fetchPublicJobs = vi.fn();
+
 vi.mock('next/navigation', () => ({
   usePathname: () => '/jobs',
-  useRouter: () => ({
-    push: vi.fn(),
-    replace: vi.fn(),
-    refresh: vi.fn(),
-    back: vi.fn(),
-    forward: vi.fn(),
-  }),
+  useSearchParams: () => new URLSearchParams('keyword=java'),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn(), back: vi.fn(), forward: vi.fn() }),
 }));
 
-// Mock next/image
-vi.mock('next/image', () => ({
-  default: (props: any) => <img {...props} />,
+vi.mock('@/lib/api/homeApi', () => ({
+  fetchPublicJobs: (...args: unknown[]) => fetchPublicJobs(...args),
 }));
 
 describe('JobsPage', () => {
-  it('renders page title', () => {
-    render(<JobsPage />);
-    expect(screen.getByText('探索智能匹配职位')).toBeDefined();
+  beforeEach(() => {
+    vi.clearAllMocks();
+    fetchPublicJobs.mockResolvedValue({
+      items: [
+        { id: 1, title: '真实 Java 工程师', companyName: '真实科技', city: '北京', salaryText: '25k-38k', requiredSkills: [] },
+      ],
+      total: 1,
+      page: 1,
+      size: 12,
+      totalPages: 1,
+    });
   });
 
-  it('renders search input', () => {
+  it('loads and renders jobs from api', async () => {
     render(<JobsPage />);
-    expect(screen.getByPlaceholderText(/输入职位/)).toBeDefined();
+    await screen.findByText('真实 Java 工程师');
+    expect(fetchPublicJobs).toHaveBeenCalled();
+    expect(screen.getByText('真实科技')).toBeDefined();
   });
 
-  it('renders filter buttons', () => {
+  it('renders loading and error states', async () => {
+    fetchPublicJobs.mockRejectedValueOnce(new Error('load failed'));
     render(<JobsPage />);
-    expect(screen.getByText('推荐城市')).toBeDefined();
-    expect(screen.getByText('薪资范畴')).toBeDefined();
-    expect(screen.getByText('经验要求')).toBeDefined();
+    expect(screen.getByText('职位数据加载中...')).toBeDefined();
+    await screen.findByText('load failed');
   });
 
-  it('renders job listings', () => {
+  it('supports manual search reload', async () => {
     render(<JobsPage />);
-    expect(screen.getByText(/资深前端架构师/)).toBeDefined();
-    expect(screen.getByText(/AI 交互设计师/)).toBeDefined();
-  });
-
-  it('renders pagination', () => {
-    render(<JobsPage />);
-    expect(screen.getByText('1')).toBeDefined();
+    await waitFor(() => expect(fetchPublicJobs).toHaveBeenCalledTimes(1));
+    screen.getByText('搜索职位').click();
+    await waitFor(() => expect(fetchPublicJobs).toHaveBeenCalledTimes(2));
   });
 });

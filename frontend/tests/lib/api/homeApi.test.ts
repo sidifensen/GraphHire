@@ -1,172 +1,86 @@
 /// <reference types="vitest/globals" />
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const { mockGet } = vi.hoisted(() => {
-  return {
-    mockGet: vi.fn(),
-  };
-});
+const mockOverview = vi.fn();
+const mockCompanySearch = vi.fn();
+const mockJobSearch = vi.fn();
+const mockApiGet = vi.fn();
 
-vi.mock('axios', () => ({
-  default: {
-    create: vi.fn(() => ({
-      get: mockGet,
-      defaults: { timeout: 10000 },
-    })),
+vi.mock('@/lib/api/public', () => ({
+  publicApi: {
+    home: { getOverview: (...args: unknown[]) => mockOverview(...args) },
+    companies: { search: (...args: unknown[]) => mockCompanySearch(...args) },
+    jobs: { search: (...args: unknown[]) => mockJobSearch(...args) },
   },
 }));
 
-import { fetchPublicJobs, fetchRecommendJobs, fetchMatchScore } from '@/lib/api/homeApi';
+vi.mock('@/lib/api/client', () => ({
+  default: {
+    get: (...args: unknown[]) => mockApiGet(...args),
+  },
+}));
+
+import { fetchHomeOverview, fetchPublicCompanies, fetchPublicJobs, fetchRecommendJobs, fetchMatchScore } from '@/lib/api/homeApi';
 
 describe('homeApi', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('fetchPublicJobs', () => {
-    it('should call GET /public/jobs with params', async () => {
-      mockGet.mockResolvedValue({
-        data: {
-          code: 200,
-          data: { records: [], total: 0, page: 1, pageSize: 10 },
-        },
-      });
-
-      await fetchPublicJobs({ page: 1, pageSize: 10 });
-
-      expect(mockGet).toHaveBeenCalledWith('/public/jobs', {
-        params: { page: 1, pageSize: 10 },
-      });
+  it('maps home overview response', async () => {
+    mockOverview.mockResolvedValue({
+      featuredJobs: [{ id: 1, title: 'A', companyName: 'C', city: '杭州', salaryMin: 30000, salaryMax: 45000, requiredSkills: ['Java'] }],
+      popularCompanies: [{ id: 2, name: '企业A', city: '杭州', jobCount: 3, summary: '说明' }],
+      hotCities: ['杭州'],
     });
 
-    it('should return formatted response', async () => {
-      mockGet.mockResolvedValue({
-        data: {
-          code: 200,
-          data: {
-            records: [{ id: 1, title: 'Engineer' }],
-            total: 100,
-            page: 2,
-            pageSize: 10,
-          },
-        },
-      });
+    const result = await fetchHomeOverview();
 
-      const result = await fetchPublicJobs({ page: 2 });
-
-      expect(result.items).toHaveLength(1);
-      expect(result.total).toBe(100);
-      expect(result.page).toBe(2);
-      expect(result.size).toBe(10);
-    });
-
-    it('should work without params', async () => {
-      mockGet.mockResolvedValue({
-        data: {
-          code: 200,
-          data: { records: [], total: 0, page: 1, pageSize: 10 },
-        },
-      });
-
-      const result = await fetchPublicJobs();
-
-      expect(mockGet).toHaveBeenCalledWith('/public/jobs', { params: {} });
-      expect(result.items).toEqual([]);
-    });
-
-    it('should handle undefined records', async () => {
-      mockGet.mockResolvedValue({
-        data: {
-          code: 200,
-          data: { records: undefined, total: 0, page: 1, pageSize: 10 },
-        },
-      });
-
-      const result = await fetchPublicJobs();
-
-      expect(result.items).toEqual([]);
-    });
+    expect(result.featuredJobs[0].salaryText).toBe('30k-45k');
+    expect(result.popularCompanies[0].name).toBe('企业A');
+    expect(result.hotCities).toEqual(['杭州']);
   });
 
-  describe('fetchRecommendJobs', () => {
-    it('should call GET /person/recommend/jobs', async () => {
-      mockGet.mockResolvedValue({
-        data: {
-          code: 200,
-          data: [{ id: 1, title: 'Recommended' }],
-        },
-      });
-
-      await fetchRecommendJobs();
-
-      expect(mockGet).toHaveBeenCalledWith('/person/recommend/jobs');
+  it('formats public jobs page result', async () => {
+    mockJobSearch.mockResolvedValue({
+      records: [{ id: 1, title: 'A', companyName: 'C', city: '上海', salaryMin: 20000, salaryMax: 30000, requiredSkills: [] }],
+      total: 1,
+      page: 2,
+      pageSize: 10,
+      totalPages: 1,
     });
 
-    it('should return job cards array', async () => {
-      mockGet.mockResolvedValue({
-        data: {
-          code: 200,
-          data: [{ id: 1 }, { id: 2 }],
-        },
-      });
+    const result = await fetchPublicJobs({ page: 2, size: 10 });
 
-      const result = await fetchRecommendJobs();
-
-      expect(result).toHaveLength(2);
-    });
-
-    it('should return empty array when data is undefined', async () => {
-      mockGet.mockResolvedValue({
-        data: {
-          code: 200,
-          data: undefined,
-        },
-      });
-
-      const result = await fetchRecommendJobs();
-
-      expect(result).toEqual([]);
-    });
+    expect(mockJobSearch).toHaveBeenCalledWith({ page: 2, size: 10 });
+    expect(result.items[0].salaryText).toBe('20k-30k');
+    expect(result.page).toBe(2);
   });
 
-  describe('fetchMatchScore', () => {
-    it('should call GET /person/match/{jobId}', async () => {
-      mockGet.mockResolvedValue({
-        data: {
-          code: 200,
-          data: { matchScore: 85 },
-        },
-      });
-
-      await fetchMatchScore(123);
-
-      expect(mockGet).toHaveBeenCalledWith('/person/match/123');
+  it('formats public companies page result', async () => {
+    mockCompanySearch.mockResolvedValue({
+      records: [{ id: 1, name: '企业A', city: '深圳', jobCount: 4, summary: '已认证企业' }],
+      total: 1,
+      page: 1,
+      pageSize: 12,
+      totalPages: 1,
     });
 
-    it('should return match score data', async () => {
-      mockGet.mockResolvedValue({
-        data: {
-          code: 200,
-          data: { matchScore: 85, level: 'STRONG' },
-        },
-      });
+    const result = await fetchPublicCompanies({ keyword: '企业' });
 
-      const result = await fetchMatchScore(123);
+    expect(mockCompanySearch).toHaveBeenCalledWith({ keyword: '企业' });
+    expect(result.items[0].jobCount).toBe(4);
+  });
 
-      expect(result).toEqual({ matchScore: 85, level: 'STRONG' });
-    });
+  it('keeps recommend and match detail requests available', async () => {
+    mockApiGet.mockResolvedValueOnce({ data: [{ id: 1 }] }).mockResolvedValueOnce({ data: { score: 80 } });
 
-    it('should return undefined when data is undefined', async () => {
-      mockGet.mockResolvedValue({
-        data: {
-          code: 200,
-          data: undefined,
-        },
-      });
+    const jobs = await fetchRecommendJobs();
+    const detail = await fetchMatchScore(7);
 
-      const result = await fetchMatchScore(999);
-
-      expect(result).toBeUndefined();
-    });
+    expect(mockApiGet).toHaveBeenNthCalledWith(1, '/person/recommend/jobs');
+    expect(mockApiGet).toHaveBeenNthCalledWith(2, '/person/match/7');
+    expect(jobs).toEqual([{ id: 1 }]);
+    expect(detail).toEqual({ score: 80 });
   });
 });

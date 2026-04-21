@@ -3,59 +3,54 @@ import apiClient from './client';
 export interface Company {
   id: number;
   name: string;
-  logo?: string;
-  unifiedSocialCreditCode?: string;
-  description?: string;
-  website?: string;
-  city?: string;
-  industry?: string;
-  employeeCount?: string;
-  authStatus: 'PENDING' | 'VERIFIED' | 'REJECTED';
-  createdAt: string;
-}
-
-export interface SalaryRange {
-  min: number;
-  max: number;
-  unit?: string;
-}
-
-export interface Location {
-  city: string;
-  district?: string;
-  address?: string;
+  city?: string | null;
+  jobCount?: number;
+  summary?: string;
+  authStatus?: string;
 }
 
 export interface Job {
   id: number;
   companyId: number;
+  companyName?: string;
   title: string;
-  department?: string;
-  headcount?: number;
-  location?: Location;
-  salaryRange?: SalaryRange;
+  city?: string | null;
+  district?: string | null;
+  salaryMin?: number | null;
+  salaryMax?: number | null;
+  salaryUnit?: string | null;
   requiredSkills?: string[];
-  preferredSkills?: string[];
-  description?: string;
-  status: string;
-  publishedAt?: string;
 }
 
-export interface PageResult<T> {
-  list: T[];
+export interface BackendPageResult<T> {
+  records: T[];
   total: number;
   page: number;
-  size: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface HomeOverviewResponse {
+  featuredJobs: Job[];
+  popularCompanies: Company[];
+  hotCities: string[];
 }
 
 export const publicApi = {
+  home: {
+    getOverview: async (): Promise<HomeOverviewResponse> => {
+      const response = await apiClient.get<HomeOverviewResponse>('/public/home');
+      return response.data;
+    },
+  },
+
   companies: {
     search: async (params?: {
       keyword?: string;
       page?: number;
       size?: number;
-    }): Promise<PageResult<Company>> => {
-      const response = await apiClient.get<PageResult<Company>>('/public/companies', { params });
+    }): Promise<BackendPageResult<Company>> => {
+      const response = await apiClient.get<BackendPageResult<Company>>('/public/companies', { params });
       return response.data;
     },
 
@@ -72,10 +67,11 @@ export const publicApi = {
       salaryMin?: number;
       salaryMax?: number;
       skills?: string[];
+      sortBy?: 'createTime' | 'salary';
       page?: number;
       size?: number;
-    }): Promise<PageResult<Job>> => {
-      const response = await apiClient.get<PageResult<Job>>('/public/jobs', { params });
+    }): Promise<BackendPageResult<Job>> => {
+      const response = await apiClient.get<BackendPageResult<Job>>('/public/jobs', { params });
       return response.data;
     },
 

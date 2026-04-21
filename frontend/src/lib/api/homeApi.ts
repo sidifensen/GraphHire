@@ -1,40 +1,41 @@
-import axios from 'axios'
-import type {
-  BackendResponse,
-  BackendPageResult,
-  BackendJob,
-  BackendMatchDetail,
-  JobSearchParams,
-} from '@/lib/types/home'
-import { mapBackendJobToCard, mapBackendMatchToCard } from '@/lib/mappers/homeMapper'
+import { publicApi } from '@/lib/api/public';
+import apiClient from '@/lib/api/client';
+import { mapHomeOverview, mapPublicCompanyToCard, mapPublicJobToCard } from '@/lib/mappers/homeMapper';
+import type { CompanySearchParams, HomeOverview, JobSearchParams } from '@/lib/types/home';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:7777'
+export async function fetchHomeOverview(): Promise<HomeOverview> {
+  const response = await publicApi.home.getOverview();
+  return mapHomeOverview(response);
+}
 
-const client = axios.create({
-  baseURL: BASE_URL,
-  timeout: 10000,
-})
-
-// 公开职位列表
 export async function fetchPublicJobs(params: JobSearchParams = {}) {
-  const resp = await client.get<BackendResponse<BackendPageResult<BackendJob>>>('/public/jobs', { params })
-  const data = resp.data.data
+  const data = await publicApi.jobs.search(params);
   return {
-    items: (data.records ?? []).map(mapBackendJobToCard),
+    items: (data.records ?? []).map(mapPublicJobToCard),
     total: data.total,
     page: data.page,
     size: data.pageSize,
-  }
+    totalPages: data.totalPages,
+  };
 }
 
-// 推荐职位（需登录）
+export async function fetchPublicCompanies(params: CompanySearchParams = {}) {
+  const data = await publicApi.companies.search(params);
+  return {
+    items: (data.records ?? []).map(mapPublicCompanyToCard),
+    total: data.total,
+    page: data.page,
+    size: data.pageSize,
+    totalPages: data.totalPages,
+  };
+}
+
 export async function fetchRecommendJobs() {
-  const resp = await client.get<BackendResponse<BackendMatchDetail[]>>('/person/recommend/jobs')
-  return (resp.data.data ?? []).map(mapBackendMatchToCard)
+  const response = await apiClient.get('/person/recommend/jobs');
+  return response.data;
 }
 
-// 单个匹配分（需登录）
 export async function fetchMatchScore(jobId: number) {
-  const resp = await client.get<BackendResponse<BackendMatchDetail>>(`/person/match/${jobId}`)
-  return resp.data.data
+  const response = await apiClient.get(`/person/match/${jobId}`);
+  return response.data;
 }

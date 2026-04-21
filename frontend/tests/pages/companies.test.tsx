@@ -1,47 +1,49 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 import CompaniesPage from '@/app/(user)/companies/page';
 
-// Mock next/navigation
+const fetchPublicCompanies = vi.fn();
+
 vi.mock('next/navigation', () => ({
   usePathname: () => '/companies',
-  useRouter: () => ({
-    push: vi.fn(),
-    replace: vi.fn(),
-    refresh: vi.fn(),
-    back: vi.fn(),
-    forward: vi.fn(),
-  }),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn(), back: vi.fn(), forward: vi.fn() }),
 }));
 
-// Mock next/image
-vi.mock('next/image', () => ({
-  default: (props: any) => <img {...props} />,
+vi.mock('@/lib/api/homeApi', () => ({
+  fetchPublicCompanies: (...args: unknown[]) => fetchPublicCompanies(...args),
 }));
 
 describe('CompaniesPage', () => {
-  it('renders search input', () => {
-    render(<CompaniesPage />);
-    expect(screen.getByPlaceholderText(/搜索公司名称/)).toBeDefined();
+  beforeEach(() => {
+    vi.clearAllMocks();
+    fetchPublicCompanies.mockResolvedValue({
+      items: [
+        { id: 1, name: '真实矩阵云', city: '深圳', jobCount: 2, summary: '已认证企业，当前开放 2 个职位' },
+      ],
+      total: 1,
+      page: 1,
+      size: 12,
+      totalPages: 1,
+    });
   });
 
-  it('renders filter sections', () => {
+  it('loads and renders companies from api', async () => {
     render(<CompaniesPage />);
-    expect(screen.getByText('行业领域')).toBeDefined();
-    expect(screen.getByText('公司规模')).toBeDefined();
-    expect(screen.getByText('融资阶段')).toBeDefined();
+    await screen.findByText('真实矩阵云');
+    expect(screen.getByText('已认证企业，当前开放 2 个职位')).toBeDefined();
   });
 
-  it('renders company cards', () => {
+  it('renders loading and error states', async () => {
+    fetchPublicCompanies.mockRejectedValueOnce(new Error('company failed'));
     render(<CompaniesPage />);
-    expect(screen.getByText('TechNova 智谷科技')).toBeDefined();
-    expect(screen.getByText('FinEdge 锐金融')).toBeDefined();
-    expect(screen.getByText('CloudMatrix 矩阵云')).toBeDefined();
+    expect(screen.getByText('企业数据加载中...')).toBeDefined();
+    await screen.findByText('company failed');
   });
 
-  it('renders AI match scores', () => {
+  it('supports manual search reload', async () => {
     render(<CompaniesPage />);
-    const matchScores = screen.getAllByText(/AI 匹配度/);
-    expect(matchScores.length).toBeGreaterThan(0);
+    await waitFor(() => expect(fetchPublicCompanies).toHaveBeenCalledTimes(1));
+    screen.getByText('搜索').click();
+    await waitFor(() => expect(fetchPublicCompanies).toHaveBeenCalledTimes(2));
   });
 });
