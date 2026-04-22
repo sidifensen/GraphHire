@@ -8,7 +8,7 @@ vi.mock('@/components/admin/AdminSidebar', () => ({
 }));
 
 vi.mock('@/components/admin/AdminHeader', () => ({
-  default: () => <div data-testid="admin-header">header</div>,
+  default: ({ title }: { title?: string }) => <div data-testid="admin-header">{title ?? 'header'}</div>,
 }));
 
 vi.mock('@/lib/api/admin', () => ({
@@ -49,6 +49,13 @@ describe('AdminSkillTagsPage', () => {
 
     await waitFor(() => {
       expect(getByText('认知图谱与标签治理')).toBeTruthy();
+    }, { timeout: 3000 });
+  });
+
+  it('使用 AdminHeader 组件标题', async () => {
+    const { getByTestId } = render(<AdminSkillTagsPage />);
+    await waitFor(() => {
+      expect(getByTestId('admin-header').textContent).toContain('认知图谱与标签治理');
     }, { timeout: 3000 });
   });
 });

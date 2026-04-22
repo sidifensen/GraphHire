@@ -64,15 +64,14 @@ export default function AdminSkillTagsPage() {
 
       {/* Main Content Wrapper */}
       <div className="flex-1 ml-64 flex flex-col min-h-screen relative">
-        <AdminHeader />
+        <AdminHeader title="认知图谱与标签治理" />
 
         {/* Canvas */}
         <main className="flex-1 p-10 pb-20 ml-0">
           <div className="max-w-7xl mx-auto">
-            {/* Page Header */}
+            {/* Page Intro */}
             <div className="mb-10 flex items-end justify-between">
               <div>
-                <h2 className="font-headline text-3xl font-extrabold text-primary tracking-tight mb-2">认知图谱与标签治理</h2>
                 <p className="text-on-surface-variant font-body text-base">管理并优化全站职业与技能本体，提升 AI 匹配精度。</p>
               </div>
               <div className="flex gap-4">
