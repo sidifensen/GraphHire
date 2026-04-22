@@ -180,6 +180,24 @@ export default function MatchDetailPage() {
             </section>
 
             <section className="bg-surface-container-lowest rounded-xl p-8 hover:shadow-[0_12px_32px_-4px_rgba(14,28,44,0.06)] transition-shadow duration-300 border border-outline-variant/15">
+              <h2 className="text-xl font-headline font-bold mb-6 flex items-center gap-2 text-on-surface">
+                <span className="material-symbols-outlined text-primary-container" style={{ fontVariationSettings: "'FILL' 1" }}>task_alt</span>
+                职位要求
+              </h2>
+              {job?.requiredSkills && job.requiredSkills.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {job.requiredSkills.map((skill) => (
+                    <span key={skill} className="bg-surface-variant text-on-surface-variant px-3 py-1 rounded-full text-sm">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-on-surface-variant">该职位暂未提供结构化技能要求</p>
+              )}
+            </section>
+
+            <section className="bg-surface-container-lowest rounded-xl p-8 hover:shadow-[0_12px_32px_-4px_rgba(14,28,44,0.06)] transition-shadow duration-300 border border-outline-variant/15">
               <h2 className="text-xl font-headline font-bold mb-6 flex items-center gap-2 text-on-surface"><span className="material-symbols-outlined text-primary-container" style={{ fontVariationSettings: "'FILL' 1" }}>insights</span>AI 深度认知解析</h2>
               <div className="space-y-6">
                 <p className="text-on-surface-variant leading-relaxed text-base">{graphScore?.reason ?? detail?.matchReason ?? '当前已切换正式接口，等待更多匹配分析结果。'}</p>

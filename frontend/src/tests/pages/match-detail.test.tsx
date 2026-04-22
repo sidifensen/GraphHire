@@ -83,7 +83,7 @@ describe('MatchDetailPage', () => {
     expect(screen.getByText(/星海人工智能研究院/)).toBeDefined();
     expect(screen.getByText('15k - 25k')).toBeDefined();
     expect(screen.getByText('AI 极力推荐')).toBeDefined();
-    expect(screen.getByText('Java')).toBeDefined();
+    expect(screen.getAllByText('Java').length).toBeGreaterThan(0);
     expect(screen.getAllByText('MySQL').length).toBeGreaterThan(0);
   });
 
@@ -105,5 +105,27 @@ describe('MatchDetailPage', () => {
   it('renders apply button', async () => {
     render(<MatchDetailPage />);
     await screen.findByRole('button', { name: /立即投递/i });
+  });
+
+  it('renders job requirements section when required skills exist', async () => {
+    render(<MatchDetailPage />);
+    await screen.findByText('职位要求');
+    expect(screen.getAllByText('Spring Boot').length).toBeGreaterThan(0);
+  });
+
+  it('renders fallback text when required skills are empty', async () => {
+    getJobById.mockResolvedValueOnce({
+      id: 9,
+      companyId: 5,
+      companyName: '星海人工智能研究院',
+      title: '高级 Java 工程师',
+      city: '杭州',
+      salaryMin: 15000,
+      salaryMax: 25000,
+      requiredSkills: [],
+    });
+    render(<MatchDetailPage />);
+    await screen.findByText('职位要求');
+    expect(screen.getByText('该职位暂未提供结构化技能要求')).toBeDefined();
   });
 });

@@ -2,7 +2,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-04-22-104845-user-job-click-match-detail-design.md`
 **Date:** 2026-04-22
-**Status:** Draft
+**Status:** Approved
 
 ---
 

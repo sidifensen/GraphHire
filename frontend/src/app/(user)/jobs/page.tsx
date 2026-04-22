@@ -1,11 +1,12 @@
 'use client';
 
 import { Suspense, useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { fetchPublicJobs } from '@/lib/api/homeApi';
 import type { HomeJobCard } from '@/lib/types/home';
 
 function JobsContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [keyword, setKeyword] = useState(searchParams.get('keyword') ?? '');
   const [city, setCity] = useState(searchParams.get('city') ?? '');
@@ -86,7 +87,16 @@ function JobsContent() {
             jobs.map((job) => (
               <article
                 key={job.id}
-                className="bg-surface-container-lowest rounded-[1.5rem] p-8 flex items-center justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_32px_-4px_rgba(14,28,44,0.06)] group relative overflow-hidden"
+                role="button"
+                tabIndex={0}
+                onClick={() => router.push(`/match/${job.id}`)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    router.push(`/match/${job.id}`);
+                  }
+                }}
+                className="bg-surface-container-lowest rounded-[1.5rem] p-8 flex items-center justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_32px_-4px_rgba(14,28,44,0.06)] group relative overflow-hidden cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <div className="flex-grow pr-8 relative z-10">
                   <div className="flex items-center gap-4 mb-3 flex-wrap">
