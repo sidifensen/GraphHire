@@ -7,9 +7,9 @@ import { resumeApi, type Resume } from '@/lib/api/resume';
 function getStatusText(status: Resume['status']) {
   switch (status) {
     case 'COMPLETED':
-      return 'AI 解析完成';
+      return '解析成功';
     case 'PROCESSING':
-      return '图谱节点构建中...';
+      return '解析中';
     case 'FAILED':
       return '解析失败';
     default:
@@ -28,6 +28,14 @@ function getStatusColor(status: Resume['status']) {
     default:
       return 'text-tertiary';
   }
+}
+
+function formatResumeTime(value: string) {
+  const timestamp = Date.parse(value);
+  if (Number.isNaN(timestamp)) {
+    return '-';
+  }
+  return new Date(timestamp).toLocaleString('zh-CN', { hour12: false });
 }
 
 export default function ManagePage() {
@@ -65,6 +73,14 @@ export default function ManagePage() {
 
   const handleSetDefault = async (id: number) => {
     await resumeApi.setDefault(id);
+    await loadResumes();
+  };
+
+  const handleReparse = async (resume: Resume) => {
+    if (resume.status === 'PROCESSING') {
+      return;
+    }
+    await resumeApi.parse(resume.id);
     await loadResumes();
   };
 
@@ -149,10 +165,10 @@ export default function ManagePage() {
                     <div className="flex items-center gap-4 text-sm text-tertiary flex-wrap">
                       <span className="flex items-center gap-1">
                         <span className="material-symbols-outlined text-[16px]">schedule</span>
-                        {new Date(resume.createdAt).toLocaleString('zh-CN', { hour12: false })}
+                        {formatResumeTime(resume.createdAt)}
                       </span>
                       <span className={`flex items-center gap-1 ${getStatusColor(resume.status)}`}>
-                        <span className="material-symbols-outlined text-[16px]">{resume.status === 'PROCESSING' ? 'autorenew' : resume.status === 'FAILED' ? 'error' : 'check_circle'}</span>
+                        <span className="material-symbols-outlined text-[16px]">{resume.status === 'PROCESSING' ? 'autorenew' : resume.status === 'FAILED' ? 'error' : resume.status === 'PENDING' ? 'hourglass' : 'check_circle'}</span>
                         {getStatusText(resume.status)}
                       </span>
                     </div>
@@ -163,6 +179,15 @@ export default function ManagePage() {
                   {!resume.isDefault && (
                     <button className="px-4 py-2 text-sm font-medium text-tertiary hover:text-primary bg-transparent hover:bg-surface-container-low rounded-lg transition-colors flex items-center gap-1" onClick={() => void handleSetDefault(resume.id)}>
                       设为默认
+                    </button>
+                  )}
+                  {['FAILED', 'COMPLETED', 'PROCESSING'].includes(resume.status) && (
+                    <button
+                      className="px-4 py-2 text-sm font-medium text-primary bg-surface-container-low hover:bg-surface-container rounded-lg transition-colors flex items-center gap-1 disabled:text-tertiary disabled:cursor-not-allowed"
+                      disabled={resume.status === 'PROCESSING'}
+                      onClick={() => void handleReparse(resume)}
+                    >
+                      重新解析
                     </button>
                   )}
                   <button className="px-4 py-2 text-sm font-medium text-primary bg-surface-container-low hover:bg-surface-container rounded-lg transition-colors flex items-center gap-1" onClick={() => void handlePreview(resume)}>

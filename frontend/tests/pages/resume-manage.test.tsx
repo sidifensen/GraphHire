@@ -37,7 +37,7 @@ describe('ManagePage', () => {
         fileUrl: '/resume/2.docx',
         status: 'PROCESSING',
         isDefault: false,
-        createdAt: '2026-04-20T09:00:00',
+        createdAt: '',
         updatedAt: '2026-04-20T09:00:00',
       },
     ]);
@@ -50,8 +50,9 @@ describe('ManagePage', () => {
     expect(screen.getByText('简历数据加载中...')).toBeDefined();
     await screen.findByText('真实产品经理简历.pdf');
     expect(screen.getByText('真实运营总监简历.docx')).toBeDefined();
-    expect(screen.getByText('AI 解析完成')).toBeDefined();
-    expect(screen.getByText('图谱节点构建中...')).toBeDefined();
+    expect(screen.getByText('解析成功')).toBeDefined();
+    expect(screen.getByText('解析中')).toBeDefined();
+    expect(screen.getByText('-')).toBeDefined();
   });
 
   it('supports deleting a resume', async () => {

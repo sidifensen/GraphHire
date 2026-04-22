@@ -11,6 +11,75 @@ export interface Resume {
   updatedAt: string;
 }
 
+type ResumeStatus = Resume['status'];
+
+type BackendResume = Omit<Partial<Resume>, 'status' | 'createdAt' | 'updatedAt' | 'fileUrl'> & {
+  fileUrl?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  filePath?: string;
+  createTime?: string;
+  updateTime?: string;
+  status?: string;
+  parseStatus?: number;
+};
+
+function normalizeStatus(raw: BackendResume): ResumeStatus {
+  const status = raw.status;
+  if (status === 'COMPLETED' || status === 'PROCESSING' || status === 'PENDING' || status === 'FAILED') {
+    return status;
+  }
+  if (status === 'SUCCESS') {
+    return 'COMPLETED';
+  }
+  if (status === 'PARSING' || status === 'RUNNING') {
+    return 'PROCESSING';
+  }
+  switch (raw.parseStatus) {
+    case 1:
+      return 'PROCESSING';
+    case 2:
+      return 'COMPLETED';
+    case 3:
+      return 'FAILED';
+    default:
+      return 'PENDING';
+  }
+}
+
+function inferCreatedAt(raw: BackendResume): string {
+  if (raw.createdAt) {
+    return raw.createdAt;
+  }
+  if (raw.createTime) {
+    return raw.createTime;
+  }
+  const path = raw.filePath ?? raw.fileUrl ?? '';
+  const match = path.match(/(\d{13})_/);
+  if (match) {
+    const ts = Number(match[1]);
+    if (!Number.isNaN(ts)) {
+      return new Date(ts).toISOString();
+    }
+  }
+  return '';
+}
+
+function normalizeResume(raw: BackendResume): Resume {
+  const createdAt = inferCreatedAt(raw);
+  const updatedAt = raw.updatedAt ?? raw.updateTime ?? createdAt;
+  return {
+    id: Number(raw.id ?? 0),
+    fileName: raw.fileName ?? '',
+    fileUrl: raw.fileUrl ?? raw.filePath ?? '',
+    status: normalizeStatus(raw),
+    skillTags: raw.skillTags,
+    isDefault: Boolean(raw.isDefault),
+    createdAt,
+    updatedAt,
+  };
+}
+
 export interface ParseProgress {
   resumeId: number;
   status: 'PENDING' | 'RUNNING' | 'SUCCESS' | 'FAILED';
@@ -58,7 +127,7 @@ export const resumeApi = {
    */
   getMyResumes: async (): Promise<Resume[]> => {
     const response = await apiClient.get('/resume/my');
-    return response.data;
+    return (response.data as BackendResume[]).map((item) => normalizeResume(item));
   },
 
   /**
@@ -66,7 +135,7 @@ export const resumeApi = {
    */
   getDetail: async (id: number): Promise<Resume> => {
     const response = await apiClient.get(`/resume/${id}/detail`);
-    return response.data;
+    return normalizeResume(response.data as BackendResume);
   },
 
   /**
