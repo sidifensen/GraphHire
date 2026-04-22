@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import NotificationsPage from '@/app/(user)/notifications/page';
 
 const getList = vi.fn();
@@ -46,6 +46,21 @@ describe('NotificationsPage', () => {
     await screen.findByText('真实职位推荐');
     screen.getByText('全部标记已读').click();
     await waitFor(() => expect(markAllAsRead).toHaveBeenCalledWith(1));
+  });
+
+  it('moves category motion indicator when switching category', async () => {
+    render(<NotificationsPage />);
+    await screen.findByText('真实职位推荐');
+
+    const allButton = screen.getByRole('button', { name: '全部' });
+    expect(within(allButton).getByTestId('notification-category-indicator')).toBeDefined();
+
+    const resumeButton = screen.getByRole('button', { name: '简历解析' });
+    resumeButton.click();
+
+    await waitFor(() => {
+      expect(within(resumeButton).getByTestId('notification-category-indicator')).toBeDefined();
+    });
   });
 
   it('renders login hint when user missing', async () => {

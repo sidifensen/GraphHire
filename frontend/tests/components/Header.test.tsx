@@ -89,6 +89,11 @@ describe('Header', () => {
     expect(screen.getByText(/能力图谱/)).toBeDefined();
   });
 
+  it('renders active nav motion indicator', () => {
+    render(<MockHeader />);
+    expect(screen.getByTestId('header-nav-indicator')).toBeDefined();
+  });
+
   it('shows login link when not authenticated', () => {
     render(<MockHeader />);
     const loginLink = screen.getByRole('link', { name: '登录' });

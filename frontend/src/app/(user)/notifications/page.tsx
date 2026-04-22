@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { authStore } from '@/lib/stores/auth-store';
 import { notificationApi, type Notification } from '@/lib/api/notification';
 
@@ -108,6 +109,7 @@ function NotificationCard({ notification, onRead }: { notification: Notification
 
 export default function NotificationsPage() {
   const user = authStore((state) => state.user);
+  const shouldReduceMotion = useReducedMotion();
   const [activeCategory, setActiveCategory] = useState<NotificationCategory>('all');
   const [notificationList, setNotificationList] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -201,17 +203,33 @@ export default function NotificationsPage() {
                 <button
                   key={cat.key}
                   onClick={() => setActiveCategory(cat.key)}
-                  className={`px-5 py-2 rounded-full text-sm whitespace-nowrap transition-colors flex items-center gap-2 ${
+                  className={`relative px-5 py-2 rounded-full text-sm whitespace-nowrap transition-colors flex items-center gap-2 ${
                     isActive ? 'bg-primary-fixed text-on-primary-fixed' : 'bg-surface-variant text-on-surface-variant hover:bg-surface-container-high'
                   }`}
                 >
-                  {cat.label}
+                  {isActive && (
+                    <motion.span
+                      data-testid="notification-category-indicator"
+                      layoutId="notification-category-indicator"
+                      className="absolute inset-0 rounded-full bg-primary-fixed"
+                      transition={shouldReduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 460, damping: 36 }}
+                    />
+                  )}
+                  <span className="relative z-10">{cat.label}</span>
                 </button>
               );
             })}
           </div>
 
-          <div className="flex flex-col gap-4">
+          <motion.div
+            key={activeCategory}
+            data-testid="notification-list-panel"
+            data-category={activeCategory}
+            initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 6 }}
+            animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+            transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.2, ease: 'easeOut' }}
+            className="flex flex-col gap-4"
+          >
             {loading ? (
               <div className="text-center py-16 text-on-surface-variant">通知加载中...</div>
             ) : error ? (
@@ -220,16 +238,27 @@ export default function NotificationsPage() {
                 <button className="px-5 py-2 rounded-lg bg-primary text-white" onClick={() => void loadNotifications()}>重试</button>
               </div>
             ) : filteredNotifications.length > 0 ? (
-              filteredNotifications.map((notification) => (
-                <NotificationCard key={notification.id} notification={notification} onRead={handleMarkRead} />
-              ))
+              <AnimatePresence mode="popLayout" initial={false}>
+                {filteredNotifications.map((notification) => (
+                  <motion.div
+                    key={notification.id}
+                    layout
+                    initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 10 }}
+                    animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+                    exit={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: -8 }}
+                    transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.2, ease: 'easeOut' }}
+                  >
+                    <NotificationCard notification={notification} onRead={handleMarkRead} />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             ) : (
               <div className="text-center py-16">
                 <span className="material-symbols-outlined text-6xl text-outline mb-4">notifications_off</span>
                 <p className="text-on-surface-variant text-sm">暂无通知</p>
               </div>
             )}
-          </div>
+          </motion.div>
 
           {!loading && !error && filteredNotifications.length > 0 && (
             <div className="text-center py-8">

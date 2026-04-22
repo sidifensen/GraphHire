@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { userAuthStore } from '@/lib/stores/auth-store';
 import { logoutWithServerInvalidation } from '@/lib/logout';
 
@@ -20,6 +21,7 @@ interface HeaderProps {
 export default function Header({ forceShowNotifications }: HeaderProps = {}) {
   const pathname = usePathname();
   const router = useRouter();
+  const shouldReduceMotion = useReducedMotion();
   const isAuthenticated = userAuthStore((state) => state.isAuthenticated);
   const user = userAuthStore((state) => state.user);
   const showNotificationBadge = forceShowNotifications || isAuthenticated;
@@ -59,13 +61,21 @@ export default function Header({ forceShowNotifications }: HeaderProps = {}) {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`font-headline antialiased tracking-tight text-sm font-medium transition-colors pb-1 border-b-2 ${
+                  className={`relative font-headline antialiased tracking-tight text-sm font-medium transition-colors pb-1 ${
                     isActive
-                      ? 'text-primary border-primary font-bold'
-                      : 'text-tertiary border-transparent hover:text-primary hover:border-primary/30'
+                      ? 'text-primary font-bold'
+                      : 'text-tertiary hover:text-primary'
                   }`}
                 >
-                  {link.label}
+                  {isActive && (
+                    <motion.span
+                      data-testid="header-nav-indicator"
+                      layoutId="header-nav-indicator"
+                      className="absolute left-0 right-0 -bottom-[2px] h-[2px] bg-primary rounded"
+                      transition={shouldReduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 500, damping: 42 }}
+                    />
+                  )}
+                  <span className="relative z-10">{link.label}</span>
                 </Link>
               );
             })}
