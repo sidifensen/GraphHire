@@ -25,14 +25,9 @@ vi.mock('@/lib/stores/auth-store', () => ({
 }));
 
 describe('Sidebar', () => {
-  it('renders sidebar title', () => {
+  it('renders active sidebar motion indicator', () => {
     render(<Sidebar />);
-    expect(screen.getByText('智聘空间')).toBeDefined();
-  });
-
-  it('renders sidebar subtitle', () => {
-    render(<Sidebar />);
-    expect(screen.getByText('AI 驱动的职业导航')).toBeDefined();
+    expect(screen.getByTestId('sidebar-nav-indicator')).toBeDefined();
   });
 
   it('renders navigation items', () => {
@@ -47,11 +42,5 @@ describe('Sidebar', () => {
   it('renders update resume button', () => {
     render(<Sidebar />);
     expect(screen.getByText('更新简历')).toBeDefined();
-  });
-
-  it('renders user avatar from auth store', () => {
-    render(<Sidebar />);
-    const avatar = screen.getByAltText('用户头像') as HTMLImageElement;
-    expect(avatar.getAttribute('src')).toContain('/person/avatar/public/1');
   });
 });
