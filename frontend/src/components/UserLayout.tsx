@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Sidebar from '@/components/Sidebar';
+import RouteTransition from '@/components/RouteTransition';
 
 interface UserLayoutProps {
   children: React.ReactNode;
@@ -22,7 +23,9 @@ export default function UserLayout({ children, contentClassName = '' }: UserLayo
       <div className="flex flex-1 max-w-[1440px] mx-auto w-full">
         {showSidebar ? <Sidebar /> : null}
         <main className={`flex-1 p-8 md:p-12 pb-24 ${contentClassName}`}>
-          {children}
+          <RouteTransition>
+            {children}
+          </RouteTransition>
         </main>
       </div>
       <Footer />
