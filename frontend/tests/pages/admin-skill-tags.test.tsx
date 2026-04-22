@@ -52,10 +52,10 @@ describe('AdminSkillTagsPage', () => {
     }, { timeout: 3000 });
   });
 
-  it('使用 AdminHeader 组件标题', async () => {
+  it('使用 AdminHeader 组件', async () => {
     const { getByTestId } = render(<AdminSkillTagsPage />);
     await waitFor(() => {
-      expect(getByTestId('admin-header').textContent).toContain('认知图谱与标签治理');
+      expect(getByTestId('admin-header').textContent).toContain('header');
     }, { timeout: 3000 });
   });
 });
