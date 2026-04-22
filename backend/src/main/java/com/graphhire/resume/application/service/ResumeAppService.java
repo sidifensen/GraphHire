@@ -17,15 +17,20 @@ import java.io.IOException;
 import com.graphhire.resume.interfaces.dto.ResumeVO;
 import com.graphhire.resume.infrastructure.file.RustFSClient;
 import com.graphhire.resume.infrastructure.mq.ResumeMQProducer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class ResumeAppService {
+    private static final Logger log = LoggerFactory.getLogger(ResumeAppService.class);
+
     @Autowired
     private ResumeRepository resumeRepository;
 
@@ -301,9 +306,43 @@ public class ResumeAppService {
             throw new RuntimeException("无权预览此简历");
         }
 
-        byte[] content = rustFSClient.download(resume.getFilePath());
-        String contentType = resolveContentType(resume);
-        return new ResumePreviewFile(content, resume.getFileName(), contentType);
+        try {
+            byte[] content = rustFSClient.download(resume.getFilePath());
+            String contentType = resolveContentType(resume);
+            return new ResumePreviewFile(content, resume.getFileName(), contentType);
+        } catch (RuntimeException ex) {
+            if (!isMissingObjectError(ex)) {
+                throw ex;
+            }
+
+            Optional<Resume> fallbackResumeOpt = getResumesByUserId(userId).stream()
+                .filter(candidate -> !candidate.getId().equals(resume.getId()))
+                .filter(candidate -> StrUtil.equals(candidate.getFileName(), resume.getFileName()))
+                .sorted(Comparator.comparing(Resume::getId).reversed())
+                .filter(candidate -> StrUtil.isNotBlank(candidate.getFilePath()) && rustFSClient.exists(candidate.getFilePath()))
+                .findFirst();
+
+            if (fallbackResumeOpt.isEmpty()) {
+                throw ex;
+            }
+
+            Resume fallbackResume = fallbackResumeOpt.get();
+            log.warn("Resume preview fallback: resumeId={} filePath={} -> fallbackResumeId={} fallbackPath={}",
+                resume.getId(), resume.getFilePath(), fallbackResume.getId(), fallbackResume.getFilePath());
+            byte[] fallbackContent = rustFSClient.download(fallbackResume.getFilePath());
+            return new ResumePreviewFile(fallbackContent, resume.getFileName(), resolveContentType(fallbackResume));
+        }
+    }
+
+    private boolean isMissingObjectError(RuntimeException ex) {
+        String message = ex.getMessage();
+        if (StrUtil.isBlank(message)) {
+            return false;
+        }
+        String lowerMessage = message.toLowerCase();
+        return lowerMessage.contains("no such key")
+            || lowerMessage.contains("specified key does not exist")
+            || lowerMessage.contains("status code: 404");
     }
 
     private String resolveContentType(Resume resume) {

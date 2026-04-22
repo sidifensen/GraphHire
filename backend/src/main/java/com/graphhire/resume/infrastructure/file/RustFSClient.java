@@ -10,6 +10,13 @@ import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import cn.hutool.core.util.StrUtil;
 
 /**
  * RustFS文件存储客户端
@@ -92,28 +99,45 @@ public class RustFSClient {
      * 从S3存储下载文件（S3 SDK直接GET，避免预签名URL编码与签名兼容问题）
      */
     public byte[] download(String filePath) {
-        String key = extractKey(filePath);
+        ObjectLocation objectLocation = resolveObjectLocation(filePath);
 
-        try (InputStream is = s3Client.getObject(GetObjectRequest.builder()
-                .bucket(bucketName)
-                .key(key)
-                .build())) {
-            return is.readAllBytes();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to download file from RustFS: " + e.getMessage(), e);
+        Exception lastException = null;
+        for (String candidateKey : buildCandidateKeys(objectLocation.key())) {
+            try (InputStream is = s3Client.getObject(GetObjectRequest.builder()
+                    .bucket(objectLocation.bucket())
+                    .key(candidateKey)
+                    .build())) {
+                if (!StrUtil.equals(candidateKey, objectLocation.key())) {
+                    log.warn("RustFS key fallback hit, original key='{}', resolved key='{}'", objectLocation.key(), candidateKey);
+                }
+                return is.readAllBytes();
+            } catch (NoSuchKeyException e) {
+                lastException = e;
+            } catch (S3Exception e) {
+                if (e.statusCode() == 404) {
+                    lastException = e;
+                    continue;
+                }
+                throw new RuntimeException("Failed to download file from RustFS: " + e.getMessage(), e);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to download file from RustFS: " + e.getMessage(), e);
+            }
         }
+
+        String message = lastException != null ? lastException.getMessage() : "The specified key does not exist";
+        throw new RuntimeException("Failed to download file from RustFS: " + message, lastException);
     }
 
     /**
      * 从S3存储删除文件（S3 SDK直接删除）
      */
     public void delete(String filePath) {
-        String key = extractKey(filePath);
+        ObjectLocation objectLocation = resolveObjectLocation(filePath);
 
         try {
             DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
-                .bucket(bucketName)
-                .key(key)
+                .bucket(objectLocation.bucket())
+                .key(objectLocation.key())
                 .build();
 
             s3Client.deleteObject(deleteRequest);
@@ -126,12 +150,12 @@ public class RustFSClient {
      * 检查文件是否存在（S3 SDK）
      */
     public boolean exists(String filePath) {
-        String key = extractKey(filePath);
+        ObjectLocation objectLocation = resolveObjectLocation(filePath);
 
         try {
             HeadObjectRequest headRequest = HeadObjectRequest.builder()
-                .bucket(bucketName)
-                .key(key)
+                .bucket(objectLocation.bucket())
+                .key(objectLocation.key())
                 .build();
 
             s3Client.headObject(headRequest);
@@ -144,18 +168,69 @@ public class RustFSClient {
     }
 
     /**
-     * 从S3路径提取key
+     * 解析对象存储位置，优先使用文件路径中的 bucket。
      */
-    private String extractKey(String filePath) {
-        if (filePath == null || filePath.isBlank()) {
+    private ObjectLocation resolveObjectLocation(String filePath) {
+        if (StrUtil.isBlank(filePath)) {
             throw new IllegalArgumentException("File path cannot be empty");
         }
-        String path = filePath.replace("s3://", "");
-        int slashIndex = path.indexOf('/');
-        if (slashIndex < 0) {
+
+        if (StrUtil.startWith(filePath, "s3://")) {
+            String path = StrUtil.removePrefix(filePath, "s3://");
+            int slashIndex = path.indexOf('/');
+            if (slashIndex < 0) {
+                throw new IllegalArgumentException("Invalid S3 path: " + filePath);
+            }
+
+            String pathBucket = path.substring(0, slashIndex);
+            String key = path.substring(slashIndex + 1);
+            if (StrUtil.isBlank(pathBucket) || StrUtil.isBlank(key)) {
+                throw new IllegalArgumentException("Invalid S3 path: " + filePath);
+            }
+            return new ObjectLocation(pathBucket, key);
+        }
+
+        if (StrUtil.startWithAny(filePath, "http://", "https://")) {
+            URI uri = URI.create(filePath);
+            String path = StrUtil.removePrefix(uri.getPath(), "/");
+            int slashIndex = path.indexOf('/');
+            if (slashIndex < 0) {
+                throw new IllegalArgumentException("Invalid S3 path: " + filePath);
+            }
+
+            String pathBucket = path.substring(0, slashIndex);
+            String key = path.substring(slashIndex + 1);
+            if (StrUtil.isBlank(pathBucket) || StrUtil.isBlank(key)) {
+                throw new IllegalArgumentException("Invalid S3 path: " + filePath);
+            }
+            return new ObjectLocation(pathBucket, key);
+        }
+
+        if (!StrUtil.contains(filePath, "/")) {
             throw new IllegalArgumentException("Invalid S3 path: " + filePath);
         }
-        return path.substring(slashIndex + 1);
+
+        return new ObjectLocation(bucketName, StrUtil.removePrefix(filePath, "/"));
+    }
+
+    private record ObjectLocation(String bucket, String key) {}
+
+    private Set<String> buildCandidateKeys(String rawKey) {
+        Set<String> candidates = new LinkedHashSet<>();
+        candidates.add(rawKey);
+
+        String encodedKey = URLEncoder.encode(rawKey, StandardCharsets.UTF_8)
+                .replace("+", "%20")
+                .replace("%2F", "/");
+        candidates.add(encodedKey);
+
+        try {
+            candidates.add(URLDecoder.decode(rawKey, StandardCharsets.UTF_8));
+        } catch (IllegalArgumentException ignored) {
+            // ignore invalid encoded key input and keep raw/encoded candidates
+        }
+
+        return candidates;
     }
 
     /**
