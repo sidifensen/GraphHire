@@ -119,6 +119,11 @@ describe('EnterpriseHeader', () => {
     expect(recommendationsLink.getAttribute('href')).toBe('/enterprise/recommendations');
   });
 
+  it('renders active enterprise nav motion indicator', () => {
+    render(<EnterpriseHeader />);
+    expect(screen.getByTestId('enterprise-nav-indicator')).toBeDefined();
+  });
+
   it('renders employees management navigation link', () => {
     render(<EnterpriseHeader />);
     const employeesLink = screen.getByRole('link', { name: /员工管理/ });

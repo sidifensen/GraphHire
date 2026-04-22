@@ -1,13 +1,16 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { motion, useReducedMotion } from 'framer-motion';
 import { enterpriseAuthStore } from '@/lib/stores/auth-store';
 import { logoutWithServerInvalidation } from '@/lib/logout';
 
 export default function EnterpriseHeader() {
   const pathname = usePathname();
   const router = useRouter();
+  const shouldReduceMotion = useReducedMotion();
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -51,43 +54,39 @@ export default function EnterpriseHeader() {
           <span className="text-xs text-tertiary px-2 py-0.5 bg-surface-container rounded-full">企业管理中心</span>
         </div>
         <nav className="flex items-center gap-1">
-          <a
-            className={`flex items-center gap-2 px-3 py-2 text-sm font-medium ${getNavClass('dashboard')}`}
-            href="/enterprise/dashboard"
-          >
-            <span>工作台</span>
-          </a>
-          <a
-            className={`flex items-center gap-2 px-3 py-2 text-sm font-medium ${getNavClass('jobs')}`}
-            href="/enterprise/jobs"
-          >
-            <span>职位管理</span>
-          </a>
-          <a
-            className={`flex items-center gap-2 px-3 py-2 text-sm font-medium ${getNavClass('recommendations')}`}
-            href="/enterprise/recommendations"
-          >
-            <span>候选人推荐</span>
-          </a>
-          <a
-            className={`flex items-center gap-2 px-3 py-2 text-sm font-medium ${getNavClass('employees')}`}
-            href="/enterprise/employees"
-          >
-            <span>员工管理</span>
-          </a>
-          <a
-            className={`flex items-center gap-2 px-3 py-2 text-sm font-medium ${getNavClass('notifications')}`}
-            href="/enterprise/notifications"
-          >
-            <span>通知中心</span>
-          </a>
+          {[
+            { key: 'dashboard', label: '工作台', href: '/enterprise/dashboard' },
+            { key: 'jobs', label: '职位管理', href: '/enterprise/jobs' },
+            { key: 'recommendations', label: '候选人推荐', href: '/enterprise/recommendations' },
+            { key: 'employees', label: '员工管理', href: '/enterprise/employees' },
+            { key: 'notifications', label: '通知中心', href: '/enterprise/notifications' },
+          ].map((item) => {
+            const isActive = activeNav === item.key;
+            return (
+              <Link
+                key={item.key}
+                className={`relative flex items-center gap-2 px-3 py-2 text-sm font-medium ${getNavClass(item.key)}`}
+                href={item.href}
+              >
+                {isActive && (
+                  <motion.span
+                    data-testid="enterprise-nav-indicator"
+                    layoutId="enterprise-nav-indicator"
+                    className="absolute inset-0 bg-primary-fixed/20 rounded-md"
+                    transition={shouldReduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 480, damping: 38 }}
+                  />
+                )}
+                <span className="relative z-10">{item.label}</span>
+              </Link>
+            );
+          })}
         </nav>
       </div>
       <div className="flex items-center gap-4">
-        <a href="/enterprise/notifications" className="text-[#003DA6] hover:bg-blue-50 transition-colors p-2 rounded-full flex items-center justify-center relative">
+        <Link href="/enterprise/notifications" className="text-[#003DA6] hover:bg-blue-50 transition-colors p-2 rounded-full flex items-center justify-center relative">
           <span className="material-symbols-outlined">notifications</span>
           <span className="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
-        </a>
+        </Link>
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setShowDropdown(!showDropdown)}

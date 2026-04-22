@@ -32,6 +32,11 @@ describe('AdminSidebar', () => {
       expect(dashboardLink).toHaveClass('bg-blue-50');
     });
 
+    it('renders active admin sidebar motion indicator', () => {
+      render(<AdminSidebar activeItem="dashboard" />);
+      expect(screen.getByTestId('admin-sidebar-indicator')).toBeInTheDocument();
+    });
+
     it('has correct href for dashboard', () => {
       render(<AdminSidebar />);
       const dashboardLink = screen.getByRole('link', { name: /工作台/ });

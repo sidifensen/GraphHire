@@ -1,5 +1,8 @@
 'use client';
 
+import Link from 'next/link';
+import { motion, useReducedMotion } from 'framer-motion';
+
 interface AdminSidebarProps {
   activeItem?: 'dashboard' | 'enterprise-review' | 'users' | 'skill-tags' | 'task-monitor' | 'settings';
 }
@@ -14,6 +17,8 @@ const navItems = [
 ] as const;
 
 export default function AdminSidebar({ activeItem = 'dashboard' }: AdminSidebarProps) {
+  const shouldReduceMotion = useReducedMotion();
+
   return (
     <aside className="fixed left-0 top-0 bottom-0 z-40 flex flex-col h-screen w-64 shadow-2xl font-['Manrope'] text-sm antialiased bg-white border-r border-slate-200">
       {/* Header */}
@@ -31,20 +36,34 @@ export default function AdminSidebar({ activeItem = 'dashboard' }: AdminSidebarP
         {navItems.map((item) => {
           const isActive = activeItem === item.id;
           return (
-            <a
+            <motion.div
               key={item.id}
-              className={
-                isActive
-                  ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600 px-4 py-3 flex items-center gap-3 active:scale-95 active:opacity-80 transition-all duration-200'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 px-4 py-3 flex items-center gap-3 transition-colors transition-all duration-200 active:scale-95 active:opacity-80'
-              }
-              href={`/admin/${item.id === 'dashboard' ? 'dashboard' : item.id}`}
+              whileHover={shouldReduceMotion ? undefined : { x: 3 }}
+              whileTap={shouldReduceMotion ? undefined : { scale: 0.98 }}
+              transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.16, ease: 'easeOut' }}
             >
-              <span className={`material-symbols-outlined ${isActive ? 'icon-fill' : ''}`}>
-                {item.icon}
-              </span>
-              <span className="font-medium tracking-wide">{item.label}</span>
-            </a>
+              <Link
+                className={
+                  isActive
+                    ? 'relative bg-blue-50 text-blue-600 px-4 py-3 flex items-center gap-3 active:opacity-80 transition-all duration-200'
+                    : 'relative text-slate-600 hover:text-slate-900 hover:bg-slate-100 px-4 py-3 flex items-center gap-3 transition-colors transition-all duration-200 active:opacity-80'
+                }
+                href={`/admin/${item.id === 'dashboard' ? 'dashboard' : item.id}`}
+              >
+                {isActive && (
+                  <motion.span
+                    data-testid="admin-sidebar-indicator"
+                    layoutId="admin-sidebar-indicator"
+                    className="absolute right-0 top-0 bottom-0 w-1 bg-blue-600 rounded-l"
+                    transition={shouldReduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 500, damping: 40 }}
+                  />
+                )}
+                <span className={`material-symbols-outlined ${isActive ? 'icon-fill' : ''}`}>
+                  {item.icon}
+                </span>
+                <span className="font-medium tracking-wide">{item.label}</span>
+              </Link>
+            </motion.div>
           );
         })}
       </nav>
