@@ -1,9 +1,15 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+﻿import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
+import { forwardRef } from 'react';
 import SkillGraphPage from '@/app/(user)/skill-graph/page';
 
 const getGraph = vi.fn();
 const authStoreMock = vi.fn();
+
+vi.mock('next/dynamic', () => ({
+  default: () =>
+    forwardRef(() => <div data-testid="force-graph" />),
+}));
 
 vi.mock('@/lib/stores/auth-store', () => ({
   authStore: (selector: (state: any) => unknown) => authStoreMock(selector),
@@ -29,10 +35,12 @@ describe('SkillGraphPage', () => {
   it('loads and renders graph data from api', async () => {
     render(<SkillGraphPage />);
     expect(screen.getByText('图谱数据加载中...')).toBeDefined();
-    await screen.findByText('Java');
-    expect(screen.getByText('Spring Boot')).toBeDefined();
-    expect(screen.getByText('React')).toBeDefined();
+    await screen.findByRole('button', { name: '重置视图' });
+    expect(screen.getByTestId('force-graph')).toBeDefined();
     expect(screen.getByText('AI 综合能力评估')).toBeDefined();
+    expect(screen.getByText(/节点数：/)).toBeDefined();
+    expect(screen.getByTestId('skill-score-ring')).toBeDefined();
+    expect(screen.getByTestId('skill-score-progress')).toBeDefined();
   });
 
   it('renders empty state', async () => {

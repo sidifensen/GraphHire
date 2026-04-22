@@ -1,25 +1,34 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { authStore } from '@/lib/stores/auth-store';
 import { personApi } from '@/lib/api/person';
 
-function buildPositions(count: number) {
-  const radius = 34;
-  return Array.from({ length: count }, (_, index) => {
-    const angle = (Math.PI * 2 * index) / Math.max(count, 1);
-    return {
-      top: `${50 + Math.sin(angle) * radius}%`,
-      left: `${50 + Math.cos(angle) * radius}%`,
-    };
-  });
-}
+type GraphNode = {
+  id: string;
+  name: string;
+  kind: 'user' | 'skill';
+  val: number;
+};
+
+type GraphLink = {
+  source: string;
+  target: string;
+  strength: number;
+};
 
 export default function SkillGraphPage() {
   const user = authStore((state) => state.user);
+  const shouldReduceMotion = useReducedMotion();
   const [skills, setSkills] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [focusedNode, setFocusedNode] = useState('');
+  const [viewport, setViewport] = useState({ width: 920, height: 620 });
+  const graphRef = useRef<any>(null);
+  const graphContainerRef = useRef<HTMLDivElement | null>(null);
 
   const loadGraph = async () => {
     try {
@@ -38,27 +47,73 @@ export default function SkillGraphPage() {
     void loadGraph();
   }, []);
 
-  const positionedSkills = useMemo(() => {
-    return skills.slice(0, 8).map((name, index) => ({
-      id: `${name}-${index}`,
-      name,
-      ...buildPositions(Math.min(skills.length, 8))[index],
+  useEffect(() => {
+    const target = graphContainerRef.current;
+    if (!target || typeof ResizeObserver === 'undefined') {
+      return;
+    }
+
+    const observer = new ResizeObserver((entries) => {
+      const [entry] = entries;
+      if (!entry) {
+        return;
+      }
+      setViewport({
+        width: Math.max(320, Math.floor(entry.contentRect.width)),
+        height: Math.max(420, Math.floor(entry.contentRect.height)),
+      });
+    });
+
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, []);
+
+  const graphData = useMemo(() => {
+    const userNode: GraphNode = {
+      id: 'user-center',
+      name: user?.username ?? '当前用户',
+      kind: 'user',
+      val: 26,
+    };
+    const skillNodes: GraphNode[] = skills.map((skill, index) => ({
+      id: `skill-${index}`,
+      name: skill,
+      kind: 'skill',
+      val: Math.max(10, 16 - Math.min(index, 6)),
     }));
+    const links: GraphLink[] = skillNodes.map((node) => ({
+      source: userNode.id,
+      target: node.id,
+      strength: 1,
+    }));
+
+    return { nodes: [userNode, ...skillNodes], links };
   }, [skills]);
 
-  const dimensions = useMemo(() => {
-    const total = skills.length;
-    return [
-      { name: '核心技能数量', percent: Math.min(total * 12, 100) },
-      { name: '图谱覆盖度', percent: total > 0 ? Math.min(50 + total * 5, 100) : 0 },
-      { name: '跨域延展性', percent: total > 2 ? Math.min(40 + total * 4, 100) : 20 },
-    ];
-  }, [skills]);
+  const ForceGraph2D = useMemo(
+    () =>
+      dynamic(() => import('react-force-graph-2d'), {
+        ssr: false,
+      }),
+    [],
+  );
+
+  const handleResetView = () => {
+    graphRef.current?.zoomToFit?.(500, 72);
+    setFocusedNode('');
+  };
+
+  const score = Math.min(skills.length * 10, 100);
+  const ringRadius = 34;
+  const ringCircumference = 2 * Math.PI * ringRadius;
+  const ringOffset = ringCircumference * (1 - score / 100);
+  const nodeCount = graphData.nodes.length;
+  const linkCount = graphData.links.length;
 
   return (
     <div className="flex-grow flex flex-col min-h-screen bg-surface">
-      <main className="flex-grow w-full max-w-[1440px] mx-auto px-8 py-10">
-        <div className="flex justify-between items-end mb-10">
+      <main className="flex-grow w-full max-w-[1440px] mx-auto px-4 md:px-8 py-8 md:py-10">
+        <div className="flex flex-col md:flex-row justify-between md:items-end gap-4 mb-8 md:mb-10">
           <div>
             <h1 className="font-headline text-4xl font-extrabold text-on-surface mb-2 tracking-tight">认知导视体系</h1>
             <p className="text-on-surface-variant text-base">AI 深度解析您的真实技能网络，发现潜在关联与价值</p>
@@ -69,51 +124,88 @@ export default function SkillGraphPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-8">
-          <section className="bg-surface-container-lowest rounded-[2rem] p-8 relative overflow-hidden flex flex-col min-h-[600px] shadow-[0_12px_32px_-4px_rgba(14,28,44,0.06)] group">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary-fixed-dim/20 rounded-full blur-[100px] pointer-events-none" />
+        <div className="grid grid-cols-1 lg:grid-cols-[68%_32%] gap-6 md:gap-8">
+          <section className="bg-[#08111f] rounded-[2rem] p-4 md:p-6 relative overflow-hidden flex flex-col min-h-[620px] shadow-[0_20px_48px_-10px_rgba(8,17,31,0.55)]">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(44,155,255,0.24),transparent_45%),radial-gradient(circle_at_70%_70%,rgba(89,235,198,0.18),transparent_46%)] pointer-events-none" />
 
-            <div className="flex justify-between items-center mb-4 z-10 relative">
-              <h2 className="font-headline text-xl font-bold text-on-surface">核心技能图谱</h2>
-              <div className="text-sm text-on-surface-variant">真实接口驱动</div>
+            <div className="flex justify-between items-center mb-3 z-10 relative text-white">
+              <h2 className="font-headline text-xl font-bold">可探索技能图谱</h2>
+              <button
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20 transition"
+                type="button"
+                onClick={handleResetView}
+              >
+                重置视图
+              </button>
             </div>
 
-            <div className="flex-grow relative w-full h-full mt-4">
+            <div ref={graphContainerRef} className="flex-grow relative w-full h-full mt-2 rounded-2xl border border-white/10 bg-black/15">
               {loading ? (
-                <div className="absolute inset-0 flex items-center justify-center text-on-surface-variant">图谱数据加载中...</div>
+                <div className="absolute inset-0 flex items-center justify-center text-white/75">图谱数据加载中...</div>
               ) : error ? (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
-                  <p className="text-error">{error}</p>
+                  <p className="text-red-300">{error}</p>
                   <button className="px-5 py-2 rounded-lg bg-primary text-white" onClick={() => void loadGraph()}>重试</button>
                 </div>
               ) : skills.length === 0 ? (
-                <div className="absolute inset-0 flex items-center justify-center text-on-surface-variant">暂无技能图谱数据，请先上传并解析简历。</div>
+                <div className="absolute inset-0 flex items-center justify-center text-white/75">暂无技能图谱数据，请先上传并解析简历。</div>
               ) : (
-                <>
-                  <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" style={{ overflow: 'visible' }}>
-                    {positionedSkills.map((skill, index) => (
-                      <line key={skill.id} stroke="var(--color-outline-variant)" strokeDasharray="4 4" strokeWidth="1.5" x1="50%" y1="50%" x2={skill.left} y2={skill.top} />
-                    ))}
-                  </svg>
+                <ForceGraph2D
+                  ref={graphRef}
+                  graphData={graphData}
+                  width={viewport.width}
+                  height={viewport.height}
+                  enableNodeDrag
+                  cooldownTicks={120}
+                  linkDirectionalParticles={2}
+                  linkDirectionalParticleSpeed={() => 0.0045}
+                  nodeRelSize={6}
+                  backgroundColor="rgba(0,0,0,0)"
+                  nodeLabel={(node: unknown) => (node as GraphNode).name}
+                  onNodeDragEnd={(node: any) => {
+                    node.fx = node.x;
+                    node.fy = node.y;
+                  }}
+                  onNodeHover={(node: unknown) => {
+                    setFocusedNode((node as GraphNode | null)?.name ?? '');
+                  }}
+                  onNodeClick={(node: any) => {
+                    graphRef.current?.centerAt?.(node.x, node.y, 500);
+                    graphRef.current?.zoom?.(2.1, 500);
+                    setFocusedNode((node as GraphNode).name);
+                  }}
+                  linkColor={(link: unknown) => {
+                    const current = link as GraphLink;
+                    if (!focusedNode) {
+                      return 'rgba(136, 226, 255, 0.35)';
+                    }
+                    return current.source === focusedNode || current.target === focusedNode
+                      ? 'rgba(74, 237, 196, 0.95)'
+                      : 'rgba(136, 226, 255, 0.12)';
+                  }}
+                  nodeCanvasObject={(node: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
+                    const graphNode = node as GraphNode;
+                    const label = graphNode.name;
+                    const radius = graphNode.kind === 'user' ? 13 : Math.max(6, graphNode.val / 2.7);
+                    const highlight = !focusedNode || focusedNode === graphNode.name;
+                    const textSize = 13 / globalScale;
+                    const textOffset = (radius + 7) / globalScale;
 
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center">
-                    <div className="w-20 h-20 rounded-full border-4 border-surface-container-lowest ring-4 ring-primary-fixed shadow-sm bg-primary text-white flex items-center justify-center text-2xl font-bold">
-                      {(user?.username ?? 'U').slice(0, 1).toUpperCase()}
-                    </div>
-                    <span className="mt-3 font-headline font-bold text-on-surface bg-surface-container-lowest/80 backdrop-blur-sm px-3 py-1 rounded-full text-sm">当前状态</span>
-                  </div>
+                    ctx.beginPath();
+                    ctx.arc(node.x!, node.y!, radius, 0, 2 * Math.PI, false);
+                    ctx.fillStyle = graphNode.kind === 'user' ? '#3f8cff' : (highlight ? '#52ffe2' : 'rgba(82,255,226,0.35)');
+                    ctx.shadowColor = graphNode.kind === 'user' ? 'rgba(63,140,255,0.75)' : 'rgba(82,255,226,0.7)';
+                    ctx.shadowBlur = 18;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
 
-                  {positionedSkills.map((skill) => (
-                    <div key={skill.id} className="absolute z-10 flex flex-col items-center" style={{ top: skill.top, left: skill.left, transform: 'translate(-50%, -50%)' }}>
-                      <div className="rounded-full flex items-center justify-center shadow-sm bg-primary-fixed text-primary w-12 h-12">
-                        <span className="material-symbols-outlined">hub</span>
-                      </div>
-                      <div className="mt-2 text-center max-w-24">
-                        <span className="block text-on-surface text-xs">{skill.name}</span>
-                      </div>
-                    </div>
-                  ))}
-                </>
+                    ctx.font = `${textSize}px sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = highlight ? '#ecfeff' : 'rgba(236,254,255,0.5)';
+                    ctx.fillText(label, node.x!, node.y! + textOffset);
+                  }}
+                />
               )}
             </div>
           </section>
@@ -124,45 +216,56 @@ export default function SkillGraphPage() {
                 <h3 className="font-headline font-bold text-on-surface">AI 综合能力评估</h3>
                 <span className="material-symbols-outlined text-primary">psychology</span>
               </div>
+              <div className="flex items-center gap-4 mb-2">
+                <svg
+                  data-testid="skill-score-ring"
+                  width="84"
+                  height="84"
+                  viewBox="0 0 84 84"
+                  className="overflow-visible"
+                >
+                  <circle cx="42" cy="42" r={ringRadius} fill="none" stroke="rgba(14,28,44,0.12)" strokeWidth="8" />
+                  <motion.circle
+                    data-testid="skill-score-progress"
+                    cx="42"
+                    cy="42"
+                    r={ringRadius}
+                    fill="none"
+                    stroke="url(#skillScoreGradient)"
+                    strokeWidth="8"
+                    strokeLinecap="round"
+                    strokeDasharray={ringCircumference}
+                    initial={{ strokeDashoffset: ringCircumference }}
+                    animate={{ strokeDashoffset: ringOffset }}
+                    transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.8, ease: 'easeOut' }}
+                    transform="rotate(-90 42 42)"
+                  />
+                  <defs>
+                    <linearGradient id="skillScoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#3f8cff" />
+                      <stop offset="100%" stopColor="#52ffe2" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
               <div className="flex items-end gap-3 mb-2">
-                <span className="font-headline text-6xl font-black text-primary tracking-tighter leading-none">{Math.min(skills.length * 10, 100)}</span>
+                <span className="font-headline text-6xl font-black text-primary tracking-tighter leading-none">{score}</span>
                 <span className="text-on-surface-variant font-medium pb-1">/ 100</span>
               </div>
               <p className="text-sm text-on-surface-variant mt-2">当前图谱已识别 {skills.length} 项技能节点，后续会继续随着简历解析结果动态更新。</p>
             </div>
 
-            <div className="bg-surface-container-low rounded-2xl p-6 flex-grow">
-              <h3 className="font-headline font-bold text-on-surface mb-6">核心维度重合度</h3>
-              <div className="flex flex-col gap-5">
-                {dimensions.map((dim) => (
-                  <div key={dim.name}>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span className="font-medium text-on-surface">{dim.name}</span>
-                      <span className={dim.percent >= 90 ? 'text-primary font-bold' : 'text-on-surface-variant font-medium'}>{dim.percent}%</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-surface-variant rounded-full overflow-hidden">
-                      <div className="h-full rounded-full bg-primary" style={{ width: `${dim.percent}%` }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
             <div className="bg-surface-container-lowest rounded-2xl p-6 shadow-[0_12px_32px_-4px_rgba(14,28,44,0.06)]">
               <div className="flex items-center gap-2 mb-4">
-                <span className="material-symbols-outlined text-primary text-xl">lightbulb</span>
-                <h3 className="font-headline font-bold text-on-surface">技能提升建议</h3>
+                <span className="material-symbols-outlined text-primary text-xl">monitoring</span>
+                <h3 className="font-headline font-bold text-on-surface">图谱状态卡</h3>
               </div>
-              <ul className="flex flex-col gap-4 text-sm text-on-surface-variant">
-                {skills.length > 0 ? (
-                  <>
-                    <li className="flex items-start gap-3"><span className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" /><span>优先围绕已识别技能继续补充项目案例，让图谱节点与真实经历更强绑定。</span></li>
-                    <li className="flex items-start gap-3"><span className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" /><span>上传最新简历或更新个人资料后，图谱会继续补充更多技能关联。</span></li>
-                  </>
-                ) : (
-                  <li className="flex items-start gap-3"><span className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" /><span>当前暂无图谱数据，建议先上传简历并等待解析完成。</span></li>
-                )}
-              </ul>
+              <div className="flex flex-col gap-3 text-sm">
+                <p className="text-on-surface-variant">节点数：<span className="font-semibold text-on-surface">{nodeCount}</span></p>
+                <p className="text-on-surface-variant">连线数：<span className="font-semibold text-on-surface">{linkCount}</span></p>
+                <p className="text-on-surface-variant">当前聚焦节点：<span className="font-semibold text-on-surface">{focusedNode || '无'}</span></p>
+                <p className="text-on-surface-variant pt-1">可通过拖拽节点、拖动画布与滚轮缩放进行自由探索。</p>
+              </div>
             </div>
           </aside>
         </div>
