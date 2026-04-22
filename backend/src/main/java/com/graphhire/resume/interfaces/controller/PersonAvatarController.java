@@ -52,7 +52,7 @@ public class PersonAvatarController {
         if (ext.isBlank()) {
             ext = "jpg";
         }
-        String filename = "avatars/user_" + userId + "_" + System.currentTimeMillis() + "." + ext;
+        String filename = "avatar/user_" + userId + "_" + System.currentTimeMillis() + "." + ext;
 
         try {
             String avatarPath = rustFSClient.upload(file.getBytes(), filename);
