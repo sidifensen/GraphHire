@@ -174,15 +174,15 @@ export default function AdminUsersPage() {
   };
 
   return (
-    <div className="ml-64 flex flex-col min-h-screen">
+    <div className="ml-64 flex flex-col h-screen overflow-hidden">
       <AdminSidebar activeItem="users" />
 
       {/* Main Content */}
-      <div className="flex flex-col min-h-screen">
+      <div className="flex flex-col h-screen overflow-hidden">
         <AdminHeader />
 
         {/* Canvas */}
-        <div className="p-8 lg:p-12 flex-1 flex flex-col gap-8 max-w-7xl mx-auto w-full">
+        <div className="p-8 lg:p-12 flex-1 overflow-y-auto flex flex-col gap-8 max-w-7xl mx-auto w-full">
           {/* Page Header */}
           <div className="flex items-end justify-between">
             <div>
