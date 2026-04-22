@@ -155,7 +155,7 @@ export default function UploadPage() {
   if (status === 'idle') {
     return (
       <div className="bg-surface text-on-surface min-h-screen flex flex-col antialiased">
-        <main className="flex-1 flex flex-col items-center justify-start px-6 pt-4 pb-8">
+        <main className="flex-1 flex flex-col items-center justify-start px-6 pt-2 pb-4">
           <div className="w-full max-w-6xl mb-6">
             <a href="/resume/manage" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-primary font-medium bg-surface-container-low hover:bg-surface-container-high transition-all active:scale-95 group">
               <span className="material-symbols-outlined text-[20px] transition-transform group-hover:-translate-x-1">arrow_back</span>
@@ -236,7 +236,7 @@ export default function UploadPage() {
   if (status === 'uploading' || status === 'processing') {
     return (
       <div className="bg-surface text-on-surface min-h-screen flex flex-col antialiased">
-        <main className="flex-1 flex flex-col items-center justify-start px-6 pt-4 pb-8">
+        <main className="flex-1 flex flex-col items-center justify-start px-6 pt-2 pb-4">
           <div className="w-full max-w-6xl mb-6">
             <a href="/resume/manage" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-primary font-medium bg-surface-container-low hover:bg-surface-container-high transition-all active:scale-95 group">
               <span className="material-symbols-outlined text-[20px] transition-transform group-hover:-translate-x-1">arrow_back</span>
@@ -389,7 +389,7 @@ export default function UploadPage() {
   if (status === 'failed') {
     return (
       <div className="bg-surface text-on-surface min-h-screen flex flex-col antialiased">
-        <main className="flex-1 flex flex-col items-center justify-start px-6 pt-4 pb-8">
+        <main className="flex-1 flex flex-col items-center justify-start px-6 pt-2 pb-4">
           <div className="w-full max-w-6xl mb-6">
             <a href="/resume/manage" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-primary font-medium bg-surface-container-low hover:bg-surface-container-high transition-all active:scale-95 group">
               <span className="material-symbols-outlined text-[20px] transition-transform group-hover:-translate-x-1">arrow_back</span>
@@ -452,7 +452,7 @@ export default function UploadPage() {
   // Completed state
   return (
     <div className="bg-surface text-on-surface min-h-screen flex flex-col antialiased">
-      <main className="flex-1 flex flex-col items-center justify-start px-6 pt-4 pb-8">
+      <main className="flex-1 flex flex-col items-center justify-start px-6 pt-2 pb-4">
         <div className="w-full max-w-6xl mb-6">
           <a href="/resume/manage" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-primary font-medium bg-surface-container-low hover:bg-surface-container-high transition-all active:scale-95 group">
             <span className="material-symbols-outlined text-[20px] transition-transform group-hover:-translate-x-1">arrow_back</span>

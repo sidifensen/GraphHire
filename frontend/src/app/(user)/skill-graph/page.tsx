@@ -154,10 +154,10 @@ export default function SkillGraphPage() {
 
   return (
     <div className="flex-grow flex flex-col min-h-screen bg-surface">
-      <main className="flex-grow w-full max-w-[1440px] mx-auto px-4 md:px-8 py-8 md:py-10">
+      <main className="flex-grow w-full max-w-[1440px] mx-auto px-4 md:px-8 py-0">
         <div className="flex flex-col md:flex-row justify-between md:items-end gap-4 mb-8 md:mb-10">
           <div>
-            <h1 className="font-headline text-4xl font-extrabold text-on-surface mb-2 tracking-tight">认知导视体系</h1>
+            <h1 className="font-headline text-4xl font-extrabold text-on-surface mb-1 tracking-tight">认知导视体系</h1>
             <p className="text-on-surface-variant text-base">AI 深度解析您的真实技能网络，发现潜在关联与价值</p>
           </div>
           <div className="flex items-center gap-4 bg-surface-container-low px-4 py-2 rounded-xl">

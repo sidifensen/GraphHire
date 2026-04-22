@@ -33,7 +33,7 @@ function JobsContent() {
 
   return (
     <div className="flex-grow flex flex-col min-h-screen">
-      <main className="flex-grow max-w-[1200px] w-full mx-auto px-6 py-12">
+      <main className="flex-grow max-w-[1200px] w-full mx-auto px-6 py-4">
         <section className="bg-surface-container-low rounded-[1.5rem] p-8 mb-12 relative overflow-hidden">
           <div className="absolute right-0 top-0 w-1/2 h-full opacity-30 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary-fixed to-transparent" />
           <div className="relative z-10">

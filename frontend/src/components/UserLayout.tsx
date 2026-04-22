@@ -22,7 +22,7 @@ export default function UserLayout({ children, contentClassName = '' }: UserLayo
       <Header />
       <div className="flex flex-1 max-w-[1440px] mx-auto w-full">
         {showSidebar ? <Sidebar /> : null}
-        <main className={`flex-1 p-8 md:p-12 pb-24 ${contentClassName}`}>
+        <main className={`flex-1 p-4 md:p-6 pb-24 ${contentClassName}`}>
           <RouteTransition>
             {children}
           </RouteTransition>

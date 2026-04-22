@@ -180,7 +180,7 @@ export default function NotificationsPage() {
 
   return (
     <div className="flex-grow flex flex-col min-h-screen">
-      <main className="flex-grow flex justify-center max-w-[1440px] mx-auto w-full px-4 sm:px-8 py-8">
+      <main className="flex-grow flex justify-center max-w-[1440px] mx-auto w-full px-4 sm:px-8 py-4">
         <div className="flex-1 max-w-4xl w-full flex flex-col gap-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-2">
             <div>

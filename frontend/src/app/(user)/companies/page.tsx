@@ -29,7 +29,7 @@ export default function CompaniesPage() {
 
   return (
     <div className="flex-grow flex flex-col min-h-screen bg-surface">
-      <main className="flex-grow max-w-[1440px] mx-auto w-full px-8 py-12 flex flex-col gap-12">
+      <main className="flex-grow max-w-[1440px] mx-auto w-full px-8 py-4 flex flex-col gap-12">
         <section className="bg-surface-container-low rounded-xl p-8 flex flex-col gap-8">
           <div className="relative w-full max-w-3xl mx-auto">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
