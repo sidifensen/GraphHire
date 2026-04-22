@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import ProfilePage from '@/app/(user)/profile/page';
 
 const getProfile = vi.fn();
@@ -52,10 +52,25 @@ describe('ProfilePage', () => {
   it('saves profile changes', async () => {
     render(<ProfilePage />);
     await screen.findByDisplayValue('林静宜');
-    screen.getByDisplayValue('林静宜').dispatchEvent(new Event('input', { bubbles: true }));
-    (screen.getByDisplayValue('林静宜') as HTMLInputElement).value = '林静宜P7';
+    fireEvent.change(screen.getByDisplayValue('林静宜'), { target: { value: '林静宜P7' } });
     screen.getByText('保存全部修改').click();
     await waitFor(() => expect(updateProfile).toHaveBeenCalled());
+  });
+
+  it('renders age field so users can edit age', async () => {
+    render(<ProfilePage />);
+    await screen.findByDisplayValue('林静宜');
+    expect(screen.getByDisplayValue('28')).toBeDefined();
+  });
+
+  it('sends null gender when selecting 未设置', async () => {
+    render(<ProfilePage />);
+    await screen.findByDisplayValue('林静宜');
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: '0' } });
+    screen.getByText('保存全部修改').click();
+
+    await waitFor(() => expect(updateProfile).toHaveBeenCalledTimes(1));
+    expect(updateProfile).toHaveBeenCalledWith(expect.objectContaining({ gender: null }));
   });
 
   it('renders error and retry states', async () => {

@@ -8,7 +8,7 @@ const defaultProfile: PersonProfile = {
   id: 0,
   userId: 0,
   realName: '',
-  gender: 0,
+  gender: null,
   age: null,
   phone: '',
   education: '',
@@ -57,7 +57,16 @@ export default function ProfilePage() {
       setSaving(true);
       setMessage('');
       setError('');
-      await personApi.updateProfile(profile);
+      await personApi.updateProfile({
+        realName: profile.realName ?? '',
+        gender: profile.gender === 0 ? null : (profile.gender ?? null),
+        age: profile.age ?? null,
+        phone: profile.phone ?? '',
+        education: profile.education ?? '',
+        city: profile.city ?? '',
+        targetCity: profile.targetCity ?? '',
+        expectedSalary: profile.expectedSalary ?? null,
+      });
       setMessage('个人资料已保存');
     } catch (err) {
       setError(err instanceof Error ? err.message : '保存失败');
@@ -124,6 +133,9 @@ export default function ProfilePage() {
                   </Field>
                   <Field label="联系电话">
                     <input className="w-full bg-surface-container-lowest text-on-surface p-3 rounded border-b-2 border-transparent focus:border-primary transition-colors text-sm font-medium outline-none" value={profile.phone ?? ''} onChange={(e) => updateField('phone', e.target.value)} placeholder="您的手机号码" />
+                  </Field>
+                  <Field label="年龄">
+                    <input className="w-full bg-surface-container-lowest text-on-surface p-3 rounded border-b-2 border-transparent focus:border-primary transition-colors text-sm font-medium outline-none" type="number" value={profile.age ?? ''} onChange={(e) => updateField('age', e.target.value ? Number(e.target.value) : null)} placeholder="例如：28" />
                   </Field>
                   <Field label="电子邮箱">
                     <input className="w-full bg-surface-container-lowest text-on-surface p-3 rounded border-b-2 border-transparent focus:border-primary transition-colors text-sm font-medium outline-none" value={authUser?.username ?? ''} readOnly placeholder="登录邮箱" />

@@ -43,8 +43,8 @@ public class PersonInfoPO {
     /** 邮箱 */
     @TableField("email")
     private String email;
-    /** 期望薪资（数据库中不存在） */
-    @TableField(exist = false)
+    /** 期望薪资 */
+    @TableField("expected_salary")
     private Integer expectedSalary;
     /** 创建时间 */
     @TableField("create_time")

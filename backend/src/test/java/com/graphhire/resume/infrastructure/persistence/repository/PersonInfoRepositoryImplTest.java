@@ -1,6 +1,7 @@
 package com.graphhire.resume.infrastructure.persistence.repository;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.repository.PersonInfoRepository;
 import com.graphhire.resume.infrastructure.persistence.mapper.PersonInfoMapper;
@@ -88,13 +89,22 @@ class PersonInfoRepositoryImplTest {
             PersonInfo personInfo = createPersonInfo(1L);
             PersonInfoPO po = createPersonInfoPO(123L);
             po.setId(1L);
-            when(personInfoMapper.updateById(any(PersonInfoPO.class))).thenReturn(1);
+            when(personInfoMapper.update(any(), any())).thenReturn(1);
 
             PersonInfo result = personInfoRepository.save(personInfo);
 
             assertNotNull(result);
-            verify(personInfoMapper, times(1)).updateById(any(PersonInfoPO.class));
+            verify(personInfoMapper, times(1)).update(any(), any());
         }
+    }
+
+    @Test
+    @DisplayName("expectedSalary 字段必须映射到 expected_salary 列")
+    void expectedSalary_ShouldMapToDatabaseColumn() throws NoSuchFieldException {
+        TableField tableField = PersonInfoPO.class.getDeclaredField("expectedSalary").getAnnotation(TableField.class);
+        assertNotNull(tableField);
+        assertEquals("expected_salary", tableField.value());
+        assertTrue(tableField.exist());
     }
 
     private PersonInfo createPersonInfo(Long id) {
