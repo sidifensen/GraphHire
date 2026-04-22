@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import Header from '@/components/Header';
 
@@ -59,7 +59,24 @@ vi.mock('@/lib/stores/auth-store', () => {
 const MockHeader = () => <Header />;
 
 describe('Header', () => {
+  beforeEach(() => {
+    mockState.isAuthenticated = false;
+    mockState.user = null;
+  });
+
+  it('renders user avatar when authenticated user has avatarUrl', () => {
+    mockState.isAuthenticated = true;
+    mockState.user = { id: 1, username: 'u@test.com', type: 'PERSON', avatarUrl: 'http://localhost:7777/person/avatar/public/1' } as any;
+
+    render(<MockHeader />);
+    const avatar = screen.getByAltText('用户头像') as HTMLImageElement;
+    expect(avatar).toBeDefined();
+    expect(avatar.getAttribute('src')).toContain('/person/avatar/public/1');
+  });
+
   it('renders logo text', () => {
+    mockState.isAuthenticated = false;
+    mockState.user = null;
     render(<MockHeader />);
     expect(screen.getByText(/图谱智聘/)).toBeDefined();
   });

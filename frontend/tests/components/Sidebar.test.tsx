@@ -2,6 +2,12 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import Sidebar from '@/components/Sidebar';
 
+const authStoreMock = vi.fn((selector: (state: any) => unknown) =>
+  selector({
+    user: { id: 1, username: 'u@test.com', type: 'PERSON', avatarUrl: 'http://localhost:7777/person/avatar/public/1' },
+  }),
+);
+
 // Mock next/navigation for Sidebar
 vi.mock('next/navigation', () => ({
   usePathname: () => '/profile',
@@ -12,6 +18,10 @@ vi.mock('next/navigation', () => ({
     back: vi.fn(),
     forward: vi.fn(),
   }),
+}));
+
+vi.mock('@/lib/stores/auth-store', () => ({
+  userAuthStore: (selector: (state: any) => unknown) => authStoreMock(selector),
 }));
 
 describe('Sidebar', () => {
@@ -37,5 +47,11 @@ describe('Sidebar', () => {
   it('renders update resume button', () => {
     render(<Sidebar />);
     expect(screen.getByText('更新简历')).toBeDefined();
+  });
+
+  it('renders user avatar from auth store', () => {
+    render(<Sidebar />);
+    const avatar = screen.getByAltText('用户头像') as HTMLImageElement;
+    expect(avatar.getAttribute('src')).toContain('/person/avatar/public/1');
   });
 });

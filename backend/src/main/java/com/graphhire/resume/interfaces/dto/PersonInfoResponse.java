@@ -11,13 +11,14 @@ public class PersonInfoResponse {
     private String city;
     private String targetCity;
     private Integer expectedSalary;
+    private String avatarUrl;
 
     public PersonInfoResponse() {
     }
 
     public PersonInfoResponse(Long id, Long userId, String realName, Integer gender, Integer age,
                               String phone, String education, String city, String targetCity,
-                              Integer expectedSalary) {
+                              Integer expectedSalary, String avatarUrl) {
         this.id = id;
         this.userId = userId;
         this.realName = realName;
@@ -28,6 +29,7 @@ public class PersonInfoResponse {
         this.city = city;
         this.targetCity = targetCity;
         this.expectedSalary = expectedSalary;
+        this.avatarUrl = avatarUrl;
     }
 
     public Long getId() {
@@ -108,5 +110,13 @@ public class PersonInfoResponse {
 
     public void setExpectedSalary(Integer expectedSalary) {
         this.expectedSalary = expectedSalary;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 }

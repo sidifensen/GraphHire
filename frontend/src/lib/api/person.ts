@@ -1,6 +1,18 @@
 import apiClient from './client';
 import type { Job } from './public';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:7777';
+
+function toAbsoluteAvatarUrl(url?: string | null): string | null {
+  if (!url) {
+    return null;
+  }
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  return `${API_BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+}
+
 export interface PersonProfile {
   id: number;
   userId: number;
@@ -12,6 +24,7 @@ export interface PersonProfile {
   city?: string | null;
   targetCity?: string | null;
   expectedSalary?: number | null;
+  avatarUrl?: string | null;
 }
 
 export interface SkillGraph {
@@ -64,7 +77,13 @@ export interface FavoriteJob extends Job {
 export const personApi = {
   getProfile: async (): Promise<PersonProfile | null> => {
     const response = await apiClient.get<PersonProfile | null>('/person/info');
-    return response.data;
+    if (!response.data) {
+      return response.data;
+    }
+    return {
+      ...response.data,
+      avatarUrl: toAbsoluteAvatarUrl(response.data.avatarUrl),
+    };
   },
 
   updateProfile: async (data: Partial<PersonProfile>): Promise<void> => {
@@ -86,18 +105,18 @@ export const personApi = {
     return response.data;
   },
 
-  uploadAvatar: async (file: File): Promise<{ avatarUrl: string }> => {
+  uploadAvatar: async (file: File): Promise<string> => {
     const formData = new FormData();
     formData.append('file', file);
-    const response = await apiClient.post('/person/avatar', formData, {
+    const response = await apiClient.post<string>('/person/avatar', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    return response.data;
+    return toAbsoluteAvatarUrl(response.data) ?? '';
   },
 
-  getAvatar: async (): Promise<{ avatarUrl: string }> => {
-    const response = await apiClient.get('/person/avatar');
-    return response.data;
+  getAvatar: async (): Promise<string | null> => {
+    const response = await apiClient.get<string | null>('/person/avatar');
+    return toAbsoluteAvatarUrl(response.data);
   },
 
   apply: async (data: { jobId: number; resumeId: number }): Promise<{ applicationId: number }> => {

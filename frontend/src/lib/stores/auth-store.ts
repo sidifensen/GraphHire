@@ -5,9 +5,10 @@ import type { UserType } from '@/lib/types';
 interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
-  user: { id: number; username: string; type: UserType } | null;
+  user: { id: number; username: string; type: UserType; avatarUrl?: string | null } | null;
   isAuthenticated: boolean;
-  setAuth: (tokens: { accessToken: string; refreshToken?: string }, user: { id: number; username: string; type: UserType }) => void;
+  setAuth: (tokens: { accessToken: string; refreshToken?: string }, user: { id: number; username: string; type: UserType; avatarUrl?: string | null }) => void;
+  updateUser: (partial: Partial<{ id: number; username: string; type: UserType; avatarUrl?: string | null }>) => void;
   logout: () => void;
 }
 
@@ -35,6 +36,11 @@ function createAuthStore(storageKey: string) {
             user,
             isAuthenticated: true,
           }),
+
+        updateUser: (partial) =>
+          set((state) => ({
+            user: state.user ? { ...state.user, ...partial } : state.user,
+          })),
 
         logout: () =>
           set({

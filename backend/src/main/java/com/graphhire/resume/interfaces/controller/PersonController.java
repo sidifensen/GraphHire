@@ -54,7 +54,8 @@ public class PersonController {
             personInfo.getEducation(),
             personInfo.getCity(),
             personInfo.getTargetCity(),
-            personInfo.getExpectedSalary()
+            personInfo.getExpectedSalary(),
+            personInfo.getAvatarUrl() == null ? null : "/person/avatar/public/" + userId
         );
         return Result.success(response);
     }

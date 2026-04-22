@@ -19,6 +19,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -83,5 +84,23 @@ class PersonControllerTest {
             assertNull(saved.getExpectedSalary());
         }
     }
-}
 
+    @Test
+    @DisplayName("获取个人资料时返回头像访问地址")
+    void getPersonInfo_IncludesAvatarUrl() {
+        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+            stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(300L);
+            PersonInfo existing = new PersonInfo();
+            existing.setId(11L);
+            existing.setUserId(300L);
+            existing.setRealName("头像用户");
+            existing.setAvatarUrl("s3://resumes/avatar_300.jpg");
+            when(personInfoRepository.findByUserId(300L)).thenReturn(Optional.of(existing));
+
+            var result = personController.getPersonInfo();
+
+            assertNotNull(result.getData());
+            assertEquals("/person/avatar/public/300", result.getData().getAvatarUrl());
+        }
+    }
+}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { authStore } from '@/lib/stores/auth-store';
+import { authStore, userAuthStore } from '@/lib/stores/auth-store';
 import { personApi, type PersonProfile } from '@/lib/api/person';
 
 const defaultProfile: PersonProfile = {
@@ -22,6 +22,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<PersonProfile>(defaultProfile);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
@@ -37,6 +38,7 @@ export default function ProfilePage() {
       setError('');
       const data = await personApi.getProfile();
       setProfile(data ?? defaultProfile);
+      userAuthStore.getState().updateUser({ avatarUrl: data?.avatarUrl ?? null });
     } catch (err) {
       setError(err instanceof Error ? err.message : '个人资料加载失败');
     } finally {
@@ -72,6 +74,24 @@ export default function ProfilePage() {
       setError(err instanceof Error ? err.message : '保存失败');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleAvatarUpload = async (file: File | null) => {
+    if (!file) {
+      return;
+    }
+    try {
+      setUploadingAvatar(true);
+      setError('');
+      const avatarUrl = await personApi.uploadAvatar(file);
+      updateField('avatarUrl', avatarUrl);
+      userAuthStore.getState().updateUser({ avatarUrl });
+      setMessage('头像已更新');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '头像上传失败');
+    } finally {
+      setUploadingAvatar(false);
     }
   };
 
@@ -115,8 +135,23 @@ export default function ProfilePage() {
               <div className="flex flex-col md:flex-row gap-8">
                 <div className="flex flex-col items-center gap-3">
                   <div className="w-24 h-24 rounded-full bg-surface-container-highest border-4 border-surface-container-lowest shadow-sm relative overflow-hidden flex items-center justify-center text-2xl font-bold text-primary">
-                    {(profile.realName || authUser?.username || 'U').slice(0, 1)}
+                    {profile.avatarUrl ? (
+                      <img alt="用户头像" src={profile.avatarUrl} className="w-full h-full object-cover" />
+                    ) : (
+                      (profile.realName || authUser?.username || 'U').slice(0, 1)
+                    )}
                   </div>
+                  <label className="text-xs text-primary cursor-pointer">
+                    {uploadingAvatar ? '上传中...' : '上传头像'}
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      className="sr-only"
+                      aria-label="上传头像"
+                      onChange={(e) => void handleAvatarUpload(e.target.files?.[0] ?? null)}
+                      disabled={uploadingAvatar}
+                    />
+                  </label>
                   <span className="text-xs text-tertiary bg-surface-variant px-3 py-1 rounded-full">真实账户资料</span>
                 </div>
 

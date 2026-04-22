@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
@@ -26,6 +25,11 @@ export default function Header({ forceShowNotifications }: HeaderProps = {}) {
   const showNotificationBadge = forceShowNotifications || isAuthenticated;
   const [showDropdown, setShowDropdown] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
+  const avatarSrc = user?.avatarUrl ?? null;
+
+  useEffect(() => {
+    setAvatarError(false);
+  }, [avatarSrc]);
 
   useEffect(() => {
     function handleClickOutside() {
@@ -84,14 +88,12 @@ export default function Header({ forceShowNotifications }: HeaderProps = {}) {
               >
                 <span className="text-sm font-medium text-on-surface truncate max-w-[120px]">{user?.username}</span>
                 <div className="w-7 h-7 rounded-full bg-surface-container-low overflow-hidden border border-surface-variant flex-shrink-0">
-                  {avatarError ? (
+                  {avatarError || !avatarSrc ? (
                     <span className="material-symbols-outlined text-tertiary w-full h-full flex items-center justify-center">person</span>
                   ) : (
-                    <Image
+                    <img
                       alt="用户头像"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIYa43L-pryRXbX_0CaMonCmGzAj_Dzj86nXpYHvCsDUbFn2dQwjVHfcA1GdViiDM0V1owjYEN1XNAGcQPWvvnopWW8B15Hk11yTWzHXhHNI9tPRzFjQfL1nK_qdGznxU0IEuNGSB6Dzkvy0iHn6T0ndOQS_YR29P48e_7xTcWYuAAA-gtna5DEpOs45XiHZphPUgHGq4fK8dk9PQU7_6KA5OPFmQEoQINO2OEvoo4-nFYRg5AmXUb1HWPDhiwBpSJ9Smazb5Un1y6"
-                      width={28}
-                      height={28}
+                      src={avatarSrc}
                       className="w-full h-full object-cover"
                       onError={() => setAvatarError(true)}
                     />
