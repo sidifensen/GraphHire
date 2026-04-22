@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import LoginPage from '@/app/login/page';
 
@@ -43,6 +43,34 @@ describe('LoginPage 登录页测试', () => {
       expect(recruiterButton).toHaveAttribute('aria-selected', 'true');
       const jobseekerButton = screen.getByRole('tab', { name: '求职者' });
       expect(jobseekerButton).toHaveAttribute('aria-selected', 'false');
+    });
+
+    test('激活动画指示器会随角色切换移动', async () => {
+      const user = userEvent.setup();
+      render(<LoginPage />);
+
+      const jobseekerButton = screen.getByRole('tab', { name: '求职者' });
+      expect(within(jobseekerButton).getByTestId('role-switch-indicator')).toBeInTheDocument();
+
+      const recruiterButton = screen.getByRole('tab', { name: '招聘者' });
+      await user.click(recruiterButton);
+
+      expect(within(recruiterButton).getByTestId('role-switch-indicator')).toBeInTheDocument();
+    });
+
+    test('角色切换时表单动画容器标识当前角色', async () => {
+      const user = userEvent.setup();
+      render(<LoginPage />);
+
+      const rolePanel = screen.getByTestId('login-role-panel');
+      expect(rolePanel).toHaveAttribute('data-role', 'jobseeker');
+
+      const recruiterButton = screen.getByRole('tab', { name: '招聘者' });
+      await user.click(recruiterButton);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('login-role-panel')).toHaveAttribute('data-role', 'recruiter');
+      });
     });
 
     test('切换角色后用户名自动填充为招聘者账号', async () => {

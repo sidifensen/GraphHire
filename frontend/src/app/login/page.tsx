@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { authApi } from '@/lib/api/auth';
 import { enterpriseAuthStore, userAuthStore } from '@/lib/stores/auth-store';
 import type { LoginRequest } from '@/lib/types';
@@ -47,6 +48,7 @@ const DEV_ACCOUNTS = {
 
 export default function LoginPage() {
   const router = useRouter();
+  const shouldReduceMotion = useReducedMotion();
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
   const [activeRole, setActiveRole] = useState<'jobseeker' | 'recruiter'>('jobseeker');
@@ -148,104 +150,124 @@ export default function LoginPage() {
 
               {/* Role Switcher (Segmented Control) */}
               <div className="flex bg-[#eef4ff] p-1 rounded-lg w-fit mb-8" role="tablist">
-                <button
-                  aria-selected={activeRole === 'jobseeker'}
-                  onClick={() => handleRoleSwitch('jobseeker')}
-                  className={`shadow-sm rounded text-sm transition-all py-2 px-8 ${
-                    activeRole === 'jobseeker'
-                      ? 'bg-white shadow-sm text-[#003da6] font-bold'
-                      : 'text-[#394851] hover:text-[#0e1c2c] font-medium'
-                  }`}
-                  role="tab"
-                >
-                  求职者
-                </button>
-                <button
-                  aria-selected={activeRole === 'recruiter'}
-                  onClick={() => handleRoleSwitch('recruiter')}
-                  className={`rounded text-sm transition-colors py-2 px-8 ${
-                    activeRole === 'recruiter'
-                      ? 'bg-white shadow-sm text-[#003da6] font-bold'
-                      : 'text-[#394851] hover:text-[#0e1c2c] font-medium'
-                  }`}
-                  role="tab"
-                >
-                  招聘者
-                </button>
+                {(['jobseeker', 'recruiter'] as const).map((role) => {
+                  const isActive = activeRole === role;
+                  const label = role === 'jobseeker' ? '求职者' : '招聘者';
+
+                  return (
+                    <button
+                      key={role}
+                      aria-selected={isActive}
+                      onClick={() => handleRoleSwitch(role)}
+                      className={`relative rounded text-sm py-2 px-8 transition-colors ${
+                        isActive
+                          ? 'text-[#003da6] font-bold'
+                          : 'text-[#394851] hover:text-[#0e1c2c] font-medium'
+                      }`}
+                      role="tab"
+                    >
+                      {isActive && (
+                        <motion.span
+                          data-testid="role-switch-indicator"
+                          layoutId="login-role-indicator"
+                          className="absolute inset-0 rounded bg-white shadow-sm"
+                          transition={
+                            shouldReduceMotion
+                              ? { duration: 0 }
+                              : { type: 'spring', stiffness: 450, damping: 36 }
+                          }
+                        />
+                      )}
+                      <span className="relative z-10">{label}</span>
+                    </button>
+                  );
+                })}
               </div>
 
-              <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
-                {/* Username/Email */}
-                <div className="flex flex-col gap-2">
-                  <label className="text-sm font-medium text-[#0e1c2c]">用户名/邮箱</label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <PersonIcon />
-                    </div>
-                    <input
-                      className="w-full bg-[#eef4ff] border-b-2 border-transparent focus:border-[#003da6] focus:bg-white focus:ring-0 pl-12 pr-4 py-3 rounded text-sm text-[#0e1c2c] placeholder:text-[#737686] transition-all outline-none"
-                      placeholder="请输入用户名/邮箱"
-                      type="text"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
-
-                {/* Password */}
-                <div className="flex flex-col gap-2">
-                  <label className="text-sm font-medium text-[#0e1c2c]">密码</label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <LockIcon />
-                    </div>
-                    <input
-                      className="w-full bg-[#eef4ff] border-b-2 border-transparent focus:border-[#003da6] focus:bg-white focus:ring-0 pl-12 pr-12 py-3 rounded text-sm text-[#0e1c2c] placeholder:text-[#737686] transition-all outline-none"
-                      placeholder="请输入密码"
-                      type={showPassword ? 'text' : 'password'}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-[#434654] hover:text-[#003da6] transition-colors"
-                    >
-                      <VisibilityOffIcon />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Utilities Row */}
-                <div className="flex items-center justify-between mt-2">
-                  <div className="flex items-center">
-                    <input
-                      className="w-4 h-4 rounded text-[#003da6] border-[#c3c6d7] bg-[#eef4ff] focus:ring-[#003da6] focus:ring-offset-0 cursor-pointer"
-                      id="remember"
-                      type="checkbox"
-                      checked={remember}
-                      onChange={(e) => setRemember(e.target.checked)}
-                    />
-                    <label className="ml-2 text-xs text-[#434654] cursor-pointer" htmlFor="remember">
-                      记住账号
-                    </label>
-                  </div>
-                  <Link className="text-xs text-[#003da6] hover:text-[#0052d9] transition-colors" href="#">
-                    忘记密码？
-                  </Link>
-                </div>
-
-                {/* Submit Button */}
-                <button
-                  className="w-full py-3.5 mt-4 rounded-lg bg-gradient-to-br from-[#003da6] to-[#0052d9] text-white font-semibold text-sm hover:opacity-90 transition-opacity shadow-sm flex items-center justify-center gap-2 disabled:opacity-50"
-                  type="submit"
-                  disabled={loading}
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={activeRole}
+                  data-testid="login-role-panel"
+                  data-role={activeRole}
+                  initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 6 }}
+                  animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+                  exit={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: -4 }}
+                  transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.2, ease: 'easeOut' }}
                 >
-                  {loading ? '登录中...' : <><span>登录</span><ArrowForwardIcon /></>}
-                </button>
-              </form>
+                  <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+                    {/* Username/Email */}
+                    <div className="flex flex-col gap-2">
+                      <label className="text-sm font-medium text-[#0e1c2c]">用户名/邮箱</label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                          <PersonIcon />
+                        </div>
+                        <input
+                          className="w-full bg-[#eef4ff] border-b-2 border-transparent focus:border-[#003da6] focus:bg-white focus:ring-0 pl-12 pr-4 py-3 rounded text-sm text-[#0e1c2c] placeholder:text-[#737686] transition-all outline-none"
+                          placeholder="请输入用户名/邮箱"
+                          type="text"
+                          value={username}
+                          onChange={(e) => setUsername(e.target.value)}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    {/* Password */}
+                    <div className="flex flex-col gap-2">
+                      <label className="text-sm font-medium text-[#0e1c2c]">密码</label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                          <LockIcon />
+                        </div>
+                        <input
+                          className="w-full bg-[#eef4ff] border-b-2 border-transparent focus:border-[#003da6] focus:bg-white focus:ring-0 pl-12 pr-12 py-3 rounded text-sm text-[#0e1c2c] placeholder:text-[#737686] transition-all outline-none"
+                          placeholder="请输入密码"
+                          type={showPassword ? 'text' : 'password'}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute inset-y-0 right-0 pr-4 flex items-center text-[#434654] hover:text-[#003da6] transition-colors"
+                        >
+                          <VisibilityOffIcon />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Utilities Row */}
+                    <div className="flex items-center justify-between mt-2">
+                      <div className="flex items-center">
+                        <input
+                          className="w-4 h-4 rounded text-[#003da6] border-[#c3c6d7] bg-[#eef4ff] focus:ring-[#003da6] focus:ring-offset-0 cursor-pointer"
+                          id="remember"
+                          type="checkbox"
+                          checked={remember}
+                          onChange={(e) => setRemember(e.target.checked)}
+                        />
+                        <label className="ml-2 text-xs text-[#434654] cursor-pointer" htmlFor="remember">
+                          记住账号
+                        </label>
+                      </div>
+                      <Link className="text-xs text-[#003da6] hover:text-[#0052d9] transition-colors" href="#">
+                        忘记密码？
+                      </Link>
+                    </div>
+
+                    {/* Submit Button */}
+                    <button
+                      className="w-full py-3.5 mt-4 rounded-lg bg-gradient-to-br from-[#003da6] to-[#0052d9] text-white font-semibold text-sm hover:opacity-90 transition-opacity shadow-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                      type="submit"
+                      disabled={loading}
+                    >
+                      {loading ? '登录中...' : <><span>登录</span><ArrowForwardIcon /></>}
+                    </button>
+                  </form>
+                </motion.div>
+              </AnimatePresence>
 
               <div className="mt-8 text-center">
                 <p className="text-sm text-[#394851]">
