@@ -1,7 +1,7 @@
 ﻿import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { forwardRef, useImperativeHandle } from 'react';
-import SkillGraphPage from '@/app/(user)/skill-graph/page';
+import SkillGraphPage, { buildSkillGraphData } from '@/app/(user)/skill-graph/page';
 
 const getGraph = vi.fn();
 const authStoreMock = vi.fn();
@@ -84,5 +84,15 @@ describe('SkillGraphPage', () => {
 
     expect(screen.getByText(/当前聚焦节点：/)).toBeDefined();
     expect(screen.getByText('Java')).toBeDefined();
+  });
+
+  it('creates a wide first-screen layout instead of clustering at center', () => {
+    const skills = Array.from({ length: 24 }, (_, index) => `Skill-${index + 1}`);
+    const graphData = buildSkillGraphData(skills, 'alice', { width: 920, height: 620 });
+    const skillNodes = graphData.nodes.filter((node) => node.kind === 'skill');
+    const distances = skillNodes.map((node) => Math.hypot(node.x ?? 0, node.y ?? 0));
+
+    expect(Math.min(...distances)).toBeGreaterThan(120);
+    expect(Math.max(...distances)).toBeGreaterThan(250);
   });
 });

@@ -13,6 +13,8 @@ type GraphNode = {
   val: number;
   x?: number;
   y?: number;
+  fx?: number;
+  fy?: number;
 };
 
 type GraphLink = {
@@ -20,6 +22,54 @@ type GraphLink = {
   target: string;
   strength: number;
 };
+
+const TWO_PI = Math.PI * 2;
+const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
+
+export function buildSkillGraphData(
+  skills: string[],
+  username: string | undefined,
+  viewport: { width: number; height: number },
+): { nodes: GraphNode[]; links: GraphLink[] } {
+  const userNode: GraphNode = {
+    id: 'user-center',
+    name: username ?? '当前用户',
+    kind: 'user',
+    val: 26,
+    x: 0,
+    y: 0,
+  };
+
+  const minSide = Math.min(viewport.width, viewport.height);
+  const outerRadius = Math.max(340, Math.floor(minSide * 0.56));
+  const innerRadius = Math.max(180, Math.floor(outerRadius * 0.56));
+
+  const skillNodes: GraphNode[] = skills.map((skill, index) => {
+    const progress = (index + 1) / (skills.length + 1);
+    const distance = innerRadius + (outerRadius - innerRadius) * Math.sqrt(progress);
+    const spiralAngle = index * GOLDEN_ANGLE;
+    const angle = (spiralAngle % TWO_PI) + (index % 3) * 0.06;
+
+    return {
+      id: `skill-${index}`,
+      name: skill,
+      kind: 'skill',
+      val: Math.max(10, 16 - Math.min(index, 6)),
+      x: Math.cos(angle) * distance,
+      y: Math.sin(angle) * distance,
+      fx: Math.cos(angle) * distance,
+      fy: Math.sin(angle) * distance,
+    };
+  });
+
+  const links: GraphLink[] = skillNodes.map((node) => ({
+    source: userNode.id,
+    target: node.id,
+    strength: 1,
+  }));
+
+  return { nodes: [userNode, ...skillNodes], links };
+}
 
 export default function SkillGraphPage() {
   const user = authStore((state) => state.user);
@@ -61,8 +111,8 @@ export default function SkillGraphPage() {
         return;
       }
       setViewport({
-        width: Math.max(320, Math.floor(entry.contentRect.width)),
-        height: Math.max(420, Math.floor(entry.contentRect.height)),
+        width: Math.max(420, Math.floor(entry.contentRect.width)),
+        height: Math.max(560, Math.floor(entry.contentRect.height)),
       });
     });
 
@@ -70,39 +120,7 @@ export default function SkillGraphPage() {
     return () => observer.disconnect();
   }, []);
 
-  const graphData = useMemo(() => {
-    const userNode: GraphNode = {
-      id: 'user-center',
-      name: user?.username ?? '当前用户',
-      kind: 'user',
-      val: 26,
-      x: 0,
-      y: 0,
-    };
-    const skillNodes: GraphNode[] = skills.map((skill, index) => {
-      const layer = Math.floor(index / 8);
-      const posInLayer = index % 8;
-      const numInLayer = Math.min(8, skills.length - layer * 8);
-      const angleOffset = layer * 0.3;
-      const angle = angleOffset + (2 * Math.PI * posInLayer) / numInLayer;
-      const distance = 100 + layer * 100 + Math.random() * 40;
-      return {
-        id: `skill-${index}`,
-        name: skill,
-        kind: 'skill' as const,
-        val: Math.max(10, 16 - Math.min(index, 6)),
-        x: Math.cos(angle) * distance,
-        y: Math.sin(angle) * distance,
-      };
-    });
-    const links: GraphLink[] = skillNodes.map((node) => ({
-      source: userNode.id,
-      target: node.id,
-      strength: 1,
-    }));
-
-    return { nodes: [userNode, ...skillNodes], links };
-  }, [skills]);
+  const graphData = useMemo(() => buildSkillGraphData(skills, user?.username, viewport), [skills, user?.username, viewport]);
 
   const ForceGraph2D = useMemo(
     () =>
@@ -148,8 +166,8 @@ export default function SkillGraphPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-[75%_25%] gap-6">
-          <section className="bg-[#08111f] rounded-[2rem] p-4 md:p-6 relative overflow-hidden flex flex-col min-h-[700px] shadow-[0_20px_48px_-10px_rgba(8,17,31,0.55)]">
+        <div className="grid grid-cols-1 xl:grid-cols-[79%_21%] gap-6">
+          <section className="bg-[#08111f] rounded-[2rem] p-4 md:p-6 relative overflow-hidden flex flex-col min-h-[800px] shadow-[0_20px_48px_-10px_rgba(8,17,31,0.55)]">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(44,155,255,0.24),transparent_45%),radial-gradient(circle_at_70%_70%,rgba(89,235,198,0.18),transparent_46%)] pointer-events-none" />
 
             <div className="flex justify-between items-center mb-3 z-10 relative text-white">
@@ -180,9 +198,9 @@ export default function SkillGraphPage() {
                   width={viewport.width}
                   height={viewport.height}
                   enableNodeDrag
-                  cooldownTicks={300}
-                  d3AlphaDecay={0.01}
-                  d3VelocityDecay={0.4}
+                  cooldownTicks={0}
+                  d3AlphaDecay={0.028}
+                  d3VelocityDecay={0.52}
                   linkDirectionalParticles={2}
                   linkDirectionalParticleSpeed={() => 0.0045}
                   nodeRelSize={6}
