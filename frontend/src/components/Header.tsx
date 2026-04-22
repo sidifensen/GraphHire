@@ -49,7 +49,7 @@ export default function Header({ forceShowNotifications }: HeaderProps = {}) {
 
   return (
     <header className="bg-surface dark:bg-slate-950 backdrop-blur-xl top-0 z-50 sticky shadow-[inset_0_-1px_0_0_rgba(0,0,0,0.05)] shadow-sm dark:shadow-none">
-      <div className="flex items-center justify-between px-8 py-2 max-w-[1440px] mx-auto w-full">
+      <div className="flex items-center justify-between px-8 py-2 w-full">
         <div className="flex items-center gap-12">
           <Link href="/" className="text-lg font-black text-[#003DA6] font-headline antialiased tracking-tight">
             GraphHire 图谱智聘

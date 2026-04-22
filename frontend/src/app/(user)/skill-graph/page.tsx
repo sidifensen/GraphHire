@@ -160,10 +160,6 @@ export default function SkillGraphPage() {
             <h1 className="font-headline text-4xl font-extrabold text-on-surface mb-1 tracking-tight">认知导视体系</h1>
             <p className="text-on-surface-variant text-base">AI 深度解析您的真实技能网络，发现潜在关联与价值</p>
           </div>
-          <div className="flex items-center gap-4 bg-surface-container-low px-4 py-2 rounded-xl">
-            <span className="text-sm font-medium text-on-surface-variant">当前账号</span>
-            <span className="text-xs text-primary font-bold ml-2">{user?.username ?? '未登录'}</span>
-          </div>
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-[79%_21%] gap-6">
