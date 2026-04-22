@@ -13,6 +13,7 @@ public class ResumeMQProducer {
 
     private static final String TOPIC_RESUME_UPLOADED = "resume-uploaded";
     private static final String TOPIC_RESUME_PARSE = "resume-parse";
+    private static final String TOPIC_RESUME_DEFAULT_CHANGED = "resume-default-changed";
 
     @Autowired
     private RocketMQTemplate rocketMQTemplate;
@@ -26,6 +27,10 @@ public class ResumeMQProducer {
         // 消息格式："resumeId,parseTaskId"（逗号分隔）
         String message = resumeId + "," + parseTaskId;
         rocketMQTemplate.convertAndSend(TOPIC_RESUME_PARSE, message);
+    }
+
+    public void sendResumeDefaultChangedMessage(Long resumeId) {
+        rocketMQTemplate.convertAndSend(TOPIC_RESUME_DEFAULT_CHANGED, String.valueOf(resumeId));
     }
 
     public static class ResumeParseMessage {

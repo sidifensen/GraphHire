@@ -3,6 +3,7 @@ package com.graphhire.resume.application.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
+import com.graphhire.common.vo.Exceptions;
 import com.graphhire.common.vo.PageResult;
 import com.graphhire.resume.application.command.UploadResumeCmd;
 import com.graphhire.resume.application.service.dto.ResumePreviewFile;
@@ -45,6 +46,11 @@ public class ResumeAppService {
 
     @Transactional
     public Resume uploadResume(UploadResumeCmd cmd) throws IOException {
+        List<Resume> existingResumes = resumeRepository.findByUserId(cmd.getUserId());
+        if (existingResumes.size() >= 3) {
+            throw Exceptions.BusinessException.of(400, "最多上传3份简历，请先删除旧简历");
+        }
+
         // 步骤1：上传文件到RustFS
         String filePath = rustFSClient.upload(cmd.getFileBytes(), cmd.getFileName());
         // 步骤2：创建简历聚合根
@@ -179,6 +185,9 @@ public class ResumeAppService {
         if (!resume.getUserId().equals(userId)) {
             throw new RuntimeException("无权设置此简历");
         }
+        if (resume.getStatus() != ParseStatus.SUCCESS) {
+            throw Exceptions.BusinessException.of(400, "请先解析成功后再设为默认");
+        }
         // 取消该用户的其他默认简历
         List<Resume> userResumes = getResumesByUserId(userId);
         for (Resume r : userResumes) {
@@ -190,6 +199,9 @@ public class ResumeAppService {
         // 将此简历设为默认
         resume.setIsDefault(true);
         resumeRepository.save(resume);
+        if (mqProducer != null) {
+            mqProducer.sendResumeDefaultChangedMessage(resumeId);
+        }
     }
 
     /**

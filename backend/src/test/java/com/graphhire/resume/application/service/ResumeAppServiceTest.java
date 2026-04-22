@@ -1,16 +1,21 @@
 package com.graphhire.resume.application.service;
 
+import com.graphhire.common.vo.Exceptions;
+import com.graphhire.resume.application.command.UploadResumeCmd;
 import com.graphhire.resume.application.service.dto.ResumePreviewFile;
 import com.graphhire.resume.domain.model.Resume;
 import com.graphhire.resume.domain.repository.ParseTaskRepository;
 import com.graphhire.resume.domain.repository.ResumeRepository;
+import com.graphhire.resume.domain.vo.ParseStatus;
 import com.graphhire.resume.infrastructure.file.RustFSClient;
+import com.graphhire.resume.infrastructure.mq.ResumeMQProducer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -20,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,6 +40,9 @@ class ResumeAppServiceTest {
     @Mock
     private RustFSClient rustFSClient;
 
+    @Mock
+    private ResumeMQProducer mqProducer;
+
     private ResumeAppService resumeAppService;
 
     @BeforeEach
@@ -42,6 +51,57 @@ class ResumeAppServiceTest {
         setField(resumeAppService, "resumeRepository", resumeRepository);
         setField(resumeAppService, "parseTaskRepository", parseTaskRepository);
         setField(resumeAppService, "rustFSClient", rustFSClient);
+        setField(resumeAppService, "mqProducer", mqProducer);
+    }
+
+    @Test
+    @DisplayName("uploadResume 用户已有3份简历时应拒绝上传")
+    void uploadResume_shouldRejectWhenUserAlreadyHasThreeResumes() throws Exception {
+        when(resumeRepository.findByUserId(7L)).thenReturn(List.of(new Resume(), new Resume(), new Resume()));
+        UploadResumeCmd cmd = new UploadResumeCmd(new MockMultipartFile(
+            "file", "test.pdf", "application/pdf", "content".getBytes()
+        ));
+        cmd.setUserId(7L);
+
+        Exceptions.BusinessException ex = assertThrows(
+            Exceptions.BusinessException.class,
+            () -> resumeAppService.uploadResume(cmd)
+        );
+
+        assertEquals("最多上传3份简历，请先删除旧简历", ex.getMessage());
+        verifyNoInteractions(rustFSClient);
+    }
+
+    @Test
+    @DisplayName("setDefaultResume 非SUCCESS状态应拒绝")
+    void setDefaultResume_shouldRejectWhenStatusNotSuccess() {
+        Resume resume = buildResume(20L, 9L, "resume.pdf", "s3://r.pdf", "pdf");
+        resume.setStatus(ParseStatus.FAILED);
+        when(resumeRepository.findById(20L)).thenReturn(Optional.of(resume));
+
+        Exceptions.BusinessException ex = assertThrows(
+            Exceptions.BusinessException.class,
+            () -> resumeAppService.setDefaultResume(20L, 9L)
+        );
+
+        assertEquals("请先解析成功后再设为默认", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("setDefaultResume SUCCESS状态设默认后应发送默认变更消息")
+    void setDefaultResume_shouldSendDefaultChangedMessageWhenSuccess() {
+        Resume resume = buildResume(30L, 9L, "resume.pdf", "s3://r.pdf", "pdf");
+        resume.setStatus(ParseStatus.SUCCESS);
+        resume.setIsDefault(false);
+        Resume oldDefault = buildResume(31L, 9L, "old.pdf", "s3://old.pdf", "pdf");
+        oldDefault.setStatus(ParseStatus.SUCCESS);
+        oldDefault.setIsDefault(true);
+        when(resumeRepository.findById(30L)).thenReturn(Optional.of(resume));
+        when(resumeRepository.findByUserId(9L)).thenReturn(List.of(oldDefault, resume));
+
+        resumeAppService.setDefaultResume(30L, 9L);
+
+        verify(mqProducer).sendResumeDefaultChangedMessage(30L);
     }
 
     @Test
