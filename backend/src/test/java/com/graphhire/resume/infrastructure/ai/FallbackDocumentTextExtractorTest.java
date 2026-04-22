@@ -6,6 +6,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -85,5 +86,21 @@ class FallbackDocumentTextExtractorTest {
         String result = extractor.extractText("/tmp/resume.pdf");
 
         assertEquals("短", result);
+    }
+
+    @Test
+    void shouldThrowDetailedErrorWhenTikaEmptyAndOcrFails() {
+        OcrProperties properties = new OcrProperties();
+        properties.setEnabled(true);
+        properties.setFallbackMinTextLength(10);
+        when(fileContentLoader.load("/tmp/resume.pdf")).thenReturn(new byte[]{1, 2});
+        when(tikaTextExtractor.extract(any(), any())).thenReturn("   ");
+        when(ocrService.recognize(any())).thenReturn(OcrResult.failure("EMPTY_RESULT", "OCR returned empty text", "aliyun"));
+
+        FallbackDocumentTextExtractor extractor = new FallbackDocumentTextExtractor(fileContentLoader, tikaTextExtractor, ocrService, properties);
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> extractor.extractText("/tmp/resume.pdf"));
+
+        assertEquals("OCR fallback failed: code=EMPTY_RESULT, message=OCR returned empty text", ex.getMessage());
     }
 }

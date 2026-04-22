@@ -1,18 +1,11 @@
 package com.graphhire.resume.infrastructure.ai;
 
-import cn.hutool.http.HttpRequest;
-import cn.hutool.http.HttpResponse;
-import cn.hutool.http.HttpUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AliyunOcrProviderTest {
@@ -57,5 +50,25 @@ class AliyunOcrProviderTest {
 
         assertFalse(result.isSuccess());
         assertEquals("CREDENTIALS_MISSING", result.getErrorCode());
+    }
+
+    @Test
+    void shouldUseGeneralAsDefaultRecognizeType() {
+        OcrProperties properties = new OcrProperties();
+        properties.getAliyun().setType(null);
+
+        AliyunOcrProvider provider = new AliyunOcrProvider(properties);
+
+        assertEquals("General", provider.resolveRecognizeType());
+    }
+
+    @Test
+    void shouldUseAdvancedWhenConfiguredRecognizeTypeIsAdvanced() {
+        OcrProperties properties = new OcrProperties();
+        properties.getAliyun().setType("Advanced");
+
+        AliyunOcrProvider provider = new AliyunOcrProvider(properties);
+
+        assertEquals("Advanced", provider.resolveRecognizeType());
     }
 }

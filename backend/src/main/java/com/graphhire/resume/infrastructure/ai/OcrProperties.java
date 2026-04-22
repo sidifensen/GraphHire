@@ -44,6 +44,7 @@ public class OcrProperties {
         private String accessKeyId;
         private String accessKeySecret;
         private String endpoint = "ocr-api.cn-hangzhou.aliyuncs.com";
+        private String type = "General";
 
         public String getAccessKeyId() {
             return accessKeyId;
@@ -67,6 +68,14 @@ public class OcrProperties {
 
         public void setEndpoint(String endpoint) {
             this.endpoint = endpoint;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.graphhire.resume.infrastructure.ai;
 
-import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +45,13 @@ public class FallbackDocumentTextExtractor implements DocumentTextExtractor {
                     return tikaText + "\n" + ocrText;
                 }
             } else {
-                log.warn("OCR fallback failed: {}", ocrResult.getErrorCode());
+                log.warn("OCR fallback failed: code={}, message={}", ocrResult.getErrorCode(), ocrResult.getErrorMessage());
+                if (StrUtil.isBlank(tikaText)) {
+                    throw new RuntimeException(StrUtil.format(
+                            "OCR fallback failed: code={}, message={}",
+                            StrUtil.blankToDefault(ocrResult.getErrorCode(), "UNKNOWN"),
+                            StrUtil.blankToDefault(ocrResult.getErrorMessage(), "no detail")));
+                }
             }
         }
         return tikaText;

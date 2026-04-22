@@ -14,7 +14,7 @@ import java.io.ByteArrayInputStream;
 public class AliyunOcrProvider implements OcrProvider {
 
     private static final String PROVIDER_NAME = "aliyun";
-    private static final String ENDPOINT = "ocr-api.cn-hangzhou.aliyuncs.com";
+    private static final String DEFAULT_ENDPOINT = "ocr-api.cn-hangzhou.aliyuncs.com";
 
     private final OcrProperties ocrProperties;
 
@@ -43,14 +43,14 @@ public class AliyunOcrProvider implements OcrProvider {
             Config config = new Config()
                     .setAccessKeyId(accessKeyId)
                     .setAccessKeySecret(accessKeySecret)
-                    .setEndpoint(ENDPOINT)
+                    .setEndpoint(StrUtil.blankToDefault(ocrProperties.getAliyun().getEndpoint(), DEFAULT_ENDPOINT))
                     .setRegionId("cn-hangzhou");
 
             Client client = new Client(config);
 
             RecognizeAllTextRequest req = new RecognizeAllTextRequest()
                     .setBody(new ByteArrayInputStream(request.getFileBytes()))
-                    .setType("Advanced");
+                    .setType(resolveRecognizeType());
 
             RecognizeAllTextResponse response = client.recognizeAllText(req);
 
@@ -66,5 +66,13 @@ public class AliyunOcrProvider implements OcrProvider {
         } catch (Exception e) {
             return OcrResult.failure("NETWORK_ERROR", "Network error: " + e.getMessage(), PROVIDER_NAME);
         }
+    }
+
+    String resolveRecognizeType() {
+        String configured = StrUtil.blankToDefault(ocrProperties.getAliyun().getType(), "General");
+        if (StrUtil.equalsIgnoreCase(configured, "Advanced")) {
+            return "Advanced";
+        }
+        return "General";
     }
 }
