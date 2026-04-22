@@ -81,7 +81,7 @@ export default function Header({ forceShowNotifications }: HeaderProps = {}) {
               <button className="hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-all duration-300 p-2 rounded-full active:scale-95 opacity-80 transition-transform">
                 <span className="material-symbols-outlined">chat_bubble</span>
               </button>
-              <div className="flex items-center gap-4">
+              <div className="relative flex items-center gap-4">
               <button
                 onClick={() => setShowDropdown(!showDropdown)}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-high hover:bg-surface-container-low transition-colors cursor-pointer"
@@ -101,7 +101,7 @@ export default function Header({ forceShowNotifications }: HeaderProps = {}) {
                 </div>
               </button>
               {showDropdown && (
-                <div className="absolute right-8 top-full mt-2 w-56 bg-surface-container-lowest rounded-xl shadow-lg border border-surface-variant overflow-hidden z-50">
+                <div className="absolute right-0 top-full mt-2 w-56 bg-surface-container-lowest rounded-xl shadow-lg border border-surface-variant overflow-hidden z-50">
                   <div className="px-4 py-3 border-b border-surface-variant">
                     <p className="text-sm font-medium text-on-surface truncate">{user?.username}</p>
                     <p className="text-xs text-tertiary mt-0.5">{user?.type === 'PERSON' ? '个人用户' : '企业用户'}</p>

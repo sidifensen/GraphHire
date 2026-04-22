@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import Header from '@/components/Header';
 
 // Use vi.hoisted to define mock before hoisting
@@ -134,5 +134,27 @@ describe('Header', () => {
     // Login link has an icon
     const icons = document.querySelectorAll('.material-symbols-outlined');
     expect(icons.length).toBeGreaterThanOrEqual(0);
+  });
+
+  it('anchors user dropdown to avatar trigger container', () => {
+    mockState.isAuthenticated = true;
+    mockState.user = {
+      id: 1,
+      username: 'u@test.com',
+      type: 'PERSON',
+      avatarUrl: 'http://localhost:7777/person/avatar/public/1',
+    } as any;
+
+    render(<MockHeader />);
+    const trigger = screen.getByText('u@test.com').closest('button');
+    expect(trigger).toBeTruthy();
+    fireEvent.click(trigger as HTMLButtonElement);
+
+    const profileAction = screen.getByText('个人空间').closest('button');
+    const dropdown = profileAction?.parentElement as HTMLDivElement | null;
+    expect(dropdown).toBeTruthy();
+    expect(dropdown?.className).toContain('right-0');
+    expect(dropdown?.className).toContain('top-full');
+    expect(dropdown?.className).not.toContain('right-8');
   });
 });
