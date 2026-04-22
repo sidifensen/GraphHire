@@ -155,7 +155,7 @@ export default function UploadPage() {
   if (status === 'idle') {
     return (
       <div className="bg-surface text-on-surface min-h-screen flex flex-col antialiased">
-        <main className="flex-1 flex flex-col items-center justify-center px-6 py-8">
+        <main className="flex-1 flex flex-col items-center justify-start px-6 pt-4 pb-8">
           <div className="w-full max-w-6xl mb-6">
             <a href="/resume/manage" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-primary font-medium bg-surface-container-low hover:bg-surface-container-high transition-all active:scale-95 group">
               <span className="material-symbols-outlined text-[20px] transition-transform group-hover:-translate-x-1">arrow_back</span>
@@ -200,7 +200,7 @@ export default function UploadPage() {
             </div>
 
             {/* Right column - tips */}
-            <div className="col-span-1 lg:col-span-5 flex flex-col justify-center">
+            <div className="col-span-1 lg:col-span-5 flex flex-col justify-start">
               <div className="bg-surface-container-lowest rounded-[1.5rem] shadow-[0_12px_32px_-4px_rgba(14,28,44,0.06)] p-8">
                 <h3 className="text-lg font-medium text-on-surface mb-6 flex items-center gap-2">
                   <span className="material-symbols-outlined text-primary">tips_and_updates</span>
@@ -236,7 +236,7 @@ export default function UploadPage() {
   if (status === 'uploading' || status === 'processing') {
     return (
       <div className="bg-surface text-on-surface min-h-screen flex flex-col antialiased">
-        <main className="flex-1 flex flex-col items-center justify-center px-6 py-8">
+        <main className="flex-1 flex flex-col items-center justify-start px-6 pt-4 pb-8">
           <div className="w-full max-w-6xl mb-6">
             <a href="/resume/manage" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-primary font-medium bg-surface-container-low hover:bg-surface-container-high transition-all active:scale-95 group">
               <span className="material-symbols-outlined text-[20px] transition-transform group-hover:-translate-x-1">arrow_back</span>
@@ -337,7 +337,7 @@ export default function UploadPage() {
             </div>
 
             {/* Right column - processing preview */}
-            <div className="col-span-1 lg:col-span-5 flex flex-col justify-center">
+            <div className="col-span-1 lg:col-span-5 flex flex-col justify-start">
               <div className="bg-surface-container-lowest rounded-[1.5rem] shadow-[0_12px_32px_-4px_rgba(14,28,44,0.06)] overflow-hidden relative h-full flex flex-col">
                 <div className="h-24 bg-surface-container-low relative overflow-hidden flex items-center justify-center">
                   <span className="material-symbols-outlined text-primary/10 text-[8rem] absolute -right-4 -bottom-4">hub</span>
@@ -389,7 +389,7 @@ export default function UploadPage() {
   if (status === 'failed') {
     return (
       <div className="bg-surface text-on-surface min-h-screen flex flex-col antialiased">
-        <main className="flex-1 flex flex-col items-center justify-center px-6 py-8">
+        <main className="flex-1 flex flex-col items-center justify-start px-6 pt-4 pb-8">
           <div className="w-full max-w-6xl mb-6">
             <a href="/resume/manage" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-primary font-medium bg-surface-container-low hover:bg-surface-container-high transition-all active:scale-95 group">
               <span className="material-symbols-outlined text-[20px] transition-transform group-hover:-translate-x-1">arrow_back</span>
@@ -430,7 +430,7 @@ export default function UploadPage() {
               </div>
             </div>
 
-            <div className="col-span-1 lg:col-span-5 flex flex-col justify-center">
+            <div className="col-span-1 lg:col-span-5 flex flex-col justify-start">
               <div className="bg-surface-container-lowest rounded-[1.5rem] shadow-[0_12px_32px_-4px_rgba(14,28,44,0.06)] p-8">
                 <h3 className="text-lg font-medium text-on-surface mb-4 flex items-center gap-2">
                   <span className="material-symbols-outlined text-error">info</span>
@@ -452,7 +452,7 @@ export default function UploadPage() {
   // Completed state
   return (
     <div className="bg-surface text-on-surface min-h-screen flex flex-col antialiased">
-      <main className="flex-1 flex flex-col items-center justify-center px-6 py-8">
+      <main className="flex-1 flex flex-col items-center justify-start px-6 pt-4 pb-8">
         <div className="w-full max-w-6xl mb-6">
           <a href="/resume/manage" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-primary font-medium bg-surface-container-low hover:bg-surface-container-high transition-all active:scale-95 group">
             <span className="material-symbols-outlined text-[20px] transition-transform group-hover:-translate-x-1">arrow_back</span>
@@ -540,7 +540,7 @@ export default function UploadPage() {
           </div>
 
           {/* Right Column: Extracted Summary Preview */}
-          <div className="col-span-1 lg:col-span-5 flex flex-col justify-center">
+          <div className="col-span-1 lg:col-span-5 flex flex-col justify-start">
             <div className="bg-surface-container-lowest rounded-[1.5rem] shadow-[0_12px_32px_-4px_rgba(14,28,44,0.06)] overflow-hidden relative h-full flex flex-col">
               <div className="h-24 bg-surface-container-low relative overflow-hidden flex items-center justify-center">
                 <span className="material-symbols-outlined text-primary/10 text-[8rem] absolute -right-4 -bottom-4">hub</span>

@@ -1,8 +1,11 @@
 package com.graphhire.resume.application.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.StrUtil;
 import com.graphhire.common.vo.PageResult;
 import com.graphhire.resume.application.command.UploadResumeCmd;
+import com.graphhire.resume.application.service.dto.ResumePreviewFile;
 import com.graphhire.resume.domain.model.ParseTask;
 import com.graphhire.resume.domain.model.Resume;
 import com.graphhire.resume.domain.repository.ParseTaskRepository;
@@ -286,5 +289,35 @@ public class ResumeAppService {
                 response.setStep("未知状态");
         }
         return response;
+    }
+
+    /**
+     * 预览简历文件
+     * 【功能说明】校验当前用户权限后，从 RustFS 下载简历原文件并返回预览数据。
+     */
+    public ResumePreviewFile previewResume(Long resumeId, Long userId) {
+        Resume resume = getResumeById(resumeId);
+        if (!resume.getUserId().equals(userId)) {
+            throw new RuntimeException("无权预览此简历");
+        }
+
+        byte[] content = rustFSClient.download(resume.getFilePath());
+        String contentType = resolveContentType(resume);
+        return new ResumePreviewFile(content, resume.getFileName(), contentType);
+    }
+
+    private String resolveContentType(Resume resume) {
+        if (StrUtil.isNotBlank(resume.getFileType()) && resume.getFileType().contains("/")) {
+            return resume.getFileType();
+        }
+
+        String extension = FileUtil.extName(resume.getFileName()).toLowerCase();
+        return switch (extension) {
+            case "pdf" -> "application/pdf";
+            case "doc" -> "application/msword";
+            case "docx" -> "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+            case "txt" -> "text/plain";
+            default -> "application/octet-stream";
+        };
     }
 }

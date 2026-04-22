@@ -34,6 +34,12 @@ export default function ManagePage() {
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState('');
+  const [previewFileName, setPreviewFileName] = useState('');
+  const [previewType, setPreviewType] = useState('');
+  const [previewUrl, setPreviewUrl] = useState('');
 
   const loadResumes = async () => {
     try {
@@ -61,6 +67,48 @@ export default function ManagePage() {
     await resumeApi.setDefault(id);
     await loadResumes();
   };
+
+  const closePreview = () => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setPreviewOpen(false);
+    setPreviewLoading(false);
+    setPreviewError('');
+    setPreviewFileName('');
+    setPreviewType('');
+    setPreviewUrl('');
+  };
+
+  const handlePreview = async (resume: Resume) => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl('');
+    }
+    setPreviewOpen(true);
+    setPreviewLoading(true);
+    setPreviewError('');
+    setPreviewFileName(resume.fileName);
+
+    try {
+      const previewData = await resumeApi.preview(resume.id);
+      const url = URL.createObjectURL(previewData.blob);
+      setPreviewUrl(url);
+      setPreviewType(previewData.contentType.toLowerCase());
+    } catch (err) {
+      setPreviewError(err instanceof Error ? err.message : '预览加载失败');
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   return (
     <div className="flex flex-col h-full overflow-y-auto relative p-4 md:p-8">
@@ -117,7 +165,7 @@ export default function ManagePage() {
                       设为默认
                     </button>
                   )}
-                  <button className="px-4 py-2 text-sm font-medium text-primary bg-surface-container-low hover:bg-surface-container rounded-lg transition-colors flex items-center gap-1" onClick={() => window.alert('预览能力将在后续联调中补充')}>
+                  <button className="px-4 py-2 text-sm font-medium text-primary bg-surface-container-low hover:bg-surface-container rounded-lg transition-colors flex items-center gap-1" onClick={() => void handlePreview(resume)}>
                     <span className="material-symbols-outlined text-[18px]">visibility</span>
                     预览
                   </button>
@@ -130,6 +178,71 @@ export default function ManagePage() {
           )}
         </div>
       </div>
+
+      {previewOpen && (
+        <div className="fixed inset-0 z-50 bg-black/55 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-5xl h-[85vh] rounded-2xl bg-surface-container-lowest border border-surface-variant shadow-2xl overflow-hidden flex flex-col">
+            <div className="h-14 px-5 border-b border-surface-variant flex items-center justify-between shrink-0">
+              <div className="font-medium text-on-surface truncate pr-4">简历预览 · {previewFileName}</div>
+              <button
+                className="w-9 h-9 rounded-lg hover:bg-surface-container flex items-center justify-center text-tertiary"
+                onClick={closePreview}
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            <div className="flex-1 bg-surface p-4 md:p-6 overflow-auto">
+              {(() => {
+                const isPdfPreview = previewType.includes('pdf') || previewFileName.toLowerCase().endsWith('.pdf');
+                return (
+                  <>
+              {previewLoading && (
+                <div className="h-full flex items-center justify-center text-tertiary">预览加载中...</div>
+              )}
+
+              {!previewLoading && previewError && (
+                <div className="h-full flex items-center justify-center flex-col gap-4">
+                  <p className="text-error">{previewError}</p>
+                  <button
+                    className="px-5 py-2 rounded-lg bg-primary text-white"
+                    onClick={closePreview}
+                  >
+                    关闭
+                  </button>
+                </div>
+              )}
+
+              {!previewLoading && !previewError && previewUrl && isPdfPreview && (
+                <iframe
+                  src={previewUrl}
+                  title="简历预览"
+                  className="w-full h-full rounded-xl border border-surface-variant bg-white"
+                />
+              )}
+
+              {!previewLoading && !previewError && previewUrl && !isPdfPreview && (
+                <div className="h-full flex items-center justify-center flex-col gap-4 text-center">
+                  <p className="text-on-surface">当前文件类型暂不支持内嵌预览</p>
+                  <a
+                    className="px-5 py-2 rounded-lg bg-primary text-white inline-flex items-center gap-2"
+                    href={previewUrl}
+                    download={previewFileName}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">download</span>
+                    下载查看
+                  </a>
+                </div>
+              )}
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -21,6 +21,11 @@ export interface ParseProgress {
   completedAt?: string;
 }
 
+export interface ResumePreviewData {
+  blob: Blob;
+  contentType: string;
+}
+
 export const resumeApi = {
   /**
    * POST /resume/my/upload - 上传简历（带进度回调）
@@ -92,6 +97,19 @@ export const resumeApi = {
   parse: async (id: number): Promise<{ status: string }> => {
     const response = await apiClient.post(`/resume/${id}/parse`);
     return response.data;
+  },
+
+  /**
+   * GET /resume/{id}/preview - 预览简历原文件
+   */
+  preview: async (id: number): Promise<ResumePreviewData> => {
+    const response = await apiClient.get(`/resume/${id}/preview`, {
+      responseType: 'blob',
+    });
+    return {
+      blob: response.data as Blob,
+      contentType: response.headers['content-type'] || 'application/octet-stream',
+    };
   },
 
   /**
