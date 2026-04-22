@@ -7,7 +7,7 @@ spring:
   autoconfigure:
     exclude: []
   config:
-    import: optional:file:.env
+    import: optional:file:.env,optional:file:backend/.env
 
   datasource:
     driver-class-name: org.postgresql.Driver

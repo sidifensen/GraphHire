@@ -5,10 +5,14 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
-import org.springframework.core.env.PropertySource;
 
 import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * 在 Spring Boot 启动早期加载 .env 文件到 Spring Environment
@@ -18,15 +22,33 @@ public class DotEnvPostProcessor implements EnvironmentPostProcessor {
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
-        Dotenv dotenv = Dotenv.configure()
-            .ignoreIfMissing()
-            .load();
-
-        Map<String, Object> properties = new HashMap<>();
-        dotenv.entries().forEach(e -> {
-            properties.put(e.getKey(), e.getValue());
-        });
+        Path workingDir = Paths.get("").toAbsolutePath().normalize();
+        Map<String, Object> properties = loadDotenvProperties(workingDir);
+        if (properties.isEmpty()) {
+            return;
+        }
 
         environment.getPropertySources().addFirst(new MapPropertySource("dotenv", properties));
+    }
+
+    Map<String, Object> loadDotenvProperties(Path workingDir) {
+        Map<String, Object> properties = new HashMap<>();
+        for (Path directory : resolveCandidateDirectories(workingDir)) {
+            Dotenv dotenv = Dotenv.configure()
+                .directory(directory.toString())
+                .filename(".env")
+                .ignoreIfMissing()
+                .load();
+
+            dotenv.entries().forEach(entry -> properties.putIfAbsent(entry.getKey(), entry.getValue()));
+        }
+        return properties;
+    }
+
+    List<Path> resolveCandidateDirectories(Path workingDir) {
+        Set<Path> candidates = new LinkedHashSet<>();
+        candidates.add(workingDir);
+        candidates.add(workingDir.resolve("backend").normalize());
+        return candidates.stream().toList();
     }
 }
