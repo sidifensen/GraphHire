@@ -50,13 +50,32 @@ function getRedirectPathByDomain(domain: AuthDomain): string {
   return '/login';
 }
 
+function handleUnauthorized(domain: AuthDomain = getCurrentDomain()) {
+  getAuthStoreByDomain(domain).getState().logout();
+  if (typeof window !== 'undefined') {
+    window.location.assign(getRedirectPathByDomain(domain));
+  }
+}
+
 // Response interceptor to unwrap Result<T>
 apiClient.interceptors.response.use(
   (response) => {
     // If response has {code, message, data}, unwrap it
     if (response.data && typeof response.data === 'object' && 'code' in response.data && 'data' in response.data) {
-      if (response.data.code !== 200) {
-        return Promise.reject({ response: { data: { message: response.data.message || 'Request failed' } } });
+      const resultCode = Number(response.data.code);
+      if (resultCode !== 200) {
+        if (resultCode === 401) {
+          handleUnauthorized();
+        }
+        return Promise.reject({
+          response: {
+            status: resultCode === 401 ? 401 : undefined,
+            data: {
+              code: resultCode,
+              message: response.data.message || 'Request failed',
+            },
+          },
+        });
       }
       response.data = response.data.data;
     }
@@ -64,11 +83,7 @@ apiClient.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      const domain = getCurrentDomain();
-      getAuthStoreByDomain(domain).getState().logout();
-      if (typeof window !== 'undefined') {
-        window.location.href = getRedirectPathByDomain(domain);
-      }
+      handleUnauthorized();
     }
     return Promise.reject(error);
   }
