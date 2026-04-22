@@ -100,35 +100,35 @@ export const personApi = {
     return response.data;
   },
 
-  apply: async (jobId: number): Promise<{ applicationId: number }> => {
-    const response = await apiClient.post('/person/applications', { jobId });
+  apply: async (data: { jobId: number; resumeId: number }): Promise<{ applicationId: number }> => {
+    const response = await apiClient.post('/person/application/apply', data);
     return response.data;
   },
 
   getApplications: async (params?: { page?: number; size?: number; status?: string }): Promise<{ list: Application[]; total: number; page: number; size: number }> => {
-    const response = await apiClient.get('/person/applications', { params });
+    const response = await apiClient.get('/person/application/list', { params });
     return response.data;
   },
 
   getApplication: async (id: number): Promise<Application> => {
-    const response = await apiClient.get<Application>(`/person/applications/${id}`);
+    const response = await apiClient.get<Application>(`/person/application/${id}`);
     return response.data;
   },
 
   withdrawApplication: async (id: number): Promise<void> => {
-    await apiClient.put(`/person/applications/${id}/withdraw`);
+    await apiClient.put(`/person/application/${id}/withdraw`);
   },
 
   addFavorite: async (jobId: number): Promise<void> => {
-    await apiClient.post('/person/favorites', { jobId });
+    await apiClient.post('/person/application/favorite', { jobId });
   },
 
   removeFavorite: async (jobId: number): Promise<void> => {
-    await apiClient.delete(`/person/favorites/${jobId}`);
+    await apiClient.delete(`/person/application/favorite/${jobId}`);
   },
 
   getFavorites: async (params?: { page?: number; size?: number }): Promise<{ list: FavoriteJob[]; total: number; page: number; size: number }> => {
-    const response = await apiClient.get('/person/favorites', { params });
+    const response = await apiClient.get('/person/application/favorites', { params });
     return response.data;
   },
 };

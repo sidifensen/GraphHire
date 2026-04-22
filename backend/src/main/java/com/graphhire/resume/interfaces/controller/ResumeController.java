@@ -6,6 +6,7 @@ import com.graphhire.common.vo.Result;
 import com.graphhire.resume.application.command.UploadResumeCmd;
 import com.graphhire.resume.application.service.ResumeAppService;
 import com.graphhire.resume.domain.model.Resume;
+import com.graphhire.resume.interfaces.dto.ParseProgressResponse;
 import com.graphhire.resume.interfaces.dto.ResumeVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -109,5 +110,17 @@ public class ResumeController {
                                                @RequestParam(defaultValue = "10") int size) {
         PageResult<ResumeVO> result = resumeService.getList(page, size);
         return Result.success(result);
+    }
+
+    /**
+     * 获取简历解析进度
+     * @param id 简历ID
+     * @return 解析进度信息
+     */
+    @GetMapping("/{id}/progress")
+    public Result<ParseProgressResponse> getParseProgress(@PathVariable Long id) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        ParseProgressResponse progress = resumeService.getParseProgress(id, userId);
+        return Result.success(progress);
     }
 }

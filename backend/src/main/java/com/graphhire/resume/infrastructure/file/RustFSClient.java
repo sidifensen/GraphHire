@@ -1,5 +1,7 @@
 package com.graphhire.resume.infrastructure.file;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -10,6 +12,8 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.S3Utilities;
 import software.amazon.awssdk.services.s3.model.*;
+import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
+import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
@@ -37,6 +41,8 @@ import java.time.Duration;
  */
 @Component
 public class RustFSClient {
+
+    private static final Logger log = LoggerFactory.getLogger(RustFSClient.class);
 
     /** S3客户端，仅用于delete/exists等管理操作 */
     @Autowired
@@ -75,23 +81,39 @@ public class RustFSClient {
     private static final int HTTP_READ_TIMEOUT = 30000;
 
     /**
-     * 上传文件到S3存储（预签名URL + HTTP PUT，避免SDK HTTP client hang）
+     * 上传文件到S3存储（直接S3 PUT，避免预签名URL的签名兼容性问题）
      */
     public String upload(byte[] bytes, String fileName) {
         String key = System.currentTimeMillis() + "_" + fileName;
 
         try {
-            String presignedUrl = generatePutPresignedUrl(key);
+            ensureBucketExists();
 
-            int responseCode = doHttpPut(presignedUrl, bytes);
-
-            if (responseCode != 200 && responseCode != 201) {
-                throw new RuntimeException("Failed to upload to RustFS: HTTP " + responseCode);
-            }
+            s3Client.putObject(PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .contentType(getContentType(key))
+                .build(), software.amazon.awssdk.core.sync.RequestBody.fromBytes(bytes));
 
             return "s3://" + bucketName + "/" + key;
         } catch (Exception e) {
             throw new RuntimeException("Failed to upload file to RustFS: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 确保bucket存在，不存在则创建
+     */
+    private void ensureBucketExists() {
+        try {
+            s3Client.headBucket(HeadBucketRequest.builder().bucket(bucketName).build());
+        } catch (NoSuchBucketException e) {
+            log.info("Bucket '{}' does not exist, creating...", bucketName);
+            s3Client.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
+            log.info("Bucket '{}' created", bucketName);
+        } catch (Exception e) {
+            log.error("Failed to ensure bucket exists: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to ensure bucket exists: " + e.getMessage(), e);
         }
     }
 

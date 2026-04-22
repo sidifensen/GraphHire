@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { resumeApi, type Resume } from '@/lib/api/resume';
 
-function getStatusText(status: Resume['parseStatus']) {
+function getStatusText(status: Resume['status']) {
   switch (status) {
     case 'COMPLETED':
       return 'AI 解析完成';
@@ -17,7 +17,7 @@ function getStatusText(status: Resume['parseStatus']) {
   }
 }
 
-function getStatusColor(status: Resume['parseStatus']) {
+function getStatusColor(status: Resume['status']) {
   switch (status) {
     case 'COMPLETED':
       return 'text-primary';
@@ -103,9 +103,9 @@ export default function ManagePage() {
                         <span className="material-symbols-outlined text-[16px]">schedule</span>
                         {new Date(resume.createdAt).toLocaleString('zh-CN', { hour12: false })}
                       </span>
-                      <span className={`flex items-center gap-1 ${getStatusColor(resume.parseStatus)}`}>
-                        <span className="material-symbols-outlined text-[16px]">{resume.parseStatus === 'PROCESSING' ? 'autorenew' : resume.parseStatus === 'FAILED' ? 'error' : 'check_circle'}</span>
-                        {getStatusText(resume.parseStatus)}
+                      <span className={`flex items-center gap-1 ${getStatusColor(resume.status)}`}>
+                        <span className="material-symbols-outlined text-[16px]">{resume.status === 'PROCESSING' ? 'autorenew' : resume.status === 'FAILED' ? 'error' : 'check_circle'}</span>
+                        {getStatusText(resume.status)}
                       </span>
                     </div>
                   </div>

@@ -8,9 +8,8 @@ import org.springframework.stereotype.Component;
 public class OcrProperties {
 
     private boolean enabled = true;
-    private String provider = "tencent";
+    private String provider = "aliyun";
     private int fallbackMinTextLength = 20;
-    private final TencentProperties tencent = new TencentProperties();
     private final AliyunProperties aliyun = new AliyunProperties();
 
     public boolean isEnabled() {
@@ -37,42 +36,8 @@ public class OcrProperties {
         this.fallbackMinTextLength = fallbackMinTextLength;
     }
 
-    public TencentProperties getTencent() {
-        return tencent;
-    }
-
     public AliyunProperties getAliyun() {
         return aliyun;
-    }
-
-    public static class TencentProperties {
-        private String secretId;
-        private String secretKey;
-        private String region = "ap-guangzhou";
-
-        public String getSecretId() {
-            return secretId;
-        }
-
-        public void setSecretId(String secretId) {
-            this.secretId = secretId;
-        }
-
-        public String getSecretKey() {
-            return secretKey;
-        }
-
-        public void setSecretKey(String secretKey) {
-            this.secretKey = secretKey;
-        }
-
-        public String getRegion() {
-            return region;
-        }
-
-        public void setRegion(String region) {
-            this.region = region;
-        }
     }
 
     public static class AliyunProperties {

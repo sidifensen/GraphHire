@@ -14,6 +14,10 @@ export default function AdminHeader({ title }: AdminHeaderProps) {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // 订阅 authStore 变化，确保 logout 后组件能重新渲染
+  const user = authStore((state) => state.user);
+  const isAuthenticated = authStore((state) => state.isAuthenticated);
+
   // 点击外部关闭下拉框
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -44,7 +48,7 @@ export default function AdminHeader({ title }: AdminHeaderProps) {
           <span className="material-symbols-outlined">notifications</span>
         </button>
         <div className="flex items-center gap-3 pl-6 border-l relative before:content-[''] before:absolute before:left-0 before:top-2 before:bottom-2 before:w-[1px] before:bg-slate-200">
-          <span className="text-slate-600 font-medium tracking-wide">管理员</span>
+          <span className="text-slate-600 font-medium tracking-wide">{user?.type === 'ADMIN' ? '管理员' : user?.username || '管理员'}</span>
           <div className="relative" ref={dropdownRef}>
             <button
               className="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed cursor-pointer hover:bg-primary/20 transition-colors"
@@ -56,8 +60,8 @@ export default function AdminHeader({ title }: AdminHeaderProps) {
             {showDropdown && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-200 py-2 z-50">
                 <div className="px-4 py-2 border-b border-slate-100">
-                  <p className="text-sm font-medium text-slate-900">{authStore.getState().user?.username || '管理员'}</p>
-                  <p className="text-xs text-slate-500">系统管理员</p>
+                  <p className="text-sm font-medium text-slate-900">{user?.username || '管理员'}</p>
+                  <p className="text-xs text-slate-500">{user?.type === 'ADMIN' ? '系统管理员' : '用户'}</p>
                 </div>
                 <button
                   className="w-full text-left px-4 py-3 text-sm text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors"

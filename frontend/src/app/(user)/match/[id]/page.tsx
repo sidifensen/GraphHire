@@ -6,6 +6,7 @@ import { authStore } from '@/lib/stores/auth-store';
 import { personApi, type PersonMatchDetail } from '@/lib/api/person';
 import { publicApi, type Job } from '@/lib/api/public';
 import { matchApi, type GraphScore } from '@/lib/api/match';
+import { resumeApi } from '@/lib/api/resume';
 
 function CircularProgress({ score, size = 160 }: { score: number; size?: number }) {
   const radius = (size - 16) / 2;
@@ -42,6 +43,10 @@ export default function MatchDetailPage() {
   const [graphScore, setGraphScore] = useState<GraphScore | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showResumeSelect, setShowResumeSelect] = useState(false);
+  const [resumes, setResumes] = useState<Array<{ id: number; fileName: string; isDefault: boolean }>>([]);
+  const [selectedResumeId, setSelectedResumeId] = useState<number | null>(null);
+  const [applying, setApplying] = useState(false);
 
   const loadData = async () => {
     if (!jobId) {
@@ -94,6 +99,48 @@ export default function MatchDetailPage() {
   }, [graphScore]);
 
   const totalScore = Math.round(detail?.score?.total ?? graphScore?.totalScore ?? 0);
+
+  const loadResumes = async () => {
+    try {
+      const list = await resumeApi.getMyResumes();
+      const sorted = list.sort((a, b) => {
+        if (a.isDefault && !b.isDefault) return -1;
+        if (!a.isDefault && b.isDefault) return 1;
+        return 0;
+      });
+      setResumes(sorted.map(r => ({ id: r.id, fileName: r.fileName, isDefault: r.isDefault })));
+      const defaultResume = sorted.find(r => r.isDefault) || sorted[0];
+      if (defaultResume) setSelectedResumeId(defaultResume.id);
+    } catch (err) {
+      console.error('Failed to load resumes', err);
+    }
+  };
+
+  const handleApply = async () => {
+    if (resumes.length === 0) {
+      setShowResumeSelect(true);
+      await loadResumes();
+      return;
+    }
+    if (resumes.length === 1) {
+      setSelectedResumeId(resumes[0].id);
+    }
+    setShowResumeSelect(true);
+  };
+
+  const confirmApply = async () => {
+    if (!selectedResumeId) return;
+    try {
+      setApplying(true);
+      await personApi.apply({ jobId, resumeId: selectedResumeId });
+      alert('投递成功！');
+      setShowResumeSelect(false);
+    } catch (err: any) {
+      alert(err.message || '投递失败，请重试');
+    } finally {
+      setApplying(false);
+    }
+  };
 
   if (loading) {
     return <div className="flex-grow flex items-center justify-center min-h-screen text-on-surface-variant">匹配详情加载中...</div>;
@@ -192,12 +239,45 @@ export default function MatchDetailPage() {
 
       <div className="fixed bottom-0 left-0 w-full bg-surface-container-lowest/95 backdrop-blur-md border-t border-outline-variant/20 p-6 z-50 shadow-[0_-8px_30px_rgb(0,0,0,0.08)]">
         <div className="max-w-[1440px] mx-auto flex justify-center">
-          <button className="bg-gradient-to-r from-primary to-primary-container text-white px-12 py-4 rounded-xl text-lg font-bold font-headline shadow-lg shadow-primary/20 hover:opacity-90 transition-all duration-300 w-full md:w-auto md:min-w-[400px] flex justify-center items-center gap-2 hover:-translate-y-0.5 active:scale-95">
+          <button onClick={() => void handleApply()} className="bg-gradient-to-r from-primary to-primary-container text-white px-12 py-4 rounded-xl text-lg font-bold font-headline shadow-lg shadow-primary/20 hover:opacity-90 transition-all duration-300 w-full md:w-auto md:min-w-[400px] flex justify-center items-center gap-2 hover:-translate-y-0.5 active:scale-95">
             <span className="material-symbols-outlined">send</span>
             立即投递
           </button>
         </div>
       </div>
+
+      {showResumeSelect && (
+        <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
+          <div className="bg-surface-container-lowest rounded-2xl p-6 w-full max-w-md">
+            <h3 className="text-xl font-headline font-bold text-on-surface mb-6">选择简历投递</h3>
+            <div className="space-y-3 mb-6">
+              {resumes.map((resume) => (
+                <div
+                  key={resume.id}
+                  onClick={() => setSelectedResumeId(resume.id)}
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedResumeId === resume.id ? 'border-primary bg-primary/5' : 'border-outline-variant hover:border-primary/50'}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedResumeId === resume.id ? 'border-primary bg-primary' : 'border-outline'}`}>
+                      {selectedResumeId === resume.id && <span className="material-symbols-outlined text-[12px] text-white">check</span>}
+                    </div>
+                    <div>
+                      <p className="font-medium text-on-surface">{resume.fileName}</p>
+                      {resume.isDefault && <span className="text-xs text-primary">默认简历</span>}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => setShowResumeSelect(false)} className="flex-1 py-3 rounded-xl bg-surface-container-high text-on-surface hover:bg-surface-container-highest transition-colors">取消</button>
+              <button onClick={() => void confirmApply()} disabled={!selectedResumeId || applying} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-primary to-primary-container text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-50">
+                {applying ? '投递中...' : '确认投递'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -2,10 +2,14 @@ package com.graphhire.resume.infrastructure.ai;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class FallbackDocumentTextExtractor implements DocumentTextExtractor {
+
+    private static final Logger log = LoggerFactory.getLogger(FallbackDocumentTextExtractor.class);
 
     private final FileContentLoader fileContentLoader;
     private final TikaTextExtractor tikaTextExtractor;
@@ -29,13 +33,21 @@ public class FallbackDocumentTextExtractor implements DocumentTextExtractor {
         if (isEnoughText(tikaText)) {
             return tikaText;
         }
-        if (!ocrProperties.isEnabled()) {
-            return tikaText;
-        }
-        OcrRequest request = new OcrRequest(bytes, FileUtil.getName(filePath), FileUtil.getMimeType(filePath), filePath);
-        OcrResult result = ocrService.recognize(request);
-        if (result.isSuccess() && StrUtil.isNotBlank(result.getText())) {
-            return result.getText();
+        // Tika文本不足，使用OCR补充
+        if (ocrProperties.isEnabled()) {
+            log.info("Tika extracted insufficient text ({} chars), using OCR fallback", tikaText.length());
+            OcrRequest ocrRequest = new OcrRequest(bytes, filePath, "application/octet-stream", filePath);
+            OcrResult ocrResult = ocrService.recognize(ocrRequest);
+            if (ocrResult.isSuccess()) {
+                String ocrText = ocrResult.getText();
+                if (StrUtil.isNotBlank(ocrText)) {
+                    log.info("OCR fallback succeeded, extracted {} chars", ocrText.length());
+                    // 合并Tika和OCR结果
+                    return tikaText + "\n" + ocrText;
+                }
+            } else {
+                log.warn("OCR fallback failed: {}", ocrResult.getErrorCode());
+            }
         }
         return tikaText;
     }

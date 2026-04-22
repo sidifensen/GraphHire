@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import '@/styles/globals.css';
+import AdminAuthGuard from '@/components/admin/AdminAuthGuard';
 
 export const metadata: Metadata = {
   title: 'GraphHire 图谱智聘 - 管理端',
@@ -11,8 +12,10 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col h-screen overflow-x-hidden antialiased selection:bg-primary-fixed selection:text-on-primary-fixed">
-      {children}
-    </div>
+    <AdminAuthGuard>
+      <div className="flex flex-col h-screen overflow-x-hidden antialiased selection:bg-primary-fixed selection:text-on-primary-fixed">
+        {children}
+      </div>
+    </AdminAuthGuard>
   );
 }

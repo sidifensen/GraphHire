@@ -17,18 +17,27 @@ vi.mock('next/navigation', () => ({
 
 // Mock auth-store
 vi.mock('@/lib/stores/auth-store', () => ({
-  authStore: {
-    getState: vi.fn(() => ({
+  authStore: vi.fn((selector) => {
+    const state = {
       isAuthenticated: true,
       accessToken: 'admin-token',
       refreshToken: 'refresh-token',
-      user: { id: 1, username: 'AdminUser', type: 'admin' },
+      user: { id: 1, username: 'AdminUser', type: 'ADMIN' },
       setAuth: vi.fn(),
       logout: vi.fn(),
-    })),
-    setState: vi.fn(),
-    subscribe: vi.fn(),
-  },
+    };
+    return selector(state);
+  }),
+  getState: vi.fn(() => ({
+    isAuthenticated: true,
+    accessToken: 'admin-token',
+    refreshToken: 'refresh-token',
+    user: { id: 1, username: 'AdminUser', type: 'ADMIN' },
+    setAuth: vi.fn(),
+    logout: vi.fn(),
+  })),
+  setState: vi.fn(),
+  subscribe: vi.fn(),
 }));
 
 describe('AdminHeader', () => {

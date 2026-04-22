@@ -8,6 +8,7 @@ import com.graphhire.resume.domain.model.Resume;
 import com.graphhire.resume.domain.repository.ParseTaskRepository;
 import com.graphhire.resume.domain.repository.ResumeRepository;
 import com.graphhire.resume.domain.vo.ParseStatus;
+import com.graphhire.resume.interfaces.dto.ParseProgressResponse;
 
 import java.io.IOException;
 import com.graphhire.resume.interfaces.dto.ResumeVO;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ResumeAppService {
@@ -225,5 +227,64 @@ public class ResumeAppService {
             throw new RuntimeException("无权查看此简历");
         }
         return resume;
+    }
+
+    /**
+     * 获取简历解析进度
+     * 【功能说明】查询简历的真实解析进度，基于ParseTask状态计算百分比。
+     * 【业务步骤】
+     * 步骤1：校验简历是否存在且属于当前用户
+     * 步骤2：查询关联的ParseTask
+     * 步骤3：根据任务状态计算进度百分比和步骤描述
+     */
+    public ParseProgressResponse getParseProgress(Long resumeId, Long userId) {
+        Resume resume = getResumeById(resumeId);
+        if (!resume.getUserId().equals(userId)) {
+            throw new RuntimeException("无权查看此简历");
+        }
+        ParseProgressResponse response = new ParseProgressResponse();
+        response.setResumeId(resumeId);
+        response.setStartedAt(null);
+        response.setCompletedAt(null);
+        // 查询最新的解析任务
+        Optional<ParseTask> taskOpt = parseTaskRepository.findByResumeId(resumeId);
+        if (taskOpt.isEmpty()) {
+            // 无任务时返回简历自己的状态
+            response.setStatus(resume.getStatus() != null ? resume.getStatus().name() : "PENDING");
+            response.setProgress(0);
+            response.setStep("等待解析任务");
+            return response;
+        }
+        ParseTask task = taskOpt.get();
+        response.setStartedAt(task.getStartedAt());
+        response.setCompletedAt(task.getCompletedAt());
+        ParseTask.TaskStatus status = task.getStatus();
+        if (status == null) {
+            status = ParseTask.TaskStatus.PENDING;
+        }
+        response.setStatus(status.name());
+        switch (status) {
+            case PENDING:
+                response.setProgress(0);
+                response.setStep("等待解析");
+                break;
+            case RUNNING:
+                response.setProgress(50);
+                response.setStep("AI 解析中...");
+                break;
+            case SUCCESS:
+                response.setProgress(100);
+                response.setStep("解析完成");
+                break;
+            case FAILED:
+                response.setProgress(0);
+                response.setStep("解析失败");
+                response.setErrorMessage(task.getErrorMessage());
+                break;
+            default:
+                response.setProgress(0);
+                response.setStep("未知状态");
+        }
+        return response;
     }
 }

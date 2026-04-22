@@ -25,27 +25,21 @@ describe('UploadPage', () => {
     expect(screen.getByText('解析您的职业履历')).toBeDefined();
   });
 
-  it('renders file info', () => {
+  it('renders upload area in idle state', () => {
     render(<UploadPage />);
-    expect(screen.getByText(/简历_2024.pdf/)).toBeDefined();
+    // Idle state shows upload area
+    expect(screen.getByText('点击选择简历文件')).toBeDefined();
+    expect(screen.getByText(/支持 PDF、Word 格式，最大 10MB/)).toBeDefined();
   });
 
-  it('renders progress indicator', () => {
+  it('renders upload tips', () => {
     render(<UploadPage />);
-    expect(screen.getByText('AI 认知引擎解析中...')).toBeDefined();
-    expect(screen.getByText('65%')).toBeDefined();
+    expect(screen.getByText('上传须知')).toBeDefined();
+    expect(screen.getByText(/支持 PDF、DOC、DOCX 格式简历/)).toBeDefined();
   });
 
-  it('renders status timeline', () => {
+  it('renders back link', () => {
     render(<UploadPage />);
-    expect(screen.getByText('文件上传成功')).toBeDefined();
-    expect(screen.getByText('文本结构化处理与语义抽取')).toBeDefined();
-    expect(screen.getByText('生成多维认知图谱')).toBeDefined();
-  });
-
-  it('renders action buttons', () => {
-    render(<UploadPage />);
-    expect(screen.getByText('重新上传')).toBeDefined();
-    expect(screen.getByText('继续完善履历')).toBeDefined();
+    expect(screen.getByText('返回')).toBeDefined();
   });
 });

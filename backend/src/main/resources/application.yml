@@ -113,10 +113,6 @@ ai:
       enabled: true
       provider: aliyun
       fallback-min-text-length: 20
-      tencent:
-        secret-id: ${TENCENT_OCR_SECRET_ID:}
-        secret-key: ${TENCENT_OCR_SECRET_KEY:}
-        region: ap-guangzhou
       aliyun:
         access-key-id: ${ALIYUN_OCR_ACCESS_KEY_ID:}
         access-key-secret: ${ALIYUN_OCR_ACCESS_KEY_SECRET:}

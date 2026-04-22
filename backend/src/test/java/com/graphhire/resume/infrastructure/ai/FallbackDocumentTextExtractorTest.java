@@ -51,7 +51,7 @@ class FallbackDocumentTextExtractorTest {
 
         String result = extractor.extractText("/tmp/resume.pdf");
 
-        assertEquals("OCR识别结果", result);
+        assertEquals("短\nOCR识别结果", result);
         verify(ocrService, times(1)).recognize(any());
     }
 

@@ -49,14 +49,8 @@ public class AliyunOcrProvider implements OcrProvider {
             Client client = new Client(config);
 
             RecognizeAllTextRequest req = new RecognizeAllTextRequest()
-                    .setUrl("")
                     .setBody(new ByteArrayInputStream(request.getFileBytes()))
-                    .setType("General")
-                    .setOutputFigure(false)
-                    .setOutputQrcode(false)
-                    .setOutputBarCode(false)
-                    .setOutputStamp(false)
-                    .setOutputCoordinate("points");
+                    .setType("Advanced");
 
             RecognizeAllTextResponse response = client.recognizeAllText(req);
 
