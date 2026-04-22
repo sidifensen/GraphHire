@@ -3,19 +3,27 @@ package com.graphhire.resume.infrastructure.file;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
-import java.lang.reflect.Method;
+import java.io.ByteArrayInputStream;
+import java.lang.reflect.Field;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-/**
- * RustFSClient 预签名 URL 路径风格验证
- *
- * 验证目标：预签名 URL 必须使用 path-style 格式（host=localhost，path 以 /resumes/ 开头），
- * 而不是 virtual-hosted 格式（host=resumes.localhost）。
- */
+@ExtendWith(MockitoExtension.class)
 class RustFSClientTest {
 
     @Mock
@@ -26,70 +34,45 @@ class RustFSClientTest {
     @BeforeEach
     void setUp() throws Exception {
         client = new RustFSClient();
-        // 通过反射注入 S3Client（由 Spring 管理，生产代码中通过 @Autowired 注入）
-        java.lang.reflect.Field s3ClientField = RustFSClient.class.getDeclaredField("s3Client");
-        s3ClientField.setAccessible(true);
-        s3ClientField.set(client, s3Client);
-
-        // 通过反射注入 @Value 字段
-        setField(RustFSClient.class, client, "endpoint", "http://localhost:9000");
-        setField(RustFSClient.class, client, "accessKey", "rustfsadmin");
-        setField(RustFSClient.class, client, "secretKey", "rustfsadmin");
-        setField(RustFSClient.class, client, "bucketName", "resumes");
-        setField(RustFSClient.class, client, "region", "us-east-1");
+        setField(client, "s3Client", s3Client);
+        setField(client, "bucketName", "resumes");
     }
 
-    private static void setField(Class<?> clazz, Object target, String fieldName, Object value) throws Exception {
-        java.lang.reflect.Field f = clazz.getDeclaredField(fieldName);
+    @Test
+    @DisplayName("download 应使用 S3 SDK 直接读取对象内容")
+    void download_shouldReadBytesViaS3Client() {
+        byte[] expected = "test-content".getBytes();
+        ResponseInputStream<GetObjectResponse> stream = new ResponseInputStream<>(
+                GetObjectResponse.builder().build(),
+                new ByteArrayInputStream(expected));
+        when(s3Client.getObject(any(GetObjectRequest.class))).thenReturn(stream);
+
+        byte[] actual = client.download("s3://resumes/1776789414400_25年简历测试.pdf");
+
+        assertArrayEquals(expected, actual);
+        verify(s3Client).getObject(any(GetObjectRequest.class));
+    }
+
+    @Test
+    @DisplayName("download 对无效路径应抛出明确异常")
+    void download_shouldThrowWhenPathInvalid() {
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> client.download("invalid"));
+        assertEquals("Invalid S3 path: invalid", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("upload 应保留文件扩展名并写入对应 content-type")
+    void upload_shouldUseDetectedContentType() {
+        when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class))).thenReturn(null);
+
+        client.upload("data".getBytes(), "简历.pdf");
+
+        verify(s3Client).putObject(any(PutObjectRequest.class), any(RequestBody.class));
+    }
+
+    private static void setField(Object target, String fieldName, Object value) throws Exception {
+        Field f = target.getClass().getDeclaredField(fieldName);
         f.setAccessible(true);
         f.set(target, value);
-    }
-
-    @Test
-    @DisplayName("PUT 预签名 URL 必须为 path-style（localhost + /resumes/ 前缀）")
-    void upload_presignedUrl_shouldBePathStyle() throws Exception {
-        Method method = RustFSClient.class.getDeclaredMethod("generatePutPresignedUrl", String.class);
-        method.setAccessible(true);
-
-        String url = (String) method.invoke(client, "test.pdf");
-
-        assertNotNull(url, "预签名 URL 不应为空");
-        assertTrue(url.startsWith("http://localhost:9000/resumes/"),
-                "PUT 预签名 URL 应为 path-style，实际: " + url);
-        assertFalse(url.contains("resumes.localhost"),
-                "PUT 预签名 URL 不应使用 virtual-hosted 风格，实际: " + url);
-        assertTrue(url.contains("test.pdf"), "PUT 预签名 URL 应包含文件名，实际: " + url);
-    }
-
-    @Test
-    @DisplayName("GET 预签名 URL 必须为 path-style（localhost + /resumes/ 前缀）")
-    void download_presignedUrl_shouldBePathStyle() throws Exception {
-        Method method = RustFSClient.class.getDeclaredMethod("generateGetPresignedUrl", String.class);
-        method.setAccessible(true);
-
-        String url = (String) method.invoke(client, "test.pdf");
-
-        assertNotNull(url, "预签名 URL 不应为空");
-        assertTrue(url.startsWith("http://localhost:9000/resumes/"),
-                "GET 预签名 URL 应为 path-style，实际: " + url);
-        assertFalse(url.contains("resumes.localhost"),
-                "GET 预签名 URL 不应使用 virtual-hosted 风格，实际: " + url);
-        assertTrue(url.contains("test.pdf"), "GET 预签名 URL 应包含文件名，实际: " + url);
-    }
-
-    @Test
-    @DisplayName("多次调用应复用同一 presigner 实例")
-    void getPresigner_shouldBeReused() throws Exception {
-        Method method = RustFSClient.class.getDeclaredMethod("generateGetPresignedUrl", String.class);
-        method.setAccessible(true);
-
-        String url1 = (String) method.invoke(client, "a.pdf");
-        String url2 = (String) method.invoke(client, "b.pdf");
-
-        assertNotNull(url1);
-        assertNotNull(url2);
-        // 两者都应复用同一个 presigner（无额外查询参数差异仅来自签名时间戳）
-        assertTrue(url1.startsWith("http://localhost:9000/resumes/"));
-        assertTrue(url2.startsWith("http://localhost:9000/resumes/"));
     }
 }

@@ -31,6 +31,56 @@ vi.mock('@/lib/stores/auth-store', () => ({
     setState: vi.fn(),
     subscribe: vi.fn(),
   },
+  enterpriseAuthStore: {
+    getState: vi.fn(() => ({
+      isAuthenticated: true,
+      accessToken: 'mock-token',
+      refreshToken: 'mock-refresh',
+      user: { id: 1, username: 'TestUser', type: 'company' },
+      setAuth: vi.fn(),
+      logout: vi.fn(),
+    })),
+    setState: vi.fn(),
+    subscribe: vi.fn(),
+  },
+  userAuthStore: {
+    getState: vi.fn(() => ({
+      isAuthenticated: true,
+      accessToken: 'mock-token',
+      refreshToken: 'mock-refresh',
+      user: { id: 1, username: 'TestUser', type: 'company' },
+      setAuth: vi.fn(),
+      logout: vi.fn(),
+    })),
+    setState: vi.fn(),
+    subscribe: vi.fn(),
+  },
+  adminAuthStore: {
+    getState: vi.fn(() => ({
+      isAuthenticated: true,
+      accessToken: 'mock-token',
+      refreshToken: 'mock-refresh',
+      user: { id: 1, username: 'TestUser', type: 'company' },
+      setAuth: vi.fn(),
+      logout: vi.fn(),
+    })),
+    setState: vi.fn(),
+    subscribe: vi.fn(),
+  },
+  getAuthStoreByDomain: vi.fn(() => ({
+    getState: vi.fn(() => ({
+      isAuthenticated: true,
+      accessToken: 'mock-token',
+      refreshToken: 'mock-refresh',
+      user: { id: 1, username: 'TestUser', type: 'company' },
+      setAuth: vi.fn(),
+      logout: vi.fn(),
+    })),
+    setState: vi.fn(),
+    subscribe: vi.fn(),
+  })),
+  getAuthDomainByPath: vi.fn(() => 'enterprise'),
+  getStorageKeyByDomain: vi.fn(() => 'auth-storage-enterprise'),
 }));
 
 describe('EnterpriseHeader', () => {

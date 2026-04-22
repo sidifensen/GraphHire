@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { authStore } from '@/lib/stores/auth-store';
+import { enterpriseAuthStore } from '@/lib/stores/auth-store';
 import { logoutWithServerInvalidation } from '@/lib/logout';
 
 export default function EnterpriseHeader() {
@@ -30,7 +30,7 @@ export default function EnterpriseHeader() {
   };
 
   const handleLogout = async () => {
-    await logoutWithServerInvalidation(router.push, '/login');
+    await logoutWithServerInvalidation(router.push, '/login', 'enterprise');
   };
 
   useEffect(() => {
@@ -98,7 +98,7 @@ export default function EnterpriseHeader() {
           {showDropdown && (
             <div className="absolute right-0 top-full mt-2 w-48 bg-surface-container-lowest rounded-xl shadow-lg border border-surface-container-high overflow-hidden z-50">
               <div className="px-4 py-3 border-b border-surface-container-high">
-                <p className="text-sm font-medium text-on-surface">{authStore.getState().user?.username}</p>
+                <p className="text-sm font-medium text-on-surface">{enterpriseAuthStore.getState().user?.username}</p>
                 <p className="text-xs text-tertiary">企业管理中心</p>
               </div>
               <div className="py-2">

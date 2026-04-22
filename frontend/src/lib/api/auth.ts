@@ -13,6 +13,11 @@ import type {
   SendResetCodeRequest,
 } from '@/lib/types';
 
+export interface AuthContextResponse {
+  userId: number;
+  userType: 'PERSON' | 'COMPANY' | 'ADMIN';
+}
+
 export const authApi = {
   login: async (data: LoginRequest): Promise<LoginResponse> => {
     const response = await apiClient.post<LoginResponse>('/auth/login', data);
@@ -40,6 +45,11 @@ export const authApi = {
 
   validateToken: async (): Promise<boolean> => {
     const response = await apiClient.get<boolean>('/auth/validate');
+    return response.data;
+  },
+
+  getContext: async (): Promise<AuthContextResponse> => {
+    const response = await apiClient.get<AuthContextResponse>('/auth/context');
     return response.data;
   },
 

@@ -25,14 +25,23 @@ vi.mock('next/navigation', () => ({
   }),
 }));
 
-vi.mock('@/lib/stores/auth-store', () => ({
-  authStore: (selector?: (state: typeof mockState) => unknown) => {
+vi.mock('@/lib/stores/auth-store', () => {
+  const store = (selector?: (state: typeof mockState) => unknown) => {
     if (typeof selector === 'function') {
       return selector(mockState);
     }
     return mockState;
-  },
-}));
+  };
+  return {
+    authStore: store,
+    userAuthStore: store,
+    enterpriseAuthStore: store,
+    adminAuthStore: store,
+    getAuthStoreByDomain: () => ({ getState: () => mockState }),
+    getAuthDomainByPath: () => 'user',
+    getStorageKeyByDomain: () => 'auth-storage-user',
+  };
+});
 
 describe('UserLayout sidebar visibility', () => {
   beforeEach(() => {

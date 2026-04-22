@@ -44,9 +44,18 @@ vi.mock('next/navigation', () => ({
   }),
 }));
 
-vi.mock('@/lib/stores/auth-store', () => ({
-  authStore: createMockStore(),
-}));
+vi.mock('@/lib/stores/auth-store', () => {
+  const store = createMockStore();
+  return {
+    authStore: store,
+    userAuthStore: store,
+    enterpriseAuthStore: store,
+    adminAuthStore: store,
+    getAuthStoreByDomain: () => store,
+    getAuthDomainByPath: () => 'user',
+    getStorageKeyByDomain: () => 'auth-storage-user',
+  };
+});
 
 const MockUserLayout = ({ children, contentClassName }: { children: React.ReactNode; contentClassName?: string }) => (
   <BrowserRouter>

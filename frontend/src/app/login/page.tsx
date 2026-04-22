@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authApi } from '@/lib/api/auth';
-import { authStore } from '@/lib/stores/auth-store';
+import { enterpriseAuthStore, userAuthStore } from '@/lib/stores/auth-store';
 import type { LoginRequest } from '@/lib/types';
 
 // Material Symbols SVG icons
@@ -71,11 +71,13 @@ export default function LoginPage() {
     try {
       const data: LoginRequest = { username, password };
       const response = await authApi.login(data);
-
-      authStore.getState().setAuth(
-        { accessToken: response.accessToken, refreshToken: response.refreshToken },
-        { id: response.userId, username, type: response.userType }
-      );
+      const nextUser = { id: response.userId, username, type: response.userType };
+      const nextTokens = { accessToken: response.accessToken, refreshToken: response.refreshToken };
+      if (activeRole === 'recruiter') {
+        enterpriseAuthStore.getState().setAuth(nextTokens, nextUser);
+      } else {
+        userAuthStore.getState().setAuth(nextTokens, nextUser);
+      }
 
       if (activeRole === 'recruiter') {
         router.push('/enterprise/dashboard');

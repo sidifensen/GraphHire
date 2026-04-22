@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { logoutWithServerInvalidation } from '@/lib/logout';
 import { authApi } from '@/lib/api/auth';
-import { authStore } from '@/lib/stores/auth-store';
+import { getAuthStoreByDomain } from '@/lib/stores/auth-store';
 
 vi.mock('@/lib/api/auth', () => ({
   authApi: {
@@ -10,9 +10,13 @@ vi.mock('@/lib/api/auth', () => ({
 }));
 
 vi.mock('@/lib/stores/auth-store', () => ({
-  authStore: {
-    getState: vi.fn(),
-  },
+  authStore: { getState: vi.fn() },
+  userAuthStore: { getState: vi.fn() },
+  enterpriseAuthStore: { getState: vi.fn() },
+  adminAuthStore: { getState: vi.fn() },
+  getAuthStoreByDomain: vi.fn(),
+  getAuthDomainByPath: vi.fn(() => 'user'),
+  getStorageKeyByDomain: vi.fn(() => 'auth-storage-user'),
 }));
 
 describe('logoutWithServerInvalidation', () => {
@@ -21,9 +25,9 @@ describe('logoutWithServerInvalidation', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(authStore.getState).mockReturnValue({
-      logout: mockLogoutStore,
-    } as ReturnType<typeof authStore.getState>);
+    vi.mocked(getAuthStoreByDomain).mockReturnValue({
+      getState: () => ({ logout: mockLogoutStore }),
+    } as ReturnType<typeof getAuthStoreByDomain>);
   });
 
   it('先调用服务端退出，再清理本地状态并跳转', async () => {

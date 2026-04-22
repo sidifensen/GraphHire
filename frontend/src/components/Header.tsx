@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { authStore } from '@/lib/stores/auth-store';
+import { userAuthStore } from '@/lib/stores/auth-store';
 import { logoutWithServerInvalidation } from '@/lib/logout';
 
 const navLinks = [
@@ -21,8 +21,8 @@ interface HeaderProps {
 export default function Header({ forceShowNotifications }: HeaderProps = {}) {
   const pathname = usePathname();
   const router = useRouter();
-  const isAuthenticated = authStore((state) => state.isAuthenticated);
-  const user = authStore((state) => state.user);
+  const isAuthenticated = userAuthStore((state) => state.isAuthenticated);
+  const user = userAuthStore((state) => state.user);
   const showNotificationBadge = forceShowNotifications || isAuthenticated;
   const [showDropdown, setShowDropdown] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
@@ -38,7 +38,7 @@ export default function Header({ forceShowNotifications }: HeaderProps = {}) {
   }, [showDropdown]);
 
   const handleLogout = async () => {
-    await logoutWithServerInvalidation(router.push, '/');
+    await logoutWithServerInvalidation(router.push, '/', 'user');
   };
 
   return (

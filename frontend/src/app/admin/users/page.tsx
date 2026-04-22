@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import AdminHeader from '@/components/admin/AdminHeader';
-import { adminApi, type UserItem } from '@/lib/api/admin';
+import { adminApi, type UserItem, type UserDetailResponse } from '@/lib/api/admin';
 
 export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
@@ -16,6 +16,13 @@ export default function AdminUsersPage() {
   const [keyword, setKeyword] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+
+  // Detail Modal State
+  const [showDetail, setShowDetail] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState<string | null>(null);
+  const [detailData, setDetailData] = useState<UserDetailResponse | null>(null);
+  const [detailUserId, setDetailUserId] = useState<number | null>(null);
 
   const selectedSet = useMemo(() => new Set(selected), [selected]);
 
@@ -124,6 +131,46 @@ export default function AdminUsersPage() {
     if (diffHours < 24) return `${diffHours} 小时前登录`;
     if (diffDays < 30) return `${diffDays} 天前登录`;
     return formatDate(dateStr);
+  };
+
+  // ============ Detail Modal Helpers ============
+  const getGenderLabel = (gender: number) => {
+    if (gender === 1) return '男';
+    if (gender === 2) return '女';
+    return '未知';
+  };
+
+  const maskPhone = (phone: string) => {
+    if (!phone || phone.length < 11) return phone;
+    return phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2');
+  };
+
+  const formatSalary = (salary: number | null) => {
+    if (!salary) return '-';
+    return `${(salary / 1000).toFixed(0)}K-${((salary + 10000) / 1000).toFixed(0)}K / 月`;
+  };
+
+  const openDetail = async (userId: number) => {
+    setDetailUserId(userId);
+    setShowDetail(true);
+    setDetailLoading(true);
+    setDetailError(null);
+    setDetailData(null);
+    try {
+      const res = await adminApi.getUserDetail(userId);
+      setDetailData(res);
+    } catch {
+      setDetailError('加载详情失败，请重试');
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  const closeDetail = () => {
+    setShowDetail(false);
+    setDetailUserId(null);
+    setDetailData(null);
+    setDetailError(null);
   };
 
   return (
@@ -286,11 +333,11 @@ export default function AdminUsersPage() {
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed font-bold text-lg">
-                        {getAvatarInitial(item.username)}
+                        {getAvatarInitial(item.realName || item.username)}
                       </div>
                       <div className="flex flex-col">
                         <span className="font-semibold text-on-surface text-sm">
-                          {item.username}
+                          {item.realName || item.username}
                           {getTypeBadge(item.type)}
                         </span>
                         <span className="text-xs text-outline mt-0.5 font-mono">UID: GH-{item.id.toString().padStart(5, '0')}</span>
@@ -299,14 +346,21 @@ export default function AdminUsersPage() {
                     <div className="text-sm text-on-surface-variant font-medium">{item.phone || item.email || '-'}</div>
                     <div className="flex flex-col gap-1">
                       <span className="text-xs text-on-surface-variant flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[14px] text-outline">calendar_today</span> {formatDate(item.createdAt)} 注册
+                        <span className="material-symbols-outlined text-[14px] text-outline">calendar_today</span> {item.createdAt ? new Date(item.createdAt).toLocaleString('zh-CN') : '-'} 注册
                       </span>
                       <span className="text-xs text-outline flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[14px]">login</span> {formatRelativeTime(item.lastLoginAt)}
+                        <span className="material-symbols-outlined text-[14px]">login</span> {item.lastLoginAt ? new Date(item.lastLoginAt).toLocaleString('zh-CN') : '从未登录'}
                       </span>
                     </div>
                     <div>{getStatusBadge(item.status)}</div>
                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        className="text-sm font-medium text-primary hover:text-primary-container transition-colors px-3 py-1.5 rounded-lg hover:bg-surface-container"
+                        onClick={() => openDetail(item.id)}
+                      >
+                        <span className="material-symbols-outlined text-[18px] mr-1">info</span>
+                        详情
+                      </button>
                       {item.status === 'LOCKED' && (
                         <button
                           className="text-sm font-medium text-error hover:text-[#93000a] transition-colors px-3 py-1.5 rounded-lg hover:bg-error-container/50"
@@ -388,6 +442,139 @@ export default function AdminUsersPage() {
             </section>
           )}
         </div>
+
+        {/* Detail Modal */}
+        {showDetail && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            {/* Backdrop */}
+            <div className="absolute inset-0 bg-black/40" onClick={closeDetail} />
+            {/* Modal */}
+            <div className="relative bg-surface-container-low rounded-[1.5rem] w-[560px] max-h-[80vh] overflow-hidden flex flex-col shadow-2xl">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between px-6 py-5 border-b border-surface-container">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed font-bold text-lg">
+                    {(detailData?.personInfo?.realName || detailData?.user?.username)?.charAt(0).toUpperCase() || '?'}
+                  </div>
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-on-surface text-lg">{detailData?.personInfo?.realName || detailData?.user?.username}</span>
+                      <span className="text-xs font-mono text-outline">GH-{detailUserId?.toString().padStart(5, '0')}</span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-xs text-on-surface-variant">
+                        {detailData?.user?.type === 'PERSON' ? '个人用户' : detailData?.user?.type === 'COMPANY' ? '企业联系人' : '管理员'}
+                      </span>
+                      <span className="text-xs text-outline">·</span>
+                      <span className="text-xs text-on-surface-variant">
+                        {detailData?.user?.status === 'ACTIVE' ? '正常' : detailData?.user?.status === 'DISABLED' ? '禁用' : '锁定'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors"
+                  onClick={closeDetail}
+                >
+                  <span className="material-symbols-outlined text-on-surface-variant">close</span>
+                </button>
+              </div>
+              {/* Modal Content */}
+              <div className="flex-1 overflow-y-auto p-6">
+                {/* Loading State */}
+                {detailLoading && (
+                  <div className="flex items-center justify-center py-20">
+                    <div className="flex flex-col items-center gap-4">
+                      <span className="material-symbols-outlined text-5xl text-primary animate-spin">progress_activity</span>
+                      <p className="text-on-surface-variant">加载中...</p>
+                    </div>
+                  </div>
+                )}
+                {/* Error State */}
+                {!detailLoading && detailError && (
+                  <div className="flex flex-col items-center justify-center py-20">
+                    <span className="material-symbols-outlined text-5xl text-error mb-4">error</span>
+                    <p className="text-error mb-4">{detailError}</p>
+                    <button
+                      className="bg-primary text-white px-5 py-2.5 rounded-lg"
+                      onClick={() => detailUserId && openDetail(detailUserId)}
+                    >
+                      重试
+                    </button>
+                  </div>
+                )}
+                {/* No PersonInfo Data */}
+                {!detailLoading && !detailError && detailData && detailData.personInfo === null && (
+                  <div className="flex flex-col items-center justify-center py-16">
+                    <span className="material-symbols-outlined text-5xl text-outline mb-4">person_off</span>
+                    <p className="text-on-surface-variant">暂无个人信息</p>
+                  </div>
+                )}
+                {/* Detail Content */}
+                {!detailLoading && !detailError && detailData && detailData.personInfo && (
+                  <div className="flex flex-col gap-6">
+                    {/* 个人信息 */}
+                    <div className="flex flex-col gap-4">
+                      <h3 className="text-sm font-bold text-on-surface-variant uppercase tracking-wider">个人信息</h3>
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="bg-surface-container-low rounded-xl px-4 py-3">
+                          <div className="text-xs text-outline mb-1">性别</div>
+                          <div className="text-sm font-medium text-on-surface">{getGenderLabel(detailData.personInfo.gender)}</div>
+                        </div>
+                        <div className="bg-surface-container-low rounded-xl px-4 py-3">
+                          <div className="text-xs text-outline mb-1">年龄</div>
+                          <div className="text-sm font-medium text-on-surface">{detailData.personInfo.age}岁</div>
+                        </div>
+                        <div className="bg-surface-container-low rounded-xl px-4 py-3">
+                          <div className="text-xs text-outline mb-1">学历</div>
+                          <div className="text-sm font-medium text-on-surface truncate">{detailData.personInfo.education || '-'}</div>
+                        </div>
+                      </div>
+                      <div className="bg-surface-container-low rounded-xl px-4 py-3">
+                        <div className="text-xs text-outline mb-1">手机</div>
+                        <div className="text-sm font-medium text-on-surface">{maskPhone(detailData.personInfo.phone)}</div>
+                      </div>
+                      <div className="bg-surface-container-low rounded-xl px-4 py-3">
+                        <div className="text-xs text-outline mb-1">邮箱</div>
+                        <div className="text-sm font-medium text-on-surface truncate">{detailData.personInfo.email || '-'}</div>
+                      </div>
+                    </div>
+                    {/* 求职意向 */}
+                    <div className="flex flex-col gap-4">
+                      <h3 className="text-sm font-bold text-on-surface-variant uppercase tracking-wider">求职意向</h3>
+                      <div className="bg-surface-container-low rounded-xl px-4 py-3">
+                        <div className="text-xs text-outline mb-1">目标城市</div>
+                        <div className="text-sm font-medium text-on-surface">{detailData.personInfo.targetCity || '-'}</div>
+                      </div>
+                      <div className="bg-surface-container-low rounded-xl px-4 py-3">
+                        <div className="text-xs text-outline mb-1">期望薪资</div>
+                        <div className="text-sm font-medium text-on-surface">{formatSalary(detailData.personInfo.expectedSalary)}</div>
+                      </div>
+                    </div>
+                    {/* 账号信息 */}
+                    <div className="flex flex-col gap-4">
+                      <h3 className="text-sm font-bold text-on-surface-variant uppercase tracking-wider">账号信息</h3>
+                      <div className="bg-surface-container-low rounded-xl px-4 py-3">
+                        <div className="text-xs text-outline mb-1">注册时间</div>
+                        <div className="text-sm font-medium text-on-surface">
+                          {detailData.user.createdAt ? new Date(detailData.user.createdAt).toLocaleDateString('zh-CN') : '-'}
+                        </div>
+                      </div>
+                      <div className="bg-surface-container-low rounded-xl px-4 py-3">
+                        <div className="text-xs text-outline mb-1">最后登录</div>
+                        <div className="text-sm font-medium text-on-surface">
+                          {detailData.user.lastLoginAt
+                            ? new Date(detailData.user.lastLoginAt).toLocaleString('zh-CN')
+                            : '从未登录'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

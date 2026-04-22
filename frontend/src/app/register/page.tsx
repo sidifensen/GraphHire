@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authApi } from '@/lib/api/auth';
-import { authStore } from '@/lib/stores/auth-store';
+import { enterpriseAuthStore, userAuthStore } from '@/lib/stores/auth-store';
 import type { PersonRegisterRequest, CompanyRegisterRequest } from '@/lib/types';
 
 export default function RegisterPage() {
@@ -118,12 +118,15 @@ export default function RegisterPage() {
         response = await authApi.companyRegister(data);
       }
 
-      authStore.getState().setAuth(
-        { accessToken: response.accessToken, refreshToken: response.refreshToken },
-        { id: response.userId, username: email, type: response.userType }
-      );
-
-      router.push('/');
+      const nextTokens = { accessToken: response.accessToken, refreshToken: response.refreshToken };
+      const nextUser = { id: response.userId, username: email, type: response.userType };
+      if (response.userType === 'COMPANY') {
+        enterpriseAuthStore.getState().setAuth(nextTokens, nextUser);
+        router.push('/enterprise/dashboard');
+      } else {
+        userAuthStore.getState().setAuth(nextTokens, nextUser);
+        router.push('/');
+      }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : '注册失败，请稍后重试';
       setError(message);

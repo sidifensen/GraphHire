@@ -16,8 +16,8 @@ vi.mock('next/navigation', () => ({
 }));
 
 // Mock auth-store
-vi.mock('@/lib/stores/auth-store', () => ({
-  authStore: vi.fn((selector) => {
+vi.mock('@/lib/stores/auth-store', () => {
+  const selectorStore = vi.fn((selector) => {
     const state = {
       isAuthenticated: true,
       accessToken: 'admin-token',
@@ -27,18 +27,32 @@ vi.mock('@/lib/stores/auth-store', () => ({
       logout: vi.fn(),
     };
     return selector(state);
-  }),
-  getState: vi.fn(() => ({
-    isAuthenticated: true,
-    accessToken: 'admin-token',
-    refreshToken: 'refresh-token',
-    user: { id: 1, username: 'AdminUser', type: 'ADMIN' },
-    setAuth: vi.fn(),
-    logout: vi.fn(),
-  })),
-  setState: vi.fn(),
-  subscribe: vi.fn(),
-}));
+  });
+  const storeApi = {
+    getState: vi.fn(() => ({
+      isAuthenticated: true,
+      accessToken: 'admin-token',
+      refreshToken: 'refresh-token',
+      user: { id: 1, username: 'AdminUser', type: 'ADMIN' },
+      setAuth: vi.fn(),
+      logout: vi.fn(),
+    })),
+    setState: vi.fn(),
+    subscribe: vi.fn(),
+  };
+  return {
+    authStore: selectorStore,
+    userAuthStore: selectorStore,
+    enterpriseAuthStore: selectorStore,
+    adminAuthStore: Object.assign(selectorStore, storeApi),
+    getAuthStoreByDomain: () => storeApi,
+    getAuthDomainByPath: () => 'admin',
+    getStorageKeyByDomain: () => 'auth-storage-admin',
+    getState: storeApi.getState,
+    setState: storeApi.setState,
+    subscribe: storeApi.subscribe,
+  };
+});
 
 describe('AdminHeader', () => {
   beforeEach(() => {

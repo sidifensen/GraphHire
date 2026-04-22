@@ -35,18 +35,37 @@ vi.mock('@/lib/api/auth', () => ({
       userId: 1,
       userType: 'person',
     }),
+    getContext: vi.fn().mockResolvedValue({
+      userId: 1,
+      userType: 'PERSON',
+    }),
+    logout: vi.fn().mockResolvedValue(undefined),
   },
 }));
 
 // Mock auth store
-vi.mock('@/lib/stores/auth-store', () => ({
-  authStore: {
+vi.mock('@/lib/stores/auth-store', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/stores/auth-store')>();
+  const mockStore = {
     getState: () => ({
       setAuth: vi.fn(),
+      logout: vi.fn(),
+      accessToken: null,
+      isAuthenticated: false,
+      user: null,
     }),
     setState: vi.fn(),
-  },
-}));
+    subscribe: vi.fn(() => () => {}),
+  };
+  return {
+    ...actual,
+    authStore: mockStore,
+    userAuthStore: mockStore,
+    enterpriseAuthStore: mockStore,
+    adminAuthStore: mockStore,
+    getAuthStoreByDomain: () => mockStore,
+  };
+});
 
 // Cleanup after each test
 afterEach(() => {

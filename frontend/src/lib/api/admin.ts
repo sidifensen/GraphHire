@@ -65,6 +65,7 @@ export interface CompanyAuthListResponse {
 export interface UserItem {
   id: number;
   username: string;
+  realName?: string;
   email: string;
   phone?: string;
   type: 'PERSON' | 'COMPANY' | 'ADMIN';
@@ -79,6 +80,24 @@ export interface UserListResponse {
   total: number;
   page: number;
   pageSize: number;
+}
+
+// ============ User Detail ============
+export interface PersonInfoDetail {
+  realName: string;
+  gender: number; // 0=未知, 1=男, 2=女
+  age: number;
+  phone: string;
+  email: string;
+  education: string;
+  city: string;
+  targetCity: string;
+  expectedSalary: number | null;
+}
+
+export interface UserDetailResponse {
+  user: UserItem;
+  personInfo: PersonInfoDetail | null;
 }
 
 // ============ Skill ============
@@ -172,6 +191,11 @@ export const adminApi = {
 
   updateUserStatus: async (userId: number, status: 'ACTIVE' | 'DISABLED' | 'LOCKED'): Promise<void> => {
     await apiClient.put(`/admin/user/${userId}/status`, { status });
+  },
+
+  getUserDetail: async (userId: number): Promise<UserDetailResponse> => {
+    const response = await apiClient.get(`/admin/user/${userId}/detail`);
+    return response.data;
   },
 
   getSkillList: async (params?: { category?: string; keyword?: string; page?: number; pageSize?: number }): Promise<SkillListResponse> => {

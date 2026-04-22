@@ -7,7 +7,7 @@ import AdminHeader from '@/components/admin/AdminHeader';
 import { adminApi, type AdminDashboardStats } from '@/lib/api/admin';
 import { ChartContainer, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import { Area, AreaChart, CartesianGrid } from 'recharts';
-import { authStore } from '@/lib/stores/auth-store';
+import { adminAuthStore } from '@/lib/stores/auth-store';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -17,7 +17,7 @@ export default function AdminDashboardPage() {
 
   // 检查登录状态，未登录则重定向到登录页
   useEffect(() => {
-    const state = authStore.getState();
+    const state = adminAuthStore.getState();
     if (!state.isAuthenticated || !state.accessToken) {
       router.replace('/admin/login');
     }

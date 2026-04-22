@@ -1,48 +1,83 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { authStore } from '@/lib/stores/auth-store';
+import { authApi } from '@/lib/api/auth';
+import { adminAuthStore } from '@/lib/stores/auth-store';
 
 export default function AdminAuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const isAuthenticated = authStore((state) => state.isAuthenticated);
+  const isAuthenticated = adminAuthStore((state) => state.isAuthenticated);
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    const currentAuth = authStore.getState().isAuthenticated;
-
-    // 如果是登录页
-    if (pathname === '/admin/login') {
-      // 已登录用户访问登录页，重定向到 dashboard
-      if (currentAuth) {
-        router.replace('/admin/dashboard');
+    let active = true;
+    const verify = async () => {
+      const currentAuth = adminAuthStore.getState().isAuthenticated;
+      if (pathname === '/admin/login') {
+        if (!currentAuth) {
+          if (active) setChecking(false);
+          return;
+        }
+        try {
+          const context = await authApi.getContext();
+          if (context.userType === 'ADMIN') {
+            router.replace('/admin/dashboard');
+            return;
+          }
+        } catch {
+          // ignore
+        }
+        adminAuthStore.getState().logout();
+        if (active) setChecking(false);
+        return;
       }
-      return;
-    }
 
-    // 其他管理页面：未登录则重定向到登录页
-    if (!currentAuth) {
-      router.replace('/admin/login');
-      return;
-    }
+      if (!currentAuth) {
+        router.replace('/admin/login');
+        if (active) setChecking(false);
+        return;
+      }
 
-    // 订阅 authStore 变化
-    const unsubscribe = authStore.subscribe((state) => {
+      try {
+        const context = await authApi.getContext();
+        if (context.userType !== 'ADMIN') {
+          adminAuthStore.getState().logout();
+          router.replace('/admin/login');
+          return;
+        }
+      } catch {
+        adminAuthStore.getState().logout();
+        router.replace('/admin/login');
+        return;
+      }
+
+      if (active) setChecking(false);
+    };
+
+    verify();
+
+    const unsubscribe = adminAuthStore.subscribe((state) => {
       if (!state.isAuthenticated && pathname !== '/admin/login') {
         router.replace('/admin/login');
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      active = false;
+      unsubscribe();
+    };
   }, [router, pathname, isAuthenticated]);
 
-  // 登录页：已登录用户不渲染（重定向中），未登录用户正常渲染
+  if (checking) {
+    return null;
+  }
+
   if (pathname === '/admin/login') {
     return isAuthenticated ? null : <>{children}</>;
   }
 
-  // 其他页面：未登录不渲染（重定向中），已登录正常渲染
   if (!isAuthenticated) {
     return null;
   }

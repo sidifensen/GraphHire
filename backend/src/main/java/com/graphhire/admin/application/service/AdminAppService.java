@@ -12,10 +12,13 @@ import com.graphhire.admin.interfaces.dto.response.AdminSkillItemResponse;
 import com.graphhire.admin.interfaces.dto.response.AdminTaskItemResponse;
 import com.graphhire.admin.interfaces.dto.response.AdminTaskListResponse;
 import com.graphhire.admin.interfaces.dto.response.AdminTaskSummaryResponse;
+import com.graphhire.admin.interfaces.dto.response.AdminUserDetailResponse;
 import com.graphhire.admin.interfaces.dto.response.AdminUserItemResponse;
 import com.graphhire.admin.interfaces.dto.response.DashboardStatsResponse;
 import com.graphhire.auth.domain.model.User;
 import com.graphhire.auth.domain.repository.UserRepository;
+import com.graphhire.resume.domain.model.PersonInfo;
+import com.graphhire.resume.domain.repository.PersonInfoRepository;
 import com.graphhire.auth.domain.vo.AuthStatus;
 import com.graphhire.common.vo.PageResult;
 import com.graphhire.job.application.service.CompanyAppService;
@@ -77,6 +80,9 @@ public class AdminAppService {
 
     @Autowired
     private JobRepository jobRepository;
+
+    @Autowired
+    private PersonInfoRepository personInfoRepository;
 
     @Autowired
     private CompanyAppService companyAppService;
@@ -178,6 +184,52 @@ public class AdminAppService {
         User user = userOpt.get();
         user.setStatus(mapUserStatus(status));
         userRepository.save(user);
+    }
+
+    public AdminUserDetailResponse getUserDetail(Long userId) {
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isEmpty()) {
+            throw new RuntimeException("用户不存在");
+        }
+        User user = userOpt.get();
+
+        AdminUserDetailResponse response = new AdminUserDetailResponse();
+
+        // 构建用户基本信息
+        AdminUserDetailResponse.UserItem userItem = new AdminUserDetailResponse.UserItem();
+        String username = user.getUsername() == null ? null : user.getUsername().getValue();
+        userItem.setId(user.getId());
+        userItem.setUsername(username);
+        userItem.setEmail(username);
+        userItem.setPhone(null);
+        userItem.setType(user.getUserType() == null ? null : user.getUserType().name());
+        userItem.setStatus(mapFrontendStatus(user.getStatus()));
+        userItem.setCreatedAt(null);
+        userItem.setLastLoginAt(null);
+        response.setUser(userItem);
+
+        // 构建个人信息
+        Optional<PersonInfo> personInfoOpt = personInfoRepository.findByUserId(userId);
+        if (personInfoOpt.isPresent()) {
+            PersonInfo personInfo = personInfoOpt.get();
+            AdminUserDetailResponse.PersonInfoDetail personInfoDetail = new AdminUserDetailResponse.PersonInfoDetail();
+            personInfoDetail.setId(personInfo.getId());
+            personInfoDetail.setUserId(personInfo.getUserId());
+            personInfoDetail.setRealName(personInfo.getRealName());
+            personInfoDetail.setGender(personInfo.getGender());
+            personInfoDetail.setAge(personInfo.getAge());
+            personInfoDetail.setPhone(personInfo.getPhone());
+            personInfoDetail.setEmail(null);
+            personInfoDetail.setEducation(personInfo.getEducation());
+            personInfoDetail.setCity(personInfo.getCity());
+            personInfoDetail.setTargetCity(personInfo.getTargetCity());
+            personInfoDetail.setExpectedSalary(personInfo.getExpectedSalary());
+            response.setPersonInfo(personInfoDetail);
+        } else {
+            response.setPersonInfo(null);
+        }
+
+        return response;
     }
 
     public PageResult<?> getResumeList(int page, int size) {
@@ -406,9 +458,13 @@ public class AdminAppService {
         item.setPhone(null);
         item.setType(user.getUserType() == null ? null : user.getUserType().name());
         item.setStatus(mapFrontendStatus(user.getStatus()));
-        item.setCreatedAt(null);
-        item.setLastLoginAt(null);
+        item.setCreatedAt(formatDateTime(user.getCreateTime()));
+        item.setLastLoginAt(formatDateTime(user.getLastLoginTime()));
         item.setAvatarUrl(null);
+        // 查询 realName
+        Optional<PersonInfo> personInfoOpt = personInfoRepository.findByUserId(user.getId());
+        String realName = personInfoOpt.map(PersonInfo::getRealName).orElse(null);
+        item.setRealName(realName);
         return item;
     }
 
@@ -499,6 +555,10 @@ public class AdminAppService {
 
     private String format(LocalDateTime time) {
         return time == null ? null : time.format(DATE_TIME_FORMATTER);
+    }
+
+    private String formatDateTime(LocalDateTime time) {
+        return time == null ? null : time.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
     }
 
     private <T> AdminPageResponse<T> paginateList(List<T> list, int page, int pageSize) {

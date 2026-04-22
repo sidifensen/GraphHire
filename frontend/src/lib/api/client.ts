@@ -1,5 +1,10 @@
 import axios from 'axios';
-import { authStore } from '@/lib/stores/auth-store';
+import {
+  getAuthDomainByPath,
+  getAuthStoreByDomain,
+  getStorageKeyByDomain,
+  type AuthDomain,
+} from '@/lib/stores/auth-store';
 
 const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:7777',
@@ -8,7 +13,8 @@ const apiClient = axios.create({
 });
 
 function getAccessToken() {
-  const stateToken = authStore.getState().accessToken;
+  const domain = getCurrentDomain();
+  const stateToken = getAuthStoreByDomain(domain).getState().accessToken;
   if (stateToken) {
     return stateToken;
   }
@@ -18,7 +24,8 @@ function getAccessToken() {
   }
 
   try {
-    const persisted = window.localStorage.getItem('auth-storage');
+    const storageKey = getStorageKeyByDomain(domain);
+    const persisted = window.localStorage.getItem(storageKey);
     if (!persisted) {
       return null;
     }
@@ -27,6 +34,20 @@ function getAccessToken() {
   } catch {
     return null;
   }
+}
+
+function getCurrentDomain(): AuthDomain {
+  if (typeof window === 'undefined') {
+    return 'user';
+  }
+  return getAuthDomainByPath(window.location.pathname);
+}
+
+function getRedirectPathByDomain(domain: AuthDomain): string {
+  if (domain === 'admin') {
+    return '/admin/login';
+  }
+  return '/login';
 }
 
 // Response interceptor to unwrap Result<T>
@@ -43,8 +64,11 @@ apiClient.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      authStore.getState().logout();
-      window.location.href = '/login';
+      const domain = getCurrentDomain();
+      getAuthStoreByDomain(domain).getState().logout();
+      if (typeof window !== 'undefined') {
+        window.location.href = getRedirectPathByDomain(domain);
+      }
     }
     return Promise.reject(error);
   }

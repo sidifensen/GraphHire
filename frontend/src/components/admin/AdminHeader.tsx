@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { authStore } from '@/lib/stores/auth-store';
+import { adminAuthStore } from '@/lib/stores/auth-store';
 import { logoutWithServerInvalidation } from '@/lib/logout';
 
 interface AdminHeaderProps {
@@ -14,9 +14,9 @@ export default function AdminHeader({ title }: AdminHeaderProps) {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // 订阅 authStore 变化，确保 logout 后组件能重新渲染
-  const user = authStore((state) => state.user);
-  const isAuthenticated = authStore((state) => state.isAuthenticated);
+  // 订阅 adminAuthStore 变化，确保 logout 后组件能重新渲染
+  const user = adminAuthStore((state) => state.user);
+  const isAuthenticated = adminAuthStore((state) => state.isAuthenticated);
 
   // 点击外部关闭下拉框
   useEffect(() => {
@@ -33,7 +33,7 @@ export default function AdminHeader({ title }: AdminHeaderProps) {
     await logoutWithServerInvalidation((path) => {
       // 使用 window.location.href 强制页面重新加载，确保状态完全重置
       window.location.href = path;
-    }, '/admin/login');
+    }, '/admin/login', 'admin');
   };
 
   return (

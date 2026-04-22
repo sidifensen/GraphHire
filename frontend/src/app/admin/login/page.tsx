@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { adminApi } from '@/lib/api/admin';
-import { authStore } from '@/lib/stores/auth-store';
+import { adminAuthStore } from '@/lib/stores/auth-store';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -21,7 +21,7 @@ export default function AdminLoginPage() {
     try {
       const response = await adminApi.login({ username, password });
 
-      authStore.getState().setAuth(
+      adminAuthStore.getState().setAuth(
         { accessToken: response.accessToken, refreshToken: response.refreshToken },
         { id: response.userId, username, type: response.userType }
       );
