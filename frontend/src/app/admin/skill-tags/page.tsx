@@ -59,15 +59,15 @@ export default function AdminSkillTagsPage() {
   const categories = Array.from(new Set(list.map((item) => item.category)));
 
   return (
-    <div className="flex flex-col min-h-screen relative">
+    <div className="flex h-screen overflow-hidden">
       <AdminSidebar activeItem="skill-tags" />
 
       {/* Main Content Wrapper */}
-      <div className="flex-1 ml-64 flex flex-col min-h-screen relative">
+      <div className="flex-1 ml-64 flex flex-col h-screen overflow-hidden relative">
         <AdminHeader />
 
         {/* Canvas */}
-        <main className="flex-1 p-10 pb-20 ml-0">
+        <main className="flex-1 overflow-y-auto p-8 pb-16 bg-surface">
           <div className="max-w-7xl mx-auto">
             {/* Page Intro */}
             <div className="mb-10 flex items-end justify-between">
