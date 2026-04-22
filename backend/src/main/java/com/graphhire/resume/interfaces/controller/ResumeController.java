@@ -5,13 +5,21 @@ import com.graphhire.common.vo.PageResult;
 import com.graphhire.common.vo.Result;
 import com.graphhire.resume.application.command.UploadResumeCmd;
 import com.graphhire.resume.application.service.ResumeAppService;
+import com.graphhire.resume.application.service.dto.ResumePreviewFile;
 import com.graphhire.resume.domain.model.Resume;
+import com.graphhire.resume.interfaces.dto.ParseProgressResponse;
 import com.graphhire.resume.interfaces.dto.ResumeVO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.CacheControl;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
@@ -109,5 +117,39 @@ public class ResumeController {
                                                @RequestParam(defaultValue = "10") int size) {
         PageResult<ResumeVO> result = resumeService.getList(page, size);
         return Result.success(result);
+    }
+
+    /**
+     * 获取简历解析进度
+     * @param id 简历ID
+     * @return 解析进度信息
+     */
+    @GetMapping("/{id}/progress")
+    public Result<ParseProgressResponse> getParseProgress(@PathVariable Long id) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        ParseProgressResponse progress = resumeService.getParseProgress(id, userId);
+        return Result.success(progress);
+    }
+
+    /**
+     * 预览简历原文件
+     * @param id 简历ID
+     * @return 文件流（inline）
+     */
+    @GetMapping("/{id}/preview")
+    public ResponseEntity<byte[]> previewResume(@PathVariable Long id) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        ResumePreviewFile previewFile = resumeService.previewResume(id, userId);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType(previewFile.getContentType()));
+        headers.setContentDisposition(ContentDisposition.inline()
+            .filename(previewFile.getFileName(), StandardCharsets.UTF_8)
+            .build());
+        headers.setCacheControl(CacheControl.noCache().getHeaderValue());
+
+        return ResponseEntity.ok()
+            .headers(headers)
+            .body(previewFile.getContent());
     }
 }

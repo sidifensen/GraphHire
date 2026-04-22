@@ -111,6 +111,8 @@ public class AdminRepositoryImpl implements AdminRepository {
         User user = new User();
         user.setId(po.getId());
         user.setUsername(Username.of(po.getUsername()));
+        user.setCreateTime(po.getCreateTime());
+        user.setLastLoginTime(po.getLastLoginTime());
         return user;
     }
 }

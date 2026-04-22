@@ -4,11 +4,10 @@ server:
 spring:
   application:
     name: graphhire-backend
-  config:
-    import: optional:file:.env
   autoconfigure:
-    exclude:
-      - org.apache.rocketmq.spring.autoconfigure.RocketMQAutoConfiguration
+    exclude: []
+  config:
+    import: optional:file:.env,optional:file:backend/.env
 
   datasource:
     driver-class-name: org.postgresql.Driver
@@ -21,7 +20,6 @@ spring:
       connection-timeout: 30000
       idle-timeout: 600000
       max-lifetime: 1800000
-
 
   data:
     redis:
@@ -97,6 +95,7 @@ mybatis-plus:
 
 # RocketMQ Configuration
 rocketmq:
+  enabled: true
   name-server: 127.0.0.1:9876
   producer:
     group: graphhire-producer-group
@@ -106,13 +105,31 @@ ai:
   provider: deepseek
   deepseek:
     api-key: ${DEEPSEEK_API_KEY:}
-    url: ${DEEPSEEK_URL:https://api.deepseek.com/v1}
+    url: https://api.deepseek.com/v1
 
+
+  parser:
+    ocr:
+      enabled: true
+      provider: aliyun
+      fallback-min-text-length: 20
+      aliyun:
+        access-key-id: ${ALIYUN_OCR_ACCESS_KEY_ID:}
+        access-key-secret: ${ALIYUN_OCR_ACCESS_KEY_SECRET:}
+        endpoint: ocr-api.cn-hangzhou.aliyuncs.com
+        type: General
 # RustFS Configuration
 rustfs:
   endpoint: http://localhost:9000
-  access-key-id: rustfsadmin
-  secret-access-key: rustfsadmin
+  access-key: rustfsadmin
+  secret-key: rustfsadmin
+  bucket: resumes
+
+# Memgraph Configuration
+memgraph:
+  bolt-url: bolt://localhost:7687
+  username:
+  password:
 
 # Logging Configuration
 logging:
@@ -133,3 +150,4 @@ springdoc:
     doc-expansion: none
     filter: true
     display-request-duration: true
+

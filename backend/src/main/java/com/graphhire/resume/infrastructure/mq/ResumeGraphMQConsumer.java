@@ -1,7 +1,8 @@
 package com.graphhire.resume.infrastructure.mq;
 
 import com.graphhire.resume.application.service.GraphBuildService;
-import com.graphhire.resume.domain.event.ResumeParsedEvent;
+import com.graphhire.resume.domain.model.Resume;
+import com.graphhire.resume.domain.repository.ResumeRepository;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.slf4j.Logger;
@@ -17,20 +18,26 @@ import org.springframework.stereotype.Component;
 @Component
 @ConditionalOnProperty(name = "rocketmq.enabled", havingValue = "true", matchIfMissing = false)
 @RocketMQMessageListener(topic = "resume-parsed", consumerGroup = "graph-consumer-resume")
-public class ResumeGraphMQConsumer implements RocketMQListener<ResumeParsedEvent> {
+public class ResumeGraphMQConsumer implements RocketMQListener<String> {
 
     private static final Logger log = LoggerFactory.getLogger(ResumeGraphMQConsumer.class);
 
     @Autowired
     private GraphBuildService graphBuildService;
 
+    @Autowired
+    private ResumeRepository resumeRepository;
+
     @Override
-    public void onMessage(ResumeParsedEvent event) {
+    public void onMessage(String message) {
         try {
-            graphBuildService.buildGraphForResume(event.getResume());
-            log.info("Successfully built graph for resume {}", event.getResume().getId());
+            Long resumeId = Long.parseLong(message.trim());
+            Resume resume = resumeRepository.findById(resumeId)
+                .orElseThrow(() -> new RuntimeException("Resume not found: " + resumeId));
+            graphBuildService.buildGraphForResume(resume);
+            log.info("Successfully built graph for resume {}", resumeId);
         } catch (Exception e) {
-            log.error("Failed to build graph for resume {}: {}", event.getResume().getId(), e.getMessage());
+            log.error("Failed to build graph for resume {}: {}", message, e.getMessage());
             // 不重新抛出异常，以免影响主MQ流程
         }
     }

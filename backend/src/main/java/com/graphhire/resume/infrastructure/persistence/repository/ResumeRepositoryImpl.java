@@ -91,7 +91,13 @@ public class ResumeRepositoryImpl implements ResumeRepository {
             resumeMapper.insert(po);
             resume.setId(po.getId());
         } else {
+            // parse_result是jsonb类型，updateById无法正确处理，先置空
+            po.setParseResult(null);
             resumeMapper.updateById(po);
+            // 再单独用CAST更新parse_result
+            if (resume.getParseResult() != null) {
+                resumeMapper.updateParseResult(resume.getId(), resume.getParseResult(), resume.getStatus().ordinal());
+            }
         }
         return resume;
     }
@@ -137,9 +143,9 @@ public class ResumeRepositoryImpl implements ResumeRepository {
         if (resume.getStatus() != null) {
             po.setParseStatus(resume.getStatus().ordinal());
         }
-        // parseResult: JSON string -> Map
+        // parseResult: JSON string -> Map (用HashMap避免JSONObject类型问题)
         if (resume.getParseResult() != null) {
-            po.setParseResult((java.util.Map<String, Object>) JSONUtil.toBean(resume.getParseResult(), java.util.Map.class));
+            po.setParseResult(new java.util.HashMap<>(com.alibaba.fastjson.JSON.parseObject(resume.getParseResult())));
         }
         // isDefault: Boolean -> Integer(0/1)
         po.setIsDefault(resume.getIsDefault() != null && resume.getIsDefault() ? 1 : 0);

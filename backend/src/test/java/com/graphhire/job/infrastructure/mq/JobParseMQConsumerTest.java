@@ -223,4 +223,31 @@ class JobParseMQConsumerTest {
         verify(jobRepository, atLeast(1)).save(jobCaptor.capture());
         assertEquals(ParseStatus.SUCCESS, jobCaptor.getValue().getParseStatus());
     }
+
+    @Test
+    @DisplayName("文档提取文本为空时标记为失败，不调用DeepSeek解析")
+    void consumeJobParse_BlankText_Fails() {
+        testJob.setFilePath("/uploads/job_desc.pdf");
+        when(parseTaskRepository.findById(1L)).thenReturn(Optional.of(testTask));
+        when(jobRepository.findById(1L)).thenReturn(Optional.of(testJob));
+        when(documentParser.extractText("/uploads/job_desc.pdf")).thenReturn("   ");
+
+        consumer.consumeJobParse(1L, 1L);
+
+        // deepSeekClient不应被调用
+        verify(deepSeekClient, never()).parseJob(anyString(), anyString());
+
+        // 验证状态为FAILED
+        ArgumentCaptor<Job> jobCaptor = ArgumentCaptor.forClass(Job.class);
+        verify(jobRepository, atLeast(1)).save(jobCaptor.capture());
+        Job savedJob = jobCaptor.getValue();
+        assertEquals(ParseStatus.FAILED, savedJob.getParseStatus());
+        assertTrue(savedJob.getParseError().contains("未提取到有效文本"));
+
+        ArgumentCaptor<ParseTask> taskCaptor = ArgumentCaptor.forClass(ParseTask.class);
+        verify(parseTaskRepository, atLeast(1)).save(taskCaptor.capture());
+        ParseTask savedTask = taskCaptor.getValue();
+        assertEquals(ParseTask.TaskStatus.FAILED, savedTask.getStatus());
+        assertTrue(savedTask.getErrorMessage().contains("未提取到有效文本"));
+    }
 }

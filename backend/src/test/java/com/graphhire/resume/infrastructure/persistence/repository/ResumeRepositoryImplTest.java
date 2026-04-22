@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 
@@ -55,6 +56,8 @@ class ResumeRepositoryImplTest {
             assertEquals("No error", result.get().getParseError());
             assertEquals(new BigDecimal("0.95"), result.get().getConfidence());
             assertEquals(true, result.get().getIsDefault());
+            assertEquals(LocalDateTime.of(2026, 4, 22, 11, 35, 36), result.get().getCreateTime());
+            assertEquals(LocalDateTime.of(2026, 4, 22, 11, 36, 0), result.get().getUpdateTime());
         }
 
         @Test
@@ -77,8 +80,11 @@ class ResumeRepositoryImplTest {
         @DisplayName("保存新的简历")
         void save_NewResume_InsertsSuccessfully() {
             Resume resume = createResume(null);
-            ResumePO po = createResumePO(1L);
-            when(resumeMapper.insert(any(ResumePO.class))).thenReturn(1);
+            doAnswer(invocation -> {
+                ResumePO arg = invocation.getArgument(0);
+                arg.setId(1L);
+                return 1;
+            }).when(resumeMapper).insert(any(ResumePO.class));
 
             Resume result = resumeRepository.save(resume);
 
@@ -145,6 +151,8 @@ class ResumeRepositoryImplTest {
         po.setParseError("No error");
         po.setConfidence(0.95);
         po.setIsDefault(1);
+        po.setCreateTime(LocalDateTime.of(2026, 4, 22, 11, 35, 36));
+        po.setUpdateTime(LocalDateTime.of(2026, 4, 22, 11, 36, 0));
         return po;
     }
 }

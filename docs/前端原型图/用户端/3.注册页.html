@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>注册 - 图谱智聘</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#d4e5f0",
+                        "on-tertiary": "#ffffff",
+                        "inverse-surface": "#243142",
+                        "on-error": "#ffffff",
+                        "on-tertiary-container": "#c9dae5",
+                        "surface-dim": "#cddbf1",
+                        "primary-fixed": "#dbe1ff",
+                        "outline-variant": "#c3c6d7",
+                        "on-primary-container": "#cbd6ff",
+                        "on-background": "#0e1c2c",
+                        "on-surface": "#0e1c2c",
+                        "tertiary-container": "#506069",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#eef4ff",
+                        "secondary-container": "#4a6ae7",
+                        "on-secondary-fixed-variant": "#0737b8",
+                        "outline": "#737686",
+                        "on-secondary": "#ffffff",
+                        "surface-tint": "#0353da",
+                        "secondary-fixed": "#dde1ff",
+                        "error-container": "#ffdad6",
+                        "surface": "#f8f9ff",
+                        "surface-container-highest": "#d5e4fa",
+                        "surface-variant": "#d5e4fa",
+                        "on-secondary-fixed": "#001354",
+                        "inverse-primary": "#b4c5ff",
+                        "primary-container": "#0052d9",
+                        "on-tertiary-fixed-variant": "#394952",
+                        "on-primary": "#ffffff",
+                        "tertiary": "#394851",
+                        "surface-container": "#e5eeff",
+                        "on-primary-fixed": "#00174b",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "background": "#f8f9ff",
+                        "tertiary-fixed-dim": "#b8c9d3",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#eaf1ff",
+                        "primary": "#003da6",
+                        "error": "#ba1a1a",
+                        "surface-container-high": "#dbe9ff",
+                        "surface-bright": "#f8f9ff",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-secondary-container": "#fffbff",
+                        "secondary": "#2d50cd",
+                        "secondary-fixed-dim": "#b8c4ff",
+                        "on-tertiary-fixed": "#0d1d25",
+                        "on-surface-variant": "#434654"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope", "sans-serif"],
+                        "body": ["Inter", "PingFang SC", "Microsoft YaHei", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface font-body min-h-screen flex items-center justify-center relative overflow-hidden antialiased">
+<!-- Ambient Background Elements for Depth -->
+<div class="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-primary-fixed opacity-30 blur-[100px] pointer-events-none"></div>
+<div class="absolute bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-surface-container-highest opacity-40 blur-[120px] pointer-events-none"></div>
+<!-- Main Registration Container (Asymmetrical Editorial Layout) -->
+<div class="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex items-center justify-center min-h-screen">
+<div class="flex flex-col lg:flex-row w-full bg-surface-container-lowest rounded-xl shadow-[0_12px_32px_-4px_rgba(14,28,44,0.06)] overflow-hidden">
+<!-- Left Pane: Cognitive Branding (35% width on desktop) -->
+<div class="hidden lg:flex flex-col w-[35%] bg-surface-container-low p-12 relative overflow-hidden justify-between border-r border-surface-container/50">
+<!-- Abstract Graph Image representing the Cognitive System -->
+<div class="absolute inset-0 z-0 opacity-20 bg-cover bg-center mix-blend-multiply" data-alt="Abstract connecting lines and nodes on a light background, symbolizing an intelligent network and cognitive graph connections, soft lighting" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDwmuoFo1R--r-fZ27-XSnwb4ddH66PLKTc255gbUUT9SXpj1uV3Euc-jFU3hFZvDL2H2811RjlIqb4OFsC1nGRkDNR2zvjCICuc0auRuGKT0tY3pNzEdhQInJK2-X8pjLQDE8tn5_aWmPFhqRvPHJHs65wXM390bk4-nKnoP-CyuY0Rcg_v93kOynUxXqLJwFe4qMbKwGe4bQn5FtsSFdYaXUIA75gEAjhFgUD6aYVOneZJRcLzX-VMUvHPDwdkMet-K0tEs2x7wqs');"></div>
+<div class="relative z-10">
+<h1 class="font-headline font-black text-2xl tracking-tighter text-primary mb-2">图谱智聘</h1>
+<p class="text-tertiary text-sm tracking-wide font-medium">GraphHire</p>
+</div>
+<div class="relative z-10 mt-auto">
+<div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary-fixed mb-6">
+<span class="material-symbols-outlined text-on-primary-fixed" style="font-size: 16px; font-variation-settings: 'FILL' 1;">psychology</span>
+<span class="text-xs font-semibold text-on-primary-fixed tracking-wide">AI 驱动的职业导航</span>
+</div>
+<h2 class="font-headline text-3xl font-bold leading-tight mb-4 text-on-surface">构建您的<br/>职业图谱档案。</h2>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-8">
+                        通过认知分析与智能匹配，消除求职噪音。加入我们，让算法为您寻找最契合的发展路径。
+                    </p>
+</div>
+</div>
+<!-- Right Pane: Form Area (65% width on desktop) -->
+<div class="w-full lg:w-[65%] p-8 sm:p-12 lg:p-16 flex flex-col justify-center">
+<div class="max-w-md w-full mx-auto lg:mx-0">
+<h2 class="font-headline text-2xl font-bold mb-8 text-on-surface">创建账号</h2>
+<!-- Role Switcher (Segmented Control) -->
+<div class="flex bg-surface-container-low p-1 rounded-lg w-fit mb-8" role="tablist">
+<button aria-selected="true" class="bg-surface-container-lowest shadow-sm rounded text-primary font-bold py-2 px-8 text-sm transition-all" role="tab">
+                            求职者
+                        </button>
+<button aria-selected="false" class="text-tertiary hover:text-on-surface font-medium py-2 px-8 text-sm transition-colors rounded" role="tab">
+                            招聘者
+                        </button>
+</div>
+<form class="flex flex-col gap-5">
+<!-- Phone Number -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-medium text-on-surface">手机号</label>
+<input class="bg-surface-container-low border-b-2 border-transparent focus:border-primary focus:bg-surface-container-lowest focus:ring-0 px-4 py-3 rounded text-sm text-on-surface placeholder:text-outline transition-all outline-none" placeholder="请输入 11 位手机号" type="tel"/>
+</div>
+<!-- Verification Code -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-medium text-on-surface">验证码</label>
+<div class="flex gap-3">
+<input class="flex-1 bg-surface-container-low border-b-2 border-transparent focus:border-primary focus:bg-surface-container-lowest focus:ring-0 px-4 py-3 rounded text-sm text-on-surface placeholder:text-outline transition-all outline-none" placeholder="6 位验证码" type="text"/>
+<button class="whitespace-nowrap px-6 py-3 rounded bg-surface-container-high text-primary font-medium text-sm hover:bg-surface-container transition-colors" type="button">
+                                    获取验证码
+                                </button>
+</div>
+</div>
+<!-- Password -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-medium text-on-surface">密码</label>
+<input class="bg-surface-container-low border-b-2 border-transparent focus:border-primary focus:bg-surface-container-lowest focus:ring-0 px-4 py-3 rounded text-sm text-on-surface placeholder:text-outline transition-all outline-none" placeholder="设置 8-20 位密码，包含字母和数字" type="password"/>
+</div>
+<!-- Confirm Password -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-medium text-on-surface">确认密码</label>
+<input class="bg-surface-container-low border-b-2 border-transparent focus:border-primary focus:bg-surface-container-lowest focus:ring-0 px-4 py-3 rounded text-sm text-on-surface placeholder:text-outline transition-all outline-none" placeholder="请再次输入密码" type="password"/>
+</div>
+<!-- Conditional Recruiter Fields (Hidden by default for Job Seeker flow) -->
+<div class="hidden flex-col gap-5 pt-4 mt-2 border-t border-surface-container" id="recruiter-fields">
+<div class="flex flex-col gap-2">
+<label class="text-sm font-medium text-on-surface">公司全称</label>
+<input class="bg-surface-container-low border-b-2 border-transparent focus:border-primary focus:bg-surface-container-lowest focus:ring-0 px-4 py-3 rounded text-sm text-on-surface placeholder:text-outline transition-all outline-none" placeholder="请输入营业执照上的公司全称" type="text"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-sm font-medium text-on-surface">统一社会信用代码</label>
+<input class="bg-surface-container-low border-b-2 border-transparent focus:border-primary focus:bg-surface-container-lowest focus:ring-0 px-4 py-3 rounded text-sm text-on-surface placeholder:text-outline transition-all outline-none" placeholder="请输入 18 位信用代码" type="text"/>
+</div>
+</div>
+<!-- Agreement -->
+<div class="flex items-start gap-3 mt-2">
+<div class="flex items-center h-5">
+<input class="w-4 h-4 rounded text-primary border-outline-variant bg-surface-container-low focus:ring-primary focus:ring-offset-0 cursor-pointer" id="agreement" type="checkbox"/>
+</div>
+<label class="text-xs text-on-surface-variant leading-tight cursor-pointer select-none pt-0.5" for="agreement">
+                                我已阅读并同意 <a class="text-primary hover:text-primary-container transition-colors" href="#">《用户服务协议》</a> 和 <a class="text-primary hover:text-primary-container transition-colors" href="#">《隐私政策》</a>
+</label>
+</div>
+<!-- Submit Button -->
+<button class="w-full py-3.5 mt-4 rounded-lg bg-gradient-to-br from-primary to-primary-container text-on-primary font-semibold text-sm hover:opacity-90 transition-opacity shadow-sm flex items-center justify-center gap-2" type="submit">
+<span>立即注册</span>
+<span class="material-symbols-outlined" style="font-size: 18px;">arrow_forward</span>
+</button>
+</form>
+<!-- Post-registration Guidance Hint -->
+<div class="mt-8 p-4 rounded-lg bg-surface-container flex items-start gap-3 border border-surface-container-high/50">
+<span class="material-symbols-outlined text-primary mt-0.5" style="font-size: 20px; font-variation-settings: 'FILL' 1;">info</span>
+<div>
+<h4 class="text-sm font-semibold text-primary mb-1">注册成功后</h4>
+<p class="text-xs text-tertiary leading-relaxed">
+                                系统将引导您进入「认知图谱初始化」流程，填写核心履历特征，以便 AI 引擎为您构建专属的竞争力画像。
+                            </p>
+</div>
+</div>
+<div class="mt-8 text-center">
+<p class="text-sm text-tertiary">
+                            已有账号？ <a class="text-primary font-medium hover:underline underline-offset-4" href="#">立即登录</a>
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

@@ -1,26 +1,37 @@
 package com.graphhire.resume.application.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.StrUtil;
+import com.graphhire.common.vo.Exceptions;
 import com.graphhire.common.vo.PageResult;
 import com.graphhire.resume.application.command.UploadResumeCmd;
+import com.graphhire.resume.application.service.dto.ResumePreviewFile;
 import com.graphhire.resume.domain.model.ParseTask;
 import com.graphhire.resume.domain.model.Resume;
 import com.graphhire.resume.domain.repository.ParseTaskRepository;
 import com.graphhire.resume.domain.repository.ResumeRepository;
 import com.graphhire.resume.domain.vo.ParseStatus;
+import com.graphhire.resume.interfaces.dto.ParseProgressResponse;
 
 import java.io.IOException;
 import com.graphhire.resume.interfaces.dto.ResumeVO;
 import com.graphhire.resume.infrastructure.file.RustFSClient;
 import com.graphhire.resume.infrastructure.mq.ResumeMQProducer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ResumeAppService {
+    private static final Logger log = LoggerFactory.getLogger(ResumeAppService.class);
+
     @Autowired
     private ResumeRepository resumeRepository;
 
@@ -35,6 +46,11 @@ public class ResumeAppService {
 
     @Transactional
     public Resume uploadResume(UploadResumeCmd cmd) throws IOException {
+        List<Resume> existingResumes = resumeRepository.findByUserId(cmd.getUserId());
+        if (existingResumes.size() >= 3) {
+            throw Exceptions.BusinessException.of(400, "最多上传3份简历，请先删除旧简历");
+        }
+
         // 步骤1：上传文件到RustFS
         String filePath = rustFSClient.upload(cmd.getFileBytes(), cmd.getFileName());
         // 步骤2：创建简历聚合根
@@ -169,6 +185,9 @@ public class ResumeAppService {
         if (!resume.getUserId().equals(userId)) {
             throw new RuntimeException("无权设置此简历");
         }
+        if (resume.getStatus() != ParseStatus.SUCCESS) {
+            throw Exceptions.BusinessException.of(400, "请先解析成功后再设为默认");
+        }
         // 取消该用户的其他默认简历
         List<Resume> userResumes = getResumesByUserId(userId);
         for (Resume r : userResumes) {
@@ -180,6 +199,9 @@ public class ResumeAppService {
         // 将此简历设为默认
         resume.setIsDefault(true);
         resumeRepository.save(resume);
+        if (mqProducer != null) {
+            mqProducer.sendResumeDefaultChangedMessage(resumeId);
+        }
     }
 
     /**
@@ -197,11 +219,17 @@ public class ResumeAppService {
         if (!resume.getUserId().equals(userId)) {
             throw new RuntimeException("无权解析此简历");
         }
-        // 标记为解析中并发送MQ事件触发AI解析（如MQ已启用）
+        // 标记为解析中
         resume.markParsing();
         resumeRepository.save(resume);
+        // 创建解析任务并发送MQ消息触发AI解析（如MQ已启用）
         if (mqProducer != null) {
-            mqProducer.sendResumeUploadedEvent(resume);
+            ParseTask task = new ParseTask();
+            task.setResumeId(resumeId);
+            task.setTaskType("resume_parse");
+            task.setStatus(ParseTask.TaskStatus.PENDING);
+            parseTaskRepository.save(task);
+            mqProducer.sendResumeParseMessage(resumeId, task.getId());
         }
     }
 
@@ -219,5 +247,128 @@ public class ResumeAppService {
             throw new RuntimeException("无权查看此简历");
         }
         return resume;
+    }
+
+    /**
+     * 获取简历解析进度
+     * 【功能说明】查询简历的真实解析进度，基于ParseTask状态计算百分比。
+     * 【业务步骤】
+     * 步骤1：校验简历是否存在且属于当前用户
+     * 步骤2：查询关联的ParseTask
+     * 步骤3：根据任务状态计算进度百分比和步骤描述
+     */
+    public ParseProgressResponse getParseProgress(Long resumeId, Long userId) {
+        Resume resume = getResumeById(resumeId);
+        if (!resume.getUserId().equals(userId)) {
+            throw new RuntimeException("无权查看此简历");
+        }
+        ParseProgressResponse response = new ParseProgressResponse();
+        response.setResumeId(resumeId);
+        response.setStartedAt(null);
+        response.setCompletedAt(null);
+        // 查询最新的解析任务
+        Optional<ParseTask> taskOpt = parseTaskRepository.findByResumeId(resumeId);
+        if (taskOpt.isEmpty()) {
+            // 无任务时返回简历自己的状态
+            response.setStatus(resume.getStatus() != null ? resume.getStatus().name() : "PENDING");
+            response.setProgress(0);
+            response.setStep("等待解析任务");
+            return response;
+        }
+        ParseTask task = taskOpt.get();
+        response.setStartedAt(task.getStartedAt());
+        response.setCompletedAt(task.getCompletedAt());
+        ParseTask.TaskStatus status = task.getStatus();
+        if (status == null) {
+            status = ParseTask.TaskStatus.PENDING;
+        }
+        response.setStatus(status.name());
+        switch (status) {
+            case PENDING:
+                response.setProgress(0);
+                response.setStep("等待解析");
+                break;
+            case RUNNING:
+                response.setProgress(50);
+                response.setStep("AI 解析中...");
+                break;
+            case SUCCESS:
+                response.setProgress(100);
+                response.setStep("解析完成");
+                break;
+            case FAILED:
+                response.setProgress(0);
+                response.setStep("解析失败");
+                response.setErrorMessage(task.getErrorMessage());
+                break;
+            default:
+                response.setProgress(0);
+                response.setStep("未知状态");
+        }
+        return response;
+    }
+
+    /**
+     * 预览简历文件
+     * 【功能说明】校验当前用户权限后，从 RustFS 下载简历原文件并返回预览数据。
+     */
+    public ResumePreviewFile previewResume(Long resumeId, Long userId) {
+        Resume resume = getResumeById(resumeId);
+        if (!resume.getUserId().equals(userId)) {
+            throw new RuntimeException("无权预览此简历");
+        }
+
+        try {
+            byte[] content = rustFSClient.download(resume.getFilePath());
+            String contentType = resolveContentType(resume);
+            return new ResumePreviewFile(content, resume.getFileName(), contentType);
+        } catch (RuntimeException ex) {
+            if (!isMissingObjectError(ex)) {
+                throw ex;
+            }
+
+            Optional<Resume> fallbackResumeOpt = getResumesByUserId(userId).stream()
+                .filter(candidate -> !candidate.getId().equals(resume.getId()))
+                .filter(candidate -> StrUtil.equals(candidate.getFileName(), resume.getFileName()))
+                .sorted(Comparator.comparing(Resume::getId).reversed())
+                .filter(candidate -> StrUtil.isNotBlank(candidate.getFilePath()) && rustFSClient.exists(candidate.getFilePath()))
+                .findFirst();
+
+            if (fallbackResumeOpt.isEmpty()) {
+                throw ex;
+            }
+
+            Resume fallbackResume = fallbackResumeOpt.get();
+            log.warn("Resume preview fallback: resumeId={} filePath={} -> fallbackResumeId={} fallbackPath={}",
+                resume.getId(), resume.getFilePath(), fallbackResume.getId(), fallbackResume.getFilePath());
+            byte[] fallbackContent = rustFSClient.download(fallbackResume.getFilePath());
+            return new ResumePreviewFile(fallbackContent, resume.getFileName(), resolveContentType(fallbackResume));
+        }
+    }
+
+    private boolean isMissingObjectError(RuntimeException ex) {
+        String message = ex.getMessage();
+        if (StrUtil.isBlank(message)) {
+            return false;
+        }
+        String lowerMessage = message.toLowerCase();
+        return lowerMessage.contains("no such key")
+            || lowerMessage.contains("specified key does not exist")
+            || lowerMessage.contains("status code: 404");
+    }
+
+    private String resolveContentType(Resume resume) {
+        if (StrUtil.isNotBlank(resume.getFileType()) && resume.getFileType().contains("/")) {
+            return resume.getFileType();
+        }
+
+        String extension = FileUtil.extName(resume.getFileName()).toLowerCase();
+        return switch (extension) {
+            case "pdf" -> "application/pdf";
+            case "doc" -> "application/msword";
+            case "docx" -> "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+            case "txt" -> "text/plain";
+            default -> "application/octet-stream";
+        };
     }
 }

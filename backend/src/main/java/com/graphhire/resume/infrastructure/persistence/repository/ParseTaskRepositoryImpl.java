@@ -30,8 +30,14 @@ public class ParseTaskRepositoryImpl implements ParseTaskRepository {
     @Override
     public Optional<ParseTask> findByResumeId(Long resumeId) {
         LambdaQueryWrapper<ParseTaskPO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(ParseTaskPO::getSourceId, resumeId);
-        ParseTaskPO po = parseTaskMapper.selectOne(wrapper);
+        wrapper.eq(ParseTaskPO::getSourceId, resumeId)
+                .eq(ParseTaskPO::getTaskType, 1)
+                .orderByDesc(ParseTaskPO::getId);
+        List<ParseTaskPO> pos = parseTaskMapper.selectList(wrapper);
+        ParseTaskPO po = pos.stream()
+                .filter(task -> task != null && Integer.valueOf(1).equals(task.getTaskType()))
+                .findFirst()
+                .orElse(null);
         return Optional.ofNullable(po).map(this::toDomain);
     }
 

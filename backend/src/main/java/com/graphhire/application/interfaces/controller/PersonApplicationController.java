@@ -12,13 +12,13 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/person")
+@RequestMapping("/person/application")
 public class PersonApplicationController {
 
     @Autowired
     private ApplicationAppService applicationAppService;
 
-    @PostMapping("/applications")
+    @PostMapping("/apply")
     public Result<Long> applyJob(@RequestBody Map<String, Long> request) {
         Long userId = StpUtil.getLoginIdAsLong();
         Long resumeId = request.get("resumeId");
@@ -27,13 +27,13 @@ public class PersonApplicationController {
         return Result.success(application.getId());
     }
 
-    @GetMapping("/applications")
+    @GetMapping("/list")
     public Result<List<Application>> getMyApplications() {
         Long userId = StpUtil.getLoginIdAsLong();
         return Result.success(applicationAppService.getUserApplications(userId));
     }
 
-    @GetMapping("/applications/{id}")
+    @GetMapping("/{id}")
     public Result<Application> getApplicationDetail(@PathVariable Long id) {
         Long userId = StpUtil.getLoginIdAsLong();
         Application application = applicationAppService.getApplicationById(id);
@@ -43,14 +43,14 @@ public class PersonApplicationController {
         return Result.success(application);
     }
 
-    @PutMapping("/applications/{id}/withdraw")
+    @PutMapping("/{id}/withdraw")
     public Result<Void> withdrawApplication(@PathVariable Long id) {
         Long userId = StpUtil.getLoginIdAsLong();
         applicationAppService.withdrawApplication(userId, id);
         return Result.success();
     }
 
-    @PostMapping("/favorites")
+    @PostMapping("/favorite")
     public Result<Void> favoriteJob(@RequestBody Map<String, Long> request) {
         Long userId = StpUtil.getLoginIdAsLong();
         Long jobId = request.get("jobId");
@@ -58,7 +58,7 @@ public class PersonApplicationController {
         return Result.success();
     }
 
-    @DeleteMapping("/favorites/{jobId}")
+    @DeleteMapping("/favorite/{jobId}")
     public Result<Void> unfavoriteJob(@PathVariable Long jobId) {
         Long userId = StpUtil.getLoginIdAsLong();
         applicationAppService.unfavoriteJob(userId, jobId);

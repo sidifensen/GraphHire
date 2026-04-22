@@ -1,5 +1,6 @@
 package com.graphhire.job.infrastructure.mq;
 
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.graphhire.job.domain.model.Job;
 import com.graphhire.job.domain.model.JobSkill;
@@ -84,6 +85,10 @@ public class JobParseMQConsumer {
             String text = "";
             if (job.getFilePath() != null && !job.getFilePath().isBlank()) {
                 text = documentParser.extractText(job.getFilePath());
+                // 步骤3.1：空文本保护
+                if (StrUtil.isBlank(text)) {
+                    throw new RuntimeException("文档未提取到有效文本");
+                }
             }
 
             // 步骤4：调用AI服务解析职位

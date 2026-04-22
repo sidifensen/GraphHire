@@ -2,11 +2,16 @@ package com.graphhire.auth.interfaces.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.graphhire.auth.application.command.ForgotPasswordCmd;
+import com.graphhire.auth.application.command.ResetPasswordCmd;
 import com.graphhire.auth.application.service.AuthAppService;
+import com.graphhire.auth.domain.model.User;
+import com.graphhire.auth.domain.repository.UserRepository;
 import com.graphhire.auth.interfaces.dto.request.CompanyRegisterRequest;
 import com.graphhire.auth.interfaces.dto.request.LoginRequest;
 import com.graphhire.auth.interfaces.dto.request.PersonRegisterRequest;
+import com.graphhire.auth.interfaces.dto.response.AuthContextResponse;
 import com.graphhire.auth.interfaces.dto.response.LoginResponse;
+import com.graphhire.common.vo.Exceptions;
 import com.graphhire.common.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +26,9 @@ public class AuthController {
 
     @Autowired
     private AuthAppService authService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     /**
      * 用户登录
@@ -87,19 +95,15 @@ public class AuthController {
     }
 
     /**
-     * 重置密码（已废弃，请使用 /forgot-password 接口）
-     * @param email 用户邮箱
-     * @param code 验证码
-     * @param newPassword 新密码
+     * 重置密码
+     * @param cmd 重置密码命令（email、code、newPassword）
      * @return void
      */
-    // @PostMapping("/reset-password")
-    // public Result<Void> resetPassword(@RequestParam String email,
-    //                                   @RequestParam String code,
-    //                                   @RequestParam String newPassword) {
-    //     authService.resetPassword(email, code, newPassword);
-    //     return Result.success();
-    // }
+    @PostMapping("/reset-password")
+    public Result<Void> resetPassword(@RequestBody ResetPasswordCmd cmd) {
+        authService.resetPassword(cmd.getEmail(), cmd.getCode(), cmd.getNewPassword());
+        return Result.success();
+    }
 
     /**
      * 登出
@@ -139,5 +143,17 @@ public class AuthController {
     @GetMapping("/validate")
     public Result<Boolean> validateToken() {
         return Result.success(StpUtil.isLogin());
+    }
+
+    /**
+     * 获取当前登录上下文（后端真实用户类型）
+     * @return 当前登录用户ID与角色类型
+     */
+    @GetMapping("/context")
+    public Result<AuthContextResponse> getContext() {
+        Long userId = StpUtil.getLoginIdAsLong();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new Exceptions.UnauthorizedException("登录用户不存在"));
+        return Result.success(new AuthContextResponse(userId, user.getUserType().name()));
     }
 }

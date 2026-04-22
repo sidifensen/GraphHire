@@ -1,17 +1,26 @@
 package com.graphhire.resume.interfaces.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.io.file.FileNameUtil;
 import com.graphhire.common.vo.Result;
 import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.repository.PersonInfoRepository;
+import com.graphhire.resume.infrastructure.file.RustFSClient;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.Locale;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/person")
@@ -20,7 +29,9 @@ public class PersonAvatarController {
     @Autowired
     private PersonInfoRepository personInfoRepository;
 
-    private static final String UPLOAD_DIR = "/data/avatars/";
+    @Autowired
+    private RustFSClient rustFSClient;
+
     private static final long MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 
     @PostMapping("/avatar")
@@ -31,27 +42,20 @@ public class PersonAvatarController {
             throw new RuntimeException("文件大小不能超过2MB");
         }
 
-        String contentType = file.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
+        String contentType = Optional.ofNullable(file.getContentType()).orElse("");
+        if (!contentType.startsWith("image/")) {
             throw new RuntimeException("只能上传图片文件");
         }
 
         String originalFilename = file.getOriginalFilename();
-        String extension = "";
-        if (originalFilename != null && originalFilename.contains(".")) {
-            extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        String ext = FileNameUtil.extName(originalFilename);
+        if (ext.isBlank()) {
+            ext = "jpg";
         }
-        String filename = userId + "_" + System.currentTimeMillis() + extension;
+        String filename = "avatars/user_" + userId + "_" + System.currentTimeMillis() + "." + ext;
 
         try {
-            Path uploadPath = Paths.get(UPLOAD_DIR);
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-            Path filePath = uploadPath.resolve(filename);
-            file.transferTo(filePath.toFile());
-
-            String avatarUrl = "/avatars/" + filename;
+            String avatarPath = rustFSClient.upload(file.getBytes(), filename);
 
             PersonInfo personInfo = personInfoRepository.findByUserId(userId)
                 .orElseGet(() -> {
@@ -59,10 +63,10 @@ public class PersonAvatarController {
                     newInfo.setUserId(userId);
                     return newInfo;
                 });
-            personInfo.setAvatarUrl(avatarUrl);
+            personInfo.setAvatarUrl(avatarPath);
             personInfoRepository.save(personInfo);
 
-            return Result.success(avatarUrl);
+            return Result.success("/person/avatar/public/" + userId);
         } catch (IOException e) {
             throw new RuntimeException("上传头像失败: " + e.getMessage());
         }
@@ -75,10 +79,33 @@ public class PersonAvatarController {
         PersonInfo personInfo = personInfoRepository.findByUserId(userId)
             .orElse(null);
 
-        if (personInfo != null && personInfo.getAvatarUrl() != null) {
-            return Result.success(personInfo.getAvatarUrl());
+        if (personInfo == null || personInfo.getAvatarUrl() == null) {
+            return Result.success(null);
+        }
+        return Result.success("/person/avatar/public/" + userId);
+    }
+
+    @GetMapping("/avatar/public/{userId}")
+    public ResponseEntity<byte[]> getAvatarPublic(@PathVariable Long userId) {
+        PersonInfo personInfo = personInfoRepository.findByUserId(userId).orElse(null);
+        if (personInfo == null || personInfo.getAvatarUrl() == null) {
+            return ResponseEntity.notFound().build();
         }
 
-        return Result.success("/avatars/default.png");
+        byte[] data = rustFSClient.download(personInfo.getAvatarUrl());
+        MediaType mediaType = detectMediaType(personInfo.getAvatarUrl());
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CACHE_CONTROL, "public, max-age=300")
+            .contentType(mediaType)
+            .body(data);
+    }
+
+    private MediaType detectMediaType(String filePath) {
+        String ext = FileNameUtil.extName(filePath).toLowerCase(Locale.ROOT);
+        return switch (ext) {
+            case "png" -> MediaType.IMAGE_PNG;
+            case "webp" -> MediaType.parseMediaType("image/webp");
+            default -> MediaType.IMAGE_JPEG;
+        };
     }
 }

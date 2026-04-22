@@ -107,13 +107,19 @@ class JobSkillRepositoryImplTest {
             jobSkill.setIsRequired(true);
             jobSkill.setWeight(new BigDecimal("0.8"));
 
-            when(jobSkillMapper.insert(any(JobSkillPO.class))).thenReturn(1);
+            // 模拟 MyBatis-Plus AUTO strategy 的 ID 回填行为
+            doAnswer(invocation -> {
+                JobSkillPO po = invocation.getArgument(0);
+                po.setId(1L);
+                return 1;
+            }).when(jobSkillMapper).insert(any(JobSkillPO.class));
 
             // When
             JobSkill result = jobSkillRepository.save(jobSkill);
 
             // Then
             assertNotNull(result.getId());
+            assertEquals(1L, result.getId());
             verify(jobSkillMapper).insert(any(JobSkillPO.class));
         }
 

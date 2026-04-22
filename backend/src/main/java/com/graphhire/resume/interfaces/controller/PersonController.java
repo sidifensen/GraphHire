@@ -42,7 +42,7 @@ public class PersonController {
         PersonInfo personInfo = personInfoRepository.findByUserId(userId)
             .orElse(null);
         if (personInfo == null) {
-            return Result.error("个人信息不存在");
+            return Result.success(null);
         }
         PersonInfoResponse response = new PersonInfoResponse(
             personInfo.getId(),
@@ -54,7 +54,8 @@ public class PersonController {
             personInfo.getEducation(),
             personInfo.getCity(),
             personInfo.getTargetCity(),
-            personInfo.getExpectedSalary()
+            personInfo.getExpectedSalary(),
+            personInfo.getAvatarUrl() == null ? null : "/person/avatar/public/" + userId
         );
         return Result.success(response);
     }
@@ -74,34 +75,25 @@ public class PersonController {
                 return newInfo;
             });
 
-        // 更新请求中的字段
-        if (request.getRealName() != null) {
-            personInfo.setRealName(request.getRealName());
-        }
-        if (request.getGender() != null) {
-            personInfo.setGender(request.getGender());
-        }
-        if (request.getAge() != null) {
-            personInfo.setAge(request.getAge());
-        }
-        if (request.getPhone() != null) {
-            personInfo.setPhone(request.getPhone());
-        }
-        if (request.getEducation() != null) {
-            personInfo.setEducation(request.getEducation());
-        }
-        if (request.getCity() != null) {
-            personInfo.setCity(request.getCity());
-        }
-        if (request.getTargetCity() != null) {
-            personInfo.setTargetCity(request.getTargetCity());
-        }
-        if (request.getExpectedSalary() != null) {
-            personInfo.setExpectedSalary(request.getExpectedSalary());
-        }
+        // PUT 语义：请求中的字段按当前值覆盖，允许清空
+        personInfo.setRealName(request.getRealName());
+        personInfo.setGender(normalizeGender(request.getGender()));
+        personInfo.setAge(request.getAge());
+        personInfo.setPhone(request.getPhone());
+        personInfo.setEducation(request.getEducation());
+        personInfo.setCity(request.getCity());
+        personInfo.setTargetCity(request.getTargetCity());
+        personInfo.setExpectedSalary(request.getExpectedSalary());
 
         personInfoRepository.save(personInfo);
         return Result.success();
+    }
+
+    private Integer normalizeGender(Integer gender) {
+        if (gender == null || gender == 0) {
+            return null;
+        }
+        return gender;
     }
 
     /**

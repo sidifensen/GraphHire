@@ -107,6 +107,7 @@ public class MatchDomainService {
         MatchScore score = MatchScore.of(skillScore, expScore, cityScore, eduScore, salScore);
         MatchRecord record = MatchRecord.create(resume.getId(), job.getId(), score);
         record.setMatchReason(matchReason);
+        record.setMatchDirection(MatchRecord.DIRECTION_PERSON_APPLIES);
 
         return record;
     }

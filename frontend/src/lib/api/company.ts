@@ -1,4 +1,12 @@
 import apiClient from './client';
+import type {
+  EnterpriseCreateStaffRequest,
+  EnterpriseDashboard,
+  EnterpriseJobListItem,
+  EnterpriseRecommendation,
+  EnterpriseStaffListItem,
+  EnterpriseStaffStats,
+} from '@/lib/types/enterprise';
 
 export interface Company {
   id: number;
@@ -11,68 +19,85 @@ export interface Company {
   industry?: string;
   employeeCount?: string;
   authStatus: 'PENDING' | 'VERIFIED' | 'REJECTED';
-  createdAt: string;
+  createdAt?: string;
 }
 
-export interface CompanyStaff {
-  id: number;
-  name: string;
-  email: string;
-  phone: string;
-  role: 'ADMIN' | 'HR' | 'VIEWER';
-  status: 'ACTIVE' | 'DISABLED';
-  createdAt: string;
+export interface JobGraph {
+  nodes: Array<{
+    id: string;
+    type: string;
+    name: string;
+  }>;
+  edges: Array<{
+    source: string;
+    target: string;
+    type: string;
+  }>;
 }
 
-export interface PageResult<T> {
-  list: T[];
-  total: number;
-  page: number;
-  size: number;
-}
-
-// Public APIs (no auth required)
-export const publicCompanyApi = {
-  search: async (params?: {
-    keyword?: string;
-    page?: number;
-    size?: number;
-  }): Promise<PageResult<Company>> => {
-    const response = await apiClient.get<PageResult<Company>>('/public/companies', { params });
-    return response.data;
-  },
-
-  getById: async (id: number): Promise<Company> => {
-    const response = await apiClient.get<Company>(`/public/companies/${id}`);
-    return response.data;
-  },
-};
-
-// Authenticated company APIs
 export const companyApi = {
-  getInfo: async (companyId: number): Promise<Company> => {
-    const response = await apiClient.get(`/company/${companyId}`);
+  getInfo: async (): Promise<Company> => {
+    const response = await apiClient.get<Company>('/company/info');
     return response.data;
   },
 
-  updateInfo: async (companyId: number, data: Partial<Company>): Promise<void> => {
-    await apiClient.put(`/company/${companyId}`, data);
-  },
-
-  getStaffList: async (companyId: number): Promise<CompanyStaff[]> => {
-    const response = await apiClient.get(`/company/${companyId}/staff`);
+  getDashboard: async (): Promise<EnterpriseDashboard> => {
+    const response = await apiClient.get<EnterpriseDashboard>('/company/dashboard');
     return response.data;
   },
 
-  addStaff: async (companyId: number, data: { name: string; email: string; role: string }): Promise<void> => {
-    await apiClient.post(`/company/${companyId}/staff`, data);
+  getJobList: async (params?: { status?: string; keyword?: string }): Promise<EnterpriseJobListItem[]> => {
+    const response = await apiClient.get<EnterpriseJobListItem[]>('/company/job/list', { params });
+    return response.data;
   },
 
-  updateStaffRole: async (staffId: number, role: string): Promise<void> => {
-    await apiClient.put(`/company/staff/${staffId}/role`, { role });
+  publishJob: async (jobId: number): Promise<void> => {
+    await apiClient.post(`/company/job/${jobId}/publish`);
   },
 
-  disableStaff: async (staffId: number): Promise<void> => {
-    await apiClient.put(`/company/staff/${staffId}/disable`);
+  closeJob: async (jobId: number): Promise<void> => {
+    await apiClient.post(`/company/job/${jobId}/close`);
+  },
+
+  updateJobStatus: async (jobId: number, publish: boolean): Promise<void> => {
+    await apiClient.put(`/company/job/${jobId}/status`, { publish });
+  },
+
+  parseJob: async (jobId: number): Promise<void> => {
+    await apiClient.post(`/company/job/${jobId}/parse`);
+  },
+
+  getJobGraph: async (jobId: number): Promise<JobGraph> => {
+    const response = await apiClient.get<JobGraph>(`/company/job/${jobId}/graph`);
+    return response.data;
+  },
+
+  getRecommendedResumes: async (params?: { jobId?: number }): Promise<EnterpriseRecommendation[]> => {
+    const response = await apiClient.get<EnterpriseRecommendation[]>('/company/recommend/resumes', { params });
+    return response.data;
+  },
+
+  matchResume: async (resumeId: number, jobId: number): Promise<EnterpriseRecommendation> => {
+    const response = await apiClient.get<EnterpriseRecommendation>(`/company/match/${resumeId}`, { params: { jobId } });
+    return response.data;
+  },
+
+  getStaffList: async (): Promise<EnterpriseStaffListItem[]> => {
+    const response = await apiClient.get<EnterpriseStaffListItem[]>('/company/staff/list');
+    return response.data;
+  },
+
+  getStaffStats: async (): Promise<EnterpriseStaffStats> => {
+    const response = await apiClient.get<EnterpriseStaffStats>('/company/staff/stats');
+    return response.data;
+  },
+
+  createStaff: async (data: EnterpriseCreateStaffRequest): Promise<void> => {
+    await apiClient.post('/company/staff/create', data);
+  },
+
+  resetStaffPassword: async (staffId: number): Promise<{ newPassword: string }> => {
+    const response = await apiClient.post<{ newPassword: string }>(`/company/staff/${staffId}/reset-password`);
+    return response.data;
   },
 };

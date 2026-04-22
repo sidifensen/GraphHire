@@ -4,11 +4,9 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Map;
 
 /**
  * 匹配记录持久化对象
@@ -46,9 +44,9 @@ public class MatchRecordPO {
     /** 薪资匹配分数 */
     @TableField("salary_score")
     private BigDecimal salaryScore;
-    /** 匹配报告（JSON格式，包含匹配原因、差距、建议等） */
-    @TableField(value = "match_detail", typeHandler = JacksonTypeHandler.class)
-    private Map<String, Object> matchReport;
+    /** 匹配报告（JSON格式字符串，包含匹配原因、差距、建议等） */
+    @TableField("match_detail")
+    private String matchDetail;
     /** 状态：0=未读，1=已读 */
     @TableField("viewed")
     private Integer viewed;
@@ -89,8 +87,8 @@ public class MatchRecordPO {
     public BigDecimal getSalaryScore() { return salaryScore; }
     public void setSalaryScore(BigDecimal salaryScore) { this.salaryScore = salaryScore; }
 
-    public Map<String, Object> getMatchReport() { return matchReport; }
-    public void setMatchReport(Map<String, Object> matchReport) { this.matchReport = matchReport; }
+    public String getMatchDetail() { return matchDetail; }
+    public void setMatchDetail(String matchDetail) { this.matchDetail = matchDetail; }
 
     public Integer getViewed() { return viewed; }
     public void setViewed(Integer viewed) { this.viewed = viewed; }

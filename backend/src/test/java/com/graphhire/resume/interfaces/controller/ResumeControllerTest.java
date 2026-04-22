@@ -5,6 +5,7 @@ import com.graphhire.common.vo.PageResult;
 import com.graphhire.common.vo.Result;
 import com.graphhire.resume.application.command.UploadResumeCmd;
 import com.graphhire.resume.application.service.ResumeAppService;
+import com.graphhire.resume.application.service.dto.ResumePreviewFile;
 import com.graphhire.resume.domain.model.Resume;
 import com.graphhire.resume.domain.vo.ParseStatus;
 import com.graphhire.resume.interfaces.dto.ResumeVO;
@@ -18,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.http.ResponseEntity;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -289,6 +291,36 @@ class ResumeControllerTest {
 
                 // When & Then
                 assertThrows(RuntimeException.class, () -> resumeController.setDefaultResume(resumeId));
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("预览简历测试")
+    class PreviewResumeTests {
+
+        @Test
+        @DisplayName("成功预览简历文件")
+        void previewResume_Success() {
+            try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+                Long userId = 1L;
+                Long resumeId = 10L;
+                byte[] content = "PDF-CONTENT".getBytes();
+                stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(userId);
+
+                ResumePreviewFile previewFile = new ResumePreviewFile(content, "resume.pdf", "application/pdf");
+                when(resumeAppService.previewResume(resumeId, userId)).thenReturn(previewFile);
+
+                ResponseEntity<byte[]> response = resumeController.previewResume(resumeId);
+
+                assertNotNull(response);
+                assertEquals(200, response.getStatusCode().value());
+                assertArrayEquals(content, response.getBody());
+                assertNotNull(response.getHeaders().getContentType());
+                assertEquals("application/pdf", response.getHeaders().getContentType().toString());
+                assertNotNull(response.getHeaders().getContentDisposition());
+                assertEquals("inline", response.getHeaders().getContentDisposition().getType());
+                verify(resumeAppService).previewResume(resumeId, userId);
             }
         }
     }

@@ -6,6 +6,7 @@ import com.graphhire.resume.domain.event.ResumeUploadedEvent;
 import com.graphhire.resume.domain.vo.ParseStatus;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 /**
  * 简历领域模型
@@ -50,6 +51,10 @@ public class Resume extends BaseAggregateRoot {
     private BigDecimal confidence;
     /** 是否为默认简历 */
     private Boolean isDefault;
+    /** 创建时间 */
+    private LocalDateTime createTime;
+    /** 更新时间 */
+    private LocalDateTime updateTime;
 
     /**
      * 上传简历
@@ -169,5 +174,21 @@ public class Resume extends BaseAggregateRoot {
 
     public void setIsDefault(Boolean isDefault) {
         this.isDefault = isDefault;
+    }
+
+    public LocalDateTime getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(LocalDateTime createTime) {
+        this.createTime = createTime;
+    }
+
+    public LocalDateTime getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(LocalDateTime updateTime) {
+        this.updateTime = updateTime;
     }
 }

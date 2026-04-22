@@ -1,37 +1,107 @@
 import apiClient from './client';
 
+// ============ Admin Login ============
+export interface AdminLoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface AdminLoginResponse {
+  accessToken: string;
+  refreshToken?: string;
+  expiresIn: number;
+  userType: 'PERSON' | 'COMPANY' | 'ADMIN';
+  userId: number;
+}
+
+// ============ Dashboard ============
+export interface DashboardTrendPoint {
+  date: string;
+  activeUsers: number;
+  newData: number;
+}
+
 export interface AdminDashboardStats {
   totalUsers: number;
   totalCompanies: number;
+  totalResumes: number;
   totalJobs: number;
-  totalApplications: number;
   todayNewUsers: number;
   todayNewJobs: number;
   pendingCompanyAudit: number;
-  pendingResumeParse: number;
+  pendingTaskCount: number;
+  failedTaskCount: number;
+  matchCount: number;
+  taskSuccessRate: number;
+  weeklyNewCompanies: number;
+  pendingSkillSuggestions: number;
+  trend: DashboardTrendPoint[];
 }
 
-export interface CompanyAuditItem {
+// ============ Company Auth ============
+export interface CompanyAuthItem {
   id: number;
+  companyId: number;
   companyName: string;
   unifiedSocialCreditCode: string;
   legalPerson: string;
   phone: string;
+  businessLicenseUrl?: string;
   submittedAt: string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  reviewedAt?: string;
+  reviewerId?: number;
+  rejectReason?: string;
 }
 
+export interface CompanyAuthListResponse {
+  list: CompanyAuthItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+// ============ User Management ============
 export interface UserItem {
   id: number;
   username: string;
+  realName?: string;
   email: string;
+  phone?: string;
   type: 'PERSON' | 'COMPANY' | 'ADMIN';
   status: 'ACTIVE' | 'DISABLED' | 'LOCKED';
   createdAt: string;
   lastLoginAt?: string;
+  avatarUrl?: string;
 }
 
-export interface SkillTag {
+export interface UserListResponse {
+  list: UserItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+// ============ User Detail ============
+export interface PersonInfoDetail {
+  realName: string;
+  gender: number; // 0=未知, 1=男, 2=女
+  age: number;
+  phone: string;
+  email: string;
+  education: string;
+  city: string;
+  targetCity: string;
+  expectedSalary: number | null;
+}
+
+export interface UserDetailResponse {
+  user: UserItem;
+  personInfo: PersonInfoDetail | null;
+}
+
+// ============ Skill ============
+export interface SkillTagItem {
   id: number;
   name: string;
   category: string;
@@ -39,73 +109,122 @@ export interface SkillTag {
   jobCount: number;
 }
 
-export interface ParseTask {
+export interface SkillListResponse {
+  list: SkillTagItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+// ============ Task ============
+export interface TaskListItem {
   id: number;
-  resumeId: number;
-  fileName: string;
+  type: 'RESUME_PARSE' | 'JOB_MATCH' | 'IMPORT';
   status: 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
   progress: number;
+  total: number;
+  successCount: number;
+  failCount: number;
   createdAt: string;
+  startedAt?: string;
   completedAt?: string;
-  error?: string;
+  errorMessage?: string;
+}
+
+export interface TaskSummary {
+  pending: number;
+  processing: number;
+  completed: number;
+  failed: number;
+}
+
+export interface TaskListResponse {
+  summary: TaskSummary;
+  list: TaskListItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+// ============ Batch Operations ============
+export interface BatchApproveRequest {
+  ids: number[];
+}
+
+export interface BatchRejectRequest {
+  ids: number[];
+  reason: string;
+}
+
+export interface BatchDisableRequest {
+  userIds: number[];
+}
+
+export interface BatchRetryRequest {
+  taskIds: number[];
 }
 
 export const adminApi = {
+  login: async (data: AdminLoginRequest): Promise<AdminLoginResponse> => {
+    const response = await apiClient.post('/admin/login', data);
+    return response.data;
+  },
+
   getDashboardStats: async (): Promise<AdminDashboardStats> => {
-    const response = await apiClient.get('/admin/dashboard');
+    const response = await apiClient.get('/admin/dashboard/stats');
     return response.data;
   },
 
-  // Company Audit
-  getPendingCompanies: async (): Promise<CompanyAuditItem[]> => {
-    const response = await apiClient.get('/admin/company/audit/pending');
+  getCompanyAuthList: async (params?: { status?: string; keyword?: string; page?: number; pageSize?: number }): Promise<CompanyAuthListResponse> => {
+    const response = await apiClient.get('/admin/company/auth-list', { params });
     return response.data;
   },
 
-  approveCompany: async (companyId: number): Promise<void> => {
-    await apiClient.put(`/admin/company/${companyId}/approve`);
+  updateCompanyAuth: async (id: number, data: { status: 'APPROVED' | 'REJECTED'; rejectReason?: string }): Promise<void> => {
+    await apiClient.put(`/admin/company/auth/${id}`, data);
   },
 
-  rejectCompany: async (companyId: number, reason: string): Promise<void> => {
-    await apiClient.put(`/admin/company/${companyId}/reject`, { reason });
-  },
-
-  // User Management
-  getUsers: async (params?: { type?: string; status?: string; page?: number }): Promise<{ list: UserItem[]; total: number }> => {
-    const response = await apiClient.get('/admin/users', { params });
+  getUserList: async (params?: { type?: string; status?: string; keyword?: string; page?: number; pageSize?: number }): Promise<UserListResponse> => {
+    const response = await apiClient.get('/admin/user/list', { params });
     return response.data;
   },
 
-  disableUser: async (userId: number): Promise<void> => {
-    await apiClient.put(`/admin/user/${userId}/disable`);
+  updateUserStatus: async (userId: number, status: 'ACTIVE' | 'DISABLED' | 'LOCKED'): Promise<void> => {
+    await apiClient.put(`/admin/user/${userId}/status`, { status });
   },
 
-  enableUser: async (userId: number): Promise<void> => {
-    await apiClient.put(`/admin/user/${userId}/enable`);
-  },
-
-  // Skill Tags
-  getSkillTags: async (): Promise<SkillTag[]> => {
-    const response = await apiClient.get('/skill-tags');
+  getUserDetail: async (userId: number): Promise<UserDetailResponse> => {
+    const response = await apiClient.get(`/admin/user/${userId}/detail`);
     return response.data;
   },
 
-  createSkillTag: async (data: { name: string; category: string }): Promise<{ id: number }> => {
-    const response = await apiClient.post('/skill-tags', data);
+  getSkillList: async (params?: { category?: string; keyword?: string; page?: number; pageSize?: number }): Promise<SkillListResponse> => {
+    const response = await apiClient.get('/admin/skill/list', { params });
     return response.data;
   },
 
-  updateSkillTag: async (id: number, data: { name?: string; category?: string }): Promise<void> => {
-    await apiClient.put(`/skill-tags/${id}`, data);
-  },
-
-  deleteSkillTag: async (id: number): Promise<void> => {
-    await apiClient.delete(`/skill-tags/${id}`);
-  },
-
-  // Task Monitoring
-  getParseTasks: async (params?: { status?: string; page?: number }): Promise<{ list: ParseTask[]; total: number }> => {
-    const response = await apiClient.get('/admin/tasks/parse', { params });
+  getTaskList: async (params?: { type?: string; status?: string; page?: number; pageSize?: number }): Promise<TaskListResponse> => {
+    const response = await apiClient.get('/admin/task/list', { params });
     return response.data;
+  },
+
+  retryTask: async (taskId: number): Promise<void> => {
+    await apiClient.post(`/admin/task/${taskId}/retry`);
+  },
+
+  batchApproveCompanies: async (data: BatchApproveRequest): Promise<void> => {
+    await apiClient.post('/admin/company/batch/approve', data);
+  },
+
+  batchRejectCompanies: async (data: BatchRejectRequest): Promise<void> => {
+    await apiClient.post('/admin/company/batch/reject', data);
+  },
+
+  batchDisableUsers: async (data: BatchDisableRequest): Promise<void> => {
+    await apiClient.post('/admin/user/batch/disable', data);
+  },
+
+  batchRetryTasks: async (data: BatchRetryRequest): Promise<void> => {
+    await apiClient.post('/admin/task/batch/retry', data);
   },
 };

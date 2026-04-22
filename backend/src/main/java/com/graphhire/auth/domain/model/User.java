@@ -45,6 +45,10 @@ public class User extends BaseAggregateRoot {
     private Integer failedLoginCount = 0;
     /** 账号锁定截止时间 */
     private LocalDateTime lockedUntil;
+    /** 创建时间 */
+    private LocalDateTime createTime;
+    /** 最后登录时间 */
+    private LocalDateTime lastLoginTime;
 
     /**
      * 登录成功处理
@@ -141,5 +145,21 @@ public class User extends BaseAggregateRoot {
 
     public void setLockedUntil(LocalDateTime lockedUntil) {
         this.lockedUntil = lockedUntil;
+    }
+
+    public LocalDateTime getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(LocalDateTime createTime) {
+        this.createTime = createTime;
+    }
+
+    public LocalDateTime getLastLoginTime() {
+        return lastLoginTime;
+    }
+
+    public void setLastLoginTime(LocalDateTime lastLoginTime) {
+        this.lastLoginTime = lastLoginTime;
     }
 }

@@ -15,6 +15,8 @@ public class AdminPO {
     private Integer status;
     @TableField("create_time")
     private LocalDateTime createTime;
+    @TableField("last_login_time")
+    private LocalDateTime lastLoginTime;
 
     public Long getId() {
         return id;
@@ -54,5 +56,13 @@ public class AdminPO {
 
     public void setCreateTime(LocalDateTime createTime) {
         this.createTime = createTime;
+    }
+
+    public LocalDateTime getLastLoginTime() {
+        return lastLoginTime;
+    }
+
+    public void setLastLoginTime(LocalDateTime lastLoginTime) {
+        this.lastLoginTime = lastLoginTime;
     }
 }

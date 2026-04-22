@@ -1,19 +1,30 @@
 package com.graphhire.admin.application.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.graphhire.admin.application.command.AuthCompanyCmd;
-import com.graphhire.admin.application.command.DisableUserCmd;
 import com.graphhire.admin.application.query.UserListQuery;
 import com.graphhire.admin.domain.repository.AdminRepository;
 import com.graphhire.admin.domain.service.AdminDomainService;
-import com.graphhire.admin.interfaces.dto.response.DashboardStatsResponse;
+import com.graphhire.admin.interfaces.dto.response.*;
 import com.graphhire.auth.domain.model.User;
 import com.graphhire.auth.domain.repository.UserRepository;
 import com.graphhire.auth.domain.vo.AuthStatus;
+import com.graphhire.auth.domain.vo.UserType;
+import com.graphhire.auth.domain.vo.Username;
+import com.graphhire.job.application.service.CompanyAppService;
 import com.graphhire.job.domain.model.Company;
+import com.graphhire.job.domain.model.Job;
 import com.graphhire.job.domain.repository.CompanyRepository;
+import com.graphhire.job.domain.repository.JobRepository;
 import com.graphhire.notification.domain.model.Notification;
 import com.graphhire.notification.domain.repository.NotificationRepository;
 import com.graphhire.notification.domain.vo.NotificationType;
+import com.graphhire.resume.application.service.ResumeAppService;
+import com.graphhire.resume.domain.model.ParseTask;
+import com.graphhire.resume.domain.repository.ParseTaskRepository;
+import com.graphhire.skill.application.service.SkillTagAppService;
+import com.graphhire.skill.domain.model.SkillTag;
+import com.graphhire.skill.domain.vo.SkillCategory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -23,12 +34,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Arrays;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,253 +47,247 @@ class AdminAppServiceTest {
 
     @Mock
     private AdminRepository adminRepository;
-
     @Mock
     private CompanyRepository companyRepository;
-
     @Mock
     private NotificationRepository notificationRepository;
-
     @Mock
     private UserRepository userRepository;
-
     @Mock
     private AdminDomainService adminDomainService;
+    @Mock
+    private ResumeAppService resumeAppService;
+    @Mock
+    private ParseTaskRepository parseTaskRepository;
+    @Mock
+    private SkillTagAppService skillTagAppService;
+    @Mock
+    private JobRepository jobRepository;
+    @Mock
+    private CompanyAppService companyAppService;
 
     @InjectMocks
     private AdminAppService adminAppService;
 
     @Nested
-    @DisplayName("企业认证测试")
-    class AuthCompanyTests {
-
+    @DisplayName("仪表盘")
+    class DashboardTests {
         @Test
-        @DisplayName("认证通过成功")
-        void testAuthCompany_Approve() {
-            // Given
-            Long companyId = 1L;
-            AuthCompanyCmd cmd = new AuthCompanyCmd(companyId, true, null);
+        @DisplayName("返回新统计字段")
+        void getDashboardStatsSuccess() {
+            when(adminRepository.countPersons()).thenReturn(10L);
+            when(adminRepository.countCompanies()).thenReturn(3L);
+            when(adminRepository.countResumes()).thenReturn(20L);
+            when(adminRepository.countPublishedJobs()).thenReturn(7L);
+            when(adminRepository.countMatchRecords()).thenReturn(100L);
+            when(companyRepository.countByAuthStatus(AuthStatus.PENDING_VERIFY)).thenReturn(2L);
 
-            Company company = new Company();
-            company.setId(companyId);
-            company.setName("Test Company");
-            company.setAuthStatus(AuthStatus.PENDING_VERIFY);
+            ParseTask pending = new ParseTask();
+            pending.setStatus(ParseTask.TaskStatus.PENDING);
+            ParseTask running = new ParseTask();
+            running.setStatus(ParseTask.TaskStatus.RUNNING);
+            ParseTask success = new ParseTask();
+            success.setStatus(ParseTask.TaskStatus.SUCCESS);
+            ParseTask failed = new ParseTask();
+            failed.setStatus(ParseTask.TaskStatus.FAILED);
+            when(parseTaskRepository.findAll()).thenReturn(List.of(pending, running, success, failed));
 
-            when(companyRepository.findById(companyId)).thenReturn(Optional.of(company));
-            doNothing().when(adminDomainService).validateCompanyAuth(any(), anyBoolean(), any());
-            when(adminDomainService.buildAuthNotificationText(any(), anyBoolean(), any()))
-                    .thenReturn("您注册的企业「Test Company」已通过认证审核。");
-            when(companyRepository.save(any(Company.class))).thenReturn(company);
-            when(notificationRepository.save(any(Notification.class))).thenReturn(null);
+            DashboardStatsResponse response = adminAppService.getDashboardStats();
 
-            // When
-            adminAppService.authCompany(companyId, cmd);
-
-            // Then
-            ArgumentCaptor<Company> companyCaptor = ArgumentCaptor.forClass(Company.class);
-            verify(companyRepository).save(companyCaptor.capture());
-            assertEquals(AuthStatus.VERIFIED, companyCaptor.getValue().getAuthStatus());
-
-            ArgumentCaptor<Notification> notificationCaptor = ArgumentCaptor.forClass(Notification.class);
-            verify(notificationRepository).save(notificationCaptor.capture());
-            Notification savedNotification = notificationCaptor.getValue();
-            assertEquals(NotificationType.SYSTEM_NOTIFICATION, savedNotification.getType());
-            assertEquals("企业认证通过", savedNotification.getTitle());
-        }
-
-        @Test
-        @DisplayName("认证拒绝成功")
-        void testAuthCompany_Reject() {
-            // Given
-            Long companyId = 1L;
-            String reason = "信息不完整";
-            AuthCompanyCmd cmd = new AuthCompanyCmd(companyId, false, reason);
-
-            Company company = new Company();
-            company.setId(companyId);
-            company.setName("Test Company");
-            company.setAuthStatus(AuthStatus.PENDING_VERIFY);
-
-            when(companyRepository.findById(companyId)).thenReturn(Optional.of(company));
-            doNothing().when(adminDomainService).validateCompanyAuth(any(), anyBoolean(), any());
-            when(adminDomainService.buildAuthNotificationText(any(), anyBoolean(), any()))
-                    .thenReturn("您注册的企业「Test Company」未通过认证审核，原因：" + reason);
-            when(companyRepository.save(any(Company.class))).thenReturn(company);
-            when(notificationRepository.save(any(Notification.class))).thenReturn(null);
-
-            // When
-            adminAppService.authCompany(companyId, cmd);
-
-            // Then
-            ArgumentCaptor<Company> companyCaptor = ArgumentCaptor.forClass(Company.class);
-            verify(companyRepository).save(companyCaptor.capture());
-            assertEquals(AuthStatus.REJECTED, companyCaptor.getValue().getAuthStatus());
-
-            ArgumentCaptor<Notification> notificationCaptor = ArgumentCaptor.forClass(Notification.class);
-            verify(notificationRepository).save(notificationCaptor.capture());
-            Notification savedNotification = notificationCaptor.getValue();
-            assertEquals(NotificationType.SYSTEM_NOTIFICATION, savedNotification.getType());
-            assertEquals("企业认证拒绝", savedNotification.getTitle());
-        }
-
-        @Test
-        @DisplayName("认证不存在的企业失败")
-        void testAuthCompany_NotFound() {
-            // Given
-            Long companyId = 999L;
-            AuthCompanyCmd cmd = new AuthCompanyCmd(companyId, true, null);
-
-            when(companyRepository.findById(companyId)).thenReturn(Optional.empty());
-
-            // When & Then
-            RuntimeException exception = assertThrows(RuntimeException.class,
-                    () -> adminAppService.authCompany(companyId, cmd));
-            assertEquals("企业不存在", exception.getMessage());
+            assertEquals(10L, response.getTotalUsers());
+            assertEquals(3L, response.getTotalCompanies());
+            assertEquals(2L, response.getPendingCompanyAudit());
+            assertEquals(2L, response.getPendingTaskCount());
+            assertEquals(1L, response.getFailedTaskCount());
+            assertEquals(100L, response.getMatchCount());
+            assertNotNull(response.getTrend());
         }
     }
 
     @Nested
-    @DisplayName("禁用用户测试")
-    class DisableUserTests {
+    @DisplayName("企业审核")
+    class CompanyAuthTests {
+        @Test
+        @DisplayName("企业审核通过")
+        void authCompanyApproveSuccess() {
+            Company company = new Company();
+            company.setId(1L);
+            company.setName("A");
+            company.setAuthStatus(AuthStatus.PENDING_VERIFY);
+            when(companyRepository.findById(1L)).thenReturn(Optional.of(company));
+            when(adminDomainService.buildAuthNotificationText(any(), anyBoolean(), any())).thenReturn("ok");
+
+            adminAppService.authCompany(1L, new AuthCompanyCmd(1L, true, null));
+
+            verify(companyRepository).save(any(Company.class));
+            verify(notificationRepository).save(any(Notification.class));
+        }
 
         @Test
-        @DisplayName("禁用用户成功")
-        void testDisableUser() {
-            // Given
-            Long userId = 1L;
-            DisableUserCmd cmd = new DisableUserCmd(userId, true);
+        @DisplayName("企业审核分页列表")
+        void getCompanyAuthListSuccess() {
+            Company c1 = new Company();
+            c1.setId(1L);
+            c1.setName("星河科技");
+            c1.setUnifiedSocialCreditCode("911");
+            c1.setContactName("张三");
+            c1.setContactPhone("138");
+            c1.setLicenseUrl("/a.png");
+            c1.setAuthStatus(AuthStatus.PENDING_VERIFY);
 
+            when(companyRepository.findByAuthStatus(AuthStatus.PENDING_VERIFY)).thenReturn(List.of(c1));
+
+            AdminPageResponse<AdminCompanyAuthItemResponse> page = adminAppService.getCompanyAuthList("PENDING", "星河", 1, 10);
+
+            assertEquals(1, page.getTotal());
+            assertEquals("星河科技", page.getList().get(0).getCompanyName());
+            assertEquals("PENDING", page.getList().get(0).getStatus());
+        }
+
+        @Test
+        @DisplayName("批量拒绝")
+        void batchRejectCompanySuccess() {
+            adminAppService.batchRejectCompany(List.of(1L, 2L), "材料不完整");
+            verify(companyAppService).rejectCompany(1L);
+            verify(companyAppService).rejectCompany(2L);
+        }
+    }
+
+    @Nested
+    @DisplayName("用户")
+    class UserTests {
+        @Test
+        @DisplayName("用户分页返回结构")
+        void getUserListSuccess() {
             User user = new User();
-            user.setId(userId);
+            user.setId(1L);
+            user.setUsername(Username.of("alice@test.com"));
+            user.setUserType(UserType.PERSON);
             user.setStatus(AuthStatus.VERIFIED);
+            Page<User> p = new Page<>(1, 10, 1);
+            p.setRecords(List.of(user));
+            when(adminRepository.findUsersPage(1, 10)).thenReturn(p);
 
-            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-            when(userRepository.save(any(User.class))).thenReturn(user);
-
-            // When
-            adminAppService.disableUser(cmd);
-
-            // Then
-            ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-            verify(userRepository).save(userCaptor.capture());
-            assertEquals(AuthStatus.DISABLED, userCaptor.getValue().getStatus());
-        }
-
-        @Test
-        @DisplayName("启用用户成功")
-        void testEnableUser() {
-            // Given
-            Long userId = 1L;
-            DisableUserCmd cmd = new DisableUserCmd(userId, false);
-
-            User user = new User();
-            user.setId(userId);
-            user.setStatus(AuthStatus.DISABLED);
-
-            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-            when(userRepository.save(any(User.class))).thenReturn(user);
-
-            // When
-            adminAppService.disableUser(cmd);
-
-            // Then
-            ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-            verify(userRepository).save(userCaptor.capture());
-            assertEquals(AuthStatus.VERIFIED, userCaptor.getValue().getStatus());
-        }
-
-        @Test
-        @DisplayName("禁用不存在的用户失败")
-        void testDisableUser_NotFound() {
-            // Given
-            Long userId = 999L;
-            DisableUserCmd cmd = new DisableUserCmd(userId, true);
-
-            when(userRepository.findById(userId)).thenReturn(Optional.empty());
-
-            // When & Then
-            RuntimeException exception = assertThrows(RuntimeException.class,
-                    () -> adminAppService.disableUser(cmd));
-            assertEquals("用户不存在", exception.getMessage());
-        }
-    }
-
-    @Nested
-    @DisplayName("获取用户列表测试")
-    class GetUserListTests {
-
-        @Test
-        @DisplayName("分页查询用户列表")
-        void testGetUserList() {
-            // Given
             UserListQuery query = new UserListQuery();
             query.setPage(1);
             query.setPageSize(10);
-            query.setUserType("PERSON");
-            query.setStatus("1");
+            query.setKeyword("alice");
+            AdminPageResponse<AdminUserItemResponse> page = adminAppService.getUserList(query);
 
-            // When
-            List<Long> result = adminAppService.getUserList(query);
+            assertEquals(1, page.getTotal());
+            assertEquals("alice@test.com", page.getList().get(0).getUsername());
+            assertEquals("ACTIVE", page.getList().get(0).getStatus());
+        }
 
-            // Then
-            // Since AdminMapper is not implemented yet, returns empty list
-            assertNotNull(result);
-            assertTrue(result.isEmpty());
+        @Test
+        @DisplayName("更新用户状态为禁用")
+        void modifyUserStatusSuccess() {
+            User user = new User();
+            user.setId(1L);
+            user.setStatus(AuthStatus.VERIFIED);
+            when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+            adminAppService.modifyUserStatus(1L, "DISABLED");
+
+            ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+            verify(userRepository).save(captor.capture());
+            assertEquals(AuthStatus.DISABLED, captor.getValue().getStatus());
+        }
+
+        @Test
+        @DisplayName("批量禁用用户")
+        void batchDisableUserSuccess() {
+            User u1 = new User();
+            u1.setId(1L);
+            User u2 = new User();
+            u2.setId(2L);
+            when(userRepository.findById(1L)).thenReturn(Optional.of(u1));
+            when(userRepository.findById(2L)).thenReturn(Optional.of(u2));
+
+            adminAppService.batchDisableUser(List.of(1L, 2L));
+
+            verify(userRepository, times(2)).save(any(User.class));
         }
     }
 
     @Nested
-    @DisplayName("仪表盘统计测试")
-    class GetDashboardStatsTests {
-
+    @DisplayName("技能")
+    class SkillTests {
         @Test
-        @DisplayName("成功获取仪表盘统计数据")
-        void testGetDashboardStats_Success() {
-            // Given
-            when(adminRepository.countPersons()).thenReturn(100L);
-            when(adminRepository.countCompanies()).thenReturn(50L);
-            when(adminRepository.countResumes()).thenReturn(200L);
-            when(adminRepository.countPublishedJobs()).thenReturn(150L);
-            when(adminRepository.countMatchRecords()).thenReturn(300L);
+        @DisplayName("技能分页")
+        void getSkillListSuccess() {
+            SkillTag javaSkill = new SkillTag("Java", SkillCategory.技术技能);
+            javaSkill.setId(1L);
+            javaSkill.setUsageCount(12);
+            javaSkill.setSynonyms(java.util.Set.of("javase"));
+            when(skillTagAppService.getAllSkillTags()).thenReturn(List.of(javaSkill));
 
-            // When
-            DashboardStatsResponse response = adminAppService.getDashboardStats();
+            AdminPageResponse<AdminSkillItemResponse> page = adminAppService.getSkillList("技术技能", "Java", 1, 10);
 
-            // Then
-            assertNotNull(response);
-            assertEquals(100L, response.getPersonCount());
-            assertEquals(50L, response.getCompanyCount());
-            assertEquals(200L, response.getResumeCount());
-            assertEquals(150L, response.getJobCount());
-            assertEquals(300L, response.getMatchCount());
+            assertEquals(1, page.getTotal());
+            assertEquals("Java", page.getList().get(0).getName());
+            assertEquals(12, page.getList().get(0).getJobCount());
+        }
+    }
 
-            verify(adminRepository).countPersons();
-            verify(adminRepository).countCompanies();
-            verify(adminRepository).countResumes();
-            verify(adminRepository).countPublishedJobs();
-            verify(adminRepository).countMatchRecords();
+    @Nested
+    @DisplayName("任务")
+    class TaskTests {
+        @Test
+        @DisplayName("任务分页+summary")
+        void getTaskListSuccess() {
+            ParseTask task = new ParseTask();
+            task.setId(10L);
+            task.setTaskType("resume_parse");
+            task.setStatus(ParseTask.TaskStatus.FAILED);
+            task.setRetryCount(1);
+            task.setCreatedAt(LocalDateTime.now());
+            task.setErrorMessage("timeout");
+            when(parseTaskRepository.findAll()).thenReturn(List.of(task));
+
+            AdminTaskListResponse response = adminAppService.getTaskList("RESUME_PARSE", "FAILED", 1, 10);
+
+            assertEquals(1, response.getTotal());
+            assertEquals(1, response.getSummary().getFailed());
+            assertEquals("FAILED", response.getList().get(0).getStatus());
         }
 
         @Test
-        @DisplayName("所有统计数据为零时成功返回")
-        void testGetDashboardStats_AllZeros() {
-            // Given
-            when(adminRepository.countPersons()).thenReturn(0L);
-            when(adminRepository.countCompanies()).thenReturn(0L);
-            when(adminRepository.countResumes()).thenReturn(0L);
-            when(adminRepository.countPublishedJobs()).thenReturn(0L);
-            when(adminRepository.countMatchRecords()).thenReturn(0L);
+        @DisplayName("单任务重试")
+        void retryTaskSuccess() {
+            ParseTask task = new ParseTask();
+            task.setId(10L);
+            task.setStatus(ParseTask.TaskStatus.FAILED);
+            when(parseTaskRepository.findById(10L)).thenReturn(Optional.of(task));
 
-            // When
-            DashboardStatsResponse response = adminAppService.getDashboardStats();
+            adminAppService.retryTask(10L);
 
-            // Then
-            assertNotNull(response);
-            assertEquals(0L, response.getPersonCount());
-            assertEquals(0L, response.getCompanyCount());
-            assertEquals(0L, response.getResumeCount());
-            assertEquals(0L, response.getJobCount());
-            assertEquals(0L, response.getMatchCount());
+            verify(parseTaskRepository).save(any(ParseTask.class));
+        }
+
+        @Test
+        @DisplayName("批量任务重试")
+        void batchRetryTaskSuccess() {
+            ParseTask task = new ParseTask();
+            task.setId(10L);
+            task.setStatus(ParseTask.TaskStatus.FAILED);
+            when(parseTaskRepository.findById(10L)).thenReturn(Optional.of(task));
+
+            adminAppService.batchRetryTask(List.of(10L));
+
+            verify(parseTaskRepository).save(any(ParseTask.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("批量通过公司")
+    class BatchApproveTests {
+        @Test
+        @DisplayName("调用企业服务")
+        void batchApproveCompanySuccess() {
+            adminAppService.batchApproveCompany(List.of(1L, 2L));
+            verify(companyAppService).approveCompany(1L);
+            verify(companyAppService).approveCompany(2L);
         }
     }
 }

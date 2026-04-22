@@ -43,9 +43,12 @@ public class PersonInfoPO {
     /** 邮箱 */
     @TableField("email")
     private String email;
-    /** 期望薪资（数据库中不存在） */
-    @TableField(exist = false)
+    /** 期望薪资 */
+    @TableField("expected_salary")
     private Integer expectedSalary;
+    /** 头像存储路径 */
+    @TableField("avatar_url")
+    private String avatarUrl;
     /** 创建时间 */
     @TableField("create_time")
     private LocalDateTime createTime;
@@ -88,6 +91,9 @@ public class PersonInfoPO {
 
     public Integer getExpectedSalary() { return expectedSalary; }
     public void setExpectedSalary(Integer expectedSalary) { this.expectedSalary = expectedSalary; }
+
+    public String getAvatarUrl() { return avatarUrl; }
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
 
     public LocalDateTime getCreateTime() { return createTime; }
     public void setCreateTime(LocalDateTime createTime) { this.createTime = createTime; }

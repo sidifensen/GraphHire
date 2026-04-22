@@ -60,6 +60,7 @@ CREATE TABLE person_info
     education   VARCHAR(20),
     city        VARCHAR(50),
     target_city VARCHAR(50),
+    expected_salary INT,
     phone       VARCHAR(20),
     email       VARCHAR(100),
     create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -77,6 +78,7 @@ COMMENT ON COLUMN person_info.age IS '年龄';
 COMMENT ON COLUMN person_info.education IS '学历：初中及以下/高中/中专/大专/本科/硕士/博士';
 COMMENT ON COLUMN person_info.city IS '居住城市';
 COMMENT ON COLUMN person_info.target_city IS '意向工作城市';
+COMMENT ON COLUMN person_info.expected_salary IS '期望月薪';
 COMMENT ON COLUMN person_info.phone IS '手机号';
 COMMENT ON COLUMN person_info.email IS '电子邮箱';
 
