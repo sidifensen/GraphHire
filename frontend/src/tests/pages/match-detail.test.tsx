@@ -89,6 +89,7 @@ describe('MatchDetailPage', () => {
 
   it('renders error and retry states', async () => {
     getMatchDetail.mockRejectedValueOnce(new Error('match failed'));
+    getJobById.mockRejectedValueOnce(new Error('job failed'));
     render(<MatchDetailPage />);
     await screen.findByText('match failed');
     screen.getByText('重试').click();
@@ -105,6 +106,15 @@ describe('MatchDetailPage', () => {
   it('renders apply button', async () => {
     render(<MatchDetailPage />);
     await screen.findByRole('button', { name: /立即投递/i });
+  });
+
+  it('falls back to job detail when match detail is unavailable', async () => {
+    getMatchDetail.mockRejectedValueOnce(new Error('匹配记录不存在'));
+    render(<MatchDetailPage />);
+    await screen.findByText('高级 Java 工程师');
+    expect(screen.queryByText('匹配记录不存在')).toBeNull();
+    expect(screen.getByText('职位要求')).toBeDefined();
+    expect(screen.getAllByText('Spring Boot').length).toBeGreaterThan(0);
   });
 
   it('renders job requirements section when required skills exist', async () => {

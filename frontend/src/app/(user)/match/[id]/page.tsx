@@ -57,12 +57,25 @@ export default function MatchDetailPage() {
     try {
       setLoading(true);
       setError('');
-      const [matchDetail, jobDetail] = await Promise.all([
+      const [matchDetailResult, jobDetailResult] = await Promise.allSettled([
         personApi.getMatchDetail(jobId),
-        publicApi.jobs.getById(jobId).catch(() => null),
+        publicApi.jobs.getById(jobId),
       ]);
+      const matchDetail = matchDetailResult.status === 'fulfilled' ? matchDetailResult.value : null;
+      const jobDetail = jobDetailResult.status === 'fulfilled' ? jobDetailResult.value : null;
+
       setDetail(matchDetail);
       setJob(jobDetail);
+
+      if (!matchDetail && !jobDetail) {
+        const rootError = matchDetailResult.status === 'rejected'
+          ? matchDetailResult.reason
+          : jobDetailResult.status === 'rejected'
+            ? jobDetailResult.reason
+            : new Error('匹配详情加载失败');
+        throw rootError;
+      }
+
       if (user?.id) {
         const graph = await matchApi.getGraphScore(user.id, jobId).catch(() => null);
         setGraphScore(graph);
