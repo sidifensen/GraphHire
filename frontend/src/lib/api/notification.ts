@@ -74,6 +74,10 @@ export const notificationApi = {
     await apiClient.put('/notifications/me/read-all');
   },
 
+  deleteMyRead: async (): Promise<void> => {
+    await apiClient.delete('/notifications/me/read');
+  },
+
   delete: async (id: number): Promise<void> => {
     await apiClient.delete(`/notifications/${id}`);
   },

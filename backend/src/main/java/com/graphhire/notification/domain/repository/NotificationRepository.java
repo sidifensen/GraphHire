@@ -37,4 +37,7 @@ public interface NotificationRepository {
 
     /** 将用户所有通知标记为已读 */
     void markAllAsReadByUserId(Long userId);
+
+    /** 删除用户全部已读通知 */
+    void deleteReadByUserId(Long userId);
 }

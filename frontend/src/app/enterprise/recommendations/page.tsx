@@ -18,6 +18,7 @@ function RecommendationsContent() {
   const [loadingJobs, setLoadingJobs] = useState(true);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
 
   const loadRecommendations = async (jobId: number) => {
     setLoadingRecommendations(true);
@@ -89,6 +90,16 @@ function RecommendationsContent() {
     await loadRecommendations(jobId);
   };
 
+  const handleInviteInterview = async (resumeId: number, jobId: number) => {
+    setMessage(null);
+    try {
+      await companyApi.inviteInterview({ resumeId, jobId });
+      setMessage('面试邀请已发送');
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : '发送面试邀请失败');
+    }
+  };
+
   return (
     <EnterpriseContent>
       <EnterprisePageHeader
@@ -140,7 +151,7 @@ function RecommendationsContent() {
               <h3 className="font-headline font-semibold text-on-surface mb-4 text-base">推荐说明</h3>
               <div className="space-y-3 text-sm text-on-surface-variant">
                 <p>推荐列表来自后端真实匹配接口，当前按所选职位实时刷新。</p>
-                <p>"邀请面试"尚未接入专用后端流程，因此本页仅展示推荐结果，不伪造成功提示。</p>
+                <p>支持基于推荐结果直接发送面试邀请，系统会自动关联投递记录。</p>
               </div>
             </div>
           </aside>
@@ -160,6 +171,7 @@ function RecommendationsContent() {
               </div>
             </div>
 
+            {message && <div className="mb-4 rounded-lg bg-surface-container p-4 text-sm text-on-surface">{message}</div>}
             {loadingRecommendations ? (
               <div className="rounded-xl bg-surface-container-lowest p-6 text-sm text-on-surface-variant">推荐结果加载中...</div>
             ) : filteredRecommendations.length === 0 ? (
@@ -208,7 +220,7 @@ function RecommendationsContent() {
                             <button className="flex-1 py-2 bg-surface-container-highest text-primary text-xs font-medium rounded-md hover:bg-surface-container transition-colors" onClick={() => setExpandedResumeId(expanded ? null : item.resumeId)}>
                               {expanded ? '收起' : '详情'}
                             </button>
-                            <button className="flex-1 py-2 bg-surface-container-high text-outline text-xs font-medium rounded-md cursor-not-allowed" disabled title="后端暂无面试邀请接口">
+                            <button className="flex-1 py-2 bg-primary text-white text-xs font-medium rounded-md hover:opacity-90" onClick={() => void handleInviteInterview(item.resumeId, item.jobId)}>
                               邀请
                             </button>
                           </div>

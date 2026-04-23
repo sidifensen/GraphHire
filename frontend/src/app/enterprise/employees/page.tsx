@@ -73,6 +73,18 @@ export default function EmployeesPage() {
     }
   };
 
+  const handleToggleStaffStatus = async (staff: EnterpriseStaffListItem) => {
+    setMessage(null);
+    try {
+      const disabled = staff.status === 'ACTIVE';
+      await companyApi.updateStaffStatus(staff.id, disabled);
+      setMessage(`${staffName(staff)} 已${disabled ? '禁用' : '启用'}`);
+      await loadData();
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : '员工状态更新失败');
+    }
+  };
+
   return (
     <EnterpriseContent>
       <EnterprisePageHeader
@@ -181,7 +193,7 @@ export default function EmployeesPage() {
                               <button className="text-tertiary hover:text-on-surface disabled:text-outline disabled:cursor-not-allowed" disabled={staff.post === 'OWNER'} title="重置密码" onClick={() => void handleResetPassword(staff)}>
                                 <span className="material-symbols-outlined text-[18px]">key</span>
                               </button>
-                              <button className="text-outline cursor-not-allowed" disabled title="禁用（待接入）">
+                              <button className="text-tertiary hover:text-error disabled:text-outline disabled:cursor-not-allowed" disabled={staff.post === 'OWNER'} title={staff.status === 'ACTIVE' ? '禁用账号' : '启用账号'} onClick={() => void handleToggleStaffStatus(staff)}>
                                 <span className="material-symbols-outlined text-[18px]">block</span>
                               </button>
                             </div>

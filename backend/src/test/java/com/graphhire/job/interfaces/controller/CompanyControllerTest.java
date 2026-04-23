@@ -6,6 +6,8 @@ import com.graphhire.auth.domain.repository.UserRepository;
 import com.graphhire.auth.domain.vo.AuthStatus;
 import com.graphhire.auth.domain.vo.EncryptedPassword;
 import com.graphhire.auth.domain.vo.UserType;
+import com.graphhire.application.application.service.ApplicationAppService;
+import com.graphhire.application.domain.repository.ApplicationRepository;
 import com.graphhire.job.application.service.CompanyAppService;
 import com.graphhire.job.application.service.JobAppService;
 import com.graphhire.job.domain.model.Company;
@@ -20,6 +22,7 @@ import com.graphhire.job.interfaces.dto.request.CreateStaffRequest;
 import com.graphhire.job.interfaces.dto.request.SalaryUpdateRequest;
 import com.graphhire.job.interfaces.dto.request.StatusChangeRequest;
 import com.graphhire.match.application.service.MatchAppService;
+import com.graphhire.match.domain.repository.MatchRecordRepository;
 import com.graphhire.match.interfaces.dto.response.MatchDetailResponse;
 import com.graphhire.skill.infrastructure.graph.SkillGraphClient;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,6 +39,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -65,7 +69,16 @@ class CompanyControllerTest {
     private MatchAppService matchAppService;
 
     @Mock
+    private ApplicationRepository applicationRepository;
+
+    @Mock
+    private MatchRecordRepository matchRecordRepository;
+
+    @Mock
     private SkillGraphClient skillGraphClient;
+
+    @Mock
+    private ApplicationAppService applicationAppService;
 
     @InjectMocks
     private CompanyController companyController;
@@ -815,22 +828,95 @@ class CompanyControllerTest {
         @Test
         @DisplayName("成功获取公司详情")
         void getCompany_Success() {
-            // Given
-            Long companyId = 1L;
-            Company company = new Company();
-            company.setId(companyId);
-            company.setName("Test Company");
+            try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+                // Given
+                Long userId = 9L;
+                Long companyId = 1L;
+                Company company = new Company();
+                company.setId(companyId);
+                company.setName("Test Company");
+                stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(userId);
+                when(companyAppService.getCompanyIdByUserId(userId)).thenReturn(companyId);
+                when(companyAppService.getCompanyById(companyId)).thenReturn(company);
 
-            when(companyAppService.getCompanyById(companyId)).thenReturn(company);
+                // When
+                var result = companyController.getCompany(companyId);
 
-            // When
-            var result = companyController.getCompany(companyId);
+                // Then
+                assertNotNull(result);
+                assertEquals(200, result.getCode());
+                assertEquals(companyId, result.getData().getId());
+                assertEquals("Test Company", result.getData().getName());
+            }
+        }
 
-            // Then
-            assertNotNull(result);
-            assertEquals(200, result.getCode());
-            assertEquals(companyId, result.getData().getId());
-            assertEquals("Test Company", result.getData().getName());
+        @Test
+        @DisplayName("查看其他企业详情时抛出无权限异常")
+        void getCompany_OtherCompany_ThrowsForbidden() {
+            try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+                Long userId = 9L;
+                stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(userId);
+                when(companyAppService.getCompanyIdByUserId(userId)).thenReturn(1L);
+                assertThrows(Exception.class, () -> companyController.getCompany(2L));
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("员工状态管理测试")
+    class UpdateStaffStatusTests {
+        @Test
+        @DisplayName("企业主成功禁用员工")
+        void updateStaffStatus_DisableSuccess() {
+            try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+                stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(1L);
+                CompanyStaff owner = new CompanyStaff();
+                owner.setUserId(1L);
+                owner.setCompanyId(100L);
+                owner.setPost("OWNER");
+                CompanyStaff target = new CompanyStaff();
+                target.setId(2L);
+                target.setUserId(2L);
+                target.setCompanyId(100L);
+                target.setPost("HR");
+                User targetUser = new User();
+                targetUser.setId(2L);
+                targetUser.setStatus(AuthStatus.VERIFIED);
+
+                when(companyStaffRepository.findByUserId(1L)).thenReturn(Optional.of(owner));
+                when(companyStaffRepository.findById(2L)).thenReturn(Optional.of(target));
+                when(userRepository.findById(2L)).thenReturn(Optional.of(targetUser));
+                when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+                var result = companyController.updateStaffStatus(2L, true);
+                assertEquals(200, result.getCode());
+                verify(userRepository).save(argThat(u -> u.getStatus() == AuthStatus.DISABLED));
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("推荐面试邀请测试")
+    class InviteInterviewTests {
+        @Test
+        @DisplayName("推荐页可按简历+职位触发面试邀请")
+        void inviteInterviewByResume_Success() {
+            try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+                stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(1L);
+                when(companyAppService.getCompanyIdByUserId(1L)).thenReturn(100L);
+                doReturn(null).when(applicationAppService)
+                        .sendInterviewInvitationByResume(eq(100L), eq(11L), eq(22L), any(), any(), any());
+
+                Map<String, String> body = new java.util.HashMap<>();
+                body.put("resumeId", "11");
+                body.put("jobId", "22");
+                body.put("location", "会议室A");
+                body.put("remark", "请准时参加");
+
+                var result = companyController.inviteInterviewByResume(body);
+                assertEquals(200, result.getCode());
+                verify(applicationAppService).sendInterviewInvitationByResume(eq(100L), eq(11L), eq(22L), any(), eq("会议室A"), eq("请准时参加"));
+            }
         }
     }
 

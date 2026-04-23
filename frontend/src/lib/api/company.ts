@@ -100,4 +100,12 @@ export const companyApi = {
     const response = await apiClient.post<{ newPassword: string }>(`/company/staff/${staffId}/reset-password`);
     return response.data;
   },
+
+  updateStaffStatus: async (staffId: number, disabled: boolean): Promise<void> => {
+    await apiClient.put(`/company/staff/${staffId}/status`, null, { params: { disabled } });
+  },
+
+  inviteInterview: async (data: { resumeId: number; jobId: number; interviewTime?: string; location?: string; remark?: string }): Promise<void> => {
+    await apiClient.post('/company/applications/interview-invite', data);
+  },
 };

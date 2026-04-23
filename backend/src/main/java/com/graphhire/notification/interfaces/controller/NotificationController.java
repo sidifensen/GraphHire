@@ -47,6 +47,12 @@ public class NotificationController {
         return Result.success();
     }
 
+    @DeleteMapping("/me/read")
+    public Result<Void> deleteMyReadNotifications() {
+        appService.deleteReadNotifications(StpUtil.getLoginIdAsLong());
+        return Result.success();
+    }
+
     @GetMapping("/{id}")
     public Result<Notification> getNotification(@PathVariable Long id) {
         Notification notification = appService.getNotification(id);

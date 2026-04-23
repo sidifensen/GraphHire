@@ -73,6 +73,17 @@ export default function NotificationsPage() {
     }
   };
 
+  const handleDeleteRead = async () => {
+    setMessage(null);
+    try {
+      await notificationApi.deleteMyRead();
+      setMessage('已清空已读通知');
+      await loadNotifications(tab);
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : '清空已读失败');
+    }
+  };
+
   const unreadInCurrentTab = useMemo(() => notifications.filter((item) => !item.isRead).length, [notifications]);
 
   return (
@@ -99,9 +110,9 @@ export default function NotificationsPage() {
             <span className="material-symbols-outlined text-sm">done_all</span>
             全部标记已读
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-outline bg-surface-container-high rounded-lg cursor-not-allowed" disabled>
+          <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-tertiary bg-surface-container-high hover:bg-surface-variant rounded-lg transition-colors" onClick={() => void handleDeleteRead()}>
             <span className="material-symbols-outlined text-sm">delete</span>
-            清空已读（待接入）
+            清空已读
           </button>
         </div>
       </div>

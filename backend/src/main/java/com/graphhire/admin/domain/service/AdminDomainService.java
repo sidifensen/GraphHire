@@ -1,6 +1,8 @@
 package com.graphhire.admin.domain.service;
 
 import com.graphhire.job.domain.model.Company;
+import com.graphhire.auth.domain.repository.UserRepository;
+import com.graphhire.auth.domain.vo.UserType;
 import org.springframework.stereotype.Service;
 
 /**
@@ -12,6 +14,11 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class AdminDomainService {
+    private final UserRepository userRepository;
+
+    public AdminDomainService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     /**
      * 校验用户是否具有管理员权限
@@ -20,8 +27,12 @@ public class AdminDomainService {
      * @return true-具有管理员权限，false-不具有
      */
     public boolean hasAdminPrivileges(Long userId) {
-        // TODO(sidifensen: 2026-04-16): 实现管理员权限校验逻辑
-        return true;
+        if (userId == null) {
+            return false;
+        }
+        return userRepository.findById(userId)
+                .map(user -> user.getUserType() == UserType.ADMIN)
+                .orElse(false);
     }
 
     /**

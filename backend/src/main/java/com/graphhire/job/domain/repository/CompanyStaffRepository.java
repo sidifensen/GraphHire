@@ -20,6 +20,9 @@ public interface CompanyStaffRepository {
     /** 根据企业ID查询该企业下所有员工 */
     List<CompanyStaff> findByCompanyId(Long companyId);
 
+    /** 根据企业ID和用户ID查询员工 */
+    Optional<CompanyStaff> findByCompanyIdAndUserId(Long companyId, Long userId);
+
     /** 保存企业员工（新增或更新） */
     CompanyStaff save(CompanyStaff companyStaff);
 

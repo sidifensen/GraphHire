@@ -116,6 +116,17 @@ class NotificationControllerIT extends BaseControllerIT {
             .andExpect(jsonPath("$.code").value(200));
     }
 
+    @Test
+    @DisplayName("07 - 清空当前用户已读通知")
+    void deleteMyReadNotifications_Success() throws Exception {
+        // 先保证存在一条已读通知
+        jdbcTemplate.update("UPDATE notification SET is_read = 1, update_time = NOW() WHERE id = ?", unreadNotificationId);
+        mockMvc.perform(delete("/notifications/me/read")
+                .headers(companyHeaders))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value(200));
+    }
+
     private HttpHeaders loginHeaders(String username, String password) throws Exception {
         String json = String.format("{\"username\":\"%s\",\"password\":\"%s\"}", username, password);
         String token = objectMapper.readTree(mockMvc.perform(post("/auth/login")

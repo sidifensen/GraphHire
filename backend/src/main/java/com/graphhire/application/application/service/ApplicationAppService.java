@@ -276,6 +276,17 @@ public class ApplicationAppService {
         return application;
     }
 
+    /**
+     * 按简历ID+职位ID发送面试邀请（推荐场景）
+     */
+    @Transactional
+    public Application sendInterviewInvitationByResume(Long companyId, Long resumeId, Long jobId,
+                                                       LocalDateTime interviewTime, String location, String remark) {
+        Application application = applicationRepository.findByResumeIdAndJobId(resumeId, jobId)
+                .orElseThrow(() -> new RuntimeException("Application not found by resume and job"));
+        return sendInterviewInvitation(companyId, application.getId(), interviewTime, location, remark);
+    }
+
     // ==================== 人才库方法 ====================
 
     /**

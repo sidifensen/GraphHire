@@ -164,6 +164,12 @@ export interface BatchRetryRequest {
   taskIds: number[];
 }
 
+export interface AdminSettings {
+  allowRegister: boolean;
+  maintenanceMode: boolean;
+  maxUploadSizeMb: number;
+}
+
 export const adminApi = {
   login: async (data: AdminLoginRequest): Promise<AdminLoginResponse> => {
     const response = await apiClient.post('/admin/login', data);
@@ -226,5 +232,15 @@ export const adminApi = {
 
   batchRetryTasks: async (data: BatchRetryRequest): Promise<void> => {
     await apiClient.post('/admin/task/batch/retry', data);
+  },
+
+  getSettings: async (): Promise<AdminSettings> => {
+    const response = await apiClient.get('/admin/settings');
+    return response.data;
+  },
+
+  updateSettings: async (data: Partial<AdminSettings>): Promise<AdminSettings> => {
+    const response = await apiClient.put('/admin/settings', data);
+    return response.data;
   },
 };

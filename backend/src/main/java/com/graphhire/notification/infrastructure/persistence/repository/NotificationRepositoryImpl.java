@@ -129,6 +129,13 @@ public class NotificationRepositoryImpl implements NotificationRepository {
             new LambdaQueryWrapper<NotificationPO>().eq(NotificationPO::getUserId, userId));
     }
 
+    @Override
+    public void deleteReadByUserId(Long userId) {
+        notificationMapper.delete(new LambdaQueryWrapper<NotificationPO>()
+                .eq(NotificationPO::getUserId, userId)
+                .eq(NotificationPO::getIsRead, 1));
+    }
+
     /**
      * PO 转 Domain 领域对象
      * @param po 通知持久化对象

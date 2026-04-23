@@ -1,6 +1,7 @@
 package com.graphhire.job.interfaces.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
+import com.graphhire.application.application.service.ApplicationAppService;
 import com.graphhire.application.domain.repository.ApplicationRepository;
 import com.graphhire.auth.domain.model.User;
 import com.graphhire.auth.domain.repository.UserRepository;
@@ -39,7 +40,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/company")
@@ -71,6 +72,9 @@ public class CompanyController {
 
     @Autowired
     private SkillGraphClient skillGraphClient;
+
+    @Autowired
+    private ApplicationAppService applicationAppService;
 
     @GetMapping("/info")
     public Result<Company> getCompanyInfo() {
@@ -278,6 +282,10 @@ public class CompanyController {
                                       @RequestParam(required = false) String contactEmail,
                                       @RequestParam(required = false) String description,
                                       @RequestParam(required = false) String website) {
+        Long companyId = currentCompanyId();
+        if (!companyId.equals(id)) {
+            throw new Exceptions.ForbiddenException("无权修改其他企业信息");
+        }
         companyAppService.updateCompanyInfo(id, name, contactName, contactPhone,
                 contactEmail, description, website);
         return Result.success();
@@ -285,6 +293,10 @@ public class CompanyController {
 
     @GetMapping("/{id}")
     public Result<Company> getCompany(@PathVariable Long id) {
+        Long companyId = currentCompanyId();
+        if (!companyId.equals(id)) {
+            throw new Exceptions.ForbiddenException("无权查看其他企业信息");
+        }
         return Result.success(companyAppService.getCompanyById(id));
     }
 
@@ -376,6 +388,44 @@ public class CompanyController {
         return Result.success(data);
     }
 
+    @PutMapping("/staff/{staffId}/status")
+    public Result<Void> updateStaffStatus(@PathVariable Long staffId, @RequestParam boolean disabled) {
+        CompanyStaff currentStaff = currentStaff();
+        if (!"OWNER".equals(currentStaff.getPost())) {
+            throw new Exceptions.ForbiddenException("只有企业主可以修改员工状态");
+        }
+
+        CompanyStaff targetStaff = companyStaffRepository.findById(staffId)
+                .orElseThrow(() -> Exceptions.BusinessException.of("员工不存在"));
+        if (!targetStaff.getCompanyId().equals(currentStaff.getCompanyId())) {
+            throw new Exceptions.ForbiddenException("无权操作此员工");
+        }
+        if ("OWNER".equals(targetStaff.getPost())) {
+            throw new Exceptions.ForbiddenException("不能禁用企业主账号");
+        }
+
+        User targetUser = userRepository.findById(targetStaff.getUserId())
+                .orElseThrow(() -> Exceptions.BusinessException.of("用户不存在"));
+        targetUser.setStatus(disabled ? AuthStatus.DISABLED : AuthStatus.VERIFIED);
+        userRepository.save(targetUser);
+        return Result.success();
+    }
+
+    @PostMapping("/applications/interview-invite")
+    public Result<Void> inviteInterviewByResume(@RequestBody Map<String, String> request) {
+        Long companyId = currentCompanyId();
+        Long resumeId = Long.valueOf(request.get("resumeId"));
+        Long jobId = Long.valueOf(request.get("jobId"));
+        String location = request.get("location");
+        String remark = request.get("remark");
+        String interviewTimeRaw = request.get("interviewTime");
+        LocalDateTime interviewTime = interviewTimeRaw == null || interviewTimeRaw.isBlank()
+                ? LocalDateTime.now().plusDays(1)
+                : LocalDateTime.parse(interviewTimeRaw);
+        applicationAppService.sendInterviewInvitationByResume(companyId, resumeId, jobId, interviewTime, location, remark);
+        return Result.success();
+    }
+
     private Long currentCompanyId() {
         Long userId = StpUtil.getLoginIdAsLong();
         return companyAppService.getCompanyIdByUserId(userId);
@@ -438,6 +488,7 @@ public class CompanyController {
             item.setUsername(username);
             item.setDisplayName(username != null && username.contains("@") ? username.substring(0, username.indexOf('@')) : username);
             item.setLastLoginTime("-");
+            item.setStatus(user.getStatus() == AuthStatus.DISABLED ? "DISABLED" : "ACTIVE");
         });
         return item;
     }

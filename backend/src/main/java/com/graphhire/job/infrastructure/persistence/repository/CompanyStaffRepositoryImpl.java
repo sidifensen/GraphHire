@@ -58,6 +58,15 @@ public class CompanyStaffRepositoryImpl implements CompanyStaffRepository {
                 .toList();
     }
 
+    @Override
+    public Optional<CompanyStaff> findByCompanyIdAndUserId(Long companyId, Long userId) {
+        LambdaQueryWrapper<CompanyStaffPO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CompanyStaffPO::getCompanyId, companyId)
+                .eq(CompanyStaffPO::getUserId, userId);
+        CompanyStaffPO po = companyStaffMapper.selectOne(wrapper);
+        return Optional.ofNullable(po).map(this::toDomain);
+    }
+
     /** 保存员工关系 */
     @Override
     public CompanyStaff save(CompanyStaff companyStaff) {

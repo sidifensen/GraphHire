@@ -230,4 +230,12 @@ public class NotificationAppService {
         // 步骤2：删除
         repository.delete(notification);
     }
+
+    /**
+     * 删除用户已读通知
+     */
+    @Transactional
+    public void deleteReadNotifications(Long userId) {
+        repository.deleteReadByUserId(userId);
+    }
 }
