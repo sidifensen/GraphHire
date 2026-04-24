@@ -47,6 +47,7 @@ export default function MatchDetailPage() {
   const [resumes, setResumes] = useState<Array<{ id: number; fileName: string; isDefault: boolean }>>([]);
   const [selectedResumeId, setSelectedResumeId] = useState<number | null>(null);
   const [applying, setApplying] = useState(false);
+  const [applyFeedback, setApplyFeedback] = useState<{ title: string; message: string; type: 'success' | 'error' } | null>(null);
 
   const loadData = async () => {
     if (!jobId) {
@@ -146,10 +147,10 @@ export default function MatchDetailPage() {
     try {
       setApplying(true);
       await personApi.apply({ jobId, resumeId: selectedResumeId });
-      alert('投递成功！');
       setShowResumeSelect(false);
+      setApplyFeedback({ title: '投递成功！', message: '你的简历已成功投递，企业将尽快查看。', type: 'success' });
     } catch (err: any) {
-      alert(err.message || '投递失败，请重试');
+      setApplyFeedback({ title: '投递失败', message: err.message || '投递失败，请重试', type: 'error' });
     } finally {
       setApplying(false);
     }
@@ -306,6 +307,28 @@ export default function MatchDetailPage() {
                 {applying ? '投递中...' : '确认投递'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {applyFeedback && (
+        <div className="fixed inset-0 bg-black/55 z-[110] flex items-center justify-center p-4">
+          <div className="bg-surface-container-lowest rounded-2xl p-6 w-full max-w-md border border-outline-variant/20 shadow-2xl">
+            <div className="flex items-start gap-3 mb-3">
+              <span className={`material-symbols-outlined text-2xl ${applyFeedback.type === 'success' ? 'text-primary' : 'text-error'}`}>
+                {applyFeedback.type === 'success' ? 'check_circle' : 'error'}
+              </span>
+              <div>
+                <h3 className="text-xl font-headline font-bold text-on-surface">{applyFeedback.title}</h3>
+                <p className="text-sm text-on-surface-variant mt-2 leading-6">{applyFeedback.message}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setApplyFeedback(null)}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-primary to-primary-container text-white font-medium hover:opacity-90 transition-opacity"
+            >
+              我知道了
+            </button>
           </div>
         </div>
       )}
