@@ -22,6 +22,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import org.mockito.InOrder;
 
 @SpringBootTest
 class ResumeRepositoryImplTest {
@@ -95,6 +96,23 @@ class ResumeRepositoryImplTest {
             assertNotNull(result);
             assertEquals(1L, result.getId());
             verify(resumeMapper, times(1)).insert(any(ResumePO.class));
+        }
+
+        @Test
+        @DisplayName("保存新的简历前先同步主键序列")
+        void save_NewResume_SyncsSequenceBeforeInsert() {
+            Resume resume = createResume(null);
+            doAnswer(invocation -> {
+                ResumePO arg = invocation.getArgument(0);
+                arg.setId(57L);
+                return 1;
+            }).when(resumeMapper).insert(any(ResumePO.class));
+
+            resumeRepository.save(resume);
+
+            InOrder inOrder = inOrder(resumeMapper);
+            inOrder.verify(resumeMapper).syncResumeIdSequence();
+            inOrder.verify(resumeMapper).insert(any(ResumePO.class));
         }
 
         @Test

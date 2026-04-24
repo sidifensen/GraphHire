@@ -88,6 +88,7 @@ public class ResumeRepositoryImpl implements ResumeRepository {
     public Resume save(Resume resume) {
         ResumePO po = toPO(resume);
         if (resume.getId() == null) {
+            resumeMapper.syncResumeIdSequence();
             resumeMapper.insert(po);
             resume.setId(po.getId());
         } else {

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.graphhire.resume.infrastructure.persistence.po.ResumePO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 /**
@@ -12,6 +13,12 @@ import org.apache.ibatis.annotations.Update;
  */
 @Mapper
 public interface ResumeMapper extends BaseMapper<ResumePO> {
+
+    /**
+     * 同步 resume 主键序列，防止序列值落后导致主键冲突
+     */
+    @Select("SELECT setval('resume_id_seq', COALESCE((SELECT MAX(id) FROM resume), 1), true)")
+    Long syncResumeIdSequence();
 
     /**
      * 更新简历解析结果（jsonb类型）
