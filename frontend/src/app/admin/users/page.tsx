@@ -16,7 +16,7 @@ interface User {
   type: '求职者' | '企业HR' | '管理员';
   joinDate: string;
   lastLoginAt: string;
-  status: '活跃' | '禁用' | '待激活';
+  status: '启用' | '禁用' | '待激活';
 }
 
 const DEFAULT_AVATAR =
@@ -25,7 +25,7 @@ const DEFAULT_AVATAR =
 type UserItem = Awaited<ReturnType<typeof adminApi.getUserList>>['list'][number];
 
 function mapUser(user: UserItem): User {
-  const status = user.status === 'DISABLED' ? '禁用' : user.status === 'LOCKED' ? '待激活' : '活跃';
+  const status = user.status === 'DISABLED' ? '禁用' : user.status === 'LOCKED' ? '待激活' : '启用';
   const type = user.type === 'COMPANY' ? '企业HR' : user.type === 'ADMIN' ? '管理员' : '求职者';
   return {
     id: user.id,
@@ -48,7 +48,7 @@ function mapTypeLabelToApi(value: string): string | undefined {
 }
 
 function mapStatusLabelToApi(value: string): string | undefined {
-  if (value === '活跃') return 'ACTIVE';
+  if (value === '启用') return 'ACTIVE';
   if (value === '禁用') return 'DISABLED';
   if (value === '待激活') return 'LOCKED';
   return undefined;
@@ -91,7 +91,7 @@ export default function AdminUsersPage() {
   }, [page, pageSize, total]);
 
   const handleToggleStatus = async (user: User) => {
-    if (user.status === '活跃') {
+    if (user.status === '启用') {
       await adminApi.updateUserStatus(user.id, 'DISABLED');
     } else {
       await adminApi.updateUserStatus(user.id, 'ACTIVE');
@@ -144,7 +144,7 @@ export default function AdminUsersPage() {
                 className="w-32 appearance-none rounded-lg border-none bg-surface py-2 pl-3 pr-8 text-sm font-medium text-on-surface focus:ring-1 focus:ring-primary dark:bg-slate-800"
               >
                 <option>全部状态</option>
-                <option>活跃</option>
+                <option>启用</option>
                 <option>禁用</option>
                 <option>待激活</option>
               </select>
@@ -196,16 +196,18 @@ export default function AdminUsersPage() {
             {
               header: '姓名',
               accessor: (user) => (
-                <div>
-                  <p className="text-sm font-bold text-on-surface">{user.name}</p>
+                <div className="w-[108px]">
+                  <p className="line-clamp-2 break-all text-sm font-bold leading-5 text-on-surface">{user.name}</p>
                 </div>
               ),
+              className: 'w-[124px]',
             },
             {
               header: '账号',
               accessor: (user) => (
-                <span className="text-sm text-on-surface">{user.username}</span>
+                <span className="block w-[150px] line-clamp-2 break-all text-sm leading-5 text-on-surface">{user.username}</span>
               ),
+              className: 'w-[166px]',
             },
             { header: '联系方式', accessor: (user) => <span className="text-sm text-on-surface">{user.phone}</span> },
             {
@@ -213,16 +215,21 @@ export default function AdminUsersPage() {
               accessor: (user) => (
                 <span
                   className={cn(
-                    'rounded-full px-2.5 py-1 text-[10px] font-bold uppercase ring-1 ring-inset',
+                    'whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-bold uppercase ring-1 ring-inset',
                     user.type === '求职者' ? 'bg-blue-50 text-blue-600 ring-blue-100' : 'bg-purple-50 text-purple-600 ring-purple-100'
                   )}
                 >
                   {user.type}
                 </span>
               ),
+              className: 'w-[98px]',
             },
             { header: '注册时间', accessor: (user) => <span className="font-display text-sm text-on-surface">{user.joinDate}</span> },
-            { header: '上次登录', accessor: (user) => <span className="font-display text-sm text-on-surface">{user.lastLoginAt}</span> },
+            {
+              header: '上次登录',
+              accessor: (user) => <span className="whitespace-nowrap font-display text-sm text-on-surface">{user.lastLoginAt}</span>,
+              className: 'w-[176px]',
+            },
             {
               header: '状态',
               accessor: (user) => (
@@ -230,7 +237,7 @@ export default function AdminUsersPage() {
                   <span
                     className={cn(
                       'h-1.5 w-1.5 shrink-0 rounded-full',
-                      user.status === '活跃'
+                      user.status === '启用'
                         ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]'
                         : user.status === '禁用'
                           ? 'bg-slate-400'
@@ -240,7 +247,7 @@ export default function AdminUsersPage() {
                   <span
                     className={cn(
                       'text-sm font-medium',
-                      user.status === '活跃' ? 'text-emerald-700' : user.status === '禁用' ? 'text-outline' : 'text-amber-700'
+                      user.status === '启用' ? 'text-emerald-700' : user.status === '禁用' ? 'text-outline' : 'text-amber-700'
                     )}
                   >
                     {user.status}
@@ -256,7 +263,7 @@ export default function AdminUsersPage() {
                   <button className="text-xs font-bold uppercase text-slate-700 transition-colors hover:text-slate-900" onClick={() => void handleOpenDetail(user.id)}>
                     详情
                   </button>
-                  {user.status === '活跃' ? (
+                  {user.status === '启用' ? (
                     <button className="text-xs font-bold uppercase text-primary transition-colors hover:text-blue-700" onClick={() => void handleToggleStatus(user)}>
                       禁用
                     </button>
