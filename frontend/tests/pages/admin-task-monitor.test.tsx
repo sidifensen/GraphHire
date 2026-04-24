@@ -11,6 +11,10 @@ vi.mock('@/components/admin/AdminHeader', () => ({
   default: () => <div data-testid="admin-header">header</div>,
 }));
 
+vi.mock('@/components/admin/AdminShell', () => ({
+  default: ({ children }: { children: unknown }) => <div>{children as any}</div>,
+}));
+
 vi.mock('@/lib/api/admin', () => ({
   adminApi: {
     getTaskList: vi.fn(),
@@ -59,6 +63,18 @@ describe('AdminTaskMonitorPage', () => {
 
     await waitFor(() => {
       expect(adminApi.retryTask).toHaveBeenCalledWith(10);
+    });
+  });
+
+  it('点击刷新会重新拉取任务列表', async () => {
+    render(<AdminTaskMonitorPage />);
+
+    await screen.findByText('任务监控');
+    const refreshButton = screen.getByRole('button', { name: /刷新/ });
+    fireEvent.click(refreshButton);
+
+    await waitFor(() => {
+      expect(adminApi.getTaskList).toHaveBeenCalledTimes(2);
     });
   });
 });

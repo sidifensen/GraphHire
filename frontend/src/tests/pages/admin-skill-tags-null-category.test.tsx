@@ -28,6 +28,10 @@ vi.mock('@/lib/api/admin', () => ({
   },
 }));
 
+vi.mock('@/components/admin/AdminShell', () => ({
+  default: ({ children }: { children: unknown }) => <div>{children as any}</div>,
+}));
+
 import AdminSkillTagsPage from '@/app/admin/skill-tags/page';
 
 describe('AdminSkillTagsPage null-safe rendering', () => {

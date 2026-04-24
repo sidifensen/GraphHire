@@ -33,6 +33,7 @@ import com.graphhire.resume.application.service.ResumeAppService;
 import com.graphhire.resume.domain.model.ParseTask;
 import com.graphhire.resume.domain.repository.ParseTaskRepository;
 import com.graphhire.skill.application.service.SkillTagAppService;
+import com.graphhire.skill.application.command.CreateSkillTagCmd;
 import com.graphhire.skill.domain.model.SkillTag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -250,6 +251,60 @@ public class AdminAppService {
             .map(this::toAdminSkillItem)
             .toList();
         return paginateList(list, page, pageSize);
+    }
+
+    @Transactional
+    public SkillTag createSkillTag(com.graphhire.admin.interfaces.dto.request.AdminSkillTagUpsertRequest request) {
+        CreateSkillTagCmd cmd = new CreateSkillTagCmd();
+        cmd.setName(request.getName());
+        cmd.setDescription(request.getDescription());
+        SkillTag created = skillTagAppService.createSkillTag(cmd);
+        if (request.getSynonyms() != null) {
+            for (String synonym : request.getSynonyms()) {
+                skillTagAppService.addSynonym(created.getId(), synonym);
+            }
+            created = skillTagAppService.getSkillTagById(created.getId());
+        }
+        return created;
+    }
+
+    @Transactional
+    public SkillTag updateSkillTag(Long id, com.graphhire.admin.interfaces.dto.request.AdminSkillTagUpsertRequest request) {
+        CreateSkillTagCmd cmd = new CreateSkillTagCmd();
+        cmd.setName(request.getName());
+        cmd.setDescription(request.getDescription());
+        SkillTag updated = skillTagAppService.updateSkillTag(id, cmd);
+        if (request.getSynonyms() != null) {
+            updated.getSynonyms().clear();
+            for (String synonym : request.getSynonyms()) {
+                updated.addSynonym(synonym);
+            }
+            updated = skillTagAppService.updateSkillTag(id, cmd);
+            for (String synonym : updated.getSynonyms()) {
+                skillTagAppService.removeSynonym(id, synonym);
+            }
+            for (String synonym : request.getSynonyms()) {
+                skillTagAppService.addSynonym(id, synonym);
+            }
+            updated = skillTagAppService.getSkillTagById(id);
+        }
+        return updated;
+    }
+
+    @Transactional
+    public void deleteSkillTag(Long id) {
+        skillTagAppService.deleteSkillTag(id);
+    }
+
+    @Transactional
+    public SkillTag addSkillTagSynonym(Long id, String synonym) {
+        skillTagAppService.addSynonym(id, synonym);
+        return skillTagAppService.getSkillTagById(id);
+    }
+
+    @Transactional
+    public void removeSkillTagSynonym(Long id, String synonym) {
+        skillTagAppService.removeSynonym(id, synonym);
     }
 
     public AdminTaskListResponse getTaskList(String type, String status, int page, int pageSize) {

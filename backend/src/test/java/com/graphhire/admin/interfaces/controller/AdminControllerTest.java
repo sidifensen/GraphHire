@@ -6,12 +6,14 @@ import com.graphhire.admin.interfaces.dto.request.AdminBatchDisableUserRequest;
 import com.graphhire.admin.interfaces.dto.request.AdminBatchRejectRequest;
 import com.graphhire.admin.interfaces.dto.request.AdminBatchRetryTaskRequest;
 import com.graphhire.admin.interfaces.dto.request.AdminCompanyAuthUpdateRequest;
+import com.graphhire.admin.interfaces.dto.request.AdminSkillTagUpsertRequest;
 import com.graphhire.admin.interfaces.dto.request.UpdateUserStatusRequest;
 import com.graphhire.admin.interfaces.dto.response.*;
 import com.graphhire.auth.application.service.AuthAppService;
 import com.graphhire.auth.domain.vo.UserType;
 import com.graphhire.auth.interfaces.dto.request.LoginRequest;
 import com.graphhire.auth.interfaces.dto.response.LoginResponse;
+import com.graphhire.skill.domain.model.SkillTag;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -183,6 +185,75 @@ class AdminControllerTest {
 
             assertEquals(200, result.getCode());
             assertEquals(1, result.getData().getTotal());
+        }
+    }
+
+    @Nested
+    @DisplayName("管理端标签")
+    class AdminSkillTagManagementTests {
+        @Test
+        @DisplayName("创建标签")
+        void createSkillTagSuccess() {
+            AdminSkillTagUpsertRequest request = new AdminSkillTagUpsertRequest();
+            request.setName("Go");
+            request.setSynonyms(List.of("golang"));
+            SkillTag tag = new SkillTag("Go");
+            tag.setId(1L);
+            when(adminAppService.createSkillTag(any())).thenReturn(tag);
+
+            var result = adminController.createSkillTag(request);
+
+            assertEquals(200, result.getCode());
+            assertNotNull(result.getData());
+            assertEquals(1L, result.getData().getId());
+            verify(adminAppService).createSkillTag(any());
+        }
+
+        @Test
+        @DisplayName("更新标签")
+        void updateSkillTagSuccess() {
+            AdminSkillTagUpsertRequest request = new AdminSkillTagUpsertRequest();
+            request.setName("GoLang");
+            SkillTag tag = new SkillTag("GoLang");
+            tag.setId(1L);
+            when(adminAppService.updateSkillTag(eq(1L), any())).thenReturn(tag);
+
+            var result = adminController.updateSkillTag(1L, request);
+
+            assertEquals(200, result.getCode());
+            assertEquals("GoLang", result.getData().getName());
+            verify(adminAppService).updateSkillTag(eq(1L), any());
+        }
+
+        @Test
+        @DisplayName("删除标签")
+        void deleteSkillTagSuccess() {
+            var result = adminController.deleteSkillTag(1L);
+
+            assertEquals(200, result.getCode());
+            verify(adminAppService).deleteSkillTag(1L);
+        }
+
+        @Test
+        @DisplayName("添加同义词")
+        void addSkillTagSynonymSuccess() {
+            SkillTag tag = new SkillTag("Go");
+            tag.setId(1L);
+            when(adminAppService.addSkillTagSynonym(1L, "golang")).thenReturn(tag);
+
+            var result = adminController.addSkillTagSynonym(1L, "golang");
+
+            assertEquals(200, result.getCode());
+            verify(adminAppService).addSkillTagSynonym(1L, "golang");
+        }
+
+        @Test
+        @DisplayName("删除同义词")
+        void removeSkillTagSynonymSuccess() {
+            var result = adminController.removeSkillTagSynonym(1L, "golang");
+
+            assertEquals(200, result.getCode());
+            verify(adminAppService).removeSkillTagSynonym(1L, "golang");
         }
     }
 

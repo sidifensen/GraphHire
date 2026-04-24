@@ -104,8 +104,8 @@ export interface UserDetailResponse {
 export interface SkillTagItem {
   id: number;
   name: string;
-  category: string;
-  synonyms: string[];
+  category: string | null;
+  synonyms: string[] | null;
   jobCount: number;
 }
 
@@ -164,6 +164,13 @@ export interface BatchRetryRequest {
   taskIds: number[];
 }
 
+export interface AdminSkillTagUpsertRequest {
+  name: string;
+  description?: string;
+  category?: string;
+  synonyms?: string[];
+}
+
 export interface AdminSettings {
   allowRegister: boolean;
   maintenanceMode: boolean;
@@ -207,6 +214,29 @@ export const adminApi = {
   getSkillList: async (params?: { category?: string; keyword?: string; page?: number; pageSize?: number }): Promise<SkillListResponse> => {
     const response = await apiClient.get('/admin/skill/list', { params });
     return response.data;
+  },
+
+  createSkillTag: async (data: AdminSkillTagUpsertRequest): Promise<SkillTagItem> => {
+    const response = await apiClient.post('/admin/skill-tags', data);
+    return response.data;
+  },
+
+  updateSkillTag: async (id: number, data: AdminSkillTagUpsertRequest): Promise<SkillTagItem> => {
+    const response = await apiClient.put(`/admin/skill-tags/${id}`, data);
+    return response.data;
+  },
+
+  deleteSkillTag: async (id: number): Promise<void> => {
+    await apiClient.delete(`/admin/skill-tags/${id}`);
+  },
+
+  addSkillTagSynonym: async (id: number, synonym: string): Promise<SkillTagItem> => {
+    const response = await apiClient.post(`/admin/skill-tags/${id}/synonyms`, null, { params: { synonym } });
+    return response.data;
+  },
+
+  removeSkillTagSynonym: async (id: number, synonym: string): Promise<void> => {
+    await apiClient.delete(`/admin/skill-tags/${id}/synonyms/${encodeURIComponent(synonym)}`);
   },
 
   getTaskList: async (params?: { type?: string; status?: string; page?: number; pageSize?: number }): Promise<TaskListResponse> => {

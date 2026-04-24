@@ -9,6 +9,7 @@ import com.graphhire.auth.application.service.AuthAppService;
 import com.graphhire.auth.interfaces.dto.request.LoginRequest;
 import com.graphhire.auth.interfaces.dto.response.LoginResponse;
 import com.graphhire.common.vo.Result;
+import com.graphhire.skill.domain.model.SkillTag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -102,6 +103,33 @@ public class AdminController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int pageSize) {
         return Result.success(adminAppService.getSkillList(category, keyword, page, pageSize));
+    }
+
+    @PostMapping("/skill-tags")
+    public Result<SkillTag> createSkillTag(@RequestBody AdminSkillTagUpsertRequest request) {
+        return Result.success(adminAppService.createSkillTag(request));
+    }
+
+    @PutMapping("/skill-tags/{id}")
+    public Result<SkillTag> updateSkillTag(@PathVariable Long id, @RequestBody AdminSkillTagUpsertRequest request) {
+        return Result.success(adminAppService.updateSkillTag(id, request));
+    }
+
+    @DeleteMapping("/skill-tags/{id}")
+    public Result<Void> deleteSkillTag(@PathVariable Long id) {
+        adminAppService.deleteSkillTag(id);
+        return Result.success();
+    }
+
+    @PostMapping("/skill-tags/{id}/synonyms")
+    public Result<SkillTag> addSkillTagSynonym(@PathVariable Long id, @RequestParam String synonym) {
+        return Result.success(adminAppService.addSkillTagSynonym(id, synonym));
+    }
+
+    @DeleteMapping("/skill-tags/{id}/synonyms/{synonym}")
+    public Result<Void> removeSkillTagSynonym(@PathVariable Long id, @PathVariable String synonym) {
+        adminAppService.removeSkillTagSynonym(id, synonym);
+        return Result.success();
     }
 
     @GetMapping("/task/list")
