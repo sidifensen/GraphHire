@@ -206,6 +206,54 @@ public class JobPO {
         this.description = description;
     }
 
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
+    }
+
+    public Integer getParseStatus() {
+        return parseStatus;
+    }
+
+    public void setParseStatus(Integer parseStatus) {
+        this.parseStatus = parseStatus;
+    }
+
+    public String getParseResult() {
+        return parseResult;
+    }
+
+    public void setParseResult(String parseResult) {
+        this.parseResult = parseResult;
+    }
+
+    public String getExperience() {
+        return experience;
+    }
+
+    public void setExperience(String experience) {
+        this.experience = experience;
+    }
+
+    public String getEducation() {
+        return education;
+    }
+
+    public void setEducation(String education) {
+        this.education = education;
+    }
+
+    public Integer getJobType() {
+        return jobType;
+    }
+
+    public void setJobType(Integer jobType) {
+        this.jobType = jobType;
+    }
+
     public LocalDateTime getCreateTime() {
         return createTime;
     }
