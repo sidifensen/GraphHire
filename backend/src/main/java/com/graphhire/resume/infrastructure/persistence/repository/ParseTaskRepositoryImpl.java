@@ -13,7 +13,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * 解析任务仓储实现
@@ -99,14 +98,16 @@ public class ParseTaskRepositoryImpl implements ParseTaskRepository {
         ParseTask task = new ParseTask();
         BeanUtil.copyProperties(po, task, "taskType"); // taskType 需要手动转换
         if (po.getTaskType() != null) {
-            task.setTaskType(po.getTaskType() == 1 ? "resume_parse" : "job_parse");
+            task.setTaskType(po.getTaskType() == 1 ? "resume_parse" : "unknown");
         }
         if (po.getStatus() != null) {
             task.setStatus(ParseTask.TaskStatus.values()[po.getStatus()]);
         }
+        task.setSourceId(po.getSourceId());
         task.setCreatedAt(po.getCreateTime());
         task.setStartedAt(null);
         task.setCompletedAt(po.getFinishTime());
+        task.setUpdatedAt(po.getUpdateTime());
         return task;
     }
 
@@ -118,11 +119,12 @@ public class ParseTaskRepositoryImpl implements ParseTaskRepository {
         if (task.getTaskType() != null) {
             if ("resume_parse".equalsIgnoreCase(task.getTaskType())) {
                 taskTypeVal = 1;
-            } else if ("job_parse".equalsIgnoreCase(task.getTaskType())) {
-                taskTypeVal = 2;
             }
         }
-        Long sourceIdVal = task.getResumeId() != null ? task.getResumeId() : task.getJobId();
+        if (taskTypeVal == null) {
+            taskTypeVal = 1;
+        }
+        Long sourceIdVal = task.getSourceId() != null ? task.getSourceId() : task.getResumeId();
         Integer statusVal = task.getStatus() != null ? task.getStatus().ordinal() : 0;
         // 手动设置所有字段，避免 BeanUtil 类型转换问题
         po.setId(task.getId());
@@ -133,6 +135,7 @@ public class ParseTaskRepositoryImpl implements ParseTaskRepository {
         po.setErrorMessage(task.getErrorMessage());
         po.setCreateTime(task.getCreatedAt());
         po.setFinishTime(task.getCompletedAt());
+        po.setUpdateTime(task.getUpdatedAt());
         return po;
     }
 
@@ -157,9 +160,8 @@ public class ParseTaskRepositoryImpl implements ParseTaskRepository {
             return;
         }
         switch (type.toUpperCase()) {
-            case "RESUME_PARSE" -> wrapper.in(ParseTaskPO::getTaskType, Set.of(0, 1));
-            case "JOB_MATCH" -> wrapper.eq(ParseTaskPO::getTaskType, 2);
-            case "IMPORT" -> wrapper.and(q -> q.isNull(ParseTaskPO::getTaskType).or().notIn(ParseTaskPO::getTaskType, Set.of(0, 1, 2)));
+            case "RESUME_PARSE" -> wrapper.eq(ParseTaskPO::getTaskType, 1);
+            case "JOB_MATCH", "IMPORT" -> wrapper.eq(ParseTaskPO::getTaskType, -1);
             default -> {
             }
         }

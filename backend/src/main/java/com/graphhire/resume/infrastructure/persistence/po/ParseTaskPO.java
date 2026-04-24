@@ -16,10 +16,10 @@ public class ParseTaskPO {
     /** 任务ID（自增） */
     @TableId(type = IdType.AUTO)
     private Long id;
-    /** 关联的简历/职位ID */
+    /** 关联的简历ID */
     @TableField("source_id")
     private Long sourceId;
-    /** 任务类型（0:简历解析,1:职位解析） */
+    /** 任务类型（1:简历解析） */
     @TableField("task_type")
     private Integer taskType;
     /** 任务状态（0:待执行,1:执行中,2:成功,3:失败） */

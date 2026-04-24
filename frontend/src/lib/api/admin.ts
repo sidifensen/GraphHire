@@ -44,6 +44,10 @@ export interface CompanyAuthItem {
   companyId: number;
   companyName: string;
   unifiedSocialCreditCode: string;
+  industry?: string;
+  scale?: string;
+  address?: string;
+  contact?: string;
   legalPerson: string;
   phone: string;
   businessLicenseUrl?: string;
@@ -119,7 +123,8 @@ export interface SkillListResponse {
 // ============ Task ============
 export interface TaskListItem {
   id: number;
-  type: 'RESUME_PARSE' | 'JOB_MATCH' | 'IMPORT';
+  sourceId: number;
+  type: 'RESUME_PARSE';
   status: 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
   progress: number;
   total: number;
@@ -128,6 +133,7 @@ export interface TaskListItem {
   createdAt: string;
   startedAt?: string;
   completedAt?: string;
+  updatedAt?: string;
   errorMessage?: string;
 }
 

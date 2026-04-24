@@ -24,6 +24,8 @@ public class ParseTask extends BaseEntity {
     private Long id;
     /** 关联的简历ID */
     private Long resumeId;
+    /** 来源ID（当前为简历ID） */
+    private Long sourceId;
     /** 关联的职位ID（可选） */
     private Long jobId;
     /** 任务类型 */
@@ -40,6 +42,8 @@ public class ParseTask extends BaseEntity {
     private LocalDateTime startedAt;
     /** 完成时间 */
     private LocalDateTime completedAt;
+    /** 更新时间 */
+    private LocalDateTime updatedAt;
 
     /** 任务状态枚举 */
     public enum TaskStatus {
@@ -94,6 +98,18 @@ public class ParseTask extends BaseEntity {
 
     public void setResumeId(Long resumeId) {
         this.resumeId = resumeId;
+        this.sourceId = resumeId;
+    }
+
+    public Long getSourceId() {
+        return sourceId;
+    }
+
+    public void setSourceId(Long sourceId) {
+        this.sourceId = sourceId;
+        if (sourceId != null) {
+            this.resumeId = sourceId;
+        }
     }
 
     public Long getJobId() {
@@ -158,5 +174,13 @@ public class ParseTask extends BaseEntity {
 
     public void setCompletedAt(LocalDateTime completedAt) {
         this.completedAt = completedAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

@@ -9,9 +9,13 @@ import { adminApi, type TaskListItem, type TaskSummary } from '@/lib/api/admin';
 interface TaskRow {
   id: number;
   taskCode: string;
+  sourceId: number;
   type: string;
   retries: number;
-  lastTime: string;
+  createdAt: string;
+  completedAt: string;
+  updatedAt: string;
+  errorMessage: string;
   status: '处理中' | '失败' | '成功' | '待处理';
 }
 
@@ -19,10 +23,7 @@ function mapTaskTypeLabel(type: TaskListItem['type']): string {
   if (type === 'RESUME_PARSE') {
     return '简历解析';
   }
-  if (type === 'JOB_MATCH') {
-    return '图谱匹配';
-  }
-  return '导入任务';
+  return '简历解析';
 }
 
 function mapTaskStatusLabel(status: TaskListItem['status']): TaskRow['status'] {
@@ -38,8 +39,11 @@ function mapTaskStatusLabel(status: TaskListItem['status']): TaskRow['status'] {
   return '待处理';
 }
 
-function pickLastTime(item: TaskListItem): string {
-  return item.completedAt || item.startedAt || item.createdAt || '-';
+function displayText(value?: string): string {
+  if (!value) {
+    return '-';
+  }
+  return value;
 }
 
 export default function AdminTaskMonitorPage() {
@@ -79,9 +83,13 @@ export default function AdminTaskMonitorPage() {
         (response.list ?? []).map((item) => ({
           id: item.id,
           taskCode: `TSK-${item.id}`,
+          sourceId: item.sourceId,
           type: mapTaskTypeLabel(item.type),
           retries: item.failCount ?? 0,
-          lastTime: pickLastTime(item),
+          createdAt: displayText(item.createdAt),
+          completedAt: displayText(item.completedAt),
+          updatedAt: displayText(item.updatedAt),
+          errorMessage: displayText(item.errorMessage),
           status: mapTaskStatusLabel(item.status),
         }))
       );
@@ -171,8 +179,6 @@ export default function AdminTaskMonitorPage() {
                 >
                   <option value="">全部类型</option>
                   <option value="RESUME_PARSE">简历解析</option>
-                  <option value="JOB_MATCH">图谱匹配</option>
-                  <option value="IMPORT">导入任务</option>
                 </select>
               </div>
               <button
@@ -204,9 +210,9 @@ export default function AdminTaskMonitorPage() {
           }}
           columns={[
               { header: '任务ID', accessor: (task) => <span className="font-mono text-xs font-bold text-slate-700 dark:text-slate-300">{task.taskCode}</span> },
+              { header: '来源ID', accessor: (task) => <span className="font-mono text-xs text-slate-600 dark:text-slate-300">{task.sourceId}</span> },
               { header: '任务类型', accessor: (task) => <span className="text-sm text-on-surface">{task.type}</span> },
               { header: '重试次数', accessor: (task) => <span className="inline-block min-w-16 text-center text-sm text-outline">{task.retries}</span> },
-              { header: '最后执行时间', accessor: (task) => <span className="font-display text-xs text-slate-600 dark:text-slate-300">{task.lastTime}</span> },
               {
                 header: '状态',
                 accessor: (task) => (
@@ -227,6 +233,17 @@ export default function AdminTaskMonitorPage() {
                   </span>
                 ),
               },
+              {
+                header: '错误信息',
+                accessor: (task) => (
+                  <span className="inline-block max-w-44 truncate text-xs text-slate-500 dark:text-slate-300" title={task.errorMessage}>
+                    {task.errorMessage}
+                  </span>
+                ),
+              },
+              { header: '创建时间', accessor: (task) => <span className="font-display text-xs text-slate-600 dark:text-slate-300">{task.createdAt}</span> },
+              { header: '结束时间', accessor: (task) => <span className="font-display text-xs text-slate-600 dark:text-slate-300">{task.completedAt}</span> },
+              { header: '更新时间', accessor: (task) => <span className="font-display text-xs text-slate-600 dark:text-slate-300">{task.updatedAt}</span> },
               {
                 header: '操作',
                 className: 'text-right',

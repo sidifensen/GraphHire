@@ -243,8 +243,10 @@ class AdminAppServiceTest {
             task.setId(10L);
             task.setTaskType("resume_parse");
             task.setStatus(ParseTask.TaskStatus.FAILED);
+            task.setResumeId(88L);
             task.setRetryCount(1);
             task.setCreatedAt(LocalDateTime.now());
+            task.setUpdatedAt(LocalDateTime.now().plusMinutes(1));
             task.setErrorMessage("timeout");
             IPage<ParseTask> page = new Page<>(1, 10, 1);
             page.setRecords(List.of(task));
@@ -259,6 +261,9 @@ class AdminAppServiceTest {
             assertEquals(1, response.getTotal());
             assertEquals(1, response.getSummary().getFailed());
             assertEquals("FAILED", response.getList().get(0).getStatus());
+            assertEquals("RESUME_PARSE", response.getList().get(0).getType());
+            assertEquals(88L, response.getList().get(0).getSourceId());
+            assertNotNull(response.getList().get(0).getUpdatedAt());
             verify(parseTaskRepository, never()).findAll();
         }
 

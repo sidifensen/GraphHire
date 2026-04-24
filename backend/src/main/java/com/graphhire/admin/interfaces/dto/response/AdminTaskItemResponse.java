@@ -2,6 +2,7 @@ package com.graphhire.admin.interfaces.dto.response;
 
 public class AdminTaskItemResponse {
     private Long id;
+    private Long sourceId;
     private String type;
     private String status;
     private int progress;
@@ -11,10 +12,13 @@ public class AdminTaskItemResponse {
     private String createdAt;
     private String startedAt;
     private String completedAt;
+    private String updatedAt;
     private String errorMessage;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+    public Long getSourceId() { return sourceId; }
+    public void setSourceId(Long sourceId) { this.sourceId = sourceId; }
     public String getType() { return type; }
     public void setType(String type) { this.type = type; }
     public String getStatus() { return status; }
@@ -33,6 +37,8 @@ public class AdminTaskItemResponse {
     public void setStartedAt(String startedAt) { this.startedAt = startedAt; }
     public String getCompletedAt() { return completedAt; }
     public void setCompletedAt(String completedAt) { this.completedAt = completedAt; }
+    public String getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
     public String getErrorMessage() { return errorMessage; }
     public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
 }

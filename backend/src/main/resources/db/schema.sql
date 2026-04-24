@@ -356,14 +356,14 @@ CREATE TABLE parse_task
     finish_time TIMESTAMP,
     update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT chk_task_type CHECK (task_type IN (1, 2)),
+    CONSTRAINT chk_task_type CHECK (task_type = 1),
     CONSTRAINT chk_task_status CHECK (status IN (0, 1, 2, 3))
 );
 
 COMMENT ON TABLE parse_task IS '解析任务表：管理文档解析任务的队列和执行状态';
 COMMENT ON COLUMN parse_task.id IS '主键ID';
-COMMENT ON COLUMN parse_task.task_type IS '任务类型：1-简历解析 2-职位解析';
-COMMENT ON COLUMN parse_task.source_id IS '来源ID（简历ID或职位ID）';
+COMMENT ON COLUMN parse_task.task_type IS '任务类型：1-简历解析（当前仅支持该类型）';
+COMMENT ON COLUMN parse_task.source_id IS '来源ID：简历ID（当前仅关联简历解析任务）';
 COMMENT ON COLUMN parse_task.status IS '任务状态：0-排队 1-执行中 2-成功 3-失败';
 COMMENT ON COLUMN parse_task.retry_count IS '重试次数';
 COMMENT ON COLUMN parse_task.error_msg IS '错误信息';

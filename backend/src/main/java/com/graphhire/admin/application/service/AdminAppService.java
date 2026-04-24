@@ -482,12 +482,16 @@ public class AdminAppService {
         item.setCompanyId(company.getId());
         item.setCompanyName(company.getName());
         item.setUnifiedSocialCreditCode(company.getUnifiedSocialCreditCode());
+        item.setIndustry(company.getIndustry());
+        item.setScale(company.getScale());
+        item.setAddress(company.getAddress());
+        item.setContact(company.getContactName());
         item.setLegalPerson(company.getContactName());
         item.setPhone(company.getContactPhone());
         item.setBusinessLicenseUrl(company.getLicenseUrl());
-        item.setSubmittedAt(null);
+        item.setSubmittedAt(formatDateTime(company.getCreateTime()));
         item.setStatus(mapCompanyStatus(company.getAuthStatus()));
-        item.setReviewedAt(null);
+        item.setReviewedAt(formatDateTime(company.getUpdatedAt()));
         item.setReviewerId(null);
         item.setRejectReason(null);
         return item;
@@ -525,6 +529,7 @@ public class AdminAppService {
     private AdminTaskItemResponse toAdminTaskItem(ParseTask task) {
         AdminTaskItemResponse item = new AdminTaskItemResponse();
         item.setId(task.getId());
+        item.setSourceId(task.getSourceId() == null ? task.getResumeId() : task.getSourceId());
         item.setType(mapTaskType(task.getTaskType()));
         item.setStatus(mapTaskStatus(task.getStatus()));
         item.setProgress(task.getStatus() == ParseTask.TaskStatus.SUCCESS ? 100 : task.getStatus() == ParseTask.TaskStatus.RUNNING ? 50 : 0);
@@ -534,6 +539,7 @@ public class AdminAppService {
         item.setCreatedAt(format(task.getCreatedAt()));
         item.setStartedAt(format(task.getStartedAt()));
         item.setCompletedAt(format(task.getCompletedAt()));
+        item.setUpdatedAt(format(task.getUpdatedAt()));
         item.setErrorMessage(task.getErrorMessage());
         return item;
     }
@@ -572,17 +578,7 @@ public class AdminAppService {
     }
 
     private String mapTaskType(String rawType) {
-        if (rawType == null || rawType.isBlank()) {
-            return "IMPORT";
-        }
-        String normalized = rawType.trim().toLowerCase();
-        if (normalized.contains("resume")) {
-            return "RESUME_PARSE";
-        }
-        if (normalized.contains("job") || normalized.contains("match")) {
-            return "JOB_MATCH";
-        }
-        return "IMPORT";
+        return "RESUME_PARSE";
     }
 
     private String mapTaskStatus(ParseTask.TaskStatus status) {
