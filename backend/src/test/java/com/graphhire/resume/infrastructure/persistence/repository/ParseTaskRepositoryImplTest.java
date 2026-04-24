@@ -4,6 +4,8 @@ import com.graphhire.resume.domain.model.ParseTask;
 import com.graphhire.resume.domain.repository.ParseTaskRepository;
 import com.graphhire.resume.infrastructure.persistence.mapper.ParseTaskMapper;
 import com.graphhire.resume.infrastructure.persistence.po.ParseTaskPO;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -61,6 +63,29 @@ class ParseTaskRepositoryImplTest {
             Optional<ParseTask> result = parseTaskRepository.findByResumeId(404L);
 
             assertTrue(result.isEmpty());
+        }
+    }
+
+    @Nested
+    @DisplayName("findPage 测试")
+    class FindPageTests {
+
+        @Test
+        @DisplayName("分页插件失效返回全量时仍应按页切片")
+        void findPage_ShouldSliceRecords_WhenMapperReturnsAllRecords() {
+            ParseTaskPO task1 = createTaskPO(1L, 1, 1001L, 0);
+            ParseTaskPO task2 = createTaskPO(2L, 1, 1002L, 1);
+            ParseTaskPO task3 = createTaskPO(3L, 1, 1003L, 2);
+
+            IPage<ParseTaskPO> mapperPage = new Page<>(2, 1, 3);
+            mapperPage.setRecords(List.of(task1, task2, task3));
+            when(parseTaskMapper.selectPage(any(), any())).thenReturn(mapperPage);
+
+            IPage<ParseTask> result = parseTaskRepository.findPage("RESUME_PARSE", null, 2, 1);
+
+            assertEquals(3, result.getTotal());
+            assertEquals(1, result.getRecords().size());
+            assertEquals(2L, result.getRecords().get(0).getId());
         }
     }
 

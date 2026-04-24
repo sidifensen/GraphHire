@@ -52,7 +52,9 @@ public class ParseTaskRepositoryImpl implements ParseTaskRepository {
 
     @Override
     public IPage<ParseTask> findPage(String type, String status, int page, int pageSize) {
-        Page<ParseTaskPO> pageParam = new Page<>(Math.max(page, 1), Math.max(pageSize, 1));
+        int safePage = Math.max(page, 1);
+        int safePageSize = Math.max(pageSize, 1);
+        Page<ParseTaskPO> pageParam = new Page<>(safePage, safePageSize);
         LambdaQueryWrapper<ParseTaskPO> wrapper = new LambdaQueryWrapper<>();
 
         applyTypeFilter(wrapper, type);
@@ -60,8 +62,19 @@ public class ParseTaskRepositoryImpl implements ParseTaskRepository {
         wrapper.orderByDesc(ParseTaskPO::getCreateTime);
 
         IPage<ParseTaskPO> poPage = parseTaskMapper.selectPage(pageParam, wrapper);
-        Page<ParseTask> domainPage = new Page<>(poPage.getCurrent(), poPage.getSize(), poPage.getTotal());
-        domainPage.setRecords(poPage.getRecords().stream().map(this::toDomain).toList());
+        List<ParseTaskPO> records = poPage.getRecords() == null ? List.of() : poPage.getRecords();
+        long total = poPage.getTotal();
+
+        // 某些环境分页插件未生效时，selectPage 可能返回全量记录，这里兜底按 page/pageSize 切片。
+        if (records.size() > safePageSize) {
+            total = records.size();
+            int start = (safePage - 1) * safePageSize;
+            int end = Math.min(start + safePageSize, records.size());
+            records = start < records.size() ? records.subList(start, end) : List.of();
+        }
+
+        Page<ParseTask> domainPage = new Page<>(safePage, safePageSize, total);
+        domainPage.setRecords(records.stream().map(this::toDomain).toList());
         return domainPage;
     }
 
