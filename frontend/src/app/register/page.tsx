@@ -26,6 +26,23 @@ export default function RegisterPage() {
   const [verifyCodeCooldown, setVerifyCodeCooldown] = useState(0);
   const [error, setError] = useState('');
 
+  const extractErrorMessage = (err: unknown, fallback: string) => {
+    if (err && typeof err === 'object') {
+      const maybeResponse = err as {
+        response?: {
+          data?: {
+            message?: string;
+          };
+        };
+      };
+      const message = maybeResponse.response?.data?.message;
+      if (typeof message === 'string' && message.trim()) {
+        return message;
+      }
+    }
+    return err instanceof Error ? err.message : fallback;
+  };
+
   const handleRoleSwitch = (newRole: 'jobseeker' | 'recruiter') => {
     setRole(newRole);
     setError('');
@@ -53,7 +70,7 @@ export default function RegisterPage() {
         });
       }, 1000);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : '发送验证码失败';
+      const message = extractErrorMessage(err, '发送验证码失败');
       setError(message);
     } finally {
       setVerifyCodeLoading(false);
@@ -128,7 +145,7 @@ export default function RegisterPage() {
         router.push('/');
       }
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : '注册失败，请稍后重试';
+      const message = extractErrorMessage(err, '注册失败，请稍后重试');
       setError(message);
     } finally {
       setLoading(false);

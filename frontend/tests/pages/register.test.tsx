@@ -1,17 +1,31 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import RegisterPage from '@/app/register/page';
+
+const mockPush = vi.fn();
+const mockSendVerifyCode = vi.fn();
+const mockPersonRegister = vi.fn();
+const mockCompanyRegister = vi.fn();
 
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
   usePathname: () => '/register',
   useRouter: () => ({
-    push: vi.fn(),
+    push: mockPush,
     replace: vi.fn(),
     refresh: vi.fn(),
     back: vi.fn(),
     forward: vi.fn(),
   }),
+}));
+
+vi.mock('@/lib/api/auth', () => ({
+  authApi: {
+    sendVerifyCode: (...args: unknown[]) => mockSendVerifyCode(...args),
+    personRegister: (...args: unknown[]) => mockPersonRegister(...args),
+    companyRegister: (...args: unknown[]) => mockCompanyRegister(...args),
+  },
 }));
 
 // Mock next/image
@@ -20,6 +34,10 @@ vi.mock('next/image', () => ({
 }));
 
 describe('RegisterPage', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('renders page title', () => {
     render(<RegisterPage />);
     expect(screen.getByText('创建账号')).toBeDefined();
@@ -52,5 +70,28 @@ describe('RegisterPage', () => {
   it('renders login link', () => {
     render(<RegisterPage />);
     expect(screen.getByText('立即登录')).toBeDefined();
+  });
+
+  it('shows backend recruiter register error message', async () => {
+    const user = userEvent.setup();
+    mockCompanyRegister.mockRejectedValueOnce({
+      response: { data: { message: '验证码错误或已过期' } },
+    });
+
+    render(<RegisterPage />);
+    await user.click(screen.getByRole('button', { name: '招聘者' }));
+    await user.type(screen.getByPlaceholderText('请输入邮箱地址'), 'corp@example.com');
+    await user.type(screen.getByPlaceholderText('6 位验证码'), '123456');
+    await user.type(screen.getByPlaceholderText('设置 8-20 位密码，包含字母和数字'), 'Test12345');
+    await user.type(screen.getByPlaceholderText('请再次输入密码'), 'Test12345');
+    await user.type(screen.getByPlaceholderText('请输入营业执照上的公司全称'), '测试科技有限公司');
+    await user.type(screen.getByPlaceholderText('请输入 18 位信用代码'), '91330100MA27X1X2X3');
+    await user.click(screen.getByRole('checkbox'));
+    await user.click(screen.getByRole('button', { name: '立即注册' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('验证码错误或已过期')).toBeInTheDocument();
+    });
+    expect(mockPush).not.toHaveBeenCalled();
   });
 });
