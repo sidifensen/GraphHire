@@ -148,21 +148,4 @@ describe('LoginPage 登录页测试', () => {
     });
   });
 
-  describe('记住账号功能测试', () => {
-    test('渲染记住账号复选框', () => {
-      render(<LoginPage />);
-      const rememberCheckbox = screen.getByLabelText('记住账号');
-      expect(rememberCheckbox).toBeInTheDocument();
-    });
-
-    test('可以勾选记住账号', async () => {
-      const user = userEvent.setup();
-      render(<LoginPage />);
-
-      const rememberCheckbox = screen.getByLabelText('记住账号');
-      await user.click(rememberCheckbox);
-
-      expect(rememberCheckbox).toBeChecked();
-    });
-  });
 });

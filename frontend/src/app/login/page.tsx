@@ -50,7 +50,6 @@ export default function LoginPage() {
   const router = useRouter();
   const shouldReduceMotion = useReducedMotion();
   const [showPassword, setShowPassword] = useState(false);
-  const [remember, setRemember] = useState(false);
   const [activeRole, setActiveRole] = useState<'jobseeker' | 'recruiter'>('jobseeker');
   const [username, setUsername] = useState(isDev ? DEV_ACCOUNTS.jobseeker.username : '');
   const [password, setPassword] = useState(isDev ? DEV_ACCOUNTS.jobseeker.password : '');
@@ -239,19 +238,7 @@ export default function LoginPage() {
                     </div>
 
                     {/* Utilities Row */}
-                    <div className="flex items-center justify-between mt-2">
-                      <div className="flex items-center">
-                        <input
-                          className="w-4 h-4 rounded text-[#003da6] border-[#c3c6d7] bg-[#eef4ff] focus:ring-[#003da6] focus:ring-offset-0 cursor-pointer"
-                          id="remember"
-                          type="checkbox"
-                          checked={remember}
-                          onChange={(e) => setRemember(e.target.checked)}
-                        />
-                        <label className="ml-2 text-xs text-[#434654] cursor-pointer" htmlFor="remember">
-                          记住账号
-                        </label>
-                      </div>
+                    <div className="flex items-center justify-end mt-2">
                       <Link className="text-xs text-[#003da6] hover:text-[#0052d9] transition-colors" href="#">
                         忘记密码？
                       </Link>
