@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import AdminTopbar from '@/components/admin/AdminTopbar';
+import RouteTransition from '@/components/RouteTransition';
 
 interface AdminShellProps {
   children: ReactNode;
@@ -30,7 +31,11 @@ export default function AdminShell({ children }: AdminShellProps) {
         className="flex h-full min-w-0 flex-1 flex-col overflow-hidden"
       >
         <AdminTopbar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-        <main className="no-scrollbar flex-1 overflow-y-auto">{children}</main>
+        <main className="no-scrollbar flex-1 overflow-y-auto">
+          <RouteTransition className="h-full" testId="admin-route-transition">
+            {children}
+          </RouteTransition>
+        </main>
       </motion.div>
     </div>
   );

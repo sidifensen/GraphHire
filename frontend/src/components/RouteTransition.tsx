@@ -6,9 +6,10 @@ import { usePathname } from 'next/navigation';
 interface RouteTransitionProps {
   children: React.ReactNode;
   className?: string;
+  testId?: string;
 }
 
-export default function RouteTransition({ children, className = '' }: RouteTransitionProps) {
+export default function RouteTransition({ children, className = '', testId }: RouteTransitionProps) {
   const pathname = usePathname();
   const shouldReduceMotion = useReducedMotion();
 
@@ -21,6 +22,7 @@ export default function RouteTransition({ children, className = '' }: RouteTrans
         exit={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: -6 }}
         transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.2, ease: 'easeOut' }}
         className={className}
+        data-testid={testId}
       >
         {children}
       </motion.div>
