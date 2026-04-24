@@ -11,9 +11,9 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/graphhire
-    username: postgres
-    password: postgres
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/graphhire}
+    username: ${DB_USERNAME:}
+    password: ${DB_PASSWORD:}
     hikari:
       maximum-pool-size: 20
       minimum-idle: 5
@@ -104,8 +104,13 @@ rocketmq:
 ai:
   provider: deepseek
   deepseek:
+    enabled: ${DEEPSEEK_ENABLED:true}
     api-key: ${DEEPSEEK_API_KEY:}
     url: https://api.deepseek.com/v1
+    timeout-ms: ${DEEPSEEK_TIMEOUT_MS:30000}
+    retry:
+      max-attempts: ${DEEPSEEK_RETRY_MAX_ATTEMPTS:2}
+      backoff-ms: ${DEEPSEEK_RETRY_BACKOFF_MS:200}
 
 
   parser:
@@ -120,13 +125,14 @@ ai:
         type: General
 # RustFS Configuration
 rustfs:
-  endpoint: http://localhost:9000
-  access-key: rustfsadmin
-  secret-key: rustfsadmin
-  bucket: resumes
+  endpoint: ${RUSTFS_ENDPOINT:http://localhost:9000}
+  access-key: ${RUSTFS_ACCESS_KEY:}
+  secret-key: ${RUSTFS_SECRET_KEY:}
+  bucket: ${RUSTFS_BUCKET:resumes}
 
 # Memgraph Configuration
 memgraph:
+  enabled: ${MEMGRAPH_ENABLED:true}
   bolt-url: bolt://localhost:7687
   username:
   password:
@@ -135,9 +141,22 @@ memgraph:
 logging:
   level:
     root: INFO
-    com.graphhire: DEBUG
+    com.graphhire: INFO
   pattern:
     console: '%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n'
+
+app:
+  logging:
+    slow-api-threshold-ms: ${SLOW_API_THRESHOLD_MS:500}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
 
 # springdoc-openapi 配置
 springdoc:

@@ -113,10 +113,11 @@ public class NotificationAppService {
      * 步骤3：保存更新后的通知
      */
     @Transactional
-    public void markAsRead(Long notificationId) {
+    public void markAsRead(Long notificationId, Long userId) {
         // 步骤1：查询通知
         Notification notification = repository.findById(notificationId)
             .orElseThrow(() -> new Exceptions.BusinessException("Notification not found: " + notificationId));
+        ensureOwner(notification, userId);
         // 步骤2：标记已读
         notification.markAsRead();
         // 步骤3：保存更新
@@ -132,10 +133,11 @@ public class NotificationAppService {
      * 步骤3：保存更新后的通知
      */
     @Transactional
-    public void markAsUnread(Long notificationId) {
+    public void markAsUnread(Long notificationId, Long userId) {
         // 步骤1：查询通知
         Notification notification = repository.findById(notificationId)
             .orElseThrow(() -> new Exceptions.BusinessException("Notification not found: " + notificationId));
+        ensureOwner(notification, userId);
         // 步骤2：标记未读
         notification.markAsUnread();
         // 步骤3：保存更新
@@ -162,9 +164,11 @@ public class NotificationAppService {
      * @param notificationId 通知ID
      * @return 通知对象
      */
-    public Notification getNotification(Long notificationId) {
-        return repository.findById(notificationId)
+    public Notification getNotification(Long notificationId, Long userId) {
+        Notification notification = repository.findById(notificationId)
             .orElseThrow(() -> new Exceptions.BusinessException("Notification not found: " + notificationId));
+        ensureOwner(notification, userId);
+        return notification;
     }
 
     /**
@@ -223,10 +227,11 @@ public class NotificationAppService {
      * 步骤2：调用仓储删除
      */
     @Transactional
-    public void deleteNotification(Long notificationId) {
+    public void deleteNotification(Long notificationId, Long userId) {
         // 步骤1：查询通知
         Notification notification = repository.findById(notificationId)
             .orElseThrow(() -> new Exceptions.BusinessException("Notification not found: " + notificationId));
+        ensureOwner(notification, userId);
         // 步骤2：删除
         repository.delete(notification);
     }
@@ -237,5 +242,11 @@ public class NotificationAppService {
     @Transactional
     public void deleteReadNotifications(Long userId) {
         repository.deleteReadByUserId(userId);
+    }
+
+    private void ensureOwner(Notification notification, Long userId) {
+        if (notification.getUserId() == null || !notification.getUserId().equals(userId)) {
+            throw new Exceptions.ForbiddenException("无权访问该通知资源");
+        }
     }
 }

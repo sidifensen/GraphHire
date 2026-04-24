@@ -7,6 +7,7 @@ import com.graphhire.auth.domain.vo.UserType;
 import com.graphhire.auth.interfaces.dto.request.CompanyRegisterRequest;
 import com.graphhire.auth.interfaces.dto.request.LoginRequest;
 import com.graphhire.auth.interfaces.dto.request.PersonRegisterRequest;
+import com.graphhire.auth.interfaces.dto.request.RefreshTokenRequest;
 import com.graphhire.auth.interfaces.dto.response.LoginResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -492,7 +493,9 @@ class AuthControllerTest {
             when(authService.refreshToken(refreshToken)).thenReturn(newLoginResponse);
 
             // When
-            var result = authController.refreshToken(refreshToken);
+            RefreshTokenRequest request = new RefreshTokenRequest();
+            request.setRefreshToken(refreshToken);
+            var result = authController.refreshToken(request, null);
 
             // Then
             assertNotNull(result);
@@ -512,7 +515,9 @@ class AuthControllerTest {
                 .thenThrow(new RuntimeException("Refresh token 无效或已过期"));
 
             // When & Then
-            assertThrows(RuntimeException.class, () -> authController.refreshToken(refreshToken));
+            RefreshTokenRequest request = new RefreshTokenRequest();
+            request.setRefreshToken(refreshToken);
+            assertThrows(RuntimeException.class, () -> authController.refreshToken(request, null));
         }
     }
 }

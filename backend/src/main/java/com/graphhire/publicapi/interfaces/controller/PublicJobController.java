@@ -15,8 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Comparator;
+import java.util.Map;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.function.Function;
 
 @RestController
 @RequestMapping("/public/jobs")
@@ -40,6 +42,19 @@ public class PublicJobController {
             @RequestParam(required = false, defaultValue = "10") Integer size) {
 
         List<Job> allPublishedJobs = jobRepository.findByStatus(JobStatus.PUBLISHED);
+        int safePage = Math.max(page, 1);
+        int safeSize = Math.max(size, 1);
+        int offset = (safePage - 1) * safeSize;
+
+        if (CollUtil.isEmpty(skills)) {
+            List<Job> pagedJobs = jobRepository.searchPublishedJobs(keyword, city, salaryMin, salaryMax, sortBy, offset, safeSize);
+            long total = jobRepository.countPublishedJobs(keyword, city, salaryMin, salaryMax);
+            Map<Long, Company> companyMap = companyRepository.findByIds(
+                    pagedJobs.stream().map(Job::getCompanyId).distinct().toList()
+            ).stream().collect(Collectors.toMap(Company::getId, Function.identity()));
+            List<PublicJobCardResponse> records = pagedJobs.stream().map(job -> toCard(job, companyMap)).toList();
+            return Result.success(new PageResult<>(records, total, safePage, safeSize));
+        }
 
         List<Job> filteredJobs = allPublishedJobs.stream()
                 .filter(job -> matchesKeyword(job, keyword))
@@ -51,14 +66,17 @@ public class PublicJobController {
         List<Job> sortedJobs = applySort(filteredJobs, sortBy);
 
         int total = sortedJobs.size();
-        int fromIndex = Math.max((page - 1) * size, 0);
-        int toIndex = Math.min(fromIndex + size, total);
+        int fromIndex = Math.max((safePage - 1) * safeSize, 0);
+        int toIndex = Math.min(fromIndex + safeSize, total);
 
+        Map<Long, Company> companyMap = companyRepository.findByIds(
+                sortedJobs.stream().skip(fromIndex).limit(Math.max(toIndex - fromIndex, 0)).map(Job::getCompanyId).distinct().toList()
+        ).stream().collect(Collectors.toMap(Company::getId, Function.identity()));
         List<PublicJobCardResponse> pagedJobs = fromIndex < total
-                ? sortedJobs.subList(fromIndex, toIndex).stream().map(this::toCard).toList()
+                ? sortedJobs.subList(fromIndex, toIndex).stream().map(job -> toCard(job, companyMap)).toList()
                 : List.of();
 
-        return Result.success(new PageResult<>(pagedJobs, (long) total, page, size));
+        return Result.success(new PageResult<>(pagedJobs, (long) total, safePage, safeSize));
     }
 
     @GetMapping("/{id}")
@@ -68,11 +86,13 @@ public class PublicJobController {
         if (job.getStatus() != JobStatus.PUBLISHED) {
             throw new IllegalArgumentException("职位不存在或已下架");
         }
-        return Result.success(toCard(job));
+        Map<Long, Company> companyMap = companyRepository.findByIds(List.of(job.getCompanyId())).stream()
+                .collect(Collectors.toMap(Company::getId, Function.identity()));
+        return Result.success(toCard(job, companyMap));
     }
 
-    private PublicJobCardResponse toCard(Job job) {
-        Company company = companyRepository.findById(job.getCompanyId()).orElse(null);
+    private PublicJobCardResponse toCard(Job job, Map<Long, Company> companyMap) {
+        Company company = companyMap.get(job.getCompanyId());
         Location location = job.getLocation();
         SalaryRange salaryRange = job.getSalaryRange();
         return new PublicJobCardResponse(

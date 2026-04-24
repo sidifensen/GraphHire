@@ -127,6 +127,23 @@ class NotificationControllerIT extends BaseControllerIT {
             .andExpect(jsonPath("$.code").value(200));
     }
 
+    @Test
+    @DisplayName("08 - 未登录访问通知接口应返回401")
+    void getNotifications_WithoutLogin_ShouldReturn401() throws Exception {
+        mockMvc.perform(get("/notifications/me"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value(401));
+    }
+
+    @Test
+    @DisplayName("09 - 禁止读取他人通知")
+    void getOtherUserNotifications_ShouldReturn403() throws Exception {
+        mockMvc.perform(get("/notifications/user/{userId}", personUserId)
+                .headers(companyHeaders))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value(403));
+    }
+
     private HttpHeaders loginHeaders(String username, String password) throws Exception {
         String json = String.format("{\"username\":\"%s\",\"password\":\"%s\"}", username, password);
         String token = objectMapper.readTree(mockMvc.perform(post("/auth/login")

@@ -36,7 +36,6 @@ public class SaTokenConfig implements WebMvcConfigurer {
         .excludePathPatterns(
             "/auth/**",
             "/admin/login",
-            "/notifications/**",
             "/person/avatar/public/**",
             "/skill-tags/**",
             "/public/**",

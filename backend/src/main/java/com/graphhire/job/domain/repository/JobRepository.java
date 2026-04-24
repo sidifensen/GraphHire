@@ -21,6 +21,13 @@ public interface JobRepository {
     /** 根据状态查询职位列表 */
     List<Job> findByStatus(JobStatus status);
 
+    /** 公开职位搜索（数据库过滤 + 排序 + 分页） */
+    List<Job> searchPublishedJobs(String keyword, String city, Integer salaryMin, Integer salaryMax,
+                                  String sortBy, int offset, int limit);
+
+    /** 公开职位搜索计数 */
+    long countPublishedJobs(String keyword, String city, Integer salaryMin, Integer salaryMax);
+
     /** 查询所有职位 */
     List<Job> findAll();
 

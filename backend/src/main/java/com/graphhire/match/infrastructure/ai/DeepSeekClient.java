@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
@@ -39,6 +40,18 @@ public class DeepSeekClient {
     /** DeepSeek API地址，默认 https://api.deepseek.com/v1 */
     @Value("${ai.deepseek.url:https://api.deepseek.com/v1}")
     private String baseUrl;
+
+    @Value("${ai.deepseek.enabled:true}")
+    private boolean enabled;
+
+    @Value("${ai.deepseek.timeout-ms:30000}")
+    private int timeoutMs;
+
+    @Value("${ai.deepseek.retry.max-attempts:2}")
+    private int maxRetryAttempts;
+
+    @Value("${ai.deepseek.retry.backoff-ms:200}")
+    private long retryBackoffMs;
 
     // =====================================================
     // 【第一部分】匹配计算
@@ -485,9 +498,9 @@ public class DeepSeekClient {
     }
 
     private boolean isAiAvailable(String operation) {
-        boolean available = StrUtil.isNotBlank(apiKey);
+        boolean available = enabled && StrUtil.isNotBlank(apiKey);
         if (!available) {
-            log.info("DeepSeek {} fallback: api key missing.", operation);
+            log.info("DeepSeek {} fallback: ai disabled or api key missing.", operation);
         }
         return available;
     }
@@ -502,35 +515,47 @@ public class DeepSeekClient {
             }
         );
 
-        try {
-            HttpResponse response = HttpRequest.post(endpoint)
-                .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer " + apiKey)
-                .body(JSONUtil.toJsonStr(requestBody))
-                .timeout(30000)
-                .execute();
+        int attempts = Math.max(maxRetryAttempts, 1);
+        for (int attempt = 1; attempt <= attempts; attempt++) {
+            try {
+                HttpResponse response = HttpRequest.post(endpoint)
+                    .header("Content-Type", "application/json")
+                    .header("Authorization", "Bearer " + apiKey)
+                    .body(JSONUtil.toJsonStr(requestBody))
+                    .timeout(timeoutMs)
+                    .execute();
 
-            int status = response.getStatus();
-            String responseBody = response.body();
-            if (status < 200 || status >= 300) {
-                log.warn("DeepSeek {} fallback: non-2xx response status={}, bodySummary={}", operation, status, summarize(responseBody));
-                return null;
-            }
-            if (StrUtil.isBlank(responseBody)) {
-                log.warn("DeepSeek {} fallback: empty response body.", operation);
-                return null;
-            }
+                int status = response.getStatus();
+                String responseBody = response.body();
+                if (status < 200 || status >= 300) {
+                    log.warn("DeepSeek {} attempt {}/{} got non-2xx status={}, bodySummary={}", operation, attempt, attempts, status, summarize(responseBody));
+                    if (attempt < attempts) {
+                        ThreadUtil.safeSleep(retryBackoffMs * attempt);
+                        continue;
+                    }
+                    return null;
+                }
+                if (StrUtil.isBlank(responseBody)) {
+                    log.warn("DeepSeek {} fallback: empty response body.", operation);
+                    return null;
+                }
 
-            String content = extractMessageContent(responseBody, operation);
-            if (StrUtil.isBlank(content)) {
-                log.warn("DeepSeek {} fallback: empty content.", operation);
+                String content = extractMessageContent(responseBody, operation);
+                if (StrUtil.isBlank(content)) {
+                    log.warn("DeepSeek {} fallback: empty content.", operation);
+                    return null;
+                }
+                return content;
+            } catch (Exception e) {
+                log.warn("DeepSeek {} attempt {}/{} request failed: {}", operation, attempt, attempts, safeMessage(e));
+                if (attempt < attempts) {
+                    ThreadUtil.safeSleep(retryBackoffMs * attempt);
+                    continue;
+                }
                 return null;
             }
-            return content;
-        } catch (Exception e) {
-            log.warn("DeepSeek {} fallback: request failed: {}", operation, safeMessage(e));
-            return null;
         }
+        return null;
     }
 
     private String extractMessageContent(String responseBody, String operation) {

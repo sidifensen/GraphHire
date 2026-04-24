@@ -7,6 +7,7 @@ import com.graphhire.job.domain.model.Company;
 import com.graphhire.job.domain.repository.CompanyRepository;
 import com.graphhire.job.infrastructure.persistence.mapper.CompanyMapper;
 import com.graphhire.job.infrastructure.persistence.po.CompanyPO;
+import cn.hutool.core.collection.CollUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -41,6 +42,16 @@ public class CompanyRepositoryImpl implements CompanyRepository {
         // 查询企业并转换为领域模型
         CompanyPO po = companyMapper.selectById(id);
         return Optional.ofNullable(po).map(this::toDomain);
+    }
+
+    @Override
+    public List<Company> findByIds(List<Long> ids) {
+        if (CollUtil.isEmpty(ids)) {
+            return List.of();
+        }
+        LambdaQueryWrapper<CompanyPO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(CompanyPO::getId, ids);
+        return companyMapper.selectList(wrapper).stream().map(this::toDomain).toList();
     }
 
     /**

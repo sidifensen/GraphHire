@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import cn.hutool.core.util.StrUtil;
 
 @Repository
 public class JobRepositoryImpl implements JobRepository {
@@ -40,6 +41,38 @@ public class JobRepositoryImpl implements JobRepository {
         LambdaQueryWrapper<JobPO> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(JobPO::getStatus, status.toCode());
         return jobMapper.selectList(wrapper).stream().map(this::toDomain).toList();
+    }
+
+    @Override
+    public List<Job> searchPublishedJobs(String keyword, String city, Integer salaryMin, Integer salaryMax,
+                                         String sortBy, int offset, int limit) {
+        LambdaQueryWrapper<JobPO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(JobPO::getStatus, JobStatus.PUBLISHED.toCode())
+            .eq(JobPO::getDeleted, 0)
+            .like(StrUtil.isNotBlank(keyword), JobPO::getTitle, StrUtil.trim(keyword))
+            .eq(StrUtil.isNotBlank(city), JobPO::getLocationCity, StrUtil.trim(city))
+            .ge(salaryMin != null, JobPO::getSalaryMax, salaryMin)
+            .le(salaryMax != null, JobPO::getSalaryMin, salaryMax);
+
+        if ("salary".equalsIgnoreCase(sortBy)) {
+            wrapper.orderByDesc(JobPO::getSalaryMax).orderByDesc(JobPO::getId);
+        } else {
+            wrapper.orderByDesc(JobPO::getCreateTime).orderByDesc(JobPO::getId);
+        }
+        wrapper.last("LIMIT " + Math.max(limit, 1) + " OFFSET " + Math.max(offset, 0));
+        return jobMapper.selectList(wrapper).stream().map(this::toDomain).toList();
+    }
+
+    @Override
+    public long countPublishedJobs(String keyword, String city, Integer salaryMin, Integer salaryMax) {
+        LambdaQueryWrapper<JobPO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(JobPO::getStatus, JobStatus.PUBLISHED.toCode())
+            .eq(JobPO::getDeleted, 0)
+            .like(StrUtil.isNotBlank(keyword), JobPO::getTitle, StrUtil.trim(keyword))
+            .eq(StrUtil.isNotBlank(city), JobPO::getLocationCity, StrUtil.trim(city))
+            .ge(salaryMin != null, JobPO::getSalaryMax, salaryMin)
+            .le(salaryMax != null, JobPO::getSalaryMin, salaryMax);
+        return jobMapper.selectCount(wrapper);
     }
 
     @Override

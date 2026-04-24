@@ -2,8 +2,8 @@ package com.graphhire.auth.application.service;
 
 import cn.hutool.core.lang.Validator;
 import cn.hutool.core.util.RandomUtil;
-import cn.hutool.log.StaticLog;
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.util.StrUtil;
 import com.graphhire.auth.application.command.CompanyRegisterCmd;
 import com.graphhire.auth.application.command.PersonRegisterCmd;
 import com.graphhire.auth.application.command.SendVerifyCodeCmd;
@@ -16,6 +16,7 @@ import com.graphhire.auth.domain.vo.UserType;
 import com.graphhire.auth.infrastructure.mail.MailService;
 import com.graphhire.auth.interfaces.dto.response.LoginResponse;
 import com.graphhire.common.vo.Result;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -44,6 +45,7 @@ import java.util.concurrent.TimeUnit;
  * - refreshToken()：刷新 Token
  */
 @Service
+@Slf4j
 public class AuthAppService {
 
     @Autowired
@@ -57,6 +59,11 @@ public class AuthAppService {
 
     @Autowired
     private StringRedisTemplate redisTemplate;
+
+    private static final int MAX_LOGIN_ATTEMPTS = 20;
+    private static final int MAX_VERIFY_CODE_SEND_PER_HOUR = 10;
+    private static final int MAX_FAILED_LOGIN_BEFORE_LOCK = 5;
+    private static final int ACCOUNT_LOCK_MINUTES = 15;
 
     // =====================================================
     // 【第一部分】登录与注册
@@ -75,12 +82,16 @@ public class AuthAppService {
      * 步骤6：构建登录响应（token、userType）
      */
     public LoginResponse login(String username, String password) {
+        enforceLoginThrottle(username);
         // 步骤1：查询用户
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> com.graphhire.common.vo.Exceptions.BusinessException.of("用户不存在"));
+                .orElseThrow(() -> {
+                    recordLoginFailure(username);
+                    return com.graphhire.common.vo.Exceptions.BusinessException.of("用户不存在");
+                });
 
         // 步骤2：检查账号是否锁定
-        if (user.isLocked()) {
+        if (isAccountLocked(username) || user.isLocked()) {
             throw com.graphhire.common.vo.Exceptions.BusinessException.of("账号已锁定");
         }
 
@@ -88,12 +99,14 @@ public class AuthAppService {
         if (!user.getPassword().matches(password)) {
             user.loginFailed();
             userRepository.save(user);
+            recordLoginFailure(username);
             throw com.graphhire.common.vo.Exceptions.BusinessException.of("密码错误");
         }
 
         // 步骤4：登录成功，重置失败计数
         user.loginSuccess();
         userRepository.save(user);
+        clearLoginThrottle(username);
 
         // 步骤5：Sa-Token 登录
         doLogin(user);
@@ -248,6 +261,14 @@ public class AuthAppService {
      * 步骤3：调用邮件服务发送验证码
      */
     public void sendVerifyCode(String username, String type) {
+        if (!Validator.isEmail(username)) {
+            throw com.graphhire.common.vo.Exceptions.BusinessException.of("邮箱格式不正确");
+        }
+        if (!"register".equals(type) && !"forgot_password".equals(type) && !"default".equals(type)) {
+            throw com.graphhire.common.vo.Exceptions.BusinessException.of("验证码类型不支持");
+        }
+        enforceVerifyCodeThrottle(username, type);
+
         // 步骤1：生成6位随机验证码
         String code = RandomUtil.randomNumbers(6);
 
@@ -260,8 +281,7 @@ public class AuthAppService {
         String content = "您的验证码是：" + code + "，15分钟内有效，请勿泄露给他人。";
         mailService.sendVerifyCodeMail(username, subject, content);
 
-        // 步骤4：记录验证码发送日志
-        StaticLog.info("发送验证码: code={}, to={}", code, username);
+        log.info("发送验证码成功: to={}, type={}", maskEmail(username), type);
     }
 
     /**
@@ -446,5 +466,85 @@ public class AuthAppService {
         String key = "satoken:refresh:" + refreshToken;
         String userId = redisTemplate.opsForValue().get(key);
         return userId != null ? Long.parseLong(userId) : null;
+    }
+
+    private void enforceVerifyCodeThrottle(String username, String type) {
+        String cooldownKey = "auth:verify:cooldown:" + username + ":" + type;
+        Boolean firstRequest = redisTemplate.opsForValue().setIfAbsent(cooldownKey, "1", 60, TimeUnit.SECONDS);
+        if (Boolean.FALSE.equals(firstRequest)) {
+            throw com.graphhire.common.vo.Exceptions.BusinessException.of("请求过于频繁，请稍后再试");
+        }
+
+        String hourLimitKey = "auth:verify:hourly:" + username + ":" + type;
+        Long count = redisTemplate.opsForValue().increment(hourLimitKey);
+        if (count != null && count == 1) {
+            redisTemplate.expire(hourLimitKey, 1, TimeUnit.HOURS);
+        }
+        if (count != null && count > MAX_VERIFY_CODE_SEND_PER_HOUR) {
+            throw com.graphhire.common.vo.Exceptions.BusinessException.of("验证码发送过于频繁，请1小时后再试");
+        }
+    }
+
+    private void enforceLoginThrottle(String username) {
+        if (StrUtil.isBlank(username)) {
+            return;
+        }
+        String attemptsKey = "auth:login:attempt:" + username;
+        String lockKey = "auth:login:lock:" + username;
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(lockKey))) {
+            throw com.graphhire.common.vo.Exceptions.BusinessException.of("账号已锁定");
+        }
+        String attempts = redisTemplate.opsForValue().get(attemptsKey);
+        if (attempts == null) {
+            return;
+        }
+        try {
+            if (Integer.parseInt(attempts) >= MAX_LOGIN_ATTEMPTS) {
+                throw com.graphhire.common.vo.Exceptions.BusinessException.of("登录尝试过于频繁，请稍后再试");
+            }
+        } catch (NumberFormatException ignored) {
+            redisTemplate.delete(attemptsKey);
+        }
+    }
+
+    private void recordLoginFailure(String username) {
+        if (StrUtil.isBlank(username)) {
+            return;
+        }
+        String attemptsKey = "auth:login:attempt:" + username;
+        Long count = redisTemplate.opsForValue().increment(attemptsKey);
+        if (count != null && count == 1) {
+            redisTemplate.expire(attemptsKey, ACCOUNT_LOCK_MINUTES, TimeUnit.MINUTES);
+        }
+        if (count != null && count >= MAX_FAILED_LOGIN_BEFORE_LOCK) {
+            String lockKey = "auth:login:lock:" + username;
+            redisTemplate.opsForValue().set(lockKey, String.valueOf(System.currentTimeMillis()), ACCOUNT_LOCK_MINUTES, TimeUnit.MINUTES);
+        }
+    }
+
+    private void clearLoginThrottle(String username) {
+        if (StrUtil.isBlank(username)) {
+            return;
+        }
+        redisTemplate.delete("auth:login:attempt:" + username);
+        redisTemplate.delete("auth:login:lock:" + username);
+    }
+
+    private boolean isAccountLocked(String username) {
+        if (StrUtil.isBlank(username)) {
+            return false;
+        }
+        return Boolean.TRUE.equals(redisTemplate.hasKey("auth:login:lock:" + username));
+    }
+
+    private String maskEmail(String email) {
+        if (!Validator.isEmail(email)) {
+            return "***";
+        }
+        int at = email.indexOf("@");
+        if (at <= 2) {
+            return "***" + email.substring(at);
+        }
+        return email.substring(0, 2) + "***" + email.substring(at);
     }
 }

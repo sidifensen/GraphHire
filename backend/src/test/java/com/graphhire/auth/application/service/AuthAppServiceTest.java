@@ -55,6 +55,10 @@ class AuthAppServiceTest {
 
     private void setupRedisMock() {
         lenient().when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        lenient().when(valueOperations.setIfAbsent(anyString(), anyString(), anyLong(), any(TimeUnit.class)))
+            .thenReturn(true);
+        lenient().when(valueOperations.increment(anyString())).thenReturn(1L);
+        lenient().when(redisTemplate.hasKey(anyString())).thenReturn(false);
     }
 
     private void mockStpUtil() {

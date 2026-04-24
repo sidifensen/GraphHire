@@ -9,10 +9,13 @@ import com.graphhire.auth.domain.repository.UserRepository;
 import com.graphhire.auth.interfaces.dto.request.CompanyRegisterRequest;
 import com.graphhire.auth.interfaces.dto.request.LoginRequest;
 import com.graphhire.auth.interfaces.dto.request.PersonRegisterRequest;
+import com.graphhire.auth.interfaces.dto.request.RefreshTokenRequest;
 import com.graphhire.auth.interfaces.dto.response.AuthContextResponse;
 import com.graphhire.auth.interfaces.dto.response.LoginResponse;
 import com.graphhire.common.vo.Exceptions;
 import com.graphhire.common.vo.Result;
+import jakarta.validation.Valid;
+import org.springframework.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,7 +39,7 @@ public class AuthController {
      * @return 登录响应（token、userType）
      */
     @PostMapping("/login")
-    public Result<LoginResponse> login(@RequestBody LoginRequest request) {
+    public Result<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         return Result.success(authService.login(request.getUsername(), request.getPassword()));
     }
 
@@ -46,7 +49,7 @@ public class AuthController {
      * @return 登录响应（token、userType）
      */
     @PostMapping("/register/person")
-    public Result<LoginResponse> personRegister(@RequestBody PersonRegisterRequest request) {
+    public Result<LoginResponse> personRegister(@Valid @RequestBody PersonRegisterRequest request) {
         return Result.success(authService.registerPerson(request.toCmd()));
     }
 
@@ -56,7 +59,7 @@ public class AuthController {
      * @return 登录响应（token、userType）
      */
     @PostMapping("/register/company")
-    public Result<LoginResponse> companyRegister(@RequestBody CompanyRegisterRequest request) {
+    public Result<LoginResponse> companyRegister(@Valid @RequestBody CompanyRegisterRequest request) {
         return Result.success(authService.registerCompany(request.toCmd()));
     }
 
@@ -66,7 +69,7 @@ public class AuthController {
      * @return 登录响应（token、userType）
      */
     @PostMapping("/admin/login")
-    public Result<LoginResponse> adminLogin(@RequestBody LoginRequest request) {
+    public Result<LoginResponse> adminLogin(@Valid @RequestBody LoginRequest request) {
         return Result.success(authService.adminLogin(request.getUsername(), request.getPassword()));
     }
 
@@ -132,8 +135,13 @@ public class AuthController {
      * @return 新的登录响应（token、userType）
      */
     @PostMapping("/refresh-token")
-    public Result<LoginResponse> refreshToken(@RequestParam String refreshToken) {
-        return Result.success(authService.refreshToken(refreshToken));
+    public Result<LoginResponse> refreshToken(@RequestBody(required = false) RefreshTokenRequest request,
+                                              @RequestParam(required = false) String refreshToken) {
+        String token = request != null ? request.getRefreshToken() : refreshToken;
+        if (!StringUtils.hasText(token)) {
+            throw Exceptions.BusinessException.of("refreshToken不能为空");
+        }
+        return Result.success(authService.refreshToken(token));
     }
 
     /**

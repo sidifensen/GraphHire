@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -122,10 +123,34 @@ class DeepSeekClientTest {
         assertThat(output.getOut()).contains("fallback");
     }
 
+    @Test
+    void generateMatchReason_shouldRetryWhenFirstAttemptFails() throws Exception {
+        AtomicInteger attempts = new AtomicInteger(0);
+        startServer(exchange -> {
+            if (attempts.incrementAndGet() == 1) {
+                writeResponse(exchange, 500, "{\"error\":\"temporary\"}");
+                return;
+            }
+            writeResponse(exchange, 200, chatCompletionResponse("retry success"));
+        });
+        DeepSeekClient client = createClient();
+        ReflectionTestUtils.setField(client, "maxRetryAttempts", 2);
+        ReflectionTestUtils.setField(client, "retryBackoffMs", 1L);
+
+        String result = client.generateMatchReason(1L, 2L);
+
+        assertThat(result).isEqualTo("retry success");
+        assertThat(attempts.get()).isEqualTo(2);
+    }
+
     private DeepSeekClient createClient() {
         DeepSeekClient client = new DeepSeekClient();
+        ReflectionTestUtils.setField(client, "enabled", true);
         ReflectionTestUtils.setField(client, "apiKey", "test-key");
         ReflectionTestUtils.setField(client, "baseUrl", "http://127.0.0.1:" + server.getAddress().getPort());
+        ReflectionTestUtils.setField(client, "timeoutMs", 30000);
+        ReflectionTestUtils.setField(client, "maxRetryAttempts", 1);
+        ReflectionTestUtils.setField(client, "retryBackoffMs", 1L);
         return client;
     }
 

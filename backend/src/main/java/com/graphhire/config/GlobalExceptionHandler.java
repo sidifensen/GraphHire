@@ -2,6 +2,8 @@ package com.graphhire.config;
 
 import cn.dev33.satoken.exception.NotLoginException;
 import com.graphhire.common.vo.Result;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * 捕获各类异常并返回统一的 JSON 响应
  */
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     /**
@@ -44,11 +47,21 @@ public class GlobalExceptionHandler {
         return Result.error(403, e.getMessage());
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public Result<Void> handleValidation(MethodArgumentNotValidException e) {
+        String message = e.getBindingResult().getFieldErrors().stream()
+            .findFirst()
+            .map(error -> error.getDefaultMessage())
+            .orElse("请求参数校验失败");
+        return Result.error(400, message);
+    }
+
     /**
      * 通用异常
      */
     @ExceptionHandler(Exception.class)
     public Result<Void> handleGeneral(Exception e) {
-        return Result.error(500, "服务器内部错误: " + e.getMessage());
+        log.error("Unhandled exception", e);
+        return Result.error(500, "服务器内部错误");
     }
 }

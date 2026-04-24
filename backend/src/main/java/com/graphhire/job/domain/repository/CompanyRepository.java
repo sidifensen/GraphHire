@@ -15,6 +15,9 @@ public interface CompanyRepository {
     /** 根据ID查询企业 */
     Optional<Company> findById(Long id);
 
+    /** 根据ID批量查询企业 */
+    List<Company> findByIds(List<Long> ids);
+
     /** 根据统一社会信用代码查询企业（用于企业唯一性校验） */
     Optional<Company> findByUnifiedSocialCreditCode(String unifiedSocialCreditCode);
 

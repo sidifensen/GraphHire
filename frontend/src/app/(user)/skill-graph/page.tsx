@@ -163,11 +163,11 @@ export default function SkillGraphPage() {
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-[79%_21%] gap-6">
-          <section className="bg-[#08111f] rounded-[2rem] p-4 md:p-6 relative overflow-hidden flex flex-col min-h-[800px] shadow-[0_20px_48px_-10px_rgba(8,17,31,0.55)]">
+          <section className="bg-[#08111f] rounded-[2rem] p-4 md:p-6 relative overflow-hidden flex flex-col min-h-[1000px] shadow-[0_20px_48px_-10px_rgba(8,17,31,0.55)]">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(44,155,255,0.24),transparent_45%),radial-gradient(circle_at_70%_70%,rgba(89,235,198,0.18),transparent_46%)] pointer-events-none" />
 
             <div className="flex justify-between items-center mb-3 z-10 relative text-white">
-              <h2 className="font-headline text-xl font-bold">可探索技能图谱</h2>
+              <h2 className="font-headline text-xl font-bold">能力图谱</h2>
               <button
                 className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20 transition"
                 type="button"

@@ -11,6 +11,7 @@ import jakarta.annotation.PreDestroy;
 import org.neo4j.driver.Config;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 技能标签图数据库客户端
@@ -30,12 +31,24 @@ public class SkillGraphClient {
     @Value("${memgraph.password:}")
     private String password;
 
+    @Value("${memgraph.enabled:true}")
+    private boolean enabled;
+
     private Driver driver;
 
     @PostConstruct
     public void init() {
+        if (!enabled) {
+            log.info("Memgraph integration disabled by config.");
+            driver = null;
+            return;
+        }
         try {
-            Config config = Config.builder().build();
+            Config config = Config.builder()
+                .withConnectionTimeout(3, TimeUnit.SECONDS)
+                .withMaxConnectionLifetime(30, TimeUnit.MINUTES)
+                .withConnectionAcquisitionTimeout(3, TimeUnit.SECONDS)
+                .build();
 
             if (username != null && !username.isBlank()) {
                 driver = GraphDatabase.driver(boltUrl,

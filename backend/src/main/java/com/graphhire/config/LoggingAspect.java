@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -15,6 +16,9 @@ import org.springframework.stereotype.Component;
 @Aspect
 @Component
 public class LoggingAspect {
+    @Value("${app.logging.slow-api-threshold-ms:500}")
+    private long slowApiThresholdMs;
+
     /**
      * 环绕通知：记录Controller方法执行情况
      * 【功能说明】在方法执行前后记录日志，包含方法名、耗时、成功/失败状态
@@ -28,21 +32,21 @@ public class LoggingAspect {
         String methodName = joinPoint.getSignature().toShortString();
         long startTime = System.currentTimeMillis();
 
-        // 步骤1：记录方法开始
-        log.info("[API] {} started", methodName);
-
         try {
             // 步骤2：执行目标方法
             Object result = joinPoint.proceed();
             long duration = System.currentTimeMillis() - startTime;
 
-            // 步骤3：记录成功完成日志
-            log.info("[API] {} completed in {}ms", methodName, duration);
+            if (duration >= slowApiThresholdMs) {
+                log.warn("[API] {} slow call: {}ms", methodName, duration);
+            } else if (log.isDebugEnabled()) {
+                log.debug("[API] {} completed in {}ms", methodName, duration);
+            }
             return result;
         } catch (Exception e) {
             long duration = System.currentTimeMillis() - startTime;
             // 步骤3：记录异常日志并重新抛出
-            log.error("[API] {} failed after {}ms: {}", methodName, duration, e.getMessage());
+            log.error("[API] {} failed after {}ms", methodName, duration, e);
             throw e;
         }
     }

@@ -17,7 +17,7 @@ class PublicJobControllerIT extends BaseControllerIT {
     void cleanup() {
         jdbcTemplate.update("DELETE FROM job WHERE title LIKE 'PUBLIC_JOB_IT_%'");
         jdbcTemplate.update("DELETE FROM company WHERE name LIKE 'PUBLIC_JOB_IT_%'");
-        jdbcTemplate.update("DELETE FROM sys_user WHERE username LIKE 'public_job_it_%@graphhire.com'");
+        jdbcTemplate.update("DELETE FROM sys_user WHERE username LIKE 'public_job_it_%@graphhire.com' OR username LIKE 'public_job_it_page_%@graphhire.com'");
     }
 
     @Test
@@ -39,6 +39,29 @@ class PublicJobControllerIT extends BaseControllerIT {
             .andReturn();
 
         assertThat(result.getResponse().getContentAsString()).contains("PUBLIC_JOB_IT_星云智能");
+    }
+
+    @Test
+    @DisplayName("公开职位列表支持分页与薪资排序")
+    void searchJobs_supportsPaginationAndSalarySort() throws Exception {
+        Long companyUserId = createUser("public_job_it_page_company@graphhire.com");
+        Long companyId = createCompany(companyUserId, "PUBLIC_JOB_IT_分页企业");
+        createJob(companyId, "PUBLIC_JOB_IT_初级 Java", "上海", 18000, 22000, 1);
+        createJob(companyId, "PUBLIC_JOB_IT_高级 Java", "上海", 30000, 42000, 1);
+        createJob(companyId, "PUBLIC_JOB_IT_中级 Java", "上海", 22000, 30000, 1);
+
+        mockMvc.perform(get("/public/jobs")
+                .param("keyword", "PUBLIC_JOB_IT_")
+                .param("city", "上海")
+                .param("sortBy", "salary")
+                .param("page", "1")
+                .param("size", "2"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value(200))
+            .andExpect(jsonPath("$.data.total").value(3))
+            .andExpect(jsonPath("$.data.records.length()").value(2))
+            .andExpect(jsonPath("$.data.records[0].title").value("PUBLIC_JOB_IT_高级 Java"))
+            .andExpect(jsonPath("$.data.records[1].title").value("PUBLIC_JOB_IT_中级 Java"));
     }
 
     private Long createUser(String username) {
