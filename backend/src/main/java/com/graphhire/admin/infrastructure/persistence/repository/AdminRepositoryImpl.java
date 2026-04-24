@@ -7,7 +7,9 @@ import com.graphhire.admin.domain.repository.AdminRepository;
 import com.graphhire.admin.infrastructure.persistence.mapper.AdminMapper;
 import com.graphhire.admin.infrastructure.persistence.po.AdminPO;
 import com.graphhire.auth.domain.model.User;
+import com.graphhire.auth.domain.vo.AuthStatus;
 import com.graphhire.auth.domain.vo.Username;
+import com.graphhire.auth.domain.vo.UserType;
 import com.graphhire.job.infrastructure.persistence.mapper.JobMapper;
 import com.graphhire.match.infrastructure.persistence.mapper.MatchRecordMapper;
 import com.graphhire.resume.infrastructure.persistence.mapper.ResumeMapper;
@@ -110,7 +112,21 @@ public class AdminRepositoryImpl implements AdminRepository {
         if (po == null) return null;
         User user = new User();
         user.setId(po.getId());
-        user.setUsername(Username.of(po.getUsername()));
+        try {
+            user.setUsername(Username.of(po.getUsername()));
+        } catch (IllegalArgumentException ignored) {
+            user.setUsername(null);
+        }
+        if (po.getUserType() != null && po.getUserType() >= 1 && po.getUserType() <= UserType.values().length) {
+            user.setUserType(UserType.values()[po.getUserType() - 1]);
+        }
+        if (po.getStatus() != null) {
+            if (po.getStatus() == 0) {
+                user.setStatus(AuthStatus.DISABLED);
+            } else {
+                user.setStatus(AuthStatus.VERIFIED);
+            }
+        }
         user.setCreateTime(po.getCreateTime());
         user.setLastLoginTime(po.getLastLoginTime());
         return user;

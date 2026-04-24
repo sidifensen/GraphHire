@@ -1,28 +1,105 @@
-﻿'use client';
+'use client';
 
+import { useEffect, useMemo, useState } from 'react';
 import { Search, ChevronDown, Download, AlertCircle, Network, CheckCircle2 } from 'lucide-react';
 import AdminShell from '@/components/admin/AdminShell';
 import AdminDataTable from '@/components/admin/AdminDataTable';
 import { cn } from '@/lib/utils';
+import { adminApi } from '@/lib/api/admin';
 
 interface Company {
-  id: string;
+  id: number;
   name: string;
   code: string;
-  industry: string;
-  size: string;
+  industry: string | null;
+  size: string | null;
   applyDate: string;
   status: '待审核' | '已通过' | '已拒绝';
   initial: string;
 }
 
-const mockCompanies: Company[] = [
-  { id: '1', name: '腾讯科技（深圳）有限公司', code: '9144030071526726XG', industry: '互联网/IT', size: '10000人以上', applyDate: '2023-10-24 14:30', status: '待审核', initial: 'T' },
-  { id: '2', name: '阿里巴巴（中国）网络技术有限公司', code: '91330100716105852F', industry: '电子商务', size: '10000人以上', applyDate: '2023-10-23 09:15', status: '已通过', initial: 'A' },
-  { id: '3', name: '星火创新科技有限公司', code: '91110108MA01XXXXX', industry: '人工智能', size: '100-499人', applyDate: '2023-10-24 16:45', status: '待审核', initial: 'X' },
-];
+const tabs = ['全部', '待审核', '已通过', '已拒绝'] as const;
+
+type ReviewTab = (typeof tabs)[number];
+type CompanyAuthItem = Awaited<ReturnType<typeof adminApi.getCompanyAuthList>>['list'][number];
+type SummaryCard = {
+  label: string;
+  value: string;
+  trend?: string | null;
+  icon: typeof Network;
+  color: string;
+  bg: string;
+  alert?: boolean;
+};
+
+const statusToApi: Record<Exclude<ReviewTab, '全部'>, 'PENDING' | 'APPROVED' | 'REJECTED'> = {
+  待审核: 'PENDING',
+  已通过: 'APPROVED',
+  已拒绝: 'REJECTED',
+};
+
+function mapCompany(item: CompanyAuthItem): Company {
+  const status = item.status === 'APPROVED' ? '已通过' : item.status === 'REJECTED' ? '已拒绝' : '待审核';
+  return {
+    id: item.id,
+    name: item.companyName,
+    code: item.unifiedSocialCreditCode,
+    industry: null,
+    size: null,
+    applyDate: item.submittedAt ?? '-',
+    status,
+    initial: (item.companyName || '?').slice(0, 1).toUpperCase(),
+  };
+}
 
 export default function AdminEnterpriseReviewPage() {
+  const [activeTab, setActiveTab] = useState<ReviewTab>('全部');
+  const [keyword, setKeyword] = useState('');
+  const [page, setPage] = useState(1);
+  const [list, setList] = useState<Company[]>([]);
+  const [total, setTotal] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [approvedTodayCount, setApprovedTodayCount] = useState(0);
+  const [rejectedCount, setRejectedCount] = useState(0);
+
+  const queryStatus = useMemo(() => {
+    if (activeTab === '全部') return undefined;
+    return statusToApi[activeTab];
+  }, [activeTab]);
+
+  const loadData = async () => {
+    const [current, pending, approved, rejected] = await Promise.all([
+      adminApi.getCompanyAuthList({ status: queryStatus, keyword: keyword || undefined, page, pageSize }),
+      adminApi.getCompanyAuthList({ status: 'PENDING', page: 1, pageSize: 1 }),
+      adminApi.getCompanyAuthList({ status: 'APPROVED', page: 1, pageSize: 1000 }),
+      adminApi.getCompanyAuthList({ status: 'REJECTED', page: 1, pageSize: 1 }),
+    ]);
+
+    setList(current.list.map(mapCompany));
+    setTotal(current.total);
+    setPageSize(current.pageSize);
+    setPendingCount(pending.total);
+    setRejectedCount(rejected.total);
+
+    const today = new Date().toISOString().slice(0, 10);
+    setApprovedTodayCount(approved.list.filter((item) => (item.reviewedAt ?? '').slice(0, 10) === today).length);
+  };
+
+  useEffect(() => {
+    void loadData();
+  }, [queryStatus, keyword, page]);
+
+  const handleApprove = async (id: number) => {
+    await adminApi.updateCompanyAuth(id, { status: 'APPROVED' });
+    await loadData();
+  };
+
+  const handleReject = async (id: number) => {
+    await adminApi.updateCompanyAuth(id, { status: 'REJECTED', rejectReason: '管理员审核拒绝' });
+    await loadData();
+  };
+
   return (
     <AdminShell>
       <div className="space-y-6 p-8">
@@ -38,11 +115,11 @@ export default function AdminEnterpriseReviewPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          {[
-            { label: '待审核企业', value: '142', trend: '+12%', icon: Network, color: 'text-blue-600', bg: 'bg-blue-50' },
-            { label: '今日已处理', value: '56', icon: CheckCircle2, color: 'text-primary', bg: 'bg-primary-fixed' },
-            { label: '高风险拦截', value: '8', icon: AlertCircle, color: 'text-rose-600', bg: 'bg-rose-50', alert: true },
-          ].map((item, index) => (
+          {([
+            { label: '待审核企业', value: String(pendingCount), trend: null, icon: Network, color: 'text-blue-600', bg: 'bg-blue-50' },
+            { label: '今日已处理', value: String(approvedTodayCount), icon: CheckCircle2, color: 'text-primary', bg: 'bg-primary-fixed' },
+            { label: '高风险拦截', value: String(rejectedCount), icon: AlertCircle, color: 'text-rose-600', bg: 'bg-rose-50', alert: true },
+          ] as SummaryCard[]).map((item, index) => (
             <div key={index} className="group relative overflow-hidden rounded-xl border border-outline-variant/30 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-black/40 dark:backdrop-blur-xl">
               <div className="mb-4 flex items-start justify-between">
                 <div
@@ -73,12 +150,16 @@ export default function AdminEnterpriseReviewPage() {
 
         <div className="flex items-center justify-between rounded-xl border border-outline-variant/30 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-black/40 dark:backdrop-blur-xl">
           <div className="flex gap-6">
-            {['全部', '待审核', '已通过', '已拒绝'].map((tab, index) => (
+            {tabs.map((tab) => (
               <button
                 key={tab}
+                onClick={() => {
+                  setActiveTab(tab);
+                  setPage(1);
+                }}
                 className={cn(
                   'border-b-2 pb-1 text-sm font-medium transition-all',
-                  index === 0 ? 'border-primary text-primary' : 'border-transparent text-outline hover:text-on-surface dark:hover:text-slate-200'
+                  activeTab === tab ? 'border-primary text-primary' : 'border-transparent text-outline hover:text-on-surface dark:hover:text-slate-200'
                 )}
               >
                 {tab}
@@ -91,6 +172,11 @@ export default function AdminEnterpriseReviewPage() {
               <input
                 type="text"
                 placeholder="搜索企业..."
+                value={keyword}
+                onChange={(e) => {
+                  setKeyword(e.target.value);
+                  setPage(1);
+                }}
                 className="w-64 rounded-lg border border-outline-variant/30 bg-surface py-1.5 pl-9 pr-4 text-sm text-on-surface outline-none focus:ring-1 focus:ring-primary dark:border-slate-700 dark:bg-slate-800"
               />
             </div>
@@ -102,8 +188,8 @@ export default function AdminEnterpriseReviewPage() {
         </div>
 
         <AdminDataTable
-          data={mockCompanies}
-          pagination={{ currentPage: 1, totalPages: 5, totalItems: 142 }}
+          data={list}
+          pagination={{ currentPage: page, totalPages: Math.max(1, Math.ceil(total / Math.max(pageSize, 1))), totalItems: total }}
           columns={[
             {
               header: '企业名称',
@@ -120,8 +206,8 @@ export default function AdminEnterpriseReviewPage() {
               ),
               className: 'w-[40%]',
             },
-            { header: '所属行业', accessor: 'industry', className: 'text-sm text-outline' },
-            { header: '人员规模', accessor: 'size', className: 'text-sm text-outline' },
+            { header: '所属行业', accessor: (company) => company.industry ?? '-', className: 'text-sm text-outline' },
+            { header: '人员规模', accessor: (company) => company.size ?? '-', className: 'text-sm text-outline' },
             { header: '申请时间', accessor: (company) => <span className="font-display text-sm text-outline">{company.applyDate}</span> },
             {
               header: '状态',
@@ -148,8 +234,12 @@ export default function AdminEnterpriseReviewPage() {
                   <button className="text-xs font-bold text-primary hover:underline">详情</button>
                   {company.status === '待审核' ? (
                     <>
-                      <button className="text-xs font-bold text-secondary hover:underline">通过</button>
-                      <button className="text-xs font-bold text-rose-600 hover:underline">拒绝</button>
+                      <button className="text-xs font-bold text-secondary hover:underline" onClick={() => void handleApprove(company.id)}>
+                        通过
+                      </button>
+                      <button className="text-xs font-bold text-rose-600 hover:underline" onClick={() => void handleReject(company.id)}>
+                        拒绝
+                      </button>
                     </>
                   ) : null}
                 </div>
