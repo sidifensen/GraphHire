@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Bell, HelpCircle, Moon, Search, Settings, Sun } from 'lucide-react';
+import { Bell, HelpCircle, Search, Settings } from 'lucide-react';
 import { adminAuthStore } from '@/lib/stores/auth-store';
 import { logoutWithServerInvalidation } from '@/lib/logout';
 
@@ -13,7 +13,6 @@ interface AdminHeaderProps {
 export default function AdminHeader({ title }: AdminHeaderProps) {
   const router = useRouter();
   const [showDropdown, setShowDropdown] = useState(false);
-  const [isDark, setIsDark] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const user = adminAuthStore((state) => state.user);
@@ -28,25 +27,10 @@ export default function AdminHeader({ title }: AdminHeaderProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    const initialDark = document.documentElement.classList.contains('dark') || localStorage.getItem('admin-theme') === 'dark';
-    if (initialDark) {
-      document.documentElement.classList.add('dark');
-      setIsDark(true);
-    }
-  }, []);
-
   const handleLogout = async () => {
     await logoutWithServerInvalidation((path) => {
       window.location.href = path;
     }, '/admin/login', 'admin');
-  };
-
-  const toggleTheme = () => {
-    const nextIsDark = !isDark;
-    setIsDark(nextIsDark);
-    document.documentElement.classList.toggle('dark', nextIsDark);
-    localStorage.setItem('admin-theme', nextIsDark ? 'dark' : 'light');
   };
 
   return (
@@ -64,13 +48,6 @@ export default function AdminHeader({ title }: AdminHeaderProps) {
       </div>
 
       <div className="flex items-center gap-2">
-        <button
-          data-testid="admin-theme-toggle-btn"
-          className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
-          onClick={toggleTheme}
-        >
-          {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-        </button>
         <button className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700">
           <Bell className="h-5 w-5" />
         </button>

@@ -39,22 +39,4 @@ describe('AdminShell', () => {
     await user.click(screen.getByTestId('admin-header-avatar-btn'));
     expect(screen.getByText('退出登录')).toBeInTheDocument();
   });
-
-  it('toggles dark mode from header button', async () => {
-    const user = userEvent.setup();
-    document.documentElement.classList.remove('dark');
-
-    render(
-      <AdminShell activeItem="dashboard">
-        <div>content</div>
-      </AdminShell>
-    );
-
-    const toggle = screen.getByTestId('admin-theme-toggle-btn');
-    await user.click(toggle);
-    expect(document.documentElement.classList.contains('dark')).toBe(true);
-
-    await user.click(toggle);
-    expect(document.documentElement.classList.contains('dark')).toBe(false);
-  });
 });
