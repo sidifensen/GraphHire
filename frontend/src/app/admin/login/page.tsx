@@ -36,31 +36,43 @@ export default function AdminLoginPage() {
 
   return (
     <div className="relative flex min-h-screen flex-col overflow-hidden bg-slate-50 text-slate-900">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.15),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(14,165,233,0.12),transparent_35%)]" />
+      <div className="pointer-events-none absolute inset-0 opacity-20">
+        <img
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWAq2BdbZGD7SBOjWG8vwqUDG-UHpkTTZ3_w2TnwckeuljE5gTIZWYAXL7d671Q8X9REizxOhEcgTHtfi1Znn3XZ1bbvtAaHxehiadjn0f14RHV1MURJuTI5b_CSmvqdlhFX10NvOO2ERUufNnCSSjFneBxoi7vR1u2aGTx0q-IsZK92EDdVx2_55f7iRQsCbqWzubnw6lQLo7-DMKWbMUuI6u6r7FN7xKdtdnoei8g1lIJGk0zJREfhg9MixtrC1yO9lIUM_en5zL"
+          alt="background"
+          className="h-full w-full object-cover object-bottom mix-blend-multiply"
+        />
+      </div>
 
-      <div className="relative mx-auto flex w-full max-w-[1500px] flex-1 flex-col px-6 lg:flex-row lg:px-20">
-        <section className="flex flex-1 flex-col justify-center py-20 lg:pr-12">
+      <div className="relative mx-auto flex w-full max-w-[1600px] flex-1 flex-col px-6 lg:flex-row lg:px-24">
+        <section className="flex flex-1 flex-col justify-center pb-12 pt-24 lg:pb-0 lg:pr-12 lg:pt-0">
           <div className="mb-8 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600 text-white">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-white">
               <Network className="h-5 w-5" />
             </div>
-            <span className="text-2xl font-bold tracking-tight text-slate-900">GraphHire</span>
+            <span className="text-xl font-bold tracking-tight text-slate-900">GraphHire</span>
           </div>
-          <h1 className="text-4xl font-bold leading-tight text-slate-900 lg:text-6xl">
+
+          <h1 className="text-4xl font-bold leading-[1.1] tracking-tight text-slate-900 lg:text-6xl">
             开启 AI 智能
             <br />
             招聘管理
             <br />
             新篇章。
           </h1>
-          <p className="mt-6 max-w-lg text-lg text-slate-500">于无声处见繁华，重新定义招聘管理体验。</p>
+          <p className="mt-6 max-w-lg text-lg leading-relaxed text-slate-500">于无声处见繁华，重新定义招聘管理体验。</p>
         </section>
 
         <section className="flex flex-1 items-center justify-center py-10 lg:justify-end">
-          <div className="w-full max-w-[440px] rounded-3xl border border-white/40 bg-white/90 p-8 shadow-2xl backdrop-blur">
-            <div className="mb-6">
+          <div className="w-full max-w-[440px] rounded-2xl border border-white/40 bg-white/85 p-10 shadow-2xl backdrop-blur">
+            <div className="mb-8">
               <h2 className="text-3xl font-bold text-slate-900">欢迎回来</h2>
               <p className="mt-2 text-sm text-slate-500">请登录以继续管理 GraphHire 平台</p>
+            </div>
+
+            <div className="mb-8 flex gap-6 border-b border-slate-200">
+              <button className="border-b-2 border-blue-600 pb-3 text-base font-medium text-blue-600">账号登录</button>
+              <button className="pb-3 text-base font-medium text-slate-400">快捷登录</button>
             </div>
 
             {error ? <div className="mb-4 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</div> : null}
@@ -117,15 +129,37 @@ export default function AdminLoginPage() {
 
               <button
                 type="submit"
-                className="w-full rounded-lg bg-blue-600 py-3 text-base font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:opacity-90 disabled:opacity-50"
+                className="w-full rounded-lg bg-blue-600 py-3.5 text-base font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:opacity-90 disabled:opacity-50"
                 disabled={loading}
               >
                 {loading ? '登录中...' : '登 录'}
               </button>
+
+              <div className="pt-3 text-center text-sm">
+                <span className="text-slate-500">新职员?</span>
+                <a href="#" className="ml-1 font-medium text-slate-800 hover:underline">
+                  申请内部账号
+                </a>
+              </div>
             </form>
           </div>
         </section>
       </div>
+
+      <footer className="z-10 flex w-full flex-col items-center justify-between px-10 py-6 text-xs text-slate-400 md:flex-row">
+        <p>© 2026 GRAPHHIRE. ALL RIGHTS RESERVED.</p>
+        <div className="mt-3 flex gap-6 md:mt-0">
+          <a href="#" className="hover:text-slate-600">
+            隐私政策
+          </a>
+          <a href="#" className="hover:text-slate-600">
+            服务条款
+          </a>
+          <a href="#" className="hover:text-slate-600">
+            联系我们
+          </a>
+        </div>
+      </footer>
     </div>
   );
 }

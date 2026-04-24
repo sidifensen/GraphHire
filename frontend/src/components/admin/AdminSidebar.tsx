@@ -20,19 +20,18 @@ export default function AdminSidebar({ activeItem = 'dashboard' }: AdminSidebarP
   const shouldReduceMotion = useReducedMotion();
 
   return (
-    <aside className="fixed left-0 top-0 bottom-0 z-40 flex flex-col h-screen w-64 shadow-2xl font-['Manrope'] text-sm antialiased bg-white border-r border-slate-200">
-      {/* Header */}
-      <div className="h-14 flex items-center px-5 gap-3 bg-white border-b border-slate-100">
-        <div className="w-7 h-7 rounded bg-gradient-to-br from-primary to-primary-container flex items-center justify-center">
+    <aside className="fixed bottom-0 left-0 top-0 z-40 flex h-screen w-64 flex-col border-r border-slate-200 bg-white shadow-xl">
+      <div className="flex h-16 items-center gap-3 border-b border-slate-100 px-5">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
           <span className="material-symbols-outlined text-white text-base icon-fill">hub</span>
         </div>
-        <div className="leading-tight">
+        <div className="leading-tight text-slate-900">
           <h1 className="text-lg font-bold tracking-tight text-slate-900">GraphHire</h1>
-          <p className="text-[11px] mt-0.5">图谱智聘管理端</p>
+          <p className="mt-0.5 text-[11px] text-slate-500">图谱智聘管理端</p>
         </div>
       </div>
-      {/* Navigation */}
-      <nav className="flex-1 py-6 space-y-1 px-2">
+
+      <nav className="flex-1 space-y-1 px-2 py-6">
         {navItems.map((item) => {
           const isActive = activeItem === item.id;
           return (
@@ -67,6 +66,13 @@ export default function AdminSidebar({ activeItem = 'dashboard' }: AdminSidebarP
           );
         })}
       </nav>
+
+      <div className="p-4">
+        <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 text-center">
+          <p className="text-xs text-slate-500">系统版本 V2.4.0</p>
+          <p className="mt-1 text-[10px] text-slate-400">© 2026 GraphHire</p>
+        </div>
+      </div>
     </aside>
   );
 }
