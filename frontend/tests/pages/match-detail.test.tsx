@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 const mockUseParams = vi.fn();
+const mockUseRouter = vi.fn();
 const mockAuthStore = vi.fn();
 const getMatchDetail = vi.fn();
 const getJobById = vi.fn();
@@ -12,6 +13,7 @@ const getMyResumes = vi.fn();
 
 vi.mock('next/navigation', () => ({
   useParams: () => mockUseParams(),
+  useRouter: () => mockUseRouter(),
 }));
 
 vi.mock('@/lib/stores/auth-store', () => ({
@@ -51,6 +53,7 @@ describe('MatchDetailPage apply feedback modal', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseParams.mockReturnValue({ id: '1' });
+    mockUseRouter.mockReturnValue({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn(), back: vi.fn(), forward: vi.fn() });
     mockAuthStore.mockReturnValue({ user: { id: 100 } });
 
     getMatchDetail.mockResolvedValue({
@@ -101,5 +104,17 @@ describe('MatchDetailPage apply feedback modal', () => {
     expect(alertSpy).not.toHaveBeenCalled();
 
     alertSpy.mockRestore();
+  });
+
+  it('renders back button and falls back to jobs list when no history', async () => {
+    const push = vi.fn();
+    mockUseRouter.mockReturnValue({ push, replace: vi.fn(), refresh: vi.fn(), back: vi.fn(), forward: vi.fn() });
+    const user = userEvent.setup();
+
+    render(<MatchDetailPage />);
+    const backButton = await screen.findByRole('button', { name: /返回/i });
+    await user.click(backButton);
+
+    expect(push).toHaveBeenCalledWith('/jobs');
   });
 });

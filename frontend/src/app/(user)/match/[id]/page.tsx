@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { authStore } from '@/lib/stores/auth-store';
 import { personApi, type PersonMatchDetail } from '@/lib/api/person';
 import { publicApi, type Job } from '@/lib/api/public';
@@ -36,6 +36,7 @@ function formatSalary(job?: Job | null) {
 
 export default function MatchDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const user = authStore((state) => state.user);
   const jobId = Number(params.id);
   const [detail, setDetail] = useState<PersonMatchDetail | null>(null);
@@ -135,6 +136,13 @@ export default function MatchDetailPage() {
       setApplying(false);
     }
   };
+  const handleBack = () => {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back();
+      return;
+    }
+    router.push('/jobs');
+  };
 
   if (loading) {
     return <div className="flex-grow flex items-center justify-center min-h-screen text-on-surface-variant">匹配详情加载中...</div>;
@@ -154,6 +162,14 @@ export default function MatchDetailPage() {
       <main className="max-w-[1440px] mx-auto px-4 md:px-8 py-4">
         <div className="flex flex-col gap-8">
           <div className="w-full space-y-8">
+            <button
+              onClick={handleBack}
+              className="w-fit inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors"
+            >
+              <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+              返回
+            </button>
+
             <section className="bg-surface-container-low rounded-xl p-8 relative overflow-hidden group">
               <div className="absolute -right-20 -top-20 w-64 h-64 bg-primary-container rounded-full blur-[100px] opacity-20 group-hover:opacity-30 transition-opacity duration-700" />
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 relative z-10">
@@ -171,8 +187,17 @@ export default function MatchDetailPage() {
                 </div>
                 <CircularProgress score={totalScore} />
               </div>
-              <p className="text-sm text-on-surface-variant mt-6 relative z-10">匹配度来自后端真实技能比对接口（用户技能 vs 岗位技能）。</p>
             </section>
+
+            {job?.description && (
+              <section className="bg-surface-container-lowest rounded-xl p-8 hover:shadow-[0_12px_32px_-4px_rgba(14,28,44,0.06)] transition-shadow duration-300 border border-outline-variant/15">
+                <h2 className="text-xl font-headline font-bold mb-6 flex items-center gap-2 text-on-surface">
+                  <span className="material-symbols-outlined text-primary-container" style={{ fontVariationSettings: "'FILL' 1" }}>description</span>
+                  职位描述
+                </h2>
+                <div className="text-on-surface-variant leading-relaxed whitespace-pre-wrap">{job.description}</div>
+              </section>
+            )}
 
             <section className="bg-surface-container-lowest rounded-xl p-8 hover:shadow-[0_12px_32px_-4px_rgba(14,28,44,0.06)] transition-shadow duration-300 border border-outline-variant/15">
               <h2 className="text-xl font-headline font-bold mb-6 flex items-center gap-2 text-on-surface">

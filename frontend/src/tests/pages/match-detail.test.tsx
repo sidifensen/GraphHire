@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import MatchDetailPage from '@/app/(user)/match/[id]/page';
 
 const getMatchDetail = vi.fn();
@@ -7,9 +8,11 @@ const getJobById = vi.fn();
 const getGraphScore = vi.fn();
 const authStoreMock = vi.fn();
 const useParamsMock = vi.fn();
+const useRouterMock = vi.fn();
 
 vi.mock('next/navigation', () => ({
   useParams: () => useParamsMock(),
+  useRouter: () => useRouterMock(),
 }));
 
 vi.mock('@/lib/stores/auth-store', () => ({
@@ -40,6 +43,7 @@ describe('MatchDetailPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     useParamsMock.mockReturnValue({ id: '9' });
+    useRouterMock.mockReturnValue({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn(), back: vi.fn(), forward: vi.fn() });
     authStoreMock.mockImplementation((selector) => selector({ user: { id: 1, username: 'real@example.com', type: 'PERSON' } }));
     getMatchDetail.mockResolvedValue({
       matchId: 101,
@@ -137,5 +141,17 @@ describe('MatchDetailPage', () => {
     render(<MatchDetailPage />);
     await screen.findByText('职位要求');
     expect(screen.getByText('该职位暂未提供结构化技能要求')).toBeDefined();
+  });
+
+  it('renders back button and falls back to jobs list when no history', async () => {
+    const push = vi.fn();
+    useRouterMock.mockReturnValue({ push, replace: vi.fn(), refresh: vi.fn(), back: vi.fn(), forward: vi.fn() });
+    const user = userEvent.setup();
+
+    render(<MatchDetailPage />);
+    const backButton = await screen.findByRole('button', { name: /返回/i });
+    await user.click(backButton);
+
+    expect(push).toHaveBeenCalledWith('/jobs');
   });
 });
