@@ -20,10 +20,7 @@ export default function AdminSidebar({ activeItem = 'dashboard' }: AdminSidebarP
   const shouldReduceMotion = useReducedMotion();
 
   return (
-    <aside
-      data-testid="admin-sidebar-root"
-      className="fixed bottom-0 left-0 top-0 z-40 flex h-screen w-64 flex-col border-r border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-black"
-    >
+    <aside className="fixed bottom-0 left-0 top-0 z-40 flex h-screen w-64 flex-col border-r border-slate-200 bg-white shadow-xl">
       <div className="flex h-16 items-center gap-3 border-b border-slate-100 px-5">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
           <span className="material-symbols-outlined text-white text-base icon-fill">hub</span>
