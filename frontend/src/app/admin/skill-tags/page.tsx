@@ -107,7 +107,7 @@ export default function AdminSkillTagsPage() {
 
   return (
     <AdminShell activeItem="skill-tags">
-      <div className="mx-auto w-full max-w-7xl space-y-6">
+      <div className="w-full space-y-6">
         <section className="flex items-end justify-between">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">标签管理</h1>
