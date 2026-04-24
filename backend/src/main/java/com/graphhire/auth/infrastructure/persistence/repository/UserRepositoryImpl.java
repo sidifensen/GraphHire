@@ -73,7 +73,11 @@ public class UserRepositoryImpl implements UserRepository {
         if (po == null) return null;
         User user = new User();
         user.setId(po.getId());
-        user.setUsername(Username.of(po.getUsername()));
+        try {
+            user.setUsername(Username.of(po.getUsername()));
+        } catch (IllegalArgumentException e) {
+            user.setUsername(null);
+        }
         user.setPassword(EncryptedPassword.fromEncrypted(po.getPassword()));
         user.setUserType(mapIntToUserType(po.getUserType()));
         user.setStatus(mapIntToAuthStatus(po.getStatus()));
@@ -91,8 +95,8 @@ public class UserRepositoryImpl implements UserRepository {
     private UserPO toPO(User user) {
         UserPO po = new UserPO();
         po.setId(user.getId());
-        po.setUsername(user.getUsername().getValue());
-        po.setPassword(user.getPassword().getValue());
+        po.setUsername(user.getUsername() == null ? null : user.getUsername().getValue());
+        po.setPassword(user.getPassword() == null ? null : user.getPassword().getValue());
         po.setUserType(mapUserTypeToInt(user.getUserType()));
         po.setStatus(mapAuthStatusToInt(user.getStatus()));
         po.setCreateTime(user.getCreateTime());

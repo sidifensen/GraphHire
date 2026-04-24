@@ -12,10 +12,11 @@ interface AdminShellProps {
 }
 
 export default function AdminShell({ children }: AdminShellProps) {
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
-    return window.localStorage.getItem('admin.sidebar.collapsed') === 'true';
-  });
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  useEffect(() => {
+    setIsCollapsed(window.localStorage.getItem('admin.sidebar.collapsed') === 'true');
+  }, []);
 
   useEffect(() => {
     window.localStorage.setItem('admin.sidebar.collapsed', String(isCollapsed));
