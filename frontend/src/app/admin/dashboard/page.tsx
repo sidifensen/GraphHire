@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import {
   Users,
@@ -13,7 +13,6 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import AdminShell from '@/components/admin/AdminShell';
 import AdminStatCard from '@/components/admin/AdminStatCard';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/context/ThemeContext';
@@ -30,8 +29,7 @@ export default function AdminDashboardPage() {
   const isDark = theme === 'dark';
 
   return (
-    <AdminShell>
-      <div className="space-y-6 p-8">
+          <div className="space-y-6 p-8">
         <div className="flex items-center justify-between rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-blue-800 transition-colors dark:border-blue-900/30 dark:bg-slate-900/40 dark:text-blue-300 dark:backdrop-blur-md">
           <div className="flex items-center gap-3">
             <Megaphone className="text-blue-600 dark:text-blue-400" size={20} />
@@ -235,6 +233,5 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       </div>
-    </AdminShell>
   );
 }

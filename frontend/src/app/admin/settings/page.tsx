@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import AdminShell from '@/components/admin/AdminShell';
 
 interface LocalSettings {
   allowRegister: boolean;
@@ -18,8 +17,7 @@ export default function AdminSettingsPage() {
   const [message, setMessage] = useState<string | null>(null);
 
   return (
-    <AdminShell>
-      <div className="mx-auto w-full max-w-2xl space-y-4 p-8">
+          <div className="mx-auto w-full max-w-2xl space-y-4 p-8">
         <h1 className="font-display text-2xl font-bold text-on-surface">系统设置（演示）</h1>
         {message ? <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-700">{message}</div> : null}
         <div className="space-y-4 rounded-xl border border-outline-variant/30 bg-white p-6 dark:border-white/10 dark:bg-black/40">
@@ -59,6 +57,5 @@ export default function AdminSettingsPage() {
           </button>
         </div>
       </div>
-    </AdminShell>
   );
 }

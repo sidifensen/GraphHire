@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Search, ChevronDown, Download, AlertCircle, Network, CheckCircle2 } from 'lucide-react';
-import AdminShell from '@/components/admin/AdminShell';
 import AdminDataTable from '@/components/admin/AdminDataTable';
 import { cn } from '@/lib/utils';
 import { adminApi } from '@/lib/api/admin';
@@ -101,8 +100,7 @@ export default function AdminEnterpriseReviewPage() {
   };
 
   return (
-    <AdminShell>
-      <div className="space-y-6 p-8">
+          <div className="space-y-6 p-8">
         <div className="flex items-end justify-between">
           <div>
             <h2 className="font-display text-2xl font-bold text-on-surface">企业审核</h2>
@@ -254,6 +252,5 @@ export default function AdminEnterpriseReviewPage() {
           ]}
         />
       </div>
-    </AdminShell>
   );
 }

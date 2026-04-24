@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { Search, ChevronDown, MoreHorizontal } from 'lucide-react';
-import AdminShell from '@/components/admin/AdminShell';
 import AdminDataTable from '@/components/admin/AdminDataTable';
 import { cn } from '@/lib/utils';
 import { adminApi } from '@/lib/api/admin';
@@ -87,8 +86,7 @@ export default function AdminUsersPage() {
   };
 
   return (
-    <AdminShell>
-      <div className="space-y-6 p-8">
+          <div className="space-y-6 p-8">
         <div className="mb-4">
           <h2 className="font-display text-2xl font-bold text-on-surface">用户管理</h2>
           <p className="mt-1 text-sm text-outline">管理系统注册用户及求职者资料</p>
@@ -248,6 +246,5 @@ export default function AdminUsersPage() {
           ]}
         />
       </div>
-    </AdminShell>
   );
 }

@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { RotateCcw, Filter, Clock, CheckCircle2, XCircle, RefreshCw } from 'lucide-react';
-import AdminShell from '@/components/admin/AdminShell';
 import AdminDataTable from '@/components/admin/AdminDataTable';
 import { cn } from '@/lib/utils';
 import { adminApi, type TaskListItem, type TaskSummary } from '@/lib/api/admin';
@@ -116,8 +115,7 @@ export default function AdminTaskMonitorPage() {
   };
 
   return (
-    <AdminShell>
-      <div className="space-y-6 p-8">
+          <div className="space-y-6 p-8">
         <div className="mb-8">
           <h2 className="font-display text-2xl font-bold">任务监控</h2>
           <p className="mt-1 text-sm text-outline">实时追踪系统级数据处理任务的执行状态</p>
@@ -250,6 +248,5 @@ export default function AdminTaskMonitorPage() {
           {loading ? <p className="px-6 pb-4 text-xs text-outline">加载中...</p> : null}
         </div>
       </div>
-    </AdminShell>
   );
 }
