@@ -43,13 +43,12 @@ export default function JobsPage() {
     await loadJobs(status, keyword);
   };
 
-  const handleAction = async (action: 'publish' | 'close' | 'parse', jobId: number) => {
+  const handleAction = async (action: 'publish' | 'close', jobId: number) => {
     setActionMessage(null);
     try {
       if (action === 'publish') await companyApi.publishJob(jobId);
       if (action === 'close') await companyApi.closeJob(jobId);
-      if (action === 'parse') await companyApi.parseJob(jobId);
-      setActionMessage(action === 'parse' ? '职位解析任务已触发' : '职位状态已更新');
+      setActionMessage('职位状态已更新');
       await loadJobs(status, keyword);
     } catch (err) {
       setActionMessage(err instanceof Error ? err.message : '操作失败');
@@ -141,7 +140,6 @@ export default function JobsPage() {
                 </div>
                 <div className="flex md:flex-col justify-end gap-2 border-t md:border-t-0 md:border-l border-surface-container-high pt-4 md:pt-0 md:pl-6">
                   <a className="px-4 py-2 bg-primary-fixed text-on-primary-fixed text-sm font-medium rounded-lg text-center" href={`/enterprise/recommendations?jobId=${job.id}`}>匹配候选人</a>
-                  <button className="px-4 py-2 bg-surface-container text-on-surface text-sm font-medium rounded-lg" onClick={() => void handleAction('parse', job.id)}>重新解析</button>
                   <div className="flex justify-end gap-2 pt-2">
                     {job.status === 'PUBLISHED' ? (
                       <button className="p-2 text-outline hover:text-error" title="暂停" onClick={() => void handleAction('close', job.id)}>

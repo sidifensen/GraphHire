@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { ChevronDown, Search } from 'lucide-react';
 import { adminApi, type UserDetailResponse, type UserItem } from '@/lib/api/admin';
 import AdminShell from '@/components/admin/AdminShell';
-import AdminTopbar from '@/components/admin/AdminTopbar';
 import AdminDataTable, { type AdminDataTableColumn } from '@/components/admin/AdminDataTable';
 
 export default function AdminUsersPage() {
@@ -168,8 +167,6 @@ export default function AdminUsersPage() {
 
   return (
     <AdminShell activeItem="users">
-      <AdminTopbar searchPlaceholder="搜索用户..." />
-
       <div className="mx-auto w-full max-w-7xl space-y-6">
         <section>
           <h1 className="text-2xl font-bold text-slate-900">用户管理</h1>

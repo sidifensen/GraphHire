@@ -34,9 +34,8 @@ export default function CompanyDetailPage() {
       const detail = await publicApi.companies.getById(companyId);
       setCompany(detail);
 
-      const jobPage = await publicApi.jobs.search({ keyword: detail.name, size: 50 });
-      const companyJobs = (jobPage.records ?? []).filter((item) => item.companyId === companyId);
-      setJobs(companyJobs);
+      const jobPage = await publicApi.jobs.search({ companyId, size: 50 });
+      setJobs(jobPage.records ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : '企业详情加载失败');
     } finally {

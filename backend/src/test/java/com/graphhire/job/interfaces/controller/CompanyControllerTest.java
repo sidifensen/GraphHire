@@ -757,40 +757,6 @@ class CompanyControllerTest {
     }
 
     @Nested
-    @DisplayName("重新解析职位测试")
-    class ReparseJobTests {
-
-        @Test
-        @DisplayName("成功重新解析职位")
-        void reparseJob_Success() {
-            try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
-                // Given
-                Long userId = 1L;
-                Long companyId = 1L;
-                Long jobId = 1L;
-
-                stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(userId);
-                when(companyAppService.getCompanyIdByUserId(userId)).thenReturn(companyId);
-
-                Job job = new Job();
-                job.setId(jobId);
-                job.setCompanyId(companyId);
-
-                when(jobAppService.getJobById(jobId)).thenReturn(job);
-                doNothing().when(jobAppService).triggerJobParse(jobId);
-
-                // When
-                var result = companyController.reparseJob(jobId);
-
-                // Then
-                assertNotNull(result);
-                assertEquals(200, result.getCode());
-                verify(jobAppService).triggerJobParse(jobId);
-            }
-        }
-    }
-
-    @Nested
     @DisplayName("创建公司测试")
     class CreateCompanyTests {
 

@@ -1,10 +1,6 @@
 package com.graphhire.job.infrastructure.persistence.repository;
 
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.json.JSONArray;
-import cn.hutool.json.JSONObject;
-import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.graphhire.job.domain.model.Job;
 import com.graphhire.job.domain.repository.JobRepository;
@@ -19,7 +15,6 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import cn.hutool.core.util.StrUtil;
 
 @Repository
@@ -126,13 +121,9 @@ public class JobRepositoryImpl implements JobRepository {
         } else {
             job.setSalaryRange(SalaryRange.empty());
         }
-        if (job.getRequiredSkills() == null) {
-            job.setRequiredSkills(new ArrayList<>());
+        if (job.getSkills() == null) {
+            job.setSkills(new ArrayList<>());
         }
-        if (job.getPreferredSkills() == null) {
-            job.setPreferredSkills(new ArrayList<>());
-        }
-        fillJobFieldsFromParseResult(job, po.getParseResult());
         return job;
     }
 
@@ -150,115 +141,18 @@ public class JobRepositoryImpl implements JobRepository {
             po.setSalaryMax(job.getSalaryRange().getMax());
             po.setSalaryUnit(job.getSalaryRange().getUnit());
         }
-        enrichParseResultForPersistence(job, po);
+        po.setSkills(normalizeSkills(job.getSkills()));
         return po;
     }
 
-    private void fillJobFieldsFromParseResult(Job job, String parseResult) {
-        if (StrUtil.isBlank(parseResult) || !JSONUtil.isTypeJSONObject(parseResult)) {
-            return;
-        }
-        JSONObject json = JSONUtil.parseObj(parseResult);
-
-        if (CollUtil.isEmpty(job.getRequiredSkills())) {
-            JSONArray requiredSkillsArray = firstJSONArray(json, "skills", "Skills", "requiredSkills");
-            if (requiredSkillsArray != null) {
-                List<String> requiredSkills = requiredSkillsArray.stream()
-                        .map(item -> item == null ? null : item.toString())
-                        .filter(StrUtil::isNotBlank)
-                        .map(StrUtil::trim)
-                        .distinct()
-                        .collect(Collectors.toCollection(ArrayList::new));
-                job.setRequiredSkills(requiredSkills);
-            }
-        }
-
-        if (CollUtil.isEmpty(job.getPreferredSkills())) {
-            JSONArray preferredSkillsArray = firstJSONArray(json, "preferredSkills", "preferred_skills");
-            if (preferredSkillsArray != null) {
-                List<String> preferredSkills = preferredSkillsArray.stream()
-                        .map(item -> item == null ? null : item.toString())
-                        .filter(StrUtil::isNotBlank)
-                        .map(StrUtil::trim)
-                        .distinct()
-                        .collect(Collectors.toCollection(ArrayList::new));
-                job.setPreferredSkills(preferredSkills);
-            }
-        }
-
-        if (StrUtil.isBlank(job.getDescription())) {
-            JSONArray requirementsArray = firstJSONArray(json, "requirements", "responsibilities", "Responsibilities");
-            if (requirementsArray != null && !requirementsArray.isEmpty()) {
-                String description = requirementsArray.stream()
-                        .map(item -> item == null ? null : item.toString())
-                        .filter(StrUtil::isNotBlank)
-                        .map(StrUtil::trim)
-                        .collect(Collectors.joining("；"));
-                if (StrUtil.isNotBlank(description)) {
-                    job.setDescription(description);
-                }
-            }
-        }
-    }
-
-    private void enrichParseResultForPersistence(Job job, JobPO po) {
-        JSONObject json = parseResultAsObject(po.getParseResult());
-
-        List<String> requiredSkills = normalizeSkills(job.getRequiredSkills());
-        if (CollUtil.isNotEmpty(requiredSkills)) {
-            json.set("skills", requiredSkills);
-            po.setRequiredSkills(String.join(",", requiredSkills));
-        }
-
-        List<String> preferredSkills = normalizeSkills(job.getPreferredSkills());
-        if (CollUtil.isNotEmpty(preferredSkills)) {
-            json.set("preferredSkills", preferredSkills);
-            po.setPreferredSkills(String.join(",", preferredSkills));
-        }
-
-        if (StrUtil.isNotBlank(job.getDescription())) {
-            json.set("requirements", List.of(StrUtil.trim(job.getDescription())));
-        }
-
-        if (!json.isEmpty()) {
-            po.setParseResult(json.toString());
-        }
-    }
-
-    private JSONObject parseResultAsObject(String parseResult) {
-        if (StrUtil.isNotBlank(parseResult) && JSONUtil.isTypeJSONObject(parseResult)) {
-            return JSONUtil.parseObj(parseResult);
-        }
-        return JSONUtil.createObj();
-    }
-
     private List<String> normalizeSkills(List<String> skills) {
-        if (CollUtil.isEmpty(skills)) {
-            return List.of();
+        if (skills == null || skills.isEmpty()) {
+            return new ArrayList<>();
         }
         return skills.stream()
                 .filter(StrUtil::isNotBlank)
                 .map(StrUtil::trim)
                 .distinct()
                 .toList();
-    }
-
-    private JSONArray firstJSONArray(JSONObject json, String... keys) {
-        for (String key : keys) {
-            Object value = json.get(key);
-            if (value == null) {
-                continue;
-            }
-            if (value instanceof JSONArray array) {
-                return array;
-            }
-            if (value instanceof List<?> list) {
-                return JSONUtil.parseArray(list);
-            }
-            if (value instanceof String str && JSONUtil.isTypeJSONArray(str)) {
-                return JSONUtil.parseArray(str);
-            }
-        }
-        return null;
     }
 }

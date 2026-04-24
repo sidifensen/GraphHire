@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AlertCircle, CheckCircle2, ChevronDown, Download, Network, Search } from 'lucide-react';
 import { adminApi, type CompanyAuthItem } from '@/lib/api/admin';
 import AdminShell from '@/components/admin/AdminShell';
-import AdminTopbar from '@/components/admin/AdminTopbar';
 import AdminDataTable, { type AdminDataTableColumn } from '@/components/admin/AdminDataTable';
 
 type StatusFilter = 'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED';
@@ -176,8 +175,6 @@ export default function AdminEnterpriseReviewPage() {
 
   return (
     <AdminShell activeItem="enterprise-review">
-      <AdminTopbar searchPlaceholder="搜索企业..." />
-
       <div className="mx-auto w-full max-w-7xl space-y-6">
         <section className="flex items-end justify-between">
           <div>

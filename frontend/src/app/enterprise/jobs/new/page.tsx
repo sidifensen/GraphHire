@@ -11,10 +11,8 @@ const salaryUnit = 'CNY/MONTH';
 export default function JobNewPage() {
   const router = useRouter();
   const [title, setTitle] = useState('');
-  const [department, setDepartment] = useState('');
   const [city, setCity] = useState('');
   const [description, setDescription] = useState('');
-  const [headcount, setHeadcount] = useState('');
   const [salaryMin, setSalaryMin] = useState('');
   const [salaryMax, setSalaryMax] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -24,7 +22,6 @@ export default function JobNewPage() {
     setError(null);
     const min = Number(salaryMin);
     const max = Number(salaryMax);
-    const parsedHeadcount = headcount ? Number(headcount) : undefined;
 
     if (!title.trim() || !description.trim() || !city.trim() || !salaryMin || !salaryMax) {
       setError('请填写所有必填项');
@@ -38,17 +35,11 @@ export default function JobNewPage() {
       setError('最低薪资不能高于最高薪资');
       return;
     }
-    if (parsedHeadcount !== undefined && (!Number.isFinite(parsedHeadcount) || parsedHeadcount <= 0)) {
-      setError('招聘人数必须为正整数');
-      return;
-    }
 
     setSubmitting(true);
     try {
       const jobId = await companyApi.createJob({
         title: title.trim(),
-        department: department.trim() || undefined,
-        headcount: parsedHeadcount,
         location: { city: city.trim() },
         salaryRange: { min, max, unit: salaryUnit },
         description: description.trim(),
@@ -77,18 +68,8 @@ export default function JobNewPage() {
         </label>
 
         <label className="flex flex-col gap-2 text-sm text-on-surface">
-          部门
-          <input className="px-3 py-2 rounded-lg bg-surface-container-low border border-surface-container-high" value={department} onChange={(e) => setDepartment(e.target.value)} />
-        </label>
-
-        <label className="flex flex-col gap-2 text-sm text-on-surface">
           城市
           <input className="px-3 py-2 rounded-lg bg-surface-container-low border border-surface-container-high" value={city} onChange={(e) => setCity(e.target.value)} />
-        </label>
-
-        <label className="flex flex-col gap-2 text-sm text-on-surface">
-          招聘人数
-          <input className="px-3 py-2 rounded-lg bg-surface-container-low border border-surface-container-high" value={headcount} onChange={(e) => setHeadcount(e.target.value)} />
         </label>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -122,4 +103,3 @@ export default function JobNewPage() {
     </EnterpriseContent>
   );
 }
-

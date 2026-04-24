@@ -8,7 +8,6 @@ vi.mock('@/lib/api/company', () => ({
     getJobList: vi.fn(),
     publishJob: vi.fn(),
     closeJob: vi.fn(),
-    parseJob: vi.fn(),
   },
 }));
 
@@ -31,7 +30,6 @@ describe('JobsPage', () => {
     ]);
     vi.mocked(companyApi.publishJob).mockResolvedValue();
     vi.mocked(companyApi.closeJob).mockResolvedValue();
-    vi.mocked(companyApi.parseJob).mockResolvedValue();
   });
 
   test('渲染真实职位列表', async () => {
@@ -45,7 +43,7 @@ describe('JobsPage', () => {
     expect(createLink).toHaveAttribute('href', '/enterprise/jobs/new');
   });
 
-  test('支持搜索与重新解析操作', async () => {
+  test('支持搜索操作', async () => {
     const user = userEvent.setup();
     render(<JobsPage />);
 
@@ -57,12 +55,6 @@ describe('JobsPage', () => {
       expect(companyApi.getJobList).toHaveBeenLastCalledWith({ status: undefined, keyword: '算法' });
     });
 
-    await user.click(screen.getByRole('button', { name: '重新解析' }));
-
-    await waitFor(() => {
-      expect(companyApi.parseJob).toHaveBeenCalledWith(1);
-    });
-    expect(await screen.findByText('职位解析任务已触发')).toBeInTheDocument();
   });
 
   test('支持关闭职位', async () => {

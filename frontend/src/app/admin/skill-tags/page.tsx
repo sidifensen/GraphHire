@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowUpRight, Brain, Code, Database, Filter, Plus } from 'lucide-react';
 import { adminApi, type SkillTagItem } from '@/lib/api/admin';
 import AdminShell from '@/components/admin/AdminShell';
-import AdminTopbar from '@/components/admin/AdminTopbar';
 import AdminDataTable, { type AdminDataTableColumn } from '@/components/admin/AdminDataTable';
 
 const pickIcon = (category: string) => {
@@ -97,8 +96,6 @@ export default function AdminSkillTagsPage() {
 
   return (
     <AdminShell activeItem="skill-tags">
-      <AdminTopbar searchPlaceholder="搜索标签..." />
-
       <div className="mx-auto w-full max-w-7xl space-y-6">
         <section className="flex items-end justify-between">
           <div>

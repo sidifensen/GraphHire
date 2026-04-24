@@ -249,9 +249,7 @@ CREATE TABLE job
     company_id   BIGINT       NOT NULL,
     title        VARCHAR(100) NOT NULL,
     description  VARCHAR(2000),
-    file_path    VARCHAR(500),
-    parse_status SMALLINT     NOT NULL DEFAULT 0,
-    parse_result JSONB,
+    skills       TEXT[]       NOT NULL DEFAULT '{}',
     city         VARCHAR(50),
     salary_min   INT,
     salary_max   INT,
@@ -264,7 +262,6 @@ CREATE TABLE job
     update_time  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted      SMALLINT     NOT NULL DEFAULT 0,
 
-    CONSTRAINT chk_job_parse_status CHECK (parse_status IN (0, 1, 2, 3)),
     CONSTRAINT chk_job_type CHECK (job_type IN (1, 2)),
     CONSTRAINT chk_job_status CHECK (status IN (0, 1)),
     CONSTRAINT chk_salary CHECK (salary_min IS NULL OR salary_max IS NULL OR salary_min <= salary_max)
@@ -275,9 +272,7 @@ COMMENT ON COLUMN job.id IS '主键ID';
 COMMENT ON COLUMN job.company_id IS '所属企业ID';
 COMMENT ON COLUMN job.title IS '职位名称';
 COMMENT ON COLUMN job.description IS '岗位描述（企业录入）';
-COMMENT ON COLUMN job.file_path IS '原始职位描述文档路径（RustFS）';
-COMMENT ON COLUMN job.parse_status IS '解析状态：0-待解析 1-解析中 2-成功 3-失败';
-COMMENT ON COLUMN job.parse_result IS 'AI解析结果JSON（包含技能要求、岗位职责等）';
+COMMENT ON COLUMN job.skills IS '岗位技能名称数组（来源于 skill_tag.name）';
 COMMENT ON COLUMN job.city IS '工作城市';
 COMMENT ON COLUMN job.salary_min IS '最低薪资';
 COMMENT ON COLUMN job.salary_max IS '最高薪资';
@@ -295,37 +290,10 @@ CREATE INDEX idx_job_status ON job (status) WHERE deleted = 0;
 CREATE INDEX idx_job_city ON job (city) WHERE deleted = 0 AND status = 1;
 CREATE INDEX idx_job_create_time ON job (create_time DESC);
 CREATE INDEX idx_job_title ON job (title);
+CREATE INDEX idx_job_skills_gin ON job USING GIN (skills);
 
 -- =============================================
--- 9. 职位技能关联表 job_skill
--- =============================================
-CREATE TABLE job_skill
-(
-    id          BIGSERIAL PRIMARY KEY,
-    job_id      BIGINT        NOT NULL,
-    skill_id    BIGINT        NOT NULL,
-    is_required SMALLINT      NOT NULL DEFAULT 1,
-    weight      DECIMAL(3, 2) NOT NULL DEFAULT 1.00,
-    create_time TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    update_time TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT uk_job_skill UNIQUE (job_id, skill_id),
-    CONSTRAINT chk_is_required CHECK (is_required IN (1, 2)),
-    CONSTRAINT chk_weight CHECK (weight BETWEEN 0 AND 1)
-);
-
-COMMENT ON TABLE job_skill IS '职位技能关联表：存储职位所需的技能要求';
-COMMENT ON COLUMN job_skill.job_id IS '职位ID';
-COMMENT ON COLUMN job_skill.skill_id IS '技能标签ID';
-COMMENT ON COLUMN job_skill.is_required IS '是否必须：1-必须技能 2-优先技能';
-COMMENT ON COLUMN job_skill.weight IS '技能权重系数（0.00-1.00）';
-
-CREATE INDEX idx_job_skill_job_id ON job_skill (job_id);
-CREATE INDEX idx_job_skill_skill_id ON job_skill (skill_id);
-CREATE INDEX idx_job_skill_required ON job_skill (is_required) WHERE is_required = 1;
-
--- =============================================
--- 10. 匹配记录表 match_record
+-- 9. 匹配记录表 match_record
 -- =============================================
 CREATE TABLE match_record
 (

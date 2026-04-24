@@ -81,8 +81,6 @@ export interface EnterpriseCreateStaffRequest {
 
 export interface EnterpriseCreateJobRequest {
   title: string;
-  department?: string;
-  headcount?: number;
   location: {
     city: string;
   };

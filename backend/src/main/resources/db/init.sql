@@ -260,62 +260,29 @@ ON CONFLICT DO NOTHING;
 -- =============================================
 -- 8. 职位数据
 -- =============================================
-INSERT INTO job (id, company_id, title, file_path, parse_status, parse_result, city, salary_min, salary_max, salary_unit, experience, education, job_type, status, create_time, update_time, deleted) VALUES
+INSERT INTO job (id, company_id, title, description, skills, city, salary_min, salary_max, salary_unit, experience, education, job_type, status, create_time, update_time, deleted) VALUES
 -- 图智科技公司职位
-(1, 1, '高级Java后端开发工程师', '/files/job/job_1.pdf', 2,
- '{"skills":["Java","Spring Boot","MySQL","Redis","Docker","Kubernetes"],"requirements":["本科及以上学历","具备3-5年后端开发经验","熟悉微服务架构与性能优化"],"responsibilities":["负责核心业务系统设计与开发","优化系统性能与稳定性","指导初级工程师"]}',
+(1, 1, '高级Java后端开发工程师', '负责核心业务系统设计与开发，优化系统性能与稳定性，指导初级工程师',
+ ARRAY['Java','Spring Boot','MySQL','Redis','Docker','Kubernetes']::text[],
  '北京', 30000, 50000, '月', '3-5年', '本科', 1, 1, '2026-04-15 14:00:00', '2026-04-15 14:00:00', 0),
 
-(2, 1, 'Python数据工程师', '/files/job/job_2.pdf', 2,
- '{"skills":["Python","Spark","Kafka","Hadoop","Flink","MySQL"],"requirements":["本科及以上学历","具备3-5年数据工程经验","熟悉实时数仓与数据治理"],"responsibilities":["构建实时数据管道","数据平台开发与维护","数据质量保障"]}',
+(2, 1, 'Python数据工程师', '构建实时数据管道，数据平台开发与维护，保障数据质量',
+ ARRAY['Python','Spark','Kafka','Hadoop','Flink','MySQL']::text[],
  '北京', 35000, 55000, '月', '3-5年', '本科', 1, 1, '2026-04-15 14:30:00', '2026-04-15 14:30:00', 0),
 
-(3, 1, '前端开发工程师', '/files/job/job_3.pdf', 2,
- '{"skills":["React","Vue","TypeScript","Node.js","Git"],"requirements":["本科及以上学历","具备1-3年前端开发经验","具备良好的交互实现能力"],"responsibilities":["前端页面开发与优化","前端架构设计与维护","配合产品团队实现交互需求"]}',
+(3, 1, '前端开发工程师', '前端页面开发与优化，前端架构设计与维护，配合产品实现交互需求',
+ ARRAY['React','Vue','TypeScript','Node.js','Git']::text[],
  '北京', 25000, 40000, '月', '1-3年', '本科', 1, 1, '2026-04-15 15:00:00', '2026-04-15 15:00:00', 0),
 
 -- 智能招聘公司职位
-(4, 2, 'AI算法工程师', '/files/job/job_4.pdf', 2,
- '{"skills":["Python","PyTorch","TensorFlow","LLM","LangChain","Kafka"],"requirements":["硕士及以上学历","具备3-5年算法研发经验","具备LLM应用落地经验"],"responsibilities":["人岗匹配算法研发","知识图谱构建与应用","AI能力集成与优化"]}',
+(4, 2, 'AI算法工程师', '负责人岗匹配算法研发、知识图谱构建与应用、AI能力集成与优化',
+ ARRAY['Python','PyTorch','TensorFlow','LLM','LangChain','Kafka']::text[],
  '北京', 40000, 70000, '月', '3-5年', '硕士', 1, 1, '2026-04-15 15:30:00', '2026-04-15 15:30:00', 0),
 
-(5, 2, 'DevOps工程师', '/files/job/job_5.pdf', 2,
- '{"skills":["Linux","Docker","Kubernetes","Jenkins","GitLab CI","AWS"],"requirements":["本科及以上学历","具备1-3年DevOps经验","熟悉CI/CD与容器化平台"],"responsibilities":["CI/CD流水线建设","容器化平台运维","监控与告警体系搭建"]}',
+(5, 2, 'DevOps工程师', '建设CI/CD流水线，维护容器化平台，搭建监控与告警体系',
+ ARRAY['Linux','Docker','Kubernetes','Jenkins','GitLab CI','AWS']::text[],
  '北京', 25000, 45000, '月', '1-3年', '本科', 1, 1, '2026-04-15 16:00:00', '2026-04-15 16:00:00', 0)
 ON CONFLICT (id) DO NOTHING;
-
--- =============================================
--- 9. 职位技能关联
--- =============================================
-INSERT INTO job_skill (job_id, skill_id, is_required, weight, create_time, update_time)
-SELECT 1, t.id, 1, 1.00, '2026-04-15 14:00:00', '2026-04-15 14:00:00'
-FROM skill_tag t WHERE t.name IN ('Java', 'Spring Boot', 'MySQL', 'Redis', 'Docker', 'Kubernetes')
-ON CONFLICT DO NOTHING;
-
-INSERT INTO job_skill (job_id, skill_id, is_required, weight, create_time, update_time)
-SELECT 2, t.id, 1, 1.00, '2026-04-15 14:30:00', '2026-04-15 14:30:00'
-FROM skill_tag t WHERE t.name IN ('Python', 'Spark', 'Kafka', 'Hadoop', 'Flink', 'MySQL')
-ON CONFLICT DO NOTHING;
-
-INSERT INTO job_skill (job_id, skill_id, is_required, weight, create_time, update_time)
-SELECT 3, t.id, 1, 1.00, '2026-04-15 15:00:00', '2026-04-15 15:00:00'
-FROM skill_tag t WHERE t.name IN ('React', 'Vue', 'TypeScript', 'Node.js', 'Git')
-ON CONFLICT DO NOTHING;
-
-INSERT INTO job_skill (job_id, skill_id, is_required, weight, create_time, update_time)
-SELECT 4, t.id, 1, 1.00, '2026-04-15 15:30:00', '2026-04-15 15:30:00'
-FROM skill_tag t WHERE t.name IN ('Python', 'PyTorch', 'TensorFlow', 'LLM', 'LangChain', 'Kafka')
-ON CONFLICT DO NOTHING;
-
-INSERT INTO job_skill (job_id, skill_id, is_required, weight, create_time, update_time)
-SELECT 5, t.id, 1, 1.00, '2026-04-15 16:00:00', '2026-04-15 16:00:00'
-FROM skill_tag t WHERE t.name IN ('Linux', 'Docker', 'Kubernetes', 'Jenkins', 'GitLab CI', 'AWS')
-ON CONFLICT DO NOTHING;
-
-INSERT INTO job_skill (job_id, skill_id, is_required, weight, create_time, update_time)
-SELECT 100, t.id, 1, 1.00, '2026-04-16 00:00:00', '2026-04-16 00:00:00'
-FROM skill_tag t WHERE t.name IN ('Java', 'Spring Boot', 'MySQL', 'Redis', 'Docker')
-ON CONFLICT DO NOTHING;
 
 -- =============================================
 -- 10. 匹配记录（部分人岗匹配结果）

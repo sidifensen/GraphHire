@@ -13,7 +13,7 @@ import java.util.List;
  *
  * 【字段说明】
  * - 必填字段：title（职位名称）、companyId（通过上下文获取）
- * - 选填字段：department、headcount、location、salaryRange、skills、description、filePath
+ * - 选填字段：department、headcount、location、salaryRange、skills、description
  */
 public class PublishJobCmd {
     /** 职位名称 */
@@ -26,29 +26,23 @@ public class PublishJobCmd {
     private Location location;
     /** 薪资范围 */
     private SalaryRange salaryRange;
-    /** 必填技能列表 */
-    private List<String> requiredSkills;
-    /** 优先技能列表 */
-    private List<String> preferredSkills;
+    /** 岗位技能列表（仅允许 skill_tag.name） */
+    private List<String> skills;
     /** 职位描述 */
     private String description;
-    /** 职位文档存储路径（RustFS） */
-    private String filePath;
-
     public PublishJobCmd() {
     }
 
     public PublishJobCmd(String title, String department, Integer headcount,
                         Location location, SalaryRange salaryRange,
-                        List<String> requiredSkills, List<String> preferredSkills,
+                        List<String> skills,
                         String description) {
         this.title = title;
         this.department = department;
         this.headcount = headcount;
         this.location = location;
         this.salaryRange = salaryRange;
-        this.requiredSkills = requiredSkills;
-        this.preferredSkills = preferredSkills;
+        this.skills = skills;
         this.description = description;
     }
 
@@ -92,20 +86,12 @@ public class PublishJobCmd {
         this.salaryRange = salaryRange;
     }
 
-    public List<String> getRequiredSkills() {
-        return requiredSkills;
+    public List<String> getSkills() {
+        return skills;
     }
 
-    public void setRequiredSkills(List<String> requiredSkills) {
-        this.requiredSkills = requiredSkills;
-    }
-
-    public List<String> getPreferredSkills() {
-        return preferredSkills;
-    }
-
-    public void setPreferredSkills(List<String> preferredSkills) {
-        this.preferredSkills = preferredSkills;
+    public void setSkills(List<String> skills) {
+        this.skills = skills;
     }
 
     public String getDescription() {
@@ -116,11 +102,20 @@ public class PublishJobCmd {
         this.description = description;
     }
 
-    public String getFilePath() {
-        return filePath;
+    // 兼容旧前端字段
+    public List<String> getRequiredSkills() {
+        return skills;
     }
 
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
+    public void setRequiredSkills(List<String> requiredSkills) {
+        this.skills = requiredSkills;
+    }
+
+    public List<String> getPreferredSkills() {
+        return List.of();
+    }
+
+    public void setPreferredSkills(List<String> preferredSkills) {
+        // no-op
     }
 }

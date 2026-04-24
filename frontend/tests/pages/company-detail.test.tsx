@@ -42,6 +42,7 @@ describe('CompanyDetailPage', () => {
   it('loads and renders jobs of current company', async () => {
     render(<CompanyDetailPage />);
     await screen.findByText('真实矩阵云');
+    expect(searchJobs).toHaveBeenCalledWith({ companyId: 1, size: 50 });
     expect(await screen.findByText('后端工程师')).toBeInTheDocument();
     expect(await screen.findByText('前端工程师')).toBeInTheDocument();
   });

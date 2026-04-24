@@ -129,7 +129,7 @@ public class CompanyController {
     public Result<Long> publishJob(@RequestBody PublishJobCmd cmd) {
         Long companyId = currentCompanyId();
         Job job = jobAppService.createJob(companyId, cmd.getTitle(), cmd.getDepartment(), cmd.getHeadcount(),
-                cmd.getLocation(), cmd.getSalaryRange(), cmd.getRequiredSkills(), cmd.getPreferredSkills(),
+                cmd.getLocation(), cmd.getSalaryRange(), cmd.getSkills(),
                 cmd.getDescription());
         return Result.success(job.getId());
     }
@@ -222,15 +222,6 @@ public class CompanyController {
         Job job = jobAppService.getJobById(id);
         ensureJobOwnership(job, companyId);
         jobAppService.deleteJob(id);
-        return Result.success();
-    }
-
-    @PostMapping("/job/{id}/parse")
-    public Result<Void> reparseJob(@PathVariable Long id) {
-        Long companyId = currentCompanyId();
-        Job job = jobAppService.getJobById(id);
-        ensureJobOwnership(job, companyId);
-        jobAppService.triggerJobParse(id);
         return Result.success();
     }
 
@@ -469,7 +460,7 @@ public class CompanyController {
         item.setSalaryMax(job.getSalaryRange() != null ? job.getSalaryRange().getMax() : null);
         item.setSalaryUnit(job.getSalaryRange() != null ? job.getSalaryRange().getUnit() : null);
         item.setStatus(job.getStatus().name());
-        item.setParseStatus(job.getParseStatus() != null ? job.getParseStatus().name() : null);
+        item.setParseStatus(null);
         item.setViewCount(0L);
         item.setApplyCount(applicationRepository.findByJobId(job.getId()).size());
         item.setMatchCount(matchRecordRepository.findByJobId(job.getId()).size());

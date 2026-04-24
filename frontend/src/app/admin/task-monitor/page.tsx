@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, Clock, RefreshCw, RotateCcw, XCircle } from 'lucide-react';
 import { adminApi, type TaskListItem, type TaskSummary } from '@/lib/api/admin';
 import AdminShell from '@/components/admin/AdminShell';
-import AdminTopbar from '@/components/admin/AdminTopbar';
 import AdminDataTable, { type AdminDataTableColumn } from '@/components/admin/AdminDataTable';
 
 const EMPTY_SUMMARY: TaskSummary = {
@@ -143,8 +142,6 @@ export default function AdminTaskMonitorPage() {
 
   return (
     <AdminShell activeItem="task-monitor">
-      <AdminTopbar searchPlaceholder="搜索任务..." />
-
       <div className="mx-auto w-full max-w-7xl space-y-6">
         <section className="flex items-end justify-between">
           <div>

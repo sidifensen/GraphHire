@@ -5,7 +5,6 @@ import { Activity, AlertTriangle, Download, Handshake, Info, Megaphone, Network,
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { adminApi, type AdminDashboardStats } from '@/lib/api/admin';
 import AdminShell from '@/components/admin/AdminShell';
-import AdminTopbar from '@/components/admin/AdminTopbar';
 import AdminStatCard from '@/components/admin/AdminStatCard';
 
 const EMPTY_STATS: AdminDashboardStats = {
@@ -99,8 +98,6 @@ export default function AdminDashboardPage() {
 
   return (
     <AdminShell activeItem="dashboard">
-      <AdminTopbar />
-
       <div className="mx-auto w-full max-w-7xl space-y-6">
         <div className="flex items-center justify-between rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-blue-800">
           <div className="flex items-center gap-3">

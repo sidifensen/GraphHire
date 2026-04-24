@@ -69,10 +69,6 @@ export const companyApi = {
     await apiClient.put(`/company/job/${jobId}/status`, { publish });
   },
 
-  parseJob: async (jobId: number): Promise<void> => {
-    await apiClient.post(`/company/job/${jobId}/parse`);
-  },
-
   getJobGraph: async (jobId: number): Promise<JobGraph> => {
     const response = await apiClient.get<JobGraph>(`/company/job/${jobId}/graph`);
     return response.data;
