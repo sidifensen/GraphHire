@@ -1,12 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import CompaniesPage from '@/app/(user)/companies/page';
 
 const fetchPublicCompanies = vi.fn();
+const push = vi.fn();
 
 vi.mock('next/navigation', () => ({
   usePathname: () => '/companies',
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn(), back: vi.fn(), forward: vi.fn() }),
+  useRouter: () => ({ push, replace: vi.fn(), refresh: vi.fn(), back: vi.fn(), forward: vi.fn() }),
 }));
 
 vi.mock('@/lib/api/homeApi', () => ({
@@ -45,5 +47,13 @@ describe('CompaniesPage', () => {
     await waitFor(() => expect(fetchPublicCompanies).toHaveBeenCalledTimes(1));
     screen.getByText('搜索').click();
     await waitFor(() => expect(fetchPublicCompanies).toHaveBeenCalledTimes(2));
+  });
+
+  it('navigates to company detail when clicking a company card', async () => {
+    const user = userEvent.setup();
+    render(<CompaniesPage />);
+    await screen.findByText('真实矩阵云');
+    await user.click(screen.getByRole('article', { name: /真实矩阵云/i }));
+    expect(push).toHaveBeenCalledWith('/companies/1');
   });
 });
