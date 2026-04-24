@@ -16,7 +16,7 @@ interface User {
   type: '求职者' | '企业HR' | '管理员';
   joinDate: string;
   lastLoginAt: string;
-  status: '启用' | '禁用' | '待激活';
+  status: '正常' | '禁用';
 }
 
 const DEFAULT_AVATAR =
@@ -25,7 +25,7 @@ const DEFAULT_AVATAR =
 type UserItem = Awaited<ReturnType<typeof adminApi.getUserList>>['list'][number];
 
 function mapUser(user: UserItem): User {
-  const status = user.status === 'DISABLED' ? '禁用' : user.status === 'LOCKED' ? '待激活' : '启用';
+  const status = user.status === 'DISABLED' || user.status === 'LOCKED' ? '禁用' : '正常';
   const type = user.type === 'COMPANY' ? '企业HR' : user.type === 'ADMIN' ? '管理员' : '求职者';
   return {
     id: user.id,
@@ -48,9 +48,8 @@ function mapTypeLabelToApi(value: string): string | undefined {
 }
 
 function mapStatusLabelToApi(value: string): string | undefined {
-  if (value === '启用') return 'ACTIVE';
+  if (value === '正常') return 'ACTIVE';
   if (value === '禁用') return 'DISABLED';
-  if (value === '待激活') return 'LOCKED';
   return undefined;
 }
 
@@ -91,7 +90,7 @@ export default function AdminUsersPage() {
   }, [page, pageSize, total]);
 
   const handleToggleStatus = async (user: User) => {
-    if (user.status === '启用') {
+    if (user.status === '正常') {
       await adminApi.updateUserStatus(user.id, 'DISABLED');
     } else {
       await adminApi.updateUserStatus(user.id, 'ACTIVE');
@@ -144,9 +143,8 @@ export default function AdminUsersPage() {
                 className="w-32 appearance-none rounded-lg border-none bg-surface py-2 pl-3 pr-8 text-sm font-medium text-on-surface focus:ring-1 focus:ring-primary dark:bg-slate-800"
               >
                 <option>全部状态</option>
-                <option>启用</option>
+                <option>正常</option>
                 <option>禁用</option>
-                <option>待激活</option>
               </select>
               <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-outline" />
             </div>
@@ -237,7 +235,7 @@ export default function AdminUsersPage() {
                   <span
                     className={cn(
                       'h-1.5 w-1.5 shrink-0 rounded-full',
-                      user.status === '启用'
+                      user.status === '正常'
                         ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]'
                         : user.status === '禁用'
                           ? 'bg-slate-400'
@@ -247,7 +245,7 @@ export default function AdminUsersPage() {
                   <span
                     className={cn(
                       'text-sm font-medium',
-                      user.status === '启用' ? 'text-emerald-700' : user.status === '禁用' ? 'text-outline' : 'text-amber-700'
+                      user.status === '正常' ? 'text-emerald-700' : 'text-outline'
                     )}
                   >
                     {user.status}
@@ -260,22 +258,17 @@ export default function AdminUsersPage() {
               className: 'text-right',
               accessor: (user) => (
                 <div className="flex justify-end gap-4">
-                  <button className="text-xs font-bold uppercase text-slate-700 transition-colors hover:text-slate-900" onClick={() => void handleOpenDetail(user.id)}>
+                  <button className="whitespace-nowrap text-xs font-bold uppercase text-slate-700 transition-colors hover:text-slate-900" onClick={() => void handleOpenDetail(user.id)}>
                     详情
                   </button>
-                  {user.status === '启用' ? (
+                  {user.status === '正常' ? (
                     <button className="text-xs font-bold uppercase text-primary transition-colors hover:text-blue-700" onClick={() => void handleToggleStatus(user)}>
                       禁用
                     </button>
-                  ) : user.status === '禁用' ? (
-                    <>
-                      <button className="text-xs font-bold uppercase text-primary transition-colors hover:text-blue-700" onClick={() => void handleToggleStatus(user)}>
-                        启用
-                      </button>
-                      <button className="text-xs font-bold uppercase text-rose-600 transition-colors hover:text-rose-700">解锁</button>
-                    </>
                   ) : (
-                    <button className="text-xs font-bold uppercase text-primary transition-colors hover:text-blue-700">重新发送邮件</button>
+                    <button className="whitespace-nowrap text-xs font-bold uppercase text-primary transition-colors hover:text-blue-700" onClick={() => void handleToggleStatus(user)}>
+                      启用
+                    </button>
                   )}
                   <button className="text-slate-400 hover:text-on-surface">
                     <MoreHorizontal size={16} />
