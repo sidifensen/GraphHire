@@ -1,5 +1,8 @@
 package com.graphhire.job.domain.vo;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * 薪资范围值对象
  *
@@ -25,7 +28,10 @@ public final class SalaryRange {
     }
 
     /** 工厂方法：创建薪资范围 */
-    public static SalaryRange of(Integer min, Integer max, String unit) {
+    @JsonCreator
+    public static SalaryRange of(@JsonProperty("min") Integer min,
+                                 @JsonProperty("max") Integer max,
+                                 @JsonProperty("unit") String unit) {
         return new SalaryRange(min, max, unit);
     }
 

@@ -55,8 +55,8 @@ public class JobPO {
     /** 职位状态：0=下架 1=上架 */
     @TableField("status")
     private Integer status;
-    /** 职位描述（数据库中不存在） */
-    @TableField(exist = false)
+    /** 职位描述 */
+    @TableField("description")
     private String description;
     /** 文件路径 */
     @TableField("file_path")

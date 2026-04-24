@@ -62,7 +62,7 @@ export default function JobsPage() {
         title="职位管理"
         description="管理您的招聘需求与 AI 匹配进度"
         action={
-          <a className="bg-gradient-to-br from-primary to-primary-container text-white px-6 py-3 rounded-lg font-medium shadow-lg shadow-primary-container/20" href="/enterprise/jobs">
+          <a className="bg-gradient-to-br from-primary to-primary-container text-white px-6 py-3 rounded-lg font-medium shadow-lg shadow-primary-container/20" href="/enterprise/jobs/new">
             发布新职位
           </a>
         }

@@ -41,6 +41,8 @@ describe('JobsPage', () => {
     expect(screen.getByText('AI 研发中心')).toBeInTheDocument();
     expect(screen.getByText('40k-60k')).toBeInTheDocument();
     expect(screen.getAllByText('已发布').length).toBeGreaterThan(0);
+    const createLink = screen.getByRole('link', { name: '发布新职位' });
+    expect(createLink).toHaveAttribute('href', '/enterprise/jobs/new');
   });
 
   test('支持搜索与重新解析操作', async () => {

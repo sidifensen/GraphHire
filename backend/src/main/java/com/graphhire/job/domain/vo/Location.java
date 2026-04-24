@@ -1,5 +1,8 @@
 package com.graphhire.job.domain.vo;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * 工作地点值对象
  *
@@ -21,7 +24,10 @@ public final class Location {
     }
 
     /** 工厂方法：创建完整地点（包含详细地址） */
-    public static Location of(String city, String district, String detailAddress) {
+    @JsonCreator
+    public static Location of(@JsonProperty("city") String city,
+                              @JsonProperty("district") String district,
+                              @JsonProperty("detailAddress") String detailAddress) {
         return new Location(city, district, detailAddress);
     }
 

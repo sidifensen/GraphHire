@@ -78,3 +78,18 @@ export interface EnterpriseCreateStaffRequest {
   password: string;
   post: 'HR' | 'RECRUITER';
 }
+
+export interface EnterpriseCreateJobRequest {
+  title: string;
+  department?: string;
+  headcount?: number;
+  location: {
+    city: string;
+  };
+  salaryRange: {
+    min: number;
+    max: number;
+    unit: string;
+  };
+  description: string;
+}

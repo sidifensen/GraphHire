@@ -248,6 +248,7 @@ CREATE TABLE job
     id           BIGSERIAL PRIMARY KEY,
     company_id   BIGINT       NOT NULL,
     title        VARCHAR(100) NOT NULL,
+    description  VARCHAR(2000),
     file_path    VARCHAR(500),
     parse_status SMALLINT     NOT NULL DEFAULT 0,
     parse_result JSONB,
@@ -273,6 +274,7 @@ COMMENT ON TABLE job IS '职位表：存储企业发布的职位信息';
 COMMENT ON COLUMN job.id IS '主键ID';
 COMMENT ON COLUMN job.company_id IS '所属企业ID';
 COMMENT ON COLUMN job.title IS '职位名称';
+COMMENT ON COLUMN job.description IS '岗位描述（企业录入）';
 COMMENT ON COLUMN job.file_path IS '原始职位描述文档路径（RustFS）';
 COMMENT ON COLUMN job.parse_status IS '解析状态：0-待解析 1-解析中 2-成功 3-失败';
 COMMENT ON COLUMN job.parse_result IS 'AI解析结果JSON（包含技能要求、岗位职责等）';
