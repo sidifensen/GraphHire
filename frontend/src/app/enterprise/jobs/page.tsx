@@ -139,6 +139,7 @@ export default function JobsPage() {
                   </div>
                 </div>
                 <div className="flex md:flex-col justify-end gap-2 border-t md:border-t-0 md:border-l border-surface-container-high pt-4 md:pt-0 md:pl-6">
+                  <a className="px-4 py-2 bg-surface-container text-on-surface text-sm font-medium rounded-lg text-center" href={`/enterprise/jobs/${job.id}`}>详情</a>
                   <a className="px-4 py-2 bg-primary-fixed text-on-primary-fixed text-sm font-medium rounded-lg text-center" href={`/enterprise/recommendations?jobId=${job.id}`}>匹配候选人</a>
                   <div className="flex justify-end gap-2 pt-2">
                     {job.status === 'PUBLISHED' ? (

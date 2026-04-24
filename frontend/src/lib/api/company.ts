@@ -3,6 +3,7 @@ import type {
   EnterpriseCreateStaffRequest,
   EnterpriseCreateJobRequest,
   EnterpriseDashboard,
+  EnterpriseJobDetail,
   EnterpriseJobListItem,
   EnterpriseRecommendation,
   EnterpriseStaffListItem,
@@ -49,6 +50,11 @@ export const companyApi = {
 
   getJobList: async (params?: { status?: string; keyword?: string }): Promise<EnterpriseJobListItem[]> => {
     const response = await apiClient.get<EnterpriseJobListItem[]>('/company/job/list', { params });
+    return response.data;
+  },
+
+  getJobDetail: async (jobId: number): Promise<EnterpriseJobDetail> => {
+    const response = await apiClient.get<EnterpriseJobDetail>(`/company/job/${jobId}`);
     return response.data;
   },
 

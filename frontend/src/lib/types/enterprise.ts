@@ -31,6 +31,33 @@ export interface EnterpriseJobListItem {
   publishedAt?: string | null;
 }
 
+export interface EnterpriseJobLocation {
+  city?: string | null;
+  district?: string | null;
+  address?: string | null;
+}
+
+export interface EnterpriseSalaryRange {
+  min?: number | null;
+  max?: number | null;
+  unit?: string | null;
+}
+
+export interface EnterpriseJobDetail {
+  id: number;
+  companyId?: number;
+  title: string;
+  department?: string | null;
+  headcount?: number | null;
+  location?: EnterpriseJobLocation | null;
+  salaryRange?: EnterpriseSalaryRange | null;
+  skills?: string[] | null;
+  requiredSkills?: string[] | null;
+  status: 'DRAFT' | 'PUBLISHED' | 'CLOSED' | string;
+  description?: string | null;
+  publishedAt?: string | null;
+}
+
 export interface EnterpriseRecommendation {
   matchId?: number;
   resumeId: number;

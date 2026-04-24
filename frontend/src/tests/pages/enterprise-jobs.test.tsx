@@ -41,6 +41,8 @@ describe('JobsPage', () => {
     expect(screen.getAllByText('已发布').length).toBeGreaterThan(0);
     const createLink = screen.getByRole('link', { name: '发布新职位' });
     expect(createLink).toHaveAttribute('href', '/enterprise/jobs/new');
+    const detailLink = screen.getByRole('link', { name: '详情' });
+    expect(detailLink).toHaveAttribute('href', '/enterprise/jobs/1');
   });
 
   test('支持搜索操作', async () => {
