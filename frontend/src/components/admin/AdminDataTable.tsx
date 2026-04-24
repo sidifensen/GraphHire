@@ -1,96 +1,76 @@
-'use client';
+﻿'use client';
 
-import type { ReactNode } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import type { ReactNode } from 'react';
 
-export interface AdminDataTableColumn<T> {
-  key: string;
+interface Column<T> {
   header: string;
+  accessor: keyof T | ((item: T) => ReactNode);
   className?: string;
-  render: (row: T) => ReactNode;
 }
 
 interface AdminDataTableProps<T> {
-  columns: AdminDataTableColumn<T>[];
-  rows: T[];
-  emptyText?: string;
+  columns: Column<T>[];
+  data: T[];
   pagination?: {
     currentPage: number;
     totalPages: number;
     totalItems: number;
-    onPrev?: () => void;
-    onNext?: () => void;
   };
-  rowKey: (row: T) => string | number;
 }
 
-export default function AdminDataTable<T>({
-  columns,
-  rows,
-  rowKey,
-  emptyText = '暂无数据',
-  pagination,
-}: AdminDataTableProps<T>) {
+export default function AdminDataTable<T>({ columns, data, pagination }: AdminDataTableProps<T>) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <div className="flex flex-col overflow-hidden rounded-xl border border-outline-variant/50 bg-white shadow-sm dark:border-white/10 dark:bg-black/40 dark:backdrop-blur-xl">
       <div className="overflow-x-auto">
-        <table className="min-w-full text-left">
-          <thead className="bg-slate-50">
-            <tr>
-              {columns.map((column) => (
-                <th
-                  key={column.key}
-                  className={`px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-slate-500 ${column.className ?? ''}`}
-                >
-                  {column.header}
+        <table className="w-full text-left">
+          <thead>
+            <tr className="border-b border-outline-variant/50 bg-slate-50/50 dark:border-white/10 dark:bg-white/5">
+              {columns.map((col, idx) => (
+                <th key={idx} className={cn('px-6 py-4 text-[11px] font-bold uppercase tracking-wider text-outline', col.className)}>
+                  {col.header}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
-            {rows.length === 0 ? (
-              <tr>
-                <td colSpan={columns.length} className="px-6 py-12 text-center text-sm text-slate-500">
-                  {emptyText}
-                </td>
+          <tbody className="divide-y divide-outline-variant/30">
+            {data.map((item, rowIdx) => (
+              <tr key={rowIdx} className="transition-colors hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
+                {columns.map((col, colIdx) => (
+                  <td key={colIdx} className={cn('px-6 py-4', col.className)}>
+                    {typeof col.accessor === 'function' ? col.accessor(item) : (item[col.accessor] as ReactNode)}
+                  </td>
+                ))}
               </tr>
-            ) : (
-              rows.map((row) => (
-                <tr key={rowKey(row)} className="group transition hover:bg-slate-50">
-                  {columns.map((column) => (
-                    <td key={column.key} className={`px-6 py-4 align-middle ${column.className ?? ''}`}>
-                      {column.render(row)}
-                    </td>
-                  ))}
-                </tr>
-              ))
-            )}
+            ))}
           </tbody>
         </table>
       </div>
 
       {pagination ? (
-        <div className="flex items-center justify-between border-t border-slate-100 bg-white px-6 py-4">
-          <span className="text-xs text-slate-500">
-            显示 {rows.length === 0 ? 0 : 1} 到 {rows.length} 条，共 {pagination.totalItems.toLocaleString()} 条记录
+        <div className="flex items-center justify-between border-t border-outline-variant/50 bg-white px-6 py-4 dark:border-white/10 dark:bg-transparent">
+          <span className="text-xs font-medium text-outline">
+            显示 1 到 {data.length} 条，共 {pagination.totalItems.toLocaleString()} 条记录
           </span>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={pagination.onPrev}
-              disabled={pagination.currentPage <= 1}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 disabled:opacity-40"
-            >
-              <ChevronLeft className="h-4 w-4" />
+          <div className="flex items-center space-x-1">
+            <button className="flex h-8 w-8 items-center justify-center rounded-lg text-outline transition-colors hover:bg-slate-100 disabled:opacity-40 dark:hover:bg-slate-800">
+              <ChevronLeft size={16} />
             </button>
-            <span className="flex h-8 min-w-8 items-center justify-center rounded-lg bg-blue-600 px-2 text-xs font-semibold text-white">
+            <button className="font-display flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-xs font-bold text-white">
               {pagination.currentPage}
-            </span>
-            <button
-              onClick={pagination.onNext}
-              disabled={pagination.currentPage >= pagination.totalPages}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 disabled:opacity-40"
-            >
-              <ChevronRight className="h-4 w-4" />
+            </button>
+            {[...Array(2)].map((_, i) => (
+              <button
+                key={i}
+                className="font-display flex h-8 w-8 items-center justify-center rounded-lg text-xs font-medium text-on-surface transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                {pagination.currentPage + i + 1}
+              </button>
+            ))}
+            <span className="flex h-8 w-8 items-center justify-center text-xs text-outline">...</span>
+            <button className="flex h-8 w-8 items-center justify-center rounded-lg text-outline transition-colors hover:bg-slate-100 dark:hover:bg-slate-800">
+              <ChevronRight size={16} />
             </button>
           </div>
         </div>

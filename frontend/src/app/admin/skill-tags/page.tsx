@@ -1,184 +1,141 @@
-'use client';
+﻿'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowUpRight, Brain, Code, Database, Filter, Plus } from 'lucide-react';
-import { adminApi, type SkillTagItem } from '@/lib/api/admin';
+import { ChevronDown, Plus, Filter, Code, Database, Brain, ArrowUpRight } from 'lucide-react';
 import AdminShell from '@/components/admin/AdminShell';
-import AdminDataTable, { type AdminDataTableColumn } from '@/components/admin/AdminDataTable';
+import AdminDataTable from '@/components/admin/AdminDataTable';
+import { cn } from '@/lib/utils';
 
-const pickIcon = (category?: string | null) => {
-  const normalized = (category ?? '').trim();
-  if (normalized.includes('编程')) return Code;
-  if (normalized.includes('工具')) return Database;
-  return Brain;
-};
+interface Tag {
+  id: string;
+  name: string;
+  category: '编程语言' | '工具/框架' | '软技能' | '证书/资质';
+  synonyms: string[];
+  refCount: string;
+  icon: typeof Code;
+}
+
+const mockTags: Tag[] = [
+  { id: '1', name: 'Python', category: '编程语言', synonyms: ['py', 'python3', 'python2'], refCount: '845,201', icon: Code },
+  { id: '2', name: 'MySQL', category: '工具/框架', synonyms: ['mysql db', 'my-sql'], refCount: '621,093', icon: Database },
+  { id: '3', name: '团队协作', category: '软技能', synonyms: ['teamwork', '协作能力', '团队合作'], refCount: '450,112', icon: Brain },
+  { id: '4', name: 'React', category: '工具/框架', synonyms: ['reactjs', 'react.js'], refCount: '389,450', icon: Code },
+];
 
 export default function AdminSkillTagsPage() {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [list, setList] = useState<SkillTagItem[]>([]);
-  const [total, setTotal] = useState(0);
-  const [searchKeyword, setSearchKeyword] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [page, setPage] = useState(1);
-  const pageSize = 10;
-
-  const fetchData = useCallback(() => {
-    setLoading(true);
-    setError(null);
-    adminApi
-      .getSkillList({
-        keyword: searchKeyword || undefined,
-        category: selectedCategory || undefined,
-        page,
-        pageSize,
-      })
-      .then((res) => {
-        setList(res.list);
-        setTotal(res.total);
-      })
-      .catch(() => {
-        setError('加载失败，请重试');
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [searchKeyword, selectedCategory, page, pageSize]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  const categories = useMemo(
-    () => Array.from(new Set(list.map((item) => (item.category ?? '').trim()).filter((item) => item.length > 0))),
-    [list]
-  );
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
-
-  const columns: AdminDataTableColumn<SkillTagItem>[] = [
-    {
-      key: 'name',
-      header: '标准名称',
-      render: (item) => {
-        const Icon = pickIcon(item.category);
-        return (
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-blue-50 p-2 text-blue-700">
-              <Icon className="h-4 w-4" />
-            </div>
-            <span className="text-sm font-semibold text-slate-900">{item.name}</span>
-          </div>
-        );
-      },
-    },
-    {
-      key: 'category',
-      header: '分类',
-      render: (item) => (
-        <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
-          {(item.category ?? '').trim() || '未分类'}
-        </span>
-      ),
-    },
-    {
-      key: 'synonyms',
-      header: '同义词',
-      render: (item) => {
-        const synonyms = Array.isArray(item.synonyms) ? item.synonyms : [];
-        return (
-          <div className="flex flex-wrap gap-1">
-            {synonyms.length === 0 ? <span className="text-xs text-slate-400">无</span> : null}
-            {synonyms.slice(0, 3).map((word) => (
-            <span key={word} className="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
-              {word}
-            </span>
-            ))}
-          </div>
-        );
-      },
-    },
-    {
-      key: 'count',
-      header: '引用次数',
-      className: 'text-right',
-      render: (item) => <span className="text-sm font-semibold text-slate-700">{item.jobCount.toLocaleString()}</span>,
-    },
-  ];
-
   return (
-    <AdminShell activeItem="skill-tags">
-      <div className="mx-auto w-full max-w-7xl space-y-6">
-        <section className="flex items-end justify-between">
+    <AdminShell>
+      <div className="space-y-6 p-8">
+        <div className="flex items-end justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">标签管理</h1>
-            <p className="mt-1 text-sm text-slate-500">维护技能、工具等实体图谱节点，确保解析准确率。</p>
+            <h2 className="font-display text-2xl font-bold text-on-surface">标签管理</h2>
+            <p className="mt-1 text-sm text-outline">维护技能、工具等实体图谱节点，确保解析准确率。</p>
           </div>
-          <button className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white">
-            <Plus className="h-4 w-4" />
+          <button className="flex items-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-primary/20 transition-all hover:opacity-90 active:scale-[0.98]">
+            <Plus size={18} />
             新建标签
           </button>
-        </section>
+        </div>
 
-        <section className="grid grid-cols-1 gap-4 lg:grid-cols-4">
-          <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-xs uppercase tracking-wide text-slate-500">总标签数</p>
-            <div className="mt-2 flex items-center gap-3">
-              <span className="text-3xl font-bold text-blue-700">{total.toLocaleString()}</span>
-              <span className="inline-flex items-center rounded bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">
-                <ArrowUpRight className="mr-1 h-3 w-3" />
-                +124 本周
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
+          <div className="flex flex-col justify-center rounded-xl border border-outline-variant/30 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-black/40 dark:backdrop-blur-xl">
+            <span className="mb-2 text-[10px] font-bold uppercase tracking-wider text-outline">总标签数</span>
+            <div className="flex items-end gap-3">
+              <span className="font-display text-3xl font-bold text-primary">12,458</span>
+              <span className="mb-1 flex items-center rounded bg-emerald-50 px-2 py-0.5 text-xs text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400">
+                <ArrowUpRight size={12} className="mr-1" /> +124 本周
               </span>
             </div>
-          </article>
+          </div>
 
-          <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-3">
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
-              <input
-                value={searchKeyword}
-                onChange={(e) => {
-                  setSearchKeyword(e.target.value);
-                  setPage(1);
-                }}
-                placeholder="搜索标签..."
-                className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 outline-none focus:border-blue-300 md:col-span-2"
-              />
-              <select
-                value={selectedCategory}
-                onChange={(e) => {
-                  setSelectedCategory(e.target.value);
-                  setPage(1);
-                }}
-                className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700"
-              >
-                <option value="">全部分类</option>
-                {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
-              <button className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700">
-                <Filter className="h-4 w-4" />
+          <div className="flex items-center gap-6 rounded-xl border border-outline-variant/30 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-black/40 dark:backdrop-blur-xl lg:col-span-3">
+            <div className="grid flex-1 grid-cols-3 gap-4">
+              {['分类', '状态', '排序'].map((label) => (
+                <div key={label}>
+                  <label className="mb-1.5 block text-[10px] font-bold uppercase text-outline">{label}</label>
+                  <div className="relative">
+                    <select className="w-full appearance-none rounded-lg border border-outline-variant/30 bg-slate-50 px-3 py-2 text-sm font-medium text-on-surface focus:border-primary focus:outline-none dark:border-slate-700 dark:bg-slate-800">
+                      <option>全部{label}</option>
+                    </select>
+                    <ChevronDown size={14} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-outline" />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="self-end pb-0.5">
+              <button className="flex items-center gap-2 rounded-lg border border-outline-variant/30 bg-slate-100 px-4 py-2 text-xs font-bold text-on-surface transition-all hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700">
+                <Filter size={14} />
                 筛选
               </button>
             </div>
-          </article>
-        </section>
-
-        {error ? <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div> : null}
+          </div>
+        </div>
 
         <AdminDataTable
-          columns={columns}
-          rows={list}
-          rowKey={(row) => row.id}
-          emptyText={loading ? '加载中...' : '暂无数据'}
-          pagination={{
-            currentPage: page,
-            totalPages,
-            totalItems: total,
-            onPrev: () => setPage((p) => Math.max(1, p - 1)),
-            onNext: () => setPage((p) => Math.min(totalPages, p + 1)),
-          }}
+          data={mockTags}
+          pagination={{ currentPage: 1, totalPages: 1246, totalItems: 12458 }}
+          columns={[
+            {
+              header: '标准名称',
+              accessor: (tag) => (
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10 text-primary">
+                    <tag.icon size={16} />
+                  </div>
+                  <span className="text-sm font-bold text-on-surface">{tag.name}</span>
+                </div>
+              ),
+            },
+            {
+              header: '分类',
+              accessor: (tag) => (
+                <span
+                  className={cn(
+                    'truncate rounded-full border px-2.5 py-1 text-[10px] font-bold',
+                    tag.category === '编程语言'
+                      ? 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/30 dark:bg-blue-900/20 dark:text-blue-400'
+                      : tag.category === '工具/框架'
+                        ? 'border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-900/30 dark:bg-purple-900/20 dark:text-purple-400'
+                        : tag.category === '软技能'
+                          ? 'border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-900/30 dark:bg-orange-900/20 dark:text-orange-400'
+                          : 'border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-400'
+                  )}
+                >
+                  {tag.category}
+                </span>
+              ),
+            },
+            {
+              header: '同义词 (Count)',
+              accessor: (tag) => (
+                <div className="flex max-w-md flex-wrap items-center gap-2">
+                  {tag.synonyms.map((synonym) => (
+                    <span
+                      key={synonym}
+                      className="rounded border border-outline-variant/20 bg-slate-50 px-2 py-0.5 text-[10px] text-outline dark:border-slate-700 dark:bg-slate-800"
+                    >
+                      {synonym}
+                    </span>
+                  ))}
+                  <span className="rounded-full bg-blue-50 px-1.5 py-0.5 text-[10px] font-bold text-primary dark:bg-blue-900/20">+5</span>
+                </div>
+              ),
+            },
+            { header: '引用次数', accessor: 'refCount', className: 'font-display text-right text-sm text-outline' },
+            {
+              header: '操作',
+              className: 'text-center',
+              accessor: () => (
+                <div className="group-hover:opacity-100 flex justify-center gap-2 opacity-0 transition-opacity">
+                  <button className="rounded-lg p-2 text-slate-400 transition-all hover:bg-blue-50 hover:text-primary" title="编辑">
+                    <span className="material-symbols-outlined text-[20px]">edit</span>
+                  </button>
+                  <button className="rounded-lg p-2 text-slate-400 transition-all hover:bg-blue-50 hover:text-primary" title="管理关系">
+                    <span className="material-symbols-outlined text-[20px]">join_inner</span>
+                  </button>
+                </div>
+              ),
+            },
+          ]}
         />
       </div>
     </AdminShell>

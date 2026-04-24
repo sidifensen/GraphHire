@@ -1,72 +1,134 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
-import { motion, useReducedMotion } from 'framer-motion';
-
-interface AdminSidebarProps {
-  activeItem?: 'dashboard' | 'enterprise-review' | 'users' | 'skill-tags' | 'task-monitor' | 'settings';
-}
+import { usePathname } from 'next/navigation';
+import { LayoutDashboard, ShieldCheck, Users, Tags, Activity, Network } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 const navItems = [
-  { id: 'dashboard', label: '工作台', icon: 'dashboard' },
-  { id: 'enterprise-review', label: '企业审核', icon: 'fact_check' },
-  { id: 'users', label: '用户管理', icon: 'group' },
-  { id: 'skill-tags', label: '标签治理', icon: 'label' },
-  { id: 'task-monitor', label: '任务监控', icon: 'monitoring' },
-  { id: 'settings', label: '系统设置', icon: 'settings' },
-] as const;
+  { icon: LayoutDashboard, label: '仪表盘', path: '/admin/dashboard' },
+  { icon: ShieldCheck, label: '企业审核', path: '/admin/enterprise-review' },
+  { icon: Users, label: '用户管理', path: '/admin/users' },
+  { icon: Tags, label: '标签管理', path: '/admin/skill-tags' },
+  { icon: Activity, label: '任务监控', path: '/admin/task-monitor' },
+];
 
-export default function AdminSidebar({ activeItem = 'dashboard' }: AdminSidebarProps) {
-  const shouldReduceMotion = useReducedMotion();
+interface AdminSidebarProps {
+  isCollapsed: boolean;
+}
+
+export default function AdminSidebar({ isCollapsed }: AdminSidebarProps) {
+  const pathname = usePathname();
 
   return (
-    <aside className="fixed left-0 top-0 bottom-0 z-40 flex flex-col h-screen w-64 shadow-2xl font-['Manrope'] text-sm antialiased bg-white border-r border-slate-200">
-      {/* Header */}
-      <div className="h-14 flex items-center px-5 gap-3 bg-white border-b border-slate-100">
-        <div className="w-7 h-7 rounded bg-gradient-to-br from-primary to-primary-container flex items-center justify-center">
-          <span className="material-symbols-outlined text-white text-base icon-fill">hub</span>
-        </div>
-        <div className="leading-tight">
-          <h1 className="text-lg font-bold tracking-tight text-slate-900">GraphHire</h1>
-          <p className="text-[11px] mt-0.5">图谱智聘管理端</p>
-        </div>
-      </div>
-      {/* Navigation */}
-      <nav className="flex-1 py-6 space-y-1 px-2">
-        {navItems.map((item) => {
-          const isActive = activeItem === item.id;
-          return (
+    <motion.aside
+      initial={false}
+      animate={{ width: isCollapsed ? 80 : 240 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+      className="fixed left-0 top-0 z-50 flex h-full flex-col overflow-hidden border-r border-outline-variant bg-white py-6 transition-colors duration-300 dark:border-white/10 dark:bg-[#03060d]"
+    >
+      <div className={cn('mb-8 flex items-center justify-between px-6 transition-all duration-300', isCollapsed && 'justify-center px-4')}>
+        <AnimatePresence mode="wait">
+          {!isCollapsed ? (
             <motion.div
-              key={item.id}
-              whileHover={shouldReduceMotion ? undefined : { x: 3 }}
-              whileTap={shouldReduceMotion ? undefined : { scale: 0.98 }}
-              transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.16, ease: 'easeOut' }}
+              key="expanded"
+              initial={false}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              className="flex items-center gap-3 overflow-hidden whitespace-nowrap"
             >
-              <Link
-                className={
-                  isActive
-                    ? 'relative bg-blue-50 text-blue-600 px-4 py-3 flex items-center gap-3 active:opacity-80 transition-all duration-200'
-                    : 'relative text-slate-600 hover:text-slate-900 hover:bg-slate-100 px-4 py-3 flex items-center gap-3 transition-colors transition-all duration-200 active:opacity-80'
-                }
-                href={`/admin/${item.id === 'dashboard' ? 'dashboard' : item.id}`}
-              >
-                {isActive && (
-                  <motion.span
-                    data-testid="admin-sidebar-indicator"
-                    layoutId="admin-sidebar-indicator"
-                    className="absolute right-0 top-0 bottom-0 w-1 bg-blue-600 rounded-l"
-                    transition={shouldReduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 500, damping: 40 }}
-                  />
-                )}
-                <span className={`material-symbols-outlined ${isActive ? 'icon-fill' : ''}`}>
-                  {item.icon}
-                </span>
-                <span className="font-medium tracking-wide">{item.label}</span>
-              </Link>
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-primary text-white">
+                <Network size={20} />
+              </div>
+              <h1 className="font-display text-xl font-bold text-primary">GraphHire</h1>
             </motion.div>
+          ) : (
+            <motion.div
+              key="collapsed"
+              initial={false}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary text-white"
+            >
+              <Network size={24} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <nav className="flex-1 space-y-1 px-3">
+        {navItems.map((item) => {
+          const isActive = pathname === item.path;
+          return (
+            <Link key={item.path} href={item.path} className="group relative block" title={isCollapsed ? item.label : ''}>
+              <div
+                className={cn(
+                  'flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-300 ease-in-out',
+                  isActive ? 'font-bold text-primary' : 'select-none text-slate-600 hover:text-on-surface',
+                  isCollapsed && 'h-12 justify-center px-0'
+                )}
+              >
+                {isActive ? (
+                  <motion.div
+                    layoutId="admin-active-nav"
+                    className="absolute inset-0 -z-10 rounded-lg bg-blue-50/80 dark:bg-[#0b1630]"
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                  />
+                ) : null}
+
+                {isActive ? (
+                  <motion.div
+                    layoutId="admin-active-border"
+                    className="absolute bottom-2 left-0 top-2 w-1 rounded-full bg-primary"
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                  />
+                ) : null}
+
+                <motion.div
+                  initial={false}
+                  animate={{
+                    scale: isActive ? 1.1 : 1,
+                    color: isActive ? 'var(--color-primary)' : 'currentColor',
+                  }}
+                  transition={{ duration: 0.2 }}
+                  className="shrink-0"
+                >
+                  <item.icon size={20} />
+                </motion.div>
+
+                <AnimatePresence>
+                  {!isCollapsed ? (
+                    <motion.span
+                      initial={false}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -5 }}
+                      className="relative z-10 overflow-hidden whitespace-nowrap"
+                    >
+                      {item.label}
+                    </motion.span>
+                  ) : null}
+                </AnimatePresence>
+
+                {!isActive ? <div className="absolute inset-0 -z-20 rounded-lg bg-slate-50 opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:bg-slate-800" /> : null}
+              </div>
+            </Link>
           );
         })}
       </nav>
-    </aside>
+
+      <div className="mt-auto px-4">
+        <div className={cn('rounded-xl border border-outline-variant/30 bg-surface p-4 text-center transition-all', isCollapsed && 'border-none bg-transparent p-2')}>
+          {!isCollapsed ? (
+            <>
+              <p className="mb-2 text-xs text-outline">系统版本 V2.4.0</p>
+              <p className="text-[10px] text-outline/60">© 2024 GraphHire</p>
+            </>
+          ) : (
+            <div className="text-[10px] font-bold text-outline/60">V 2.4</div>
+          )}
+        </div>
+      </div>
+    </motion.aside>
   );
 }

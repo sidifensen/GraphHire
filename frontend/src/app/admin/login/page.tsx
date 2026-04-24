@@ -1,131 +1,118 @@
-'use client';
+﻿'use client';
 
-import { useState } from 'react';
 import { Network } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { adminApi } from '@/lib/api/admin';
-import { adminAuthStore } from '@/lib/stores/auth-store';
+import { motion } from 'framer-motion';
 
 export default function AdminLoginPage() {
-  const router = useRouter();
-  const [showPassword, setShowPassword] = useState(false);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      const response = await adminApi.login({ username, password });
-      adminAuthStore.getState().setAuth(
-        { accessToken: response.accessToken, refreshToken: response.refreshToken },
-        { id: response.userId, username, type: response.userType }
-      );
-      router.push('/admin/dashboard');
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : '登录失败，请检查用户名和密码';
-      setError(message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden bg-slate-50 text-slate-900">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.15),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(14,165,233,0.12),transparent_35%)]" />
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-surface text-on-surface font-sans">
+      <div className="pointer-events-none absolute inset-0 z-0 opacity-20">
+        <img
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWAq2BdbZGD7SBOjWG8vwqUDG-UHpkTTZ3_w2TnwckeuljE5gTIZWYAXL7d671Q8X9REizxOhEcgTHtfi1Znn3XZ1bbvtAaHxehiadjn0f14RHV1MURJuTI5b_CSmvqdlhFX10NvOO2ERUufNnCSSjFneBxoi7vR1u2aGTx0q-IsZK92EDdVx2_55f7iRQsCbqWzubnw6lQLo7-DMKWbMUuI6u6r7FN7xKdtdnoei8g1lIJGk0zJREfhg9MixtrC1yO9lIUM_en5zL"
+          alt="background"
+          className="h-full w-full object-cover object-bottom mix-blend-multiply"
+        />
+      </div>
 
-      <div className="relative mx-auto flex w-full max-w-[1500px] flex-1 flex-col px-6 lg:flex-row lg:px-20">
-        <section className="flex flex-1 flex-col justify-center py-20 lg:pr-12">
-          <div className="mb-8 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600 text-white">
-              <Network className="h-5 w-5" />
+      <div className="absolute left-10 top-8 z-20 flex items-center gap-3">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white">
+          <Network size={20} />
+        </div>
+        <span className="font-display text-xl font-bold tracking-tight text-on-surface">GraphHire</span>
+      </div>
+
+      <div className="z-10 mx-auto flex w-full max-w-[1600px] flex-1 flex-col px-6 lg:flex-row lg:px-24">
+        <div className="flex flex-1 flex-col justify-center pb-12 pt-24 lg:pb-0 lg:pr-12 lg:pt-0">
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }}>
+            <h1 className="font-display mb-8 text-4xl font-bold leading-[1.1] tracking-tight text-on-surface lg:text-6xl">
+              开启 AI 智能
+              <br />
+              招聘管理
+              <br />
+              新篇章。
+            </h1>
+            <p className="max-w-lg text-lg leading-relaxed text-outline lg:text-xl">于无声处见繁华，重新定义招聘管理体验。</p>
+          </motion.div>
+        </div>
+
+        <div className="flex flex-1 items-center justify-center py-12 lg:justify-end">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="glass-card relative z-10 w-full max-w-[440px] rounded-2xl p-10"
+          >
+            <div className="mb-8">
+              <h2 className="font-display mb-3 text-3xl font-bold text-on-surface">欢迎回来</h2>
+              <p className="text-sm text-outline">请登录以继续管理 GraphHire 平台</p>
             </div>
-            <span className="text-2xl font-bold tracking-tight text-slate-900">GraphHire</span>
-          </div>
-          <h1 className="text-4xl font-bold leading-tight text-slate-900 lg:text-6xl">
-            开启 AI 智能
-            <br />
-            招聘管理
-            <br />
-            新篇章。
-          </h1>
-          <p className="mt-6 max-w-lg text-lg text-slate-500">于无声处见繁华，重新定义招聘管理体验。</p>
-        </section>
 
-        <section className="flex flex-1 items-center justify-center py-10 lg:justify-end">
-          <div className="w-full max-w-[440px] rounded-3xl border border-white/40 bg-white/90 p-8 shadow-2xl backdrop-blur">
-            <div className="mb-6">
-              <h2 className="text-3xl font-bold text-slate-900">欢迎回来</h2>
-              <p className="mt-2 text-sm text-slate-500">请登录以继续管理 GraphHire 平台</p>
+            <div className="mb-8 flex gap-6 border-b border-outline-variant">
+              <button className="border-b-2 border-primary pb-3 text-base font-medium text-primary">账号登录</button>
+              <button className="pb-3 text-base font-medium text-outline transition-colors hover:text-on-surface">快捷登录</button>
             </div>
 
-            {error ? <div className="mb-4 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</div> : null}
-
-            <form className="space-y-5" onSubmit={handleSubmit}>
+            <form className="space-y-5">
               <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700" htmlFor="account">
-                  账号 / 手机号
-                </label>
+                <label className="mb-2 block text-sm font-medium text-on-surface">账号 / 手机号</label>
                 <input
-                  id="account"
                   type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
                   placeholder="请输入您的账号"
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-800 outline-none transition focus:border-blue-300 focus:bg-white"
-                  required
+                  className="block w-full rounded-lg border-none bg-surface px-4 py-3 text-sm text-on-surface outline-none transition-all focus:ring-2 focus:ring-primary/20"
                 />
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700" htmlFor="password">
-                  密码
-                </label>
-                <div className="relative">
-                  <input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="请输入密码"
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 pr-10 text-sm text-slate-800 outline-none transition focus:border-blue-300 focus:bg-white"
-                    required
-                  />
-                  <button
-                    type="button"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                  >
-                    <span className="material-symbols-outlined text-lg">{showPassword ? 'visibility' : 'visibility_off'}</span>
-                  </button>
-                </div>
+                <label className="mb-2 block text-sm font-medium text-on-surface">密码</label>
+                <input
+                  type="password"
+                  placeholder="请输入密码"
+                  className="block w-full rounded-lg border-none bg-surface px-4 py-3 text-sm text-on-surface outline-none transition-all focus:ring-2 focus:ring-primary/20"
+                />
               </div>
 
-              <div className="flex items-center justify-between text-sm">
-                <label className="flex items-center gap-2 text-slate-500">
-                  <input type="checkbox" className="h-4 w-4 rounded border-slate-300" />
+              <div className="flex items-center justify-between pt-2">
+                <label className="flex cursor-pointer items-center gap-2 text-sm text-outline">
+                  <input type="checkbox" className="rounded border-outline-variant text-primary" />
                   记住我
                 </label>
-                <a href="#" className="font-medium text-slate-700 hover:text-blue-600">
+                <a href="#" className="text-sm font-medium text-on-surface transition-colors hover:text-primary">
                   忘记密码?
                 </a>
               </div>
 
               <button
-                type="submit"
-                className="w-full rounded-lg bg-blue-600 py-3 text-base font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:opacity-90 disabled:opacity-50"
-                disabled={loading}
+                type="button"
+                className="w-full rounded-lg bg-primary py-3.5 text-base font-semibold text-white shadow-lg shadow-primary/20 transition-all hover:opacity-90 active:scale-[0.98]"
               >
-                {loading ? '登录中...' : '登 录'}
+                登 录
               </button>
+
+              <div className="pt-4 text-center text-sm">
+                <span className="text-outline">新职员?</span>
+                <a href="#" className="ml-1 font-medium text-on-surface hover:underline">
+                  申请内部账号
+                </a>
+              </div>
             </form>
-          </div>
-        </section>
+          </motion.div>
+        </div>
       </div>
+
+      <footer className="font-display z-10 flex w-full flex-col items-center justify-between px-10 py-8 text-xs uppercase tracking-wider text-outline md:flex-row">
+        <p>© 2024 GRAPHHIRE. ALL RIGHTS RESERVED.</p>
+        <div className="mt-4 flex gap-6 lowercase md:mt-0">
+          <a href="#" className="transition-colors hover:text-on-surface">
+            隐私政策
+          </a>
+          <a href="#" className="transition-colors hover:text-on-surface">
+            服务条款
+          </a>
+          <a href="#" className="transition-colors hover:text-on-surface">
+            联系我们
+          </a>
+        </div>
+      </footer>
     </div>
   );
 }

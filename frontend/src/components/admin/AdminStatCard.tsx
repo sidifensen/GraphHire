@@ -1,56 +1,75 @@
-'use client';
+﻿'use client';
 
-import type { LucideIcon } from 'lucide-react';
-import { TrendingDown, TrendingUp } from 'lucide-react';
+import { TrendingUp, TrendingDown, type LucideIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface AdminStatCardProps {
   title: string;
   value: string | number;
+  trend: number;
+  trendLabel: string;
   icon: LucideIcon;
-  trend?: number;
-  subLabel?: string;
+  variant?: 'primary' | 'secondary' | 'indigo' | 'purple' | 'amber';
   subValue?: string;
+  subLabel?: string;
 }
 
 export default function AdminStatCard({
   title,
   value,
-  icon: Icon,
   trend,
-  subLabel,
+  trendLabel,
+  icon: Icon,
+  variant = 'primary',
   subValue,
+  subLabel,
 }: AdminStatCardProps) {
-  const isPositive = (trend ?? 0) >= 0;
+  const variants = {
+    primary: 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400',
+    secondary: 'bg-cyan-50 text-cyan-600 dark:bg-cyan-900/20 dark:text-cyan-400',
+    indigo: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-400',
+    purple: 'bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400',
+    amber: 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400',
+  };
 
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+    <div className="group relative overflow-hidden rounded-xl border border-outline-variant/50 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-soft dark:border-white/10 dark:bg-black/40 dark:backdrop-blur-xl">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm font-medium text-slate-500">{title}</p>
-          <h3 className="mt-1 text-3xl font-bold text-slate-900">{value}</h3>
+          <p className="mb-1 text-sm font-medium text-outline">{title}</p>
+          <h3 className="font-display text-3xl font-bold">{value}</h3>
         </div>
-        <div className="rounded-lg bg-blue-50 p-2 text-blue-600">
-          <Icon className="h-5 w-5" />
+        <div className={cn('rounded-lg p-2 transition-transform group-hover:scale-110', variants[variant])}>
+          <Icon size={24} />
         </div>
       </div>
 
-      {typeof trend === 'number' ? (
-        <div className="mt-3 flex items-center gap-1 text-xs">
-          <span className={`inline-flex items-center gap-0.5 font-semibold ${isPositive ? 'text-emerald-600' : 'text-rose-600'}`}>
-            {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-            {trend > 0 ? '+' : ''}
-            {trend.toFixed(1)}%
+      <div className="mt-4 flex flex-col gap-2">
+        <div className="flex items-center text-xs">
+          <span className={cn('flex items-center gap-0.5 font-bold', trend >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')}>
+            {trend >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+            {trend >= 0 ? '+' : ''}
+            {trend}%
           </span>
-          <span className="text-slate-500">较上月</span>
+          <span className="ml-2 text-outline">{trendLabel}</span>
         </div>
-      ) : null}
 
-      {subLabel && subValue ? (
-        <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3 text-xs">
-          <span className="text-slate-500">{subLabel}</span>
-          <span className="font-semibold text-slate-700">{subValue}</span>
-        </div>
-      ) : null}
-    </article>
+        {subValue ? (
+          <div className="mt-1 flex items-center justify-between border-t border-slate-100 pt-3 text-xs dark:border-white/5">
+            <span className="text-slate-500">{subLabel}</span>
+            <span className={cn('font-medium', variant === 'primary' ? 'text-slate-700 dark:text-slate-300' : 'text-amber-600 dark:text-amber-400')}>
+              {subValue}
+            </span>
+          </div>
+        ) : null}
+      </div>
+
+      <div
+        className={cn(
+          'absolute bottom-0 left-0 h-1 w-full origin-left scale-x-0 bg-current opacity-30 transition-transform duration-300 group-hover:scale-x-100',
+          variants[variant].split(' ')[1]
+        )}
+      />
+    </div>
   );
 }
