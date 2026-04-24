@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -49,5 +50,35 @@ class AdminRepositoryImplUnitTest {
         assertEquals(1001L, result.getRecords().get(0).getId());
         assertNull(result.getRecords().get(0).getUsername());
         assertTrue(result.getRecords().get(0).getUserType() != null);
+    }
+
+    @Test
+    @DisplayName("当底层返回全量记录时仍按 pageSize 截断，避免前端一次加载全部")
+    void findUsersPageShouldSliceRecordsWhenMapperReturnsAllRows() {
+        List<AdminPO> allRows = IntStream.rangeClosed(1, 28)
+            .mapToObj(i -> {
+                AdminPO po = new AdminPO();
+                po.setId((long) i);
+                po.setUsername("user" + i + "@test.com");
+                po.setUserType(1);
+                po.setStatus(1);
+                return po;
+            })
+            .toList();
+
+        Page<AdminPO> page = new Page<>(1, 10, 28);
+        page.setRecords(allRows);
+        when(adminMapper.selectPage(any(Page.class), isNull())).thenReturn(page);
+
+        IPage<User> firstPage = adminRepository.findUsersPage(1, 10);
+        IPage<User> thirdPage = adminRepository.findUsersPage(3, 10);
+
+        assertEquals(10, firstPage.getRecords().size());
+        assertEquals(1L, firstPage.getRecords().get(0).getId());
+        assertEquals(10L, firstPage.getRecords().get(9).getId());
+        assertEquals(8, thirdPage.getRecords().size());
+        assertEquals(21L, thirdPage.getRecords().get(0).getId());
+        assertEquals(28L, thirdPage.getRecords().get(7).getId());
+        assertEquals(28L, firstPage.getTotal());
     }
 }

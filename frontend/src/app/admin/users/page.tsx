@@ -50,12 +50,12 @@ function mapStatusLabelToApi(value: string): string | undefined {
 }
 
 export default function AdminUsersPage() {
+  const pageSize = 10;
   const [type, setType] = useState('全部用户类型');
   const [status, setStatus] = useState('全部状态');
   const [keyword, setKeyword] = useState('');
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
   const [users, setUsers] = useState<User[]>([]);
 
   const loadUsers = async () => {
@@ -69,12 +69,18 @@ export default function AdminUsersPage() {
 
     setUsers(response.list.map(mapUser));
     setTotal(response.total);
-    setPageSize(response.pageSize);
   };
 
   useEffect(() => {
     void loadUsers();
   }, [type, status, keyword, page]);
+
+  useEffect(() => {
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, pageSize, total]);
 
   const handleToggleStatus = async (user: User) => {
     if (user.status === '活跃') {

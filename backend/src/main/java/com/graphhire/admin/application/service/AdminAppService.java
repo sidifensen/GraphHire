@@ -173,7 +173,7 @@ public class AdminAppService {
             .filter(user -> matchesUser(user, query))
             .map(this::toAdminUserItem)
             .toList();
-        return new AdminPageResponse<>(list, list.size(), query.getPage(), query.getPageSize());
+        return new AdminPageResponse<>(list, page.getTotal(), query.getPage(), query.getPageSize());
     }
 
     @Transactional

@@ -16,6 +16,8 @@ import com.graphhire.resume.infrastructure.persistence.mapper.ResumeMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -101,9 +103,22 @@ public class AdminRepositoryImpl implements AdminRepository {
         Page<AdminPO> pageParam = new Page<>(page, size);
         IPage<AdminPO> adminPage = adminMapper.selectPage(pageParam, null);
 
+        List<AdminPO> records = adminPage.getRecords() == null ? new ArrayList<>() : adminPage.getRecords();
+        long total = adminPage.getTotal();
+
+        // 某些环境分页插件未生效时，selectPage 可能返回全量记录，这里做兜底切片保证每页条数稳定。
+        if (records.size() > size) {
+            total = records.size();
+            int safePage = Math.max(page, 1);
+            int safeSize = Math.max(size, 1);
+            int start = (safePage - 1) * safeSize;
+            int end = Math.min(start + safeSize, records.size());
+            records = start < records.size() ? records.subList(start, end) : List.of();
+        }
+
         // 将AdminPO分页转换为User分页
-        Page<User> userPage = new Page<>(adminPage.getCurrent(), adminPage.getSize(), adminPage.getTotal());
-        userPage.setRecords(adminPage.getRecords().stream().map(this::toUser).toList());
+        Page<User> userPage = new Page<>(page, size, total);
+        userPage.setRecords(records.stream().map(this::toUser).toList());
         return userPage;
     }
 

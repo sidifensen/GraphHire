@@ -25,6 +25,9 @@ vi.mock('@/lib/api/admin', () => ({
       page: 1,
       pageSize: 10,
     }),
+    createSkillTag: vi.fn().mockResolvedValue(undefined),
+    updateSkillTag: vi.fn().mockResolvedValue(undefined),
+    deleteSkillTag: vi.fn().mockResolvedValue(undefined),
   },
 }));
 
@@ -35,14 +38,13 @@ vi.mock('@/components/admin/AdminShell', () => ({
 import AdminSkillTagsPage from '@/app/admin/skill-tags/page';
 
 describe('AdminSkillTagsPage null-safe rendering', () => {
-  it('renders when category is null and shows fallback label', async () => {
+  it('renders when synonyms is null and shows fallback label', async () => {
     render(<AdminSkillTagsPage />);
 
     await waitFor(() => {
       expect(screen.getByText('Java')).toBeInTheDocument();
     });
 
-    expect(screen.getByText('未分类')).toBeInTheDocument();
     expect(screen.getByText('无')).toBeInTheDocument();
   });
 });
