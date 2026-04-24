@@ -29,6 +29,16 @@ public class CompanyPO {
     private String licensePath;
     /** 认证状态：0=待审核，1=已认证，2=已拒绝 */
     private Integer authStatus;
+    /** 所属行业 */
+    private String industry;
+    /** 企业规模 */
+    private String scale;
+    /** 企业地址 */
+    private String address;
+    /** 联系人 */
+    private String contact;
+    /** 联系电话 */
+    private String phone;
     /** 认证拒绝原因 */
     @TableField(exist = false)
     private String authReason;
@@ -88,6 +98,46 @@ public class CompanyPO {
 
     public void setAuthStatus(Integer authStatus) {
         this.authStatus = authStatus;
+    }
+
+    public String getIndustry() {
+        return industry;
+    }
+
+    public void setIndustry(String industry) {
+        this.industry = industry;
+    }
+
+    public String getScale() {
+        return scale;
+    }
+
+    public void setScale(String scale) {
+        this.scale = scale;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getContact() {
+        return contact;
+    }
+
+    public void setContact(String contact) {
+        this.contact = contact;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public String getAuthReason() {

@@ -12,8 +12,13 @@ interface Company {
   code: string;
   industry: string | null;
   size: string | null;
+  address: string | null;
+  contact: string | null;
+  phone: string | null;
+  licenseUrl: string | null;
   applyDate: string;
   status: '待审核' | '已通过' | '已拒绝';
+  rejectReason: string | null;
   initial: string;
 }
 
@@ -43,10 +48,15 @@ function mapCompany(item: CompanyAuthItem): Company {
     id: item.id,
     name: item.companyName,
     code: item.unifiedSocialCreditCode,
-    industry: null,
-    size: null,
+    industry: item.industry ?? null,
+    size: item.scale ?? null,
+    address: item.address ?? null,
+    contact: item.contact ?? item.legalPerson ?? null,
+    phone: item.phone ?? null,
+    licenseUrl: item.businessLicenseUrl ?? null,
     applyDate: item.submittedAt ?? '-',
     status,
+    rejectReason: item.rejectReason ?? null,
     initial: (item.companyName || '?').slice(0, 1).toUpperCase(),
   };
 }
@@ -61,6 +71,7 @@ export default function AdminEnterpriseReviewPage() {
   const [pendingCount, setPendingCount] = useState(0);
   const [approvedTodayCount, setApprovedTodayCount] = useState(0);
   const [rejectedCount, setRejectedCount] = useState(0);
+  const [detailCompany, setDetailCompany] = useState<Company | null>(null);
 
   const queryStatus = useMemo(() => {
     if (activeTab === '全部') return undefined;
@@ -205,16 +216,18 @@ export default function AdminEnterpriseReviewPage() {
                   <div>
                     <p className="text-sm font-bold text-on-surface">{company.name}</p>
                     <p className="mt-0.5 text-[10px] uppercase text-outline">{company.code}</p>
+                    <p className="mt-1 text-xs text-outline">{company.address ?? '-'}</p>
                   </div>
                 </div>
               ),
-              className: 'w-[40%]',
+              className: 'w-[36%] normal-case tracking-normal text-[13px] font-semibold text-slate-600',
             },
-            { header: '所属行业', accessor: (company) => company.industry ?? '-', className: 'text-sm text-outline' },
-            { header: '人员规模', accessor: (company) => company.size ?? '-', className: 'text-sm text-outline' },
-            { header: '申请时间', accessor: (company) => <span className="font-display text-sm text-outline">{company.applyDate}</span> },
+            { header: '所属行业', accessor: (company) => company.industry ?? '-', className: 'normal-case tracking-normal text-[13px] font-semibold text-slate-600' },
+            { header: '人员规模', accessor: (company) => company.size ?? '-', className: 'normal-case tracking-normal text-[13px] font-semibold text-slate-600' },
+            { header: '申请时间', accessor: (company) => <span className="font-display text-sm text-outline">{company.applyDate}</span>, className: 'normal-case tracking-normal text-[13px] font-semibold text-slate-600' },
             {
               header: '状态',
+              className: 'normal-case tracking-normal text-[13px] font-semibold text-slate-600',
               accessor: (company) => (
                 <span
                   className={cn(
@@ -232,10 +245,10 @@ export default function AdminEnterpriseReviewPage() {
             },
             {
               header: '操作',
-              className: 'text-right',
+              className: 'text-right normal-case tracking-normal text-[13px] font-semibold text-slate-600',
               accessor: (company) => (
                 <div className="flex justify-end gap-3">
-                  <button className="text-xs font-bold text-primary hover:underline">详情</button>
+                  <button className="text-xs font-bold text-primary hover:underline" onClick={() => setDetailCompany(company)}>详情</button>
                   {company.status === '待审核' ? (
                     <>
                       <button className="text-xs font-bold text-secondary hover:underline" onClick={() => void handleApprove(company.id)}>
@@ -251,6 +264,29 @@ export default function AdminEnterpriseReviewPage() {
             },
           ]}
         />
+        {detailCompany ? (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4" role="dialog" aria-modal="true">
+            <div className="w-full max-w-2xl rounded-xl bg-white p-6 shadow-xl">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-lg font-bold text-on-surface">企业详情</h3>
+                <button className="text-sm font-semibold text-outline hover:text-on-surface" onClick={() => setDetailCompany(null)}>关闭</button>
+              </div>
+              <div className="grid grid-cols-2 gap-3 text-sm text-on-surface">
+                <p><span className="text-outline">企业名称：</span>{detailCompany.name}</p>
+                <p><span className="text-outline">统一社会信用代码：</span>{detailCompany.code}</p>
+                <p><span className="text-outline">所属行业：</span>{detailCompany.industry ?? '-'}</p>
+                <p><span className="text-outline">人员规模：</span>{detailCompany.size ?? '-'}</p>
+                <p><span className="text-outline">联系人：</span>{detailCompany.contact ?? '-'}</p>
+                <p><span className="text-outline">联系电话：</span>{detailCompany.phone ?? '-'}</p>
+                <p className="col-span-2"><span className="text-outline">公司地址：</span>{detailCompany.address ?? '-'}</p>
+                <p className="col-span-2"><span className="text-outline">营业执照地址：</span>{detailCompany.licenseUrl ?? '-'}</p>
+                <p><span className="text-outline">申请时间：</span>{detailCompany.applyDate}</p>
+                <p><span className="text-outline">当前状态：</span>{detailCompany.status}</p>
+                <p className="col-span-2"><span className="text-outline">拒绝原因：</span>{detailCompany.rejectReason ?? '-'}</p>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </div>
   );
 }

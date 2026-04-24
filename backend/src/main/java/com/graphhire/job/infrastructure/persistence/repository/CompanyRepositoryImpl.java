@@ -127,6 +127,8 @@ public class CompanyRepositoryImpl implements CompanyRepository {
         BeanUtil.copyProperties(po, company);
         company.setName(po.getCompanyName());
         company.setLicenseUrl(po.getLicensePath());
+        company.setContactName(po.getContact());
+        company.setContactPhone(po.getPhone());
         company.setAuthStatus(toDomainStatus(po.getAuthStatus()));
         return company;
     }
@@ -138,6 +140,8 @@ public class CompanyRepositoryImpl implements CompanyRepository {
         BeanUtil.copyProperties(company, po);
         po.setCompanyName(company.getName());
         po.setLicensePath(company.getLicenseUrl());
+        po.setContact(company.getContactName());
+        po.setPhone(company.getContactPhone());
         po.setAuthStatus(toDbStatus(company.getAuthStatus()));
         return po;
     }

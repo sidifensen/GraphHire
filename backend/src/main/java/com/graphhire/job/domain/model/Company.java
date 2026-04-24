@@ -2,6 +2,7 @@ package com.graphhire.job.domain.model;
 
 import com.graphhire.common.model.BaseAggregateRoot;
 import com.graphhire.auth.domain.vo.AuthStatus;
+import java.time.LocalDateTime;
 
 /**
  * 企业领域模型
@@ -38,6 +39,16 @@ public class Company extends BaseAggregateRoot {
     private String description;
     /** 企业官网URL */
     private String website;
+    /** 所属行业 */
+    private String industry;
+    /** 企业规模 */
+    private String scale;
+    /** 企业地址 */
+    private String address;
+    /** 创建时间 */
+    private LocalDateTime createTime;
+    /** 更新时间 */
+    private LocalDateTime updatedAt;
 
     /**
      * 审批通过
@@ -155,5 +166,45 @@ public class Company extends BaseAggregateRoot {
 
     public void setWebsite(String website) {
         this.website = website;
+    }
+
+    public String getIndustry() {
+        return industry;
+    }
+
+    public void setIndustry(String industry) {
+        this.industry = industry;
+    }
+
+    public String getScale() {
+        return scale;
+    }
+
+    public void setScale(String scale) {
+        this.scale = scale;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public LocalDateTime getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(LocalDateTime createTime) {
+        this.createTime = createTime;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

@@ -5,6 +5,10 @@ public class AdminCompanyAuthItemResponse {
     private Long companyId;
     private String companyName;
     private String unifiedSocialCreditCode;
+    private String industry;
+    private String scale;
+    private String address;
+    private String contact;
     private String legalPerson;
     private String phone;
     private String businessLicenseUrl;
@@ -22,6 +26,14 @@ public class AdminCompanyAuthItemResponse {
     public void setCompanyName(String companyName) { this.companyName = companyName; }
     public String getUnifiedSocialCreditCode() { return unifiedSocialCreditCode; }
     public void setUnifiedSocialCreditCode(String unifiedSocialCreditCode) { this.unifiedSocialCreditCode = unifiedSocialCreditCode; }
+    public String getIndustry() { return industry; }
+    public void setIndustry(String industry) { this.industry = industry; }
+    public String getScale() { return scale; }
+    public void setScale(String scale) { this.scale = scale; }
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
+    public String getContact() { return contact; }
+    public void setContact(String contact) { this.contact = contact; }
     public String getLegalPerson() { return legalPerson; }
     public void setLegalPerson(String legalPerson) { this.legalPerson = legalPerson; }
     public String getPhone() { return phone; }
