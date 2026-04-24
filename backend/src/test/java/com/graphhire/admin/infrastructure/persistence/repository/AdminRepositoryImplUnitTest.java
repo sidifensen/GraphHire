@@ -1,13 +1,16 @@
 package com.graphhire.admin.infrastructure.persistence.repository;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.graphhire.admin.infrastructure.persistence.mapper.AdminMapper;
 import com.graphhire.admin.infrastructure.persistence.po.AdminPO;
 import com.graphhire.auth.domain.model.User;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -19,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -42,7 +45,7 @@ class AdminRepositoryImplUnitTest {
 
         Page<AdminPO> page = new Page<>(1, 10, 1);
         page.setRecords(List.of(po));
-        when(adminMapper.selectPage(any(Page.class), isNull())).thenReturn(page);
+        when(adminMapper.selectPage(any(Page.class), any())).thenReturn(page);
 
         IPage<User> result = adminRepository.findUsersPage(1, 10);
 
@@ -68,7 +71,7 @@ class AdminRepositoryImplUnitTest {
 
         Page<AdminPO> page = new Page<>(1, 10, 28);
         page.setRecords(allRows);
-        when(adminMapper.selectPage(any(Page.class), isNull())).thenReturn(page);
+        when(adminMapper.selectPage(any(Page.class), any())).thenReturn(page);
 
         IPage<User> firstPage = adminRepository.findUsersPage(1, 10);
         IPage<User> thirdPage = adminRepository.findUsersPage(3, 10);
@@ -80,5 +83,20 @@ class AdminRepositoryImplUnitTest {
         assertEquals(21L, thirdPage.getRecords().get(0).getId());
         assertEquals(28L, thirdPage.getRecords().get(7).getId());
         assertEquals(28L, firstPage.getTotal());
+    }
+
+    @Test
+    @DisplayName("分页查询应按注册时间倒序返回")
+    void findUsersPageShouldOrderByCreateTimeDesc() {
+        Page<AdminPO> page = new Page<>(1, 10, 0);
+        page.setRecords(List.of());
+        when(adminMapper.selectPage(any(Page.class), any())).thenReturn(page);
+
+        adminRepository.findUsersPage(1, 10);
+
+        ArgumentCaptor<Wrapper> wrapperCaptor = ArgumentCaptor.forClass(Wrapper.class);
+        verify(adminMapper).selectPage(any(Page.class), wrapperCaptor.capture());
+        Wrapper wrapper = wrapperCaptor.getValue();
+        Assertions.assertNotNull(wrapper);
     }
 }

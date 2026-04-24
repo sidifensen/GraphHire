@@ -90,12 +90,18 @@ export default function AdminUsersPage() {
   }, [page, pageSize, total]);
 
   const handleToggleStatus = async (user: User) => {
-    if (user.status === '正常') {
-      await adminApi.updateUserStatus(user.id, 'DISABLED');
-    } else {
-      await adminApi.updateUserStatus(user.id, 'ACTIVE');
+    try {
+      if (user.status === '正常') {
+        await adminApi.updateUserStatus(user.id, 'DISABLED');
+      } else {
+        await adminApi.updateUserStatus(user.id, 'ACTIVE');
+      }
+      await loadUsers();
+    } catch (error: any) {
+      console.error('Toggle status error:', error);
+      const message = error?.response?.data?.message || error?.message || error || '操作失败';
+      alert(message);
     }
-    await loadUsers();
   };
 
   const handleOpenDetail = async (userId: number) => {

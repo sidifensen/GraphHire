@@ -101,7 +101,9 @@ public class AdminRepositoryImpl implements AdminRepository {
     /** 分页查询用户 */
     public IPage<User> findUsersPage(int page, int size) {
         Page<AdminPO> pageParam = new Page<>(page, size);
-        IPage<AdminPO> adminPage = adminMapper.selectPage(pageParam, null);
+        LambdaQueryWrapper<AdminPO> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.orderByDesc(AdminPO::getCreateTime).orderByDesc(AdminPO::getId);
+        IPage<AdminPO> adminPage = adminMapper.selectPage(pageParam, queryWrapper);
 
         List<AdminPO> records = adminPage.getRecords() == null ? new ArrayList<>() : adminPage.getRecords();
         long total = adminPage.getTotal();

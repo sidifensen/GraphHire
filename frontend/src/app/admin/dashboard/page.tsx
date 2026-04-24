@@ -219,7 +219,7 @@ export default function AdminDashboardPage() {
         </div>
 
         <div className="flex items-center justify-between pt-4 text-[11px] text-outline">
-          <p>© 2024 GraphHire 图谱智聘 - 内部管理系统</p>
+          <p>© 2026 GraphHire 图谱智聘 - 内部管理系统</p>
           <div className="flex space-x-4">
             <a href="#" className="transition-colors hover:text-primary">
               系统状态
