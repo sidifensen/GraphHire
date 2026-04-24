@@ -16,6 +16,7 @@ const SIDEBAR_ROUTE_PREFIXES = ['/profile', '/resume'];
 export default function UserLayout({ children, contentClassName = '' }: UserLayoutProps) {
   const pathname = usePathname();
   const showSidebar = SIDEBAR_ROUTE_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+  const hideFooter = /^\/jobs\/[^/]+$/.test(pathname) || /^\/match\/[^/]+$/.test(pathname);
 
   return (
     <div className="bg-surface text-on-surface min-h-screen flex flex-col antialiased">
@@ -28,7 +29,7 @@ export default function UserLayout({ children, contentClassName = '' }: UserLayo
           </RouteTransition>
         </main>
       </div>
-      <Footer />
+      {!hideFooter ? <Footer /> : null}
     </div>
   );
 }
