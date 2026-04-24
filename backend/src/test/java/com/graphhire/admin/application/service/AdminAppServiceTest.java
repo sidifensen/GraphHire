@@ -21,6 +21,7 @@ import com.graphhire.notification.domain.model.Notification;
 import com.graphhire.notification.domain.repository.NotificationRepository;
 import com.graphhire.notification.domain.vo.NotificationType;
 import com.graphhire.resume.application.service.ResumeAppService;
+import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.model.ParseTask;
 import com.graphhire.resume.domain.repository.PersonInfoRepository;
 import com.graphhire.resume.domain.repository.ParseTaskRepository;
@@ -167,9 +168,16 @@ class AdminAppServiceTest {
             user.setUsername(Username.of("alice@test.com"));
             user.setUserType(UserType.PERSON);
             user.setStatus(AuthStatus.VERIFIED);
+            user.setCreateTime(LocalDateTime.of(2026, 4, 20, 10, 0));
+            user.setLastLoginTime(LocalDateTime.of(2026, 4, 22, 18, 30));
             Page<User> p = new Page<>(1, 10, 1);
             p.setRecords(List.of(user));
             when(adminRepository.findUsersPage(1, 10)).thenReturn(p);
+            PersonInfo personInfo = new PersonInfo();
+            personInfo.setRealName("Alice");
+            personInfo.setPhone("13800000000");
+            personInfo.setAvatarUrl("https://cdn.example.com/avatar/alice.png");
+            when(personInfoRepository.findByUserId(1L)).thenReturn(Optional.of(personInfo));
 
             UserListQuery query = new UserListQuery();
             query.setPage(1);
@@ -180,6 +188,55 @@ class AdminAppServiceTest {
             assertEquals(1, page.getTotal());
             assertEquals("alice@test.com", page.getList().get(0).getUsername());
             assertEquals("ACTIVE", page.getList().get(0).getStatus());
+            assertEquals("Alice", page.getList().get(0).getRealName());
+            assertEquals("13800000000", page.getList().get(0).getPhone());
+            assertEquals("https://cdn.example.com/avatar/alice.png", page.getList().get(0).getAvatarUrl());
+            assertEquals("2026-04-22 18:30:00", page.getList().get(0).getLastLoginAt());
+        }
+
+        @Test
+        @DisplayName("获取用户详情返回完整信息与personInfo")
+        void getUserDetailSuccess() {
+            User user = new User();
+            user.setId(9L);
+            user.setUsername(Username.of("detail@test.com"));
+            user.setUserType(UserType.PERSON);
+            user.setStatus(AuthStatus.VERIFIED);
+            user.setCreateTime(LocalDateTime.of(2026, 4, 18, 9, 15));
+            user.setLastLoginTime(LocalDateTime.of(2026, 4, 23, 23, 10));
+            when(userRepository.findById(9L)).thenReturn(Optional.of(user));
+
+            PersonInfo personInfo = new PersonInfo();
+            personInfo.setId(88L);
+            personInfo.setUserId(9L);
+            personInfo.setRealName("张三");
+            personInfo.setGender(1);
+            personInfo.setAge(27);
+            personInfo.setPhone("13900001111");
+            personInfo.setEducation("本科");
+            personInfo.setCity("上海");
+            personInfo.setTargetCity("杭州");
+            personInfo.setExpectedSalary(30000);
+            personInfo.setAvatarUrl("https://cdn.example.com/avatar/zs.png");
+            when(personInfoRepository.findByUserId(9L)).thenReturn(Optional.of(personInfo));
+
+            AdminUserDetailResponse detail = adminAppService.getUserDetail(9L);
+
+            assertNotNull(detail.getUser());
+            assertEquals(9L, detail.getUser().getId());
+            assertEquals("detail@test.com", detail.getUser().getUsername());
+            assertEquals("detail@test.com", detail.getUser().getEmail());
+            assertEquals("13900001111", detail.getUser().getPhone());
+            assertEquals("2026-04-18 09:15:00", detail.getUser().getCreatedAt());
+            assertEquals("2026-04-23 23:10:00", detail.getUser().getLastLoginAt());
+            assertEquals("张三", detail.getUser().getRealName());
+            assertEquals("https://cdn.example.com/avatar/zs.png", detail.getUser().getAvatarUrl());
+
+            assertNotNull(detail.getPersonInfo());
+            assertEquals(88L, detail.getPersonInfo().getId());
+            assertEquals(9L, detail.getPersonInfo().getUserId());
+            assertEquals("张三", detail.getPersonInfo().getRealName());
+            assertEquals("13900001111", detail.getPersonInfo().getPhone());
         }
 
         @Test

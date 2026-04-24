@@ -30,12 +30,14 @@ public class AdminUserDetailResponse {
     public static class UserItem {
         private Long id;
         private String username;
+        private String realName;
         private String email;
         private String phone;
         private String type;
         private String status;
         private String createdAt;
         private String lastLoginAt;
+        private String avatarUrl;
 
         public Long getId() {
             return id;
@@ -59,6 +61,14 @@ public class AdminUserDetailResponse {
 
         public void setEmail(String email) {
             this.email = email;
+        }
+
+        public String getRealName() {
+            return realName;
+        }
+
+        public void setRealName(String realName) {
+            this.realName = realName;
         }
 
         public String getPhone() {
@@ -99,6 +109,14 @@ public class AdminUserDetailResponse {
 
         public void setLastLoginAt(String lastLoginAt) {
             this.lastLoginAt = lastLoginAt;
+        }
+
+        public String getAvatarUrl() {
+            return avatarUrl;
+        }
+
+        public void setAvatarUrl(String avatarUrl) {
+            this.avatarUrl = avatarUrl;
         }
     }
 

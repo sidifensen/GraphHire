@@ -202,17 +202,18 @@ public class AdminAppService {
         userItem.setId(user.getId());
         userItem.setUsername(username);
         userItem.setEmail(username);
-        userItem.setPhone(null);
         userItem.setType(user.getUserType() == null ? null : user.getUserType().name());
         userItem.setStatus(mapFrontendStatus(user.getStatus()));
-        userItem.setCreatedAt(null);
-        userItem.setLastLoginAt(null);
-        response.setUser(userItem);
+        userItem.setCreatedAt(formatDateTime(user.getCreateTime()));
+        userItem.setLastLoginAt(formatDateTime(user.getLastLoginTime()));
 
         // 构建个人信息
         Optional<PersonInfo> personInfoOpt = personInfoRepository.findByUserId(userId);
         if (personInfoOpt.isPresent()) {
             PersonInfo personInfo = personInfoOpt.get();
+            userItem.setRealName(personInfo.getRealName());
+            userItem.setPhone(personInfo.getPhone());
+            userItem.setAvatarUrl(personInfo.getAvatarUrl());
             AdminUserDetailResponse.PersonInfoDetail personInfoDetail = new AdminUserDetailResponse.PersonInfoDetail();
             personInfoDetail.setId(personInfo.getId());
             personInfoDetail.setUserId(personInfo.getUserId());
@@ -227,8 +228,12 @@ public class AdminAppService {
             personInfoDetail.setExpectedSalary(personInfo.getExpectedSalary());
             response.setPersonInfo(personInfoDetail);
         } else {
+            userItem.setRealName(null);
+            userItem.setPhone(null);
+            userItem.setAvatarUrl(null);
             response.setPersonInfo(null);
         }
+        response.setUser(userItem);
 
         return response;
     }
@@ -503,16 +508,19 @@ public class AdminAppService {
         item.setId(user.getId());
         item.setUsername(username);
         item.setEmail(username);
-        item.setPhone(null);
         item.setType(user.getUserType() == null ? null : user.getUserType().name());
         item.setStatus(mapFrontendStatus(user.getStatus()));
         item.setCreatedAt(formatDateTime(user.getCreateTime()));
         item.setLastLoginAt(formatDateTime(user.getLastLoginTime()));
+        item.setPhone(null);
         item.setAvatarUrl(null);
         // 查询 realName
         Optional<PersonInfo> personInfoOpt = personInfoRepository.findByUserId(user.getId());
-        String realName = personInfoOpt.map(PersonInfo::getRealName).orElse(null);
-        item.setRealName(realName);
+        personInfoOpt.ifPresent(personInfo -> {
+            item.setRealName(personInfo.getRealName());
+            item.setPhone(personInfo.getPhone());
+            item.setAvatarUrl(personInfo.getAvatarUrl());
+        });
         return item;
     }
 

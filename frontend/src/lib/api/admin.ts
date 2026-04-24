@@ -88,6 +88,8 @@ export interface UserListResponse {
 
 // ============ User Detail ============
 export interface PersonInfoDetail {
+  id: number;
+  userId: number;
   realName: string;
   gender: number; // 0=未知, 1=男, 2=女
   age: number;

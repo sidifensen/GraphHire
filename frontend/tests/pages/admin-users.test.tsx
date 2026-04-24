@@ -35,6 +35,7 @@ describe('AdminUsersPage', () => {
         status: 'ACTIVE',
         createdAt: '2026-04-20',
         lastLoginAt: '2026-04-21',
+        avatarUrl: 'https://cdn.example.com/alice.png',
       }],
       total: 1,
       page: 1,
@@ -73,11 +74,17 @@ describe('AdminUsersPage', () => {
     expect(screen.getByText('全部用户类型')).toBeInTheDocument();
   });
 
-  it('点击详情后拉取用户详情数据', async () => {
+  it('点击详情后拉取用户详情数据且支持禁用', async () => {
     render(<AdminUsersPage />);
 
     await waitFor(() => {
       expect(screen.getByText('禁用')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: '详情' }));
+
+    await waitFor(() => {
+      expect(adminApi.getUserDetail).toHaveBeenCalledWith(1);
     });
 
     fireEvent.click(screen.getByRole('button', { name: '禁用' }));

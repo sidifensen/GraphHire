@@ -77,6 +77,8 @@ public class UserRepositoryImpl implements UserRepository {
         user.setPassword(EncryptedPassword.fromEncrypted(po.getPassword()));
         user.setUserType(mapIntToUserType(po.getUserType()));
         user.setStatus(mapIntToAuthStatus(po.getStatus()));
+        user.setCreateTime(po.getCreateTime());
+        user.setLastLoginTime(po.getLastLoginTime());
         // 注意：failedLoginCount 和 lockedUntil 不持久化到 sys_user 表
         return user;
     }
@@ -93,6 +95,8 @@ public class UserRepositoryImpl implements UserRepository {
         po.setPassword(user.getPassword().getValue());
         po.setUserType(mapUserTypeToInt(user.getUserType()));
         po.setStatus(mapAuthStatusToInt(user.getStatus()));
+        po.setCreateTime(user.getCreateTime());
+        po.setLastLoginTime(user.getLastLoginTime());
         // 注意：failedLoginCount 和 lockedUntil 不持久化到 sys_user 表
         return po;
     }

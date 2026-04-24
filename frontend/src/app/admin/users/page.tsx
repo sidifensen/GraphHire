@@ -10,13 +10,17 @@ interface User {
   id: number;
   avatar: string;
   name: string;
-  role: string;
+  username: string;
   email: string;
   phone: string;
   type: '求职者' | '企业HR' | '管理员';
   joinDate: string;
+  lastLoginAt: string;
   status: '活跃' | '禁用' | '待激活';
 }
+
+const DEFAULT_AVATAR =
+  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="100%" height="100%" fill="%23e2e8f0"/><circle cx="40" cy="30" r="14" fill="%2394a3b8"/><rect x="18" y="50" width="44" height="18" rx="9" fill="%2394a3b8"/></svg>';
 
 type UserItem = Awaited<ReturnType<typeof adminApi.getUserList>>['list'][number];
 
@@ -25,13 +29,14 @@ function mapUser(user: UserItem): User {
   const type = user.type === 'COMPANY' ? '企业HR' : user.type === 'ADMIN' ? '管理员' : '求职者';
   return {
     id: user.id,
-    avatar: user.avatarUrl || `https://avatar.vercel.sh/${encodeURIComponent(user.username || String(user.id))}`,
+    avatar: user.avatarUrl || DEFAULT_AVATAR,
     name: user.realName || user.username,
-    role: type,
+    username: user.username,
     email: user.email,
     phone: user.phone || '-',
     type,
     joinDate: user.createdAt || '-',
+    lastLoginAt: user.lastLoginAt || '-',
     status,
   };
 }
@@ -57,6 +62,9 @@ export default function AdminUsersPage() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [users, setUsers] = useState<User[]>([]);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detail, setDetail] = useState<Awaited<ReturnType<typeof adminApi.getUserDetail>> | null>(null);
 
   const loadUsers = async () => {
     const response = await adminApi.getUserList({
@@ -89,6 +97,17 @@ export default function AdminUsersPage() {
       await adminApi.updateUserStatus(user.id, 'ACTIVE');
     }
     await loadUsers();
+  };
+
+  const handleOpenDetail = async (userId: number) => {
+    setDetailLoading(true);
+    setDetailOpen(true);
+    try {
+      const response = await adminApi.getUserDetail(userId);
+      setDetail(response);
+    } finally {
+      setDetailLoading(false);
+    }
   };
 
   return (
@@ -162,29 +181,33 @@ export default function AdminUsersPage() {
               header: '头像',
               accessor: (user) => (
                 <div className="h-10 w-10 overflow-hidden rounded-full border border-outline-variant dark:border-slate-800">
-                  <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
+                  <img
+                    src={user.avatar}
+                    alt={user.name}
+                    className="h-full w-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = DEFAULT_AVATAR;
+                    }}
+                  />
                 </div>
               ),
               className: 'w-20',
             },
             {
-              header: '姓名/职位',
+              header: '姓名',
               accessor: (user) => (
                 <div>
                   <p className="text-sm font-bold text-on-surface">{user.name}</p>
-                  <p className="mt-0.5 text-[11px] text-outline">{user.role}</p>
                 </div>
               ),
             },
             {
-              header: '账号/联系方式',
+              header: '账号',
               accessor: (user) => (
-                <div>
-                  <p className="text-sm text-on-surface">{user.email}</p>
-                  <p className="mt-0.5 text-[11px] text-outline">{user.phone}</p>
-                </div>
+                <span className="text-sm text-on-surface">{user.username}</span>
               ),
             },
+            { header: '联系方式', accessor: (user) => <span className="text-sm text-on-surface">{user.phone}</span> },
             {
               header: '用户类型',
               accessor: (user) => (
@@ -199,6 +222,7 @@ export default function AdminUsersPage() {
               ),
             },
             { header: '注册时间', accessor: (user) => <span className="font-display text-sm text-on-surface">{user.joinDate}</span> },
+            { header: '上次登录', accessor: (user) => <span className="font-display text-sm text-on-surface">{user.lastLoginAt}</span> },
             {
               header: '状态',
               accessor: (user) => (
@@ -229,6 +253,9 @@ export default function AdminUsersPage() {
               className: 'text-right',
               accessor: (user) => (
                 <div className="flex justify-end gap-4">
+                  <button className="text-xs font-bold uppercase text-slate-700 transition-colors hover:text-slate-900" onClick={() => void handleOpenDetail(user.id)}>
+                    详情
+                  </button>
                   {user.status === '活跃' ? (
                     <button className="text-xs font-bold uppercase text-primary transition-colors hover:text-blue-700" onClick={() => void handleToggleStatus(user)}>
                       禁用
@@ -251,6 +278,56 @@ export default function AdminUsersPage() {
             },
           ]}
         />
+
+        {detailOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+            <div className="w-full max-w-2xl rounded-xl bg-white p-6 shadow-xl">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-lg font-bold text-on-surface">用户详情</h3>
+                <button className="text-sm text-outline hover:text-on-surface" onClick={() => setDetailOpen(false)}>
+                  关闭
+                </button>
+              </div>
+              {detailLoading ? (
+                <p className="text-sm text-outline">加载中...</p>
+              ) : detail ? (
+                <div className="space-y-4 text-sm text-on-surface">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>用户ID：{detail.user.id}</div>
+                    <div>用户名：{detail.user.username || '-'}</div>
+                    <div>姓名：{detail.user.realName || '-'}</div>
+                    <div>邮箱：{detail.user.email || '-'}</div>
+                    <div>手机号：{detail.user.phone || '-'}</div>
+                    <div>用户类型：{detail.user.type || '-'}</div>
+                    <div>状态：{detail.user.status || '-'}</div>
+                    <div>注册时间：{detail.user.createdAt || '-'}</div>
+                    <div>上次登录：{detail.user.lastLoginAt || '-'}</div>
+                  </div>
+                  {detail.personInfo && (
+                    <div>
+                      <h4 className="mb-2 font-bold">求职者信息（person_info）</h4>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>person_info ID：{detail.personInfo.id}</div>
+                        <div>user_id：{detail.personInfo.userId}</div>
+                        <div>姓名：{detail.personInfo.realName || '-'}</div>
+                        <div>性别：{detail.personInfo.gender ?? '-'}</div>
+                        <div>年龄：{detail.personInfo.age ?? '-'}</div>
+                        <div>电话：{detail.personInfo.phone || '-'}</div>
+                        <div>邮箱：{detail.personInfo.email || '-'}</div>
+                        <div>教育：{detail.personInfo.education || '-'}</div>
+                        <div>城市：{detail.personInfo.city || '-'}</div>
+                        <div>目标城市：{detail.personInfo.targetCity || '-'}</div>
+                        <div>期望薪资：{detail.personInfo.expectedSalary ?? '-'}</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm text-outline">暂无数据</p>
+              )}
+            </div>
+          </div>
+        )}
       </div>
   );
 }
