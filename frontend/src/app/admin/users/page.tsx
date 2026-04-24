@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Search, ChevronDown, MoreHorizontal } from 'lucide-react';
+import { Search, ChevronDown } from 'lucide-react';
 import AdminDataTable from '@/components/admin/AdminDataTable';
 import { cn } from '@/lib/utils';
 import { adminApi } from '@/lib/api/admin';
@@ -270,9 +270,6 @@ export default function AdminUsersPage() {
                       启用
                     </button>
                   )}
-                  <button className="text-slate-400 hover:text-on-surface">
-                    <MoreHorizontal size={16} />
-                  </button>
                 </div>
               ),
             },
