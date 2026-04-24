@@ -6,9 +6,10 @@ import { adminApi, type SkillTagItem } from '@/lib/api/admin';
 import AdminShell from '@/components/admin/AdminShell';
 import AdminDataTable, { type AdminDataTableColumn } from '@/components/admin/AdminDataTable';
 
-const pickIcon = (category: string) => {
-  if (category.includes('编程')) return Code;
-  if (category.includes('工具')) return Database;
+const pickIcon = (category?: string | null) => {
+  const normalized = (category ?? '').trim();
+  if (normalized.includes('编程')) return Code;
+  if (normalized.includes('工具')) return Database;
   return Brain;
 };
 
@@ -48,7 +49,10 @@ export default function AdminSkillTagsPage() {
     fetchData();
   }, [fetchData]);
 
-  const categories = useMemo(() => Array.from(new Set(list.map((item) => item.category))), [list]);
+  const categories = useMemo(
+    () => Array.from(new Set(list.map((item) => (item.category ?? '').trim()).filter((item) => item.length > 0))),
+    [list]
+  );
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   const columns: AdminDataTableColumn<SkillTagItem>[] = [
@@ -70,21 +74,28 @@ export default function AdminSkillTagsPage() {
     {
       key: 'category',
       header: '分类',
-      render: (item) => <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700">{item.category}</span>,
+      render: (item) => (
+        <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
+          {(item.category ?? '').trim() || '未分类'}
+        </span>
+      ),
     },
     {
       key: 'synonyms',
       header: '同义词',
-      render: (item) => (
-        <div className="flex flex-wrap gap-1">
-          {item.synonyms.length === 0 ? <span className="text-xs text-slate-400">无</span> : null}
-          {item.synonyms.slice(0, 3).map((word) => (
+      render: (item) => {
+        const synonyms = Array.isArray(item.synonyms) ? item.synonyms : [];
+        return (
+          <div className="flex flex-wrap gap-1">
+            {synonyms.length === 0 ? <span className="text-xs text-slate-400">无</span> : null}
+            {synonyms.slice(0, 3).map((word) => (
             <span key={word} className="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
               {word}
             </span>
-          ))}
-        </div>
-      ),
+            ))}
+          </div>
+        );
+      },
     },
     {
       key: 'count',
