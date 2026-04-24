@@ -13,6 +13,7 @@ interface Column<T> {
 interface AdminDataTableProps<T> {
   columns: Column<T>[];
   data: T[];
+  className?: string;
   pagination?: {
     currentPage: number;
     totalPages: number;
@@ -22,9 +23,14 @@ interface AdminDataTableProps<T> {
   };
 }
 
-export default function AdminDataTable<T>({ columns, data, pagination }: AdminDataTableProps<T>) {
+export default function AdminDataTable<T>({ columns, data, className, pagination }: AdminDataTableProps<T>) {
   return (
-    <div className="flex flex-col overflow-hidden rounded-xl border border-outline-variant/50 bg-white shadow-sm dark:border-white/10 dark:bg-black/40 dark:backdrop-blur-xl">
+    <div
+      className={cn(
+        'flex flex-col overflow-hidden rounded-xl border border-outline-variant/50 bg-white shadow-sm dark:border-white/10 dark:bg-black/40 dark:backdrop-blur-xl',
+        className
+      )}
+    >
       <div className="overflow-x-auto">
         <table className="w-full text-left">
           <thead>

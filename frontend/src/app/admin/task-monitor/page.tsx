@@ -193,6 +193,7 @@ export default function AdminTaskMonitorPage() {
           </div>
 
         <AdminDataTable
+          className="rounded-none border-0 shadow-none"
           data={tasks}
           pagination={{
             currentPage: page,
