@@ -79,6 +79,16 @@ class DeepSeekClientTest {
     }
 
     @Test
+    void calculateMatch_fallbackReasonShouldNotContainRawFormatPlaceholders() throws Exception {
+        startServer(exchange -> writeResponse(exchange, 500, "{" + "\"error\":\"upstream failed\"}"));
+        DeepSeekClient client = createClient();
+
+        Map<String, Object> result = client.calculateMatch(sampleUserInfo(), sampleJobInfo());
+
+        assertThat(result.get("match_reasons").toString()).doesNotContain("{:.0f}");
+    }
+
+    @Test
     void parseJob_shouldSendAuthorizationHeaderAndParseFencedJson() throws Exception {
         AtomicReference<String> authorization = new AtomicReference<>();
         startServer(exchange -> {

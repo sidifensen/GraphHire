@@ -172,7 +172,7 @@ public class DeepSeekClient {
             "education_score", eduScore,
             "salary_score", salScore,
             "overall_score", overallScore,
-            "match_reasons", StrUtil.format("Skills match: {:.0f}%. Experience match: {:.0f}%.", skillScore, expScore),
+            "match_reasons", StrUtil.format("Skills match: {}%. Experience match: {}%.", Math.round(skillScore), Math.round(expScore)),
             "gaps", java.util.Collections.emptyList(),
             "suggestions", java.util.Collections.emptyList()
         );
