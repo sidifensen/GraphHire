@@ -57,4 +57,17 @@ describe('AdminShell', () => {
     await user.click(toggle);
     expect(document.documentElement.classList.contains('dark')).toBe(false);
   });
+
+  it('uses dedicated dark-mode surfaces for sidebar, main background, and cards', () => {
+    render(
+      <AdminShell activeItem="dashboard">
+        <article data-testid="mock-card" className="bg-white">
+          card
+        </article>
+      </AdminShell>
+    );
+
+    expect(screen.getByTestId('admin-sidebar-root').className).toContain('dark:bg-black');
+    expect(screen.getByTestId('admin-main-root').className).toContain('dark:bg-gray-700');
+  });
 });

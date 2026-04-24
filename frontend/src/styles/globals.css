@@ -56,6 +56,7 @@
   --color-on-secondary-container: #FFFBFF;
   --font-headline: 'Manrope', sans-serif;
   --font-body: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --color-primary-rgb: 0, 61, 166;
 }
 
 @layer base {
@@ -114,4 +115,157 @@
 
 .ambient-shadow-hover:hover {
   box-shadow: 0 12px 32px -4px rgba(14, 28, 44, 0.06);
+}
+
+.dark .admin-themed {
+  background-color: #0b1220;
+  color: #e2e8f0;
+}
+
+.dark .admin-themed .bg-white {
+  background-color: #111827 !important;
+}
+
+.dark .admin-themed .bg-slate-50 {
+  background-color: #0f172a !important;
+}
+
+.dark .admin-themed .admin-main-surface {
+  background-color: #374151 !important;
+}
+
+.dark .admin-themed [data-testid='admin-sidebar-root'] {
+  background-color: #000000 !important;
+}
+
+.dark .admin-themed .admin-main-surface .bg-white {
+  background-color: #000000 !important;
+}
+
+.dark .admin-themed .border-slate-200,
+.dark .admin-themed .border-slate-100 {
+  border-color: #334155 !important;
+}
+
+.dark .admin-themed .text-slate-900 {
+  color: #f8fafc !important;
+}
+
+.dark .admin-themed .text-slate-800,
+.dark .admin-themed .text-slate-700,
+.dark .admin-themed .text-slate-600 {
+  color: #cbd5e1 !important;
+}
+
+.dark .admin-themed .text-slate-500,
+.dark .admin-themed .text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+.dark .admin-themed .hover\:bg-slate-100:hover,
+.dark .admin-themed .hover\:bg-slate-50:hover {
+  background-color: #1e293b !important;
+}
+
+/* ===== Jobs Page Animations ===== */
+
+/* Search Section - Page Load Animation */
+.search-section {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Job Card - Scroll Reveal */
+.job-card {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out, box-shadow 0.3s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.job-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Job Card - Hover Effects */
+.job-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.job-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px -8px rgba(var(--color-primary-rgb), 0.12);
+}
+
+/* Left Blue Indicator Bar */
+.job-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%) scaleY(0);
+  width: 4px;
+  height: 60%;
+  background: linear-gradient(180deg, var(--color-primary), var(--color-primary-container));
+  border-radius: 0 4px 4px 0;
+  transition: transform 0.3s ease-out;
+}
+
+.job-card:hover::before {
+  transform: translateY(-50%) scaleY(1);
+}
+
+/* Skill Tag Hover Effect */
+.skill-tag {
+  transition: all 0.2s ease;
+}
+
+.skill-tag:hover {
+  background: var(--color-primary) !important;
+  color: var(--color-on-primary) !important;
+  transform: scale(1.05);
+}
+
+/* Search Button Shine Effect */
+.search-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.search-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.search-btn:hover::after {
+  opacity: 1;
+}
+
+.search-btn:hover {
+  transform: translateY(-1px);
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .search-section,
+  .job-card,
+  .skill-tag,
+  .search-btn {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
