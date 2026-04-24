@@ -15,7 +15,7 @@ import java.time.Duration;
 
 @Configuration
 public class RustFSConfig {
-    @Value("${rustfs.endpoint}")
+    @Value("${rustfs.endpoint:http://localhost:9000}")
     private String endpoint;
 
     @Value("${rustfs.access-key:}")

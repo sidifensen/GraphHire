@@ -76,7 +76,7 @@ public class ParseTask extends BaseEntity {
     public void markFailed(String error) {
         this.errorMessage = error;
         this.status = TaskStatus.FAILED;
-        this.retryCount++;
+        this.retryCount = (this.retryCount == null ? 1 : this.retryCount + 1);
         this.completedAt = LocalDateTime.now();
     }
 

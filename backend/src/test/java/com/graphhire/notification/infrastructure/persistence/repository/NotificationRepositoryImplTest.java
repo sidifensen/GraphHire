@@ -207,8 +207,11 @@ class NotificationRepositoryImplTest {
             newNotification.setReferenceId(300L);
             newNotification.setIsRead(false);
 
-            when(notificationMapper.insert(any(NotificationPO.class))).thenReturn(1);
-            when(notificationMapper.selectById(1L)).thenReturn(samplePO);
+            doAnswer(invocation -> {
+                NotificationPO po = invocation.getArgument(0);
+                po.setId(1L);
+                return 1;
+            }).when(notificationMapper).insert(any(NotificationPO.class));
 
             Notification result = notificationRepository.save(newNotification);
 
