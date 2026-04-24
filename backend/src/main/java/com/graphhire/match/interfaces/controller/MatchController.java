@@ -34,6 +34,17 @@ public class MatchController {
     }
 
     /**
+     * 按需触发匹配（点击岗位时调用）
+     * @param cmd 匹配请求
+     * @return 匹配结果
+     */
+    @PostMapping("/on-demand")
+    public Result<MatchRecord> triggerOnDemandMatch(@RequestBody TriggerMatchCmd cmd) {
+        MatchRecord record = matchAppService.triggerMatch(cmd);
+        return Result.success(record);
+    }
+
+    /**
      * 获取匹配详情
      * @param matchId 匹配记录ID
      * @return 匹配详情

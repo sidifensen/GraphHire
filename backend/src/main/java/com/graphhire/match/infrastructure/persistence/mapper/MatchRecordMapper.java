@@ -5,6 +5,7 @@ import com.graphhire.match.infrastructure.persistence.po.MatchRecordPO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Update;
 
 /**
@@ -62,4 +63,10 @@ public interface MatchRecordMapper extends BaseMapper<MatchRecordPO> {
                         @Param("salaryScore") java.math.BigDecimal salaryScore,
                         @Param("matchDetail") String matchDetail,
                         @Param("viewed") Integer viewed);
+
+    @Delete("DELETE FROM match_record WHERE resume_id = #{resumeId}")
+    int deleteByResumeId(@Param("resumeId") Long resumeId);
+
+    @Delete("DELETE FROM match_record WHERE job_id = #{jobId}")
+    int deleteByJobId(@Param("jobId") Long jobId);
 }

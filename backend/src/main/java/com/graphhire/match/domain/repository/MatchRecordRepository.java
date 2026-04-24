@@ -22,6 +22,10 @@ public interface MatchRecordRepository {
     MatchRecord save(MatchRecord matchRecord);
     /** 删除匹配记录 */
     void delete(MatchRecord matchRecord);
+    /** 按简历ID批量删除匹配记录 */
+    void deleteByResumeId(Long resumeId);
+    /** 按职位ID批量删除匹配记录 */
+    void deleteByJobId(Long jobId);
     /** 统计匹配记录总数 */
     long count();
 }

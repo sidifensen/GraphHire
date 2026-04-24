@@ -99,6 +99,22 @@ public class MatchRecordRepositoryImpl implements MatchRecordRepository {
     }
 
     @Override
+    public void deleteByResumeId(Long resumeId) {
+        if (resumeId == null) {
+            return;
+        }
+        matchRecordMapper.deleteByResumeId(resumeId);
+    }
+
+    @Override
+    public void deleteByJobId(Long jobId) {
+        if (jobId == null) {
+            return;
+        }
+        matchRecordMapper.deleteByJobId(jobId);
+    }
+
+    @Override
     public long count() {
         return matchRecordMapper.selectCount(null);
     }

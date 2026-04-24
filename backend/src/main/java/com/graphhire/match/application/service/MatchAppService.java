@@ -52,11 +52,14 @@ public class MatchAppService {
      */
     @Transactional
     public MatchRecord triggerMatch(TriggerMatchCmd cmd) {
-        // 步骤1：调用领域服务计算简历与职位的匹配度
+        // 步骤1：优先复用已有匹配记录（作为缓存）
+        List<MatchRecord> cachedRecords = matchRecordRepository.findByResumeIdAndJobId(cmd.getResumeId(), cmd.getJobId());
+        if (!cachedRecords.isEmpty()) {
+            return cachedRecords.get(0);
+        }
+        // 步骤2：缓存未命中时计算并持久化
         MatchRecord matchRecord = matchDomainService.calculateMatch(cmd.getResumeId(), cmd.getJobId());
-        // 步骤2：将匹配记录持久化到数据库
         return matchRecordRepository.save(matchRecord);
-        // 步骤3：返回保存的匹配记录
     }
 
     /**
@@ -69,21 +72,7 @@ public class MatchAppService {
      */
     @Transactional
     public void triggerMatchForResume(Long resumeId) {
-        // 步骤1：根据简历ID查询简历信息
-        Resume resume = resumeRepository.findById(resumeId)
-            .orElseThrow(() -> new RuntimeException("Resume not found"));
-
-        // 步骤2：获取所有已发布的职位
-        List<Job> jobs = jobRepository.findByStatus(JobStatus.PUBLISHED);
-
-        for (Job job : jobs) {
-            // 步骤3：为用户创建职位推荐通知（type=2: 新职位推荐）
-            // 注意：MatchRecord创建由Application模块处理，这里只发送通知
-            MatchRecord record = matchDomainService.calculateMatch(resume, job);
-            // 保存匹配记录
-            matchRecordRepository.save(record);
-            createJobRecommendationNotification(resume.getUserId(), job.getId(), BigDecimal.valueOf(record.getScore().getTotal()));
-        }
+        clearMatchCacheForResume(resumeId);
     }
 
     /**
@@ -96,21 +85,17 @@ public class MatchAppService {
      */
     @Transactional
     public void triggerMatchForJob(Long jobId) {
-        // 步骤1：根据职位ID查询职位信息
-        Job job = jobRepository.findById(jobId)
-            .orElseThrow(() -> new RuntimeException("Job not found"));
+        clearMatchCacheForJob(jobId);
+    }
 
-        // 步骤2：查询所有parse_status=SUCCESS的简历
-        List<Resume> resumes = resumeRepository.findByParseStatus(ParseStatus.SUCCESS);
+    @Transactional
+    public void clearMatchCacheForResume(Long resumeId) {
+        matchRecordRepository.deleteByResumeId(resumeId);
+    }
 
-        for (Resume resume : resumes) {
-            // 步骤3：为企业创建候选人推荐通知（type=3: 候选人推荐）
-            // 注意：MatchRecord创建由Application模块处理，这里只发送通知
-            MatchRecord record = matchDomainService.calculateMatch(resume, job);
-            // 保存匹配记录
-            matchRecordRepository.save(record);
-            createCandidateRecommendationNotification(job.getCompanyId(), resume.getId(), BigDecimal.valueOf(record.getScore().getTotal()));
-        }
+    @Transactional
+    public void clearMatchCacheForJob(Long jobId) {
+        matchRecordRepository.deleteByJobId(jobId);
     }
 
     /**
