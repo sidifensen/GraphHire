@@ -94,7 +94,7 @@ export default function AdminSkillTagsPage() {
   useEffect(() => {
     void loadSkills();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [page]);
 
   const handleCreate = async () => {
     const name = window.prompt('请输入标签名称');
@@ -125,7 +125,9 @@ export default function AdminSkillTagsPage() {
 
   const handleFilter = async () => {
     setPage(1);
-    await loadSkills();
+    if (page === 1) {
+      await loadSkills();
+    }
   };
 
   return (
@@ -212,7 +214,13 @@ export default function AdminSkillTagsPage() {
 
         <AdminDataTable
           data={rows}
-          pagination={{ currentPage: page, totalPages, totalItems: total }}
+          pagination={{
+            currentPage: page,
+            totalPages,
+            totalItems: total,
+            pageSize,
+            onPageChange: (nextPage) => setPage(nextPage),
+          }}
           columns={[
             {
               header: '标准名称',

@@ -1,6 +1,8 @@
 package com.graphhire.resume.infrastructure.persistence.repository;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.graphhire.resume.domain.model.ParseTask;
 import com.graphhire.resume.domain.repository.ParseTaskRepository;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * 解析任务仓储实现
@@ -46,6 +49,31 @@ public class ParseTaskRepositoryImpl implements ParseTaskRepository {
         return parseTaskMapper.selectList(null).stream()
                 .map(this::toDomain)
                 .toList();
+    }
+
+    @Override
+    public IPage<ParseTask> findPage(String type, String status, int page, int pageSize) {
+        Page<ParseTaskPO> pageParam = new Page<>(Math.max(page, 1), Math.max(pageSize, 1));
+        LambdaQueryWrapper<ParseTaskPO> wrapper = new LambdaQueryWrapper<>();
+
+        applyTypeFilter(wrapper, type);
+        applyStatusFilter(wrapper, status);
+        wrapper.orderByDesc(ParseTaskPO::getCreateTime);
+
+        IPage<ParseTaskPO> poPage = parseTaskMapper.selectPage(pageParam, wrapper);
+        Page<ParseTask> domainPage = new Page<>(poPage.getCurrent(), poPage.getSize(), poPage.getTotal());
+        domainPage.setRecords(poPage.getRecords().stream().map(this::toDomain).toList());
+        return domainPage;
+    }
+
+    @Override
+    public long countByStatus(ParseTask.TaskStatus status) {
+        if (status == null) {
+            return 0L;
+        }
+        LambdaQueryWrapper<ParseTaskPO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ParseTaskPO::getStatus, status.ordinal());
+        return parseTaskMapper.selectCount(wrapper);
     }
 
     @Override
@@ -106,5 +134,34 @@ public class ParseTaskRepositoryImpl implements ParseTaskRepository {
         po.setCreateTime(task.getCreatedAt());
         po.setFinishTime(task.getCompletedAt());
         return po;
+    }
+
+    private void applyStatusFilter(LambdaQueryWrapper<ParseTaskPO> wrapper, String status) {
+        if (status == null || status.isBlank()) {
+            return;
+        }
+        Integer mapped = switch (status.toUpperCase()) {
+            case "QUEUED" -> ParseTask.TaskStatus.PENDING.ordinal();
+            case "PROCESSING" -> ParseTask.TaskStatus.RUNNING.ordinal();
+            case "COMPLETED" -> ParseTask.TaskStatus.SUCCESS.ordinal();
+            case "FAILED" -> ParseTask.TaskStatus.FAILED.ordinal();
+            default -> null;
+        };
+        if (mapped != null) {
+            wrapper.eq(ParseTaskPO::getStatus, mapped);
+        }
+    }
+
+    private void applyTypeFilter(LambdaQueryWrapper<ParseTaskPO> wrapper, String type) {
+        if (type == null || type.isBlank()) {
+            return;
+        }
+        switch (type.toUpperCase()) {
+            case "RESUME_PARSE" -> wrapper.in(ParseTaskPO::getTaskType, Set.of(0, 1));
+            case "JOB_MATCH" -> wrapper.eq(ParseTaskPO::getTaskType, 2);
+            case "IMPORT" -> wrapper.and(q -> q.isNull(ParseTaskPO::getTaskType).or().notIn(ParseTaskPO::getTaskType, Set.of(0, 1, 2)));
+            default -> {
+            }
+        }
     }
 }

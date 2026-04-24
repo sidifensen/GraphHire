@@ -1,5 +1,6 @@
 package com.graphhire.admin.application.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.graphhire.admin.application.command.AuthCompanyCmd;
 import com.graphhire.admin.application.query.UserListQuery;
@@ -245,13 +246,20 @@ class AdminAppServiceTest {
             task.setRetryCount(1);
             task.setCreatedAt(LocalDateTime.now());
             task.setErrorMessage("timeout");
-            when(parseTaskRepository.findAll()).thenReturn(List.of(task));
+            IPage<ParseTask> page = new Page<>(1, 10, 1);
+            page.setRecords(List.of(task));
+            when(parseTaskRepository.findPage("RESUME_PARSE", "FAILED", 1, 10)).thenReturn(page);
+            when(parseTaskRepository.countByStatus(ParseTask.TaskStatus.PENDING)).thenReturn(0L);
+            when(parseTaskRepository.countByStatus(ParseTask.TaskStatus.RUNNING)).thenReturn(0L);
+            when(parseTaskRepository.countByStatus(ParseTask.TaskStatus.SUCCESS)).thenReturn(0L);
+            when(parseTaskRepository.countByStatus(ParseTask.TaskStatus.FAILED)).thenReturn(1L);
 
             AdminTaskListResponse response = adminAppService.getTaskList("RESUME_PARSE", "FAILED", 1, 10);
 
             assertEquals(1, response.getTotal());
             assertEquals(1, response.getSummary().getFailed());
             assertEquals("FAILED", response.getList().get(0).getStatus());
+            verify(parseTaskRepository, never()).findAll();
         }
 
         @Test

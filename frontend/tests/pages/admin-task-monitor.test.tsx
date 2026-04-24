@@ -28,23 +28,27 @@ const mockedAdminApi = vi.mocked(adminApi);
 describe('AdminTaskMonitorPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockedAdminApi.getTaskList.mockResolvedValue({
-      summary: { pending: 1, processing: 2, completed: 3, failed: 1 },
-      list: [{
-        id: 10,
-        type: 'RESUME_PARSE',
-        status: 'FAILED',
-        progress: 0,
-        total: 100,
-        successCount: 0,
-        failCount: 1,
-        createdAt: '2026-04-21',
-        errorMessage: 'timeout',
-      }],
-      total: 1,
-      page: 1,
-      pageSize: 10,
-    });
+    mockedAdminApi.getTaskList.mockImplementation((params?: { page?: number }) =>
+      Promise.resolve({
+        summary: { pending: 1, processing: 2, completed: 3, failed: 1 },
+        list: [
+          {
+            id: params?.page === 2 ? 11 : 10,
+            type: 'RESUME_PARSE',
+            status: 'FAILED',
+            progress: 0,
+            total: 100,
+            successCount: 0,
+            failCount: 1,
+            createdAt: '2026-04-21',
+            errorMessage: 'timeout',
+          },
+        ],
+        total: 20,
+        page: params?.page ?? 1,
+        pageSize: 10,
+      })
+    );
   });
 
   it('展示重构后的任务监控标题与说明', async () => {
@@ -75,6 +79,17 @@ describe('AdminTaskMonitorPage', () => {
 
     await waitFor(() => {
       expect(adminApi.getTaskList).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  it('点击分页会请求对应页码', async () => {
+    render(<AdminTaskMonitorPage />);
+    await screen.findByText('任务监控');
+
+    fireEvent.click(screen.getByRole('button', { name: '第 2 页' }));
+
+    await waitFor(() => {
+      expect(adminApi.getTaskList).toHaveBeenLastCalledWith(expect.objectContaining({ page: 2 }));
     });
   });
 });

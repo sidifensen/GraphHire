@@ -308,27 +308,21 @@ public class AdminAppService {
     }
 
     public AdminTaskListResponse getTaskList(String type, String status, int page, int pageSize) {
-        List<ParseTask> allTasks = parseTaskRepository.findAll();
+        IPage<ParseTask> taskPage = parseTaskRepository.findPage(type, status, page, pageSize);
         AdminTaskSummaryResponse summary = new AdminTaskSummaryResponse();
-        summary.setPending(allTasks.stream().filter(task -> task.getStatus() == ParseTask.TaskStatus.PENDING).count());
-        summary.setProcessing(allTasks.stream().filter(task -> task.getStatus() == ParseTask.TaskStatus.RUNNING).count());
-        summary.setCompleted(allTasks.stream().filter(task -> task.getStatus() == ParseTask.TaskStatus.SUCCESS).count());
-        summary.setFailed(allTasks.stream().filter(task -> task.getStatus() == ParseTask.TaskStatus.FAILED).count());
+        summary.setPending(parseTaskRepository.countByStatus(ParseTask.TaskStatus.PENDING));
+        summary.setProcessing(parseTaskRepository.countByStatus(ParseTask.TaskStatus.RUNNING));
+        summary.setCompleted(parseTaskRepository.countByStatus(ParseTask.TaskStatus.SUCCESS));
+        summary.setFailed(parseTaskRepository.countByStatus(ParseTask.TaskStatus.FAILED));
 
-        List<AdminTaskItemResponse> items = allTasks.stream()
-            .filter(task -> matchesTask(task, type, status))
-            .sorted(Comparator.comparing(ParseTask::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
+        List<AdminTaskItemResponse> items = taskPage.getRecords().stream()
             .map(this::toAdminTaskItem)
             .toList();
 
-        int start = Math.max((page - 1) * pageSize, 0);
-        int end = Math.min(start + pageSize, items.size());
-        List<AdminTaskItemResponse> pageList = start < items.size() ? items.subList(start, end) : new ArrayList<>();
-
         AdminTaskListResponse response = new AdminTaskListResponse();
         response.setSummary(summary);
-        response.setList(pageList);
-        response.setTotal(items.size());
+        response.setList(items);
+        response.setTotal(taskPage.getTotal());
         response.setPage(page);
         response.setPageSize(pageSize);
         return response;

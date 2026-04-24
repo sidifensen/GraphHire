@@ -146,7 +146,13 @@ export default function AdminUsersPage() {
 
         <AdminDataTable
           data={users}
-          pagination={{ currentPage: page, totalPages: Math.max(1, Math.ceil(total / Math.max(pageSize, 1))), totalItems: total }}
+          pagination={{
+            currentPage: page,
+            totalPages: Math.max(1, Math.ceil(total / Math.max(pageSize, 1))),
+            totalItems: total,
+            pageSize: Math.max(pageSize, 1),
+            onPageChange: (nextPage) => setPage(nextPage),
+          }}
           columns={[
             {
               header: '头像',

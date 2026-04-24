@@ -47,7 +47,7 @@ export default function AdminTaskMonitorPage() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<string>('');
   const [type, setType] = useState<string>('');
-  const [page] = useState(1);
+  const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
   const [total, setTotal] = useState(0);
   const [summary, setSummary] = useState<TaskSummary>({
@@ -65,13 +65,13 @@ export default function AdminTaskMonitorPage() {
     return Math.max(1, Math.ceil(total / pageSize));
   }, [total, pageSize]);
 
-  const loadTasks = async () => {
+  const loadTasks = async (targetPage = page) => {
     setLoading(true);
     try {
       const response = await adminApi.getTaskList({
         status: status || undefined,
         type: type || undefined,
-        page,
+        page: targetPage,
         pageSize,
       });
       setSummary(response.summary);
@@ -94,7 +94,7 @@ export default function AdminTaskMonitorPage() {
   useEffect(() => {
     void loadTasks();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [page]);
 
   const handleRetry = async (task: TaskRow) => {
     if (task.status === '处理中') {
@@ -105,7 +105,10 @@ export default function AdminTaskMonitorPage() {
   };
 
   const handleFilter = async () => {
-    await loadTasks();
+    setPage(1);
+    if (page === 1) {
+      await loadTasks(1);
+    }
   };
 
   const handleRefresh = async () => {
@@ -191,10 +194,16 @@ export default function AdminTaskMonitorPage() {
             </div>
           </div>
 
-          <AdminDataTable
-            data={tasks}
-            pagination={{ currentPage: page, totalPages, totalItems: total }}
-            columns={[
+        <AdminDataTable
+          data={tasks}
+          pagination={{
+            currentPage: page,
+            totalPages,
+            totalItems: total,
+            pageSize,
+            onPageChange: (nextPage) => setPage(nextPage),
+          }}
+          columns={[
               { header: '任务ID', accessor: (task) => <span className="font-mono text-xs font-bold text-slate-700 dark:text-slate-300">{task.taskCode}</span> },
               { header: '任务类型', accessor: (task) => <span className="text-sm text-on-surface">{task.type}</span> },
               { header: '重试次数', accessor: (task) => <span className="inline-block min-w-16 text-center text-sm text-outline">{task.retries}</span> },

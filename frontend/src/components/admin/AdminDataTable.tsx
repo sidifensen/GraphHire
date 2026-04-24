@@ -1,8 +1,8 @@
 ﻿'use client';
 
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ReactNode } from 'react';
+import AdminPagination from './AdminPagination';
 
 interface Column<T> {
   header: string;
@@ -17,6 +17,8 @@ interface AdminDataTableProps<T> {
     currentPage: number;
     totalPages: number;
     totalItems: number;
+    pageSize: number;
+    onPageChange: (page: number) => void;
   };
 }
 
@@ -34,7 +36,7 @@ export default function AdminDataTable<T>({ columns, data, pagination }: AdminDa
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-outline-variant/30">
+          <tbody className="divide-y divide-outline-variant/30 dark:divide-white/10">
             {data.map((item, rowIdx) => (
               <tr key={rowIdx} className="transition-colors hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
                 {columns.map((col, colIdx) => (
@@ -51,28 +53,10 @@ export default function AdminDataTable<T>({ columns, data, pagination }: AdminDa
       {pagination ? (
         <div className="flex items-center justify-between border-t border-outline-variant/50 bg-white px-6 py-4 dark:border-white/10 dark:bg-transparent">
           <span className="text-xs font-medium text-outline">
-            显示 1 到 {data.length} 条，共 {pagination.totalItems.toLocaleString()} 条记录
+            显示 {(pagination.currentPage - 1) * pagination.pageSize + (pagination.totalItems > 0 ? 1 : 0)} 到{' '}
+            {Math.min(pagination.currentPage * pagination.pageSize, pagination.totalItems)} 条，共 {pagination.totalItems.toLocaleString()} 条记录
           </span>
-          <div className="flex items-center space-x-1">
-            <button className="flex h-8 w-8 items-center justify-center rounded-lg text-outline transition-colors hover:bg-slate-100 disabled:opacity-40 dark:hover:bg-slate-800">
-              <ChevronLeft size={16} />
-            </button>
-            <button className="font-display flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-xs font-bold text-white">
-              {pagination.currentPage}
-            </button>
-            {[...Array(2)].map((_, i) => (
-              <button
-                key={i}
-                className="font-display flex h-8 w-8 items-center justify-center rounded-lg text-xs font-medium text-on-surface transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
-              >
-                {pagination.currentPage + i + 1}
-              </button>
-            ))}
-            <span className="flex h-8 w-8 items-center justify-center text-xs text-outline">...</span>
-            <button className="flex h-8 w-8 items-center justify-center rounded-lg text-outline transition-colors hover:bg-slate-100 dark:hover:bg-slate-800">
-              <ChevronRight size={16} />
-            </button>
-          </div>
+          <AdminPagination currentPage={pagination.currentPage} totalPages={pagination.totalPages} onPageChange={pagination.onPageChange} />
         </div>
       ) : null}
     </div>
