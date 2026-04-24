@@ -230,34 +230,6 @@ INSERT INTO resume (id, user_id, file_name, file_path, file_type, parse_status, 
 ON CONFLICT (id) DO NOTHING;
 
 -- =============================================
--- 7. 简历技能关联（从parse_result提取）
--- =============================================
-INSERT INTO resume_skill (resume_id, skill_id, skill_level, skill_source, is_required, create_time, update_time)
-SELECT 1, t.id, 3, '工作经历', 1, '2026-04-15 12:00:00', '2026-04-15 12:00:00'
-FROM skill_tag t WHERE t.name IN ('Java', 'Spring Boot', 'MySQL', 'Redis', 'Docker')
-ON CONFLICT DO NOTHING;
-
-INSERT INTO resume_skill (resume_id, skill_id, skill_level, skill_source, is_required, create_time, update_time)
-SELECT 2, t.id, 3, '工作经历', 1, '2026-04-15 12:30:00', '2026-04-15 12:30:00'
-FROM skill_tag t WHERE t.name IN ('Python', 'Spark', 'Kafka', 'Hadoop', 'MySQL')
-ON CONFLICT DO NOTHING;
-
-INSERT INTO resume_skill (resume_id, skill_id, skill_level, skill_source, is_required, create_time, update_time)
-SELECT 3, t.id, 3, '工作经历', 1, '2026-04-15 13:00:00', '2026-04-15 13:00:00'
-FROM skill_tag t WHERE t.name IN ('React', 'Vue', 'TypeScript', 'Node.js', 'Git')
-ON CONFLICT DO NOTHING;
-
-INSERT INTO resume_skill (resume_id, skill_id, skill_level, skill_source, is_required, create_time, update_time)
-SELECT 4, t.id, 3, '工作经历', 1, '2026-04-15 13:30:00', '2026-04-15 13:30:00'
-FROM skill_tag t WHERE t.name IN ('Linux', 'Docker', 'Kubernetes', 'Jenkins', 'Git')
-ON CONFLICT DO NOTHING;
-
-INSERT INTO resume_skill (resume_id, skill_id, skill_level, skill_source, is_required, create_time, update_time)
-SELECT 5, t.id, 3, '工作经历', 1, '2026-04-15 14:00:00', '2026-04-15 14:00:00'
-FROM skill_tag t WHERE t.name IN ('Python', 'PyTorch', 'TensorFlow', 'LLM', 'LangChain', 'Kafka')
-ON CONFLICT DO NOTHING;
-
--- =============================================
 -- 8. 职位数据
 -- =============================================
 INSERT INTO job (id, company_id, title, description, skills, city, salary_min, salary_max, salary_unit, experience, education, job_type, status, create_time, update_time, deleted) VALUES

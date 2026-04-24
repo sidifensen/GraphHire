@@ -215,36 +215,7 @@ CREATE INDEX idx_skill_tag_name ON skill_tag (name);
 CREATE INDEX idx_skill_tag_synonyms ON skill_tag USING GIN (synonyms);
 
 -- =============================================
--- 7. 简历技能关联表 resume_skill
--- =============================================
-CREATE TABLE resume_skill
-(
-    id           BIGSERIAL PRIMARY KEY,
-    resume_id    BIGINT    NOT NULL,
-    skill_id     BIGINT    NOT NULL,
-    skill_level  SMALLINT  NOT NULL DEFAULT 1,
-    skill_source VARCHAR(50),
-    is_required  SMALLINT,
-    create_time  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    update_time  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT uk_resume_skill UNIQUE (resume_id, skill_id),
-    CONSTRAINT chk_skill_level CHECK (skill_level BETWEEN 1 AND 3),
-    CONSTRAINT chk_is_required CHECK (is_required IS NULL OR is_required IN (1, 2))
-);
-
-COMMENT ON TABLE resume_skill IS '简历技能关联表：存储简历解析出的技能及熟练度';
-COMMENT ON COLUMN resume_skill.resume_id IS '简历ID';
-COMMENT ON COLUMN resume_skill.skill_id IS '技能标签ID';
-COMMENT ON COLUMN resume_skill.skill_level IS '熟练度：1-了解 2-熟悉 3-精通';
-COMMENT ON COLUMN resume_skill.skill_source IS '技能来源：工作经历/项目经验/教育背景';
-COMMENT ON COLUMN resume_skill.is_required IS '是否应聘必须技能：1-必须 2-优先 NULL-普通技能';
-
-CREATE INDEX idx_resume_skill_resume_id ON resume_skill (resume_id);
-CREATE INDEX idx_resume_skill_skill_id ON resume_skill (skill_id);
-
--- =============================================
--- 8. 职位表 job
+-- 7. 职位表 job
 -- =============================================
 CREATE TABLE job
 (
