@@ -99,10 +99,6 @@ function JobsContent() {
                 搜索职位
               </button>
             </div>
-            <div className="flex flex-wrap gap-3 text-sm text-on-surface-variant">
-              <span className="px-4 py-2 rounded-full bg-surface-container-lowest">真实职位接口</span>
-              <span className="px-4 py-2 rounded-full bg-surface-container-lowest">支持关键词与城市筛选</span>
-            </div>
           </div>
         </section>
 
