@@ -7,7 +7,7 @@ describe('admin rewrite static template', () => {
     render(<LoginPage />);
 
     expect(screen.getByText('欢迎回来')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '登 录' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '登录' })).toBeInTheDocument();
     expect(screen.getByText((content) => content.includes('开启 AI 智能'))).toBeInTheDocument();
   });
 

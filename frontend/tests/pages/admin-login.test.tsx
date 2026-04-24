@@ -40,8 +40,13 @@ describe('AdminLoginPage', () => {
 
     expect(screen.getByText('欢迎回来')).toBeInTheDocument();
     expect(screen.getByText('请登录以继续管理 GraphHire 平台')).toBeInTheDocument();
-    expect(screen.getByLabelText('账号 / 手机号')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '登 录' })).toBeInTheDocument();
+    expect(screen.getByLabelText('账号')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '登录' })).toBeInTheDocument();
+    expect(screen.queryByText('快捷登录')).not.toBeInTheDocument();
+    expect(screen.queryByText('手机号')).not.toBeInTheDocument();
+    expect(screen.queryByText('记住我')).not.toBeInTheDocument();
+    expect(screen.queryByText('忘记密码?')).not.toBeInTheDocument();
+    expect(screen.queryByText('申请内部账号')).not.toBeInTheDocument();
   });
 
   it('登录成功后写入管理员鉴权并跳转仪表盘', async () => {
@@ -55,9 +60,9 @@ describe('AdminLoginPage', () => {
 
     render(<AdminLoginPage />);
 
-    fireEvent.change(screen.getByLabelText('账号 / 手机号'), { target: { value: 'admin' } });
+    fireEvent.change(screen.getByLabelText('账号'), { target: { value: 'admin' } });
     fireEvent.change(screen.getByLabelText('密码'), { target: { value: '123456' } });
-    fireEvent.click(screen.getByRole('button', { name: '登 录' }));
+    fireEvent.click(screen.getByRole('button', { name: '登录' }));
 
     await waitFor(() => {
       expect(adminApi.login).toHaveBeenCalledWith({ username: 'admin', password: '123456' });
@@ -71,9 +76,9 @@ describe('AdminLoginPage', () => {
 
     render(<AdminLoginPage />);
 
-    fireEvent.change(screen.getByLabelText('账号 / 手机号'), { target: { value: 'wrong' } });
+    fireEvent.change(screen.getByLabelText('账号'), { target: { value: 'wrong' } });
     fireEvent.change(screen.getByLabelText('密码'), { target: { value: 'wrong' } });
-    fireEvent.click(screen.getByRole('button', { name: '登 录' }));
+    fireEvent.click(screen.getByRole('button', { name: '登录' }));
 
     expect(await screen.findByText('用户名或密码错误')).toBeInTheDocument();
   });

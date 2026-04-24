@@ -1,9 +1,38 @@
 ﻿'use client';
 
+import { FormEvent, useState } from 'react';
 import { Network } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import { adminApi } from '@/lib/api/admin';
+import { adminAuthStore } from '@/lib/stores/auth-store';
 
 export default function AdminLoginPage() {
+  const router = useRouter();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await adminApi.login({ username, password });
+      adminAuthStore.getState().setAuth(
+        { accessToken: response.accessToken, refreshToken: response.refreshToken },
+        { id: response.userId, username, type: response.userType }
+      );
+      router.push('/admin/dashboard');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '登录失败，请检查账号和密码');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="relative flex min-h-screen flex-col overflow-hidden bg-surface text-on-surface font-sans">
       <div className="pointer-events-none absolute inset-0 z-0 opacity-20">
@@ -47,53 +76,50 @@ export default function AdminLoginPage() {
               <p className="text-sm text-outline">请登录以继续管理 GraphHire 平台</p>
             </div>
 
-            <div className="mb-8 flex gap-6 border-b border-outline-variant">
-              <button className="border-b-2 border-primary pb-3 text-base font-medium text-primary">账号登录</button>
-              <button className="pb-3 text-base font-medium text-outline transition-colors hover:text-on-surface">快捷登录</button>
+            <div className="mb-8 flex border-b border-outline-variant">
+              <span className="border-b-2 border-primary pb-3 text-base font-medium text-primary">账号登录</span>
             </div>
 
-            <form className="space-y-5">
+            {error ? (
+              <div className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+                {error}
+              </div>
+            ) : null}
+
+            <form className="space-y-5" onSubmit={handleSubmit}>
               <div>
-                <label className="mb-2 block text-sm font-medium text-on-surface">账号 / 手机号</label>
+                <label htmlFor="admin-username" className="mb-2 block text-sm font-medium text-on-surface">账号</label>
                 <input
+                  id="admin-username"
                   type="text"
                   placeholder="请输入您的账号"
+                  value={username}
+                  onChange={(event) => setUsername(event.target.value)}
+                  required
                   className="block w-full rounded-lg border-none bg-surface px-4 py-3 text-sm text-on-surface outline-none transition-all focus:ring-2 focus:ring-primary/20"
                 />
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-on-surface">密码</label>
+                <label htmlFor="admin-password" className="mb-2 block text-sm font-medium text-on-surface">密码</label>
                 <input
+                  id="admin-password"
                   type="password"
                   placeholder="请输入密码"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  required
                   className="block w-full rounded-lg border-none bg-surface px-4 py-3 text-sm text-on-surface outline-none transition-all focus:ring-2 focus:ring-primary/20"
                 />
-              </div>
-
-              <div className="flex items-center justify-between pt-2">
-                <label className="flex cursor-pointer items-center gap-2 text-sm text-outline">
-                  <input type="checkbox" className="rounded border-outline-variant text-primary" />
-                  记住我
-                </label>
-                <a href="#" className="text-sm font-medium text-on-surface transition-colors hover:text-primary">
-                  忘记密码?
-                </a>
               </div>
 
               <button
-                type="button"
-                className="w-full rounded-lg bg-primary py-3.5 text-base font-semibold text-white shadow-lg shadow-primary/20 transition-all hover:opacity-90 active:scale-[0.98]"
+                type="submit"
+                disabled={loading}
+                className="w-full rounded-lg bg-primary py-3.5 text-base font-semibold text-white shadow-lg shadow-primary/20 transition-all hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                登 录
+                {loading ? '登录中...' : '登录'}
               </button>
-
-              <div className="pt-4 text-center text-sm">
-                <span className="text-outline">新职员?</span>
-                <a href="#" className="ml-1 font-medium text-on-surface hover:underline">
-                  申请内部账号
-                </a>
-              </div>
             </form>
           </motion.div>
         </div>
