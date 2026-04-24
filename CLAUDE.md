@@ -98,6 +98,12 @@ cd backend && mvn spring-boot:run
 
 > **强制要求**：以上三条必须全部满足才能结束任务，禁止跳过任何一步。
 
+## 网站/页面设计规范
+
+当需要设计网站、Landing Page、页面或视觉规范时，**必须**调用 `web-design` skill，遵循其 Phase A → Phase B → Phase C 的标准流程：先出 `DESIGN.md` 设计规范，用户确认后再生成代码。
+
+---
+
 ## 浏览器测试
 
 使用浏览器进行测试时，必须通过 `/web-access` skill，并使用 CDP 打开和操作浏览器；禁止绕过 CDP 直接声称已完成浏览器验证。

@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { fetchPublicJobs } from '@/lib/api/homeApi';
 import type { HomeJobCard } from '@/lib/types/home';
@@ -13,6 +13,7 @@ function JobsContent() {
   const [jobs, setJobs] = useState<HomeJobCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const cardRefs = useRef<(HTMLElement | null)[]>([]);
 
   const loadJobs = async (params?: { keyword?: string; city?: string }) => {
     try {
@@ -27,14 +28,45 @@ function JobsContent() {
     }
   };
 
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+    }
+  };
+
+  const setCardRef = useCallback((index: number) => (el: HTMLElement | null) => {
+    cardRefs.current[index] = el;
+  }, []);
+
   useEffect(() => {
     void loadJobs({ keyword, city });
   }, []);
 
+  // Scroll reveal animation
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    cardRefs.current.forEach((card) => {
+      if (card) observer.observe(card);
+    });
+
+    return () => observer.disconnect();
+  }, [jobs]);
+
   return (
     <div className="flex-grow flex flex-col min-h-screen">
       <main className="flex-grow max-w-[1200px] w-full mx-auto px-6 py-4">
-        <section className="bg-surface-container-low rounded-[1.5rem] p-8 mb-12 relative overflow-hidden">
+        {/* Search Section */}
+        <section className="search-section bg-surface-container-low rounded-[1.5rem] p-8 mb-12 relative overflow-hidden">
           <div className="absolute right-0 top-0 w-1/2 h-full opacity-30 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary-fixed to-transparent" />
           <div className="relative z-10">
             <h1 className="font-headline text-3xl font-bold text-on-surface mb-8">探索智能匹配职位</h1>
@@ -42,7 +74,7 @@ function JobsContent() {
               <div className="flex-grow relative">
                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-tertiary">search_insights</span>
                 <input
-                  className="w-full bg-surface-container-lowest rounded-xl py-4 pl-12 pr-4 text-on-surface placeholder:text-outline focus:outline-none focus:ring-0 text-lg shadow-sm"
+                  className="w-full bg-surface-container-lowest rounded-xl py-4 pl-12 pr-4 text-on-surface placeholder:text-outline focus:outline-none focus:ring-0 text-lg shadow-sm input-tech-focus"
                   placeholder="输入职位或公司关键词..."
                   type="text"
                   value={keyword}
@@ -52,7 +84,7 @@ function JobsContent() {
               <div className="md:w-56 relative">
                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-tertiary">location_on</span>
                 <input
-                  className="w-full bg-surface-container-lowest rounded-xl py-4 pl-12 pr-4 text-on-surface placeholder:text-outline focus:outline-none focus:ring-0 text-lg shadow-sm"
+                  className="w-full bg-surface-container-lowest rounded-xl py-4 pl-12 pr-4 text-on-surface placeholder:text-outline focus:outline-none focus:ring-0 text-lg shadow-sm input-tech-focus"
                   placeholder="城市"
                   type="text"
                   value={city}
@@ -60,9 +92,10 @@ function JobsContent() {
                 />
               </div>
               <button
-                className="bg-gradient-to-br from-primary to-primary-container text-on-primary px-8 rounded-xl font-bold hover:opacity-90 transition-opacity shadow-sm flex items-center justify-center gap-2 min-h-14"
+                className="search-btn bg-gradient-to-br from-primary to-primary-container text-on-primary px-8 rounded-xl font-bold hover:opacity-90 shadow-sm flex items-center justify-center gap-2 min-h-14"
                 onClick={() => void loadJobs({ keyword, city })}
               >
+                <span className="material-symbols-outlined">search</span>
                 搜索职位
               </button>
             </div>
@@ -73,6 +106,7 @@ function JobsContent() {
           </div>
         </section>
 
+        {/* Jobs List */}
         <section className="flex flex-col gap-6">
           {loading ? (
             <div className="text-center py-16 text-on-surface-variant">职位数据加载中...</div>
@@ -84,19 +118,15 @@ function JobsContent() {
           ) : jobs.length === 0 ? (
             <div className="text-center py-16 text-on-surface-variant">暂无匹配职位，请调整筛选条件后重试。</div>
           ) : (
-            jobs.map((job) => (
+            jobs.map((job, index) => (
               <article
                 key={job.id}
+                ref={setCardRef(index)}
                 role="button"
                 tabIndex={0}
                 onClick={() => router.push(`/match/${job.id}`)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    router.push(`/match/${job.id}`);
-                  }
-                }}
-                className="bg-surface-container-lowest rounded-[1.5rem] p-8 flex items-center justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_32px_-4px_rgba(14,28,44,0.06)] group relative overflow-hidden cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                onKeyDown={handleKeyDown}
+                className="job-card bg-surface-container-lowest rounded-[1.5rem] p-8 flex items-center justify-between relative overflow-hidden cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <div className="flex-grow pr-8 relative z-10">
                   <div className="flex items-center gap-4 mb-3 flex-wrap">
@@ -116,7 +146,7 @@ function JobsContent() {
                   {job.requiredSkills.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
                       {job.requiredSkills.map((skill) => (
-                        <span key={skill} className="bg-surface-variant text-on-surface-variant px-3 py-1 rounded-full text-xs">
+                        <span key={skill} className="skill-tag bg-surface-variant text-on-surface-variant px-3 py-1 rounded-full text-xs">
                           {skill}
                         </span>
                       ))}

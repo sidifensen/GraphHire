@@ -9,6 +9,24 @@ class ResizeObserverMock {
 }
 window.ResizeObserver = ResizeObserverMock;
 
+// Polyfill IntersectionObserver for scroll animations
+class IntersectionObserverMock {
+  readonly root: Element | null = null;
+  readonly rootMargin: string = '';
+  readonly thresholds: ReadonlyArray<number> = [];
+  constructor(
+    private callback: IntersectionObserverCallback,
+    private options?: IntersectionObserverInit
+  ) {}
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+  takeRecords(): IntersectionObserverEntry[] {
+    return [];
+  }
+}
+window.IntersectionObserver = IntersectionObserverMock as unknown as typeof IntersectionObserver;
+
 // Mock next/navigation - must use vi.mock at module level
 vi.mock('next/navigation', () => ({
   useRouter: () => ({

@@ -80,6 +80,8 @@ public class MatchAppService {
             // 步骤3：为用户创建职位推荐通知（type=2: 新职位推荐）
             // 注意：MatchRecord创建由Application模块处理，这里只发送通知
             MatchRecord record = matchDomainService.calculateMatch(resume, job);
+            // 保存匹配记录
+            matchRecordRepository.save(record);
             createJobRecommendationNotification(resume.getUserId(), job.getId(), BigDecimal.valueOf(record.getScore().getTotal()));
         }
     }
@@ -105,6 +107,8 @@ public class MatchAppService {
             // 步骤3：为企业创建候选人推荐通知（type=3: 候选人推荐）
             // 注意：MatchRecord创建由Application模块处理，这里只发送通知
             MatchRecord record = matchDomainService.calculateMatch(resume, job);
+            // 保存匹配记录
+            matchRecordRepository.save(record);
             createCandidateRecommendationNotification(job.getCompanyId(), resume.getId(), BigDecimal.valueOf(record.getScore().getTotal()));
         }
     }
