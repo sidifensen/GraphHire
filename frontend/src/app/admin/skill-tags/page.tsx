@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { Plus, Code, ArrowUpRight } from 'lucide-react';
-import AdminShell from '@/components/admin/AdminShell';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { Plus, Code, ArrowUpRight, X } from 'lucide-react';
 import AdminDataTable from '@/components/admin/AdminDataTable';
 import { adminApi, type SkillTagItem } from '@/lib/api/admin';
 
@@ -10,7 +9,64 @@ interface TagRow {
   id: number;
   name: string;
   synonyms: string[];
+  createdAt: string;
+  updatedAt: string;
   icon: typeof Code;
+}
+
+type SkillTagApiLike = Omit<SkillTagItem, 'synonyms'> & {
+  synonyms?: string[] | string | null;
+  createTime?: string;
+  updateTime?: string;
+  create_time?: string;
+  update_time?: string;
+};
+
+function formatDateTime(value?: string): string {
+  if (!value) {
+    return '-';
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+  return new Intl.DateTimeFormat('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).format(date);
+}
+
+function normalizeSynonyms(raw: unknown): string[] {
+  if (Array.isArray(raw)) {
+    return raw.filter((item): item is string => typeof item === 'string' && item.trim().length > 0);
+  }
+  if (typeof raw !== 'string' || raw.trim().length === 0) {
+    return [];
+  }
+  const text = raw.trim();
+  if (text.startsWith('[') && text.endsWith(']')) {
+    try {
+      const parsed = JSON.parse(text);
+      if (Array.isArray(parsed)) {
+        return parsed.filter((item): item is string => typeof item === 'string' && item.trim().length > 0);
+      }
+    } catch {
+      // Fall through to comma split.
+    }
+  }
+  return text.split(',').map((item) => item.trim()).filter((item) => item.length > 0);
+}
+
+function pickDateValue(item: SkillTagApiLike, kind: 'created' | 'updated'): string | undefined {
+  if (kind === 'created') {
+    return item.createdAt ?? item.createTime ?? item.create_time;
+  }
+  return item.updatedAt ?? item.updateTime ?? item.update_time;
 }
 
 export default function AdminSkillTagsPage() {
@@ -20,6 +76,9 @@ export default function AdminSkillTagsPage() {
   const [pageSize] = useState(10);
   const [total, setTotal] = useState(0);
   const [rows, setRows] = useState<TagRow[]>([]);
+  const [editingTag, setEditingTag] = useState<TagRow | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editSaving, setEditSaving] = useState(false);
 
   const totalPages = useMemo(() => {
     if (total <= 0) {
@@ -38,10 +97,12 @@ export default function AdminSkillTagsPage() {
       });
       setTotal(response.total ?? 0);
       setRows(
-        (response.list ?? []).map((item: SkillTagItem) => ({
+        (response.list ?? []).map((item: SkillTagApiLike) => ({
           id: item.id,
           name: item.name,
-          synonyms: Array.isArray(item.synonyms) ? item.synonyms : [],
+          synonyms: normalizeSynonyms(item.synonyms),
+          createdAt: formatDateTime(pickDateValue(item, 'created')),
+          updatedAt: formatDateTime(pickDateValue(item, 'updated')),
           icon: Code,
         }))
       );
@@ -68,13 +129,36 @@ export default function AdminSkillTagsPage() {
     await loadSkills();
   };
 
-  const handleEdit = async (tag: TagRow) => {
-    const name = window.prompt('请输入新的标签名称', tag.name);
-    if (!name?.trim()) {
+  const openEditModal = (tag: TagRow) => {
+    setEditingTag(tag);
+    setEditName(tag.name);
+  };
+
+  const closeEditModal = () => {
+    if (editSaving) {
       return;
     }
-    await adminApi.updateSkillTag(tag.id, { name: name.trim() });
-    await loadSkills();
+    setEditingTag(null);
+    setEditName('');
+  };
+
+  const handleEditSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!editingTag) {
+      return;
+    }
+    const nextName = editName.trim();
+    if (!nextName) {
+      return;
+    }
+    setEditSaving(true);
+    try {
+      await adminApi.updateSkillTag(editingTag.id, { name: nextName });
+      closeEditModal();
+      await loadSkills();
+    } finally {
+      setEditSaving(false);
+    }
   };
 
   const handleDelete = async (tag: TagRow) => {
@@ -87,7 +171,7 @@ export default function AdminSkillTagsPage() {
   };
 
   return (
-    <AdminShell>
+    <>
       <div className="space-y-6 p-8">
         <div className="flex items-end justify-between">
           <div>
@@ -171,6 +255,8 @@ export default function AdminSkillTagsPage() {
                 </div>
               ),
             },
+            { header: '创建时间', accessor: 'createdAt', className: 'text-xs text-outline whitespace-nowrap' },
+            { header: '更新时间', accessor: 'updatedAt', className: 'text-xs text-outline whitespace-nowrap' },
             {
               header: '操作',
               className: 'text-center',
@@ -178,7 +264,7 @@ export default function AdminSkillTagsPage() {
                 <div className="flex justify-center gap-2">
                   <button
                     type="button"
-                    onClick={() => void handleEdit(tag)}
+                    onClick={() => openEditModal(tag)}
                     className="rounded border border-outline-variant/30 px-3 py-1 text-xs font-semibold text-on-surface transition-all hover:bg-slate-100"
                     title="编辑"
                     aria-label="编辑"
@@ -201,6 +287,55 @@ export default function AdminSkillTagsPage() {
         />
         {loading ? <p className="text-xs text-outline">加载中...</p> : null}
       </div>
-    </AdminShell>
+
+      {editingTag ? (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/45 p-4">
+          <div className="w-full max-w-md rounded-2xl border border-outline-variant/30 bg-white p-6 shadow-2xl dark:border-white/10 dark:bg-slate-900">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-on-surface">编辑标签</h3>
+              <button
+                type="button"
+                onClick={closeEditModal}
+                className="rounded-md p-1 text-outline transition-colors hover:bg-slate-100 hover:text-on-surface"
+                aria-label="关闭编辑弹窗"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={(event) => void handleEditSubmit(event)} className="space-y-4">
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-outline">标签名称</label>
+                <input
+                  value={editName}
+                  onChange={(event) => setEditName(event.target.value)}
+                  placeholder="请输入标签名称"
+                  className="w-full rounded-lg border border-outline-variant/30 bg-slate-50 px-3 py-2 text-sm text-on-surface focus:border-primary focus:outline-none dark:border-slate-700 dark:bg-slate-800"
+                  autoFocus
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={closeEditModal}
+                  className="rounded-lg border border-outline-variant/30 px-4 py-2 text-sm font-semibold text-outline transition-colors hover:bg-slate-100"
+                  disabled={editSaving}
+                >
+                  取消
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                  disabled={editSaving || !editName.trim()}
+                >
+                  {editSaving ? '保存中...' : '保存'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }
