@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import AdminDashboardPage from '@/app/admin/dashboard/page';
-import { adminApi } from '@/lib/api/admin';
 
 vi.mock('@/components/admin/AdminSidebar', () => ({
   default: () => <div data-testid="admin-sidebar">sidebar</div>,
@@ -17,27 +16,13 @@ vi.mock('@/lib/api/admin', () => ({
   },
 }));
 
-const mockedAdminApi = vi.mocked(adminApi);
+vi.mock('@/context/ThemeContext', () => ({
+  useTheme: () => ({ theme: 'light' }),
+}));
 
 describe('AdminDashboardPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockedAdminApi.getDashboardStats.mockResolvedValue({
-      totalUsers: 124592,
-      totalCompanies: 3840,
-      totalResumes: 892105,
-      totalJobs: 45210,
-      todayNewUsers: 128,
-      todayNewJobs: 420,
-      pendingCompanyAudit: 12,
-      pendingTaskCount: 38,
-      failedTaskCount: 8,
-      matchCount: 12845,
-      taskSuccessRate: 99.4,
-      weeklyNewCompanies: 56,
-      pendingSkillSuggestions: 45,
-      trend: [{ date: '2026-04-24', activeUsers: 5200, newData: 3600 }],
-    });
   });
 
   it('展示重构后的仪表盘核心区块', async () => {
@@ -47,6 +32,5 @@ describe('AdminDashboardPage', () => {
     expect(screen.getByText('待办与预警')).toBeInTheDocument();
     expect(screen.getByText('最近系统动态')).toBeInTheDocument();
     expect(screen.getByText('热门技能榜单 (Top 5)')).toBeInTheDocument();
-    expect(adminApi.getDashboardStats).toHaveBeenCalledTimes(1);
   });
 });

@@ -95,6 +95,11 @@ export const companyApi = {
     return response.data;
   },
 
+  getPendingStaffList: async (): Promise<EnterpriseStaffListItem[]> => {
+    const response = await apiClient.get<EnterpriseStaffListItem[]>('/company/staff/pending');
+    return response.data;
+  },
+
   getStaffStats: async (): Promise<EnterpriseStaffStats> => {
     const response = await apiClient.get<EnterpriseStaffStats>('/company/staff/stats');
     return response.data;
@@ -111,6 +116,14 @@ export const companyApi = {
 
   updateStaffStatus: async (staffId: number, disabled: boolean): Promise<void> => {
     await apiClient.put(`/company/staff/${staffId}/status`, null, { params: { disabled } });
+  },
+
+  approveJoinRequest: async (staffId: number): Promise<void> => {
+    await apiClient.post(`/company/staff/${staffId}/approve-join`);
+  },
+
+  rejectJoinRequest: async (staffId: number): Promise<void> => {
+    await apiClient.post(`/company/staff/${staffId}/reject-join`);
   },
 
   inviteInterview: async (data: { resumeId: number; jobId: number; interviewTime?: string; location?: string; remark?: string }): Promise<void> => {

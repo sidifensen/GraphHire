@@ -111,6 +111,8 @@ export interface SkillTagItem {
   category: string | null;
   synonyms: string[] | null;
   jobCount: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface SkillListResponse {

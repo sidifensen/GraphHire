@@ -16,8 +16,10 @@ const initialForm: EnterpriseCreateStaffRequest = {
 export default function EmployeesPage() {
   const [stats, setStats] = useState<EnterpriseStaffStats | null>(null);
   const [staffList, setStaffList] = useState<EnterpriseStaffListItem[]>([]);
+  const [pendingList, setPendingList] = useState<EnterpriseStaffListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [forbidden, setForbidden] = useState(false);
   const [formVisible, setFormVisible] = useState(false);
   const [form, setForm] = useState<EnterpriseCreateStaffRequest>(initialForm);
   const [submitting, setSubmitting] = useState(false);
@@ -26,15 +28,22 @@ export default function EmployeesPage() {
   const loadData = async () => {
     setLoading(true);
     setError(null);
+    setForbidden(false);
     try {
-      const [statsResponse, staffResponse] = await Promise.all([
+      const [statsResponse, staffResponse, pendingResponse] = await Promise.all([
         companyApi.getStaffStats(),
         companyApi.getStaffList(),
+        companyApi.getPendingStaffList(),
       ]);
       setStats(statsResponse);
       setStaffList(staffResponse);
+      setPendingList(pendingResponse);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '员工数据加载失败');
+      const message = err instanceof Error ? err.message : '员工数据加载失败';
+      setError(message);
+      if (message.includes('403') || message.includes('无权') || message.includes('Forbidden')) {
+        setForbidden(true);
+      }
     } finally {
       setLoading(false);
     }
@@ -45,6 +54,7 @@ export default function EmployeesPage() {
   }, []);
 
   const sortedStaffList = useMemo(() => [...staffList].sort((a, b) => a.id - b.id), [staffList]);
+  const sortedPendingList = useMemo(() => [...pendingList].sort((a, b) => a.id - b.id), [pendingList]);
 
   const handleCreateStaff = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -85,6 +95,28 @@ export default function EmployeesPage() {
     }
   };
 
+  const handleApproveJoin = async (staff: EnterpriseStaffListItem) => {
+    setMessage(null);
+    try {
+      await companyApi.approveJoinRequest(staff.id);
+      setMessage(`${staffName(staff)} 已通过加入审批`);
+      await loadData();
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : '审批失败');
+    }
+  };
+
+  const handleRejectJoin = async (staff: EnterpriseStaffListItem) => {
+    setMessage(null);
+    try {
+      await companyApi.rejectJoinRequest(staff.id);
+      setMessage(`${staffName(staff)} 已拒绝加入`);
+      await loadData();
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : '拒绝失败');
+    }
+  };
+
   return (
     <EnterpriseContent>
       <EnterprisePageHeader
@@ -120,7 +152,6 @@ export default function EmployeesPage() {
             onChange={(event) => setForm((prev) => ({ ...prev, post: event.target.value as EnterpriseCreateStaffRequest['post'] }))}
           >
             <option value="HR">管理员</option>
-            <option value="RECRUITER">招聘专员</option>
           </select>
           <button className="rounded-lg bg-primary text-white text-sm font-medium px-4 py-3 disabled:opacity-60" disabled={submitting} type="submit">
             {submitting ? '提交中...' : '创建员工账号'}
@@ -132,6 +163,10 @@ export default function EmployeesPage() {
 
       {loading ? (
         <div className="rounded-xl bg-surface-container-lowest p-6 text-sm text-on-surface-variant">员工数据加载中...</div>
+      ) : forbidden ? (
+        <div className="rounded-xl bg-surface-container-lowest p-6 text-sm text-on-surface-variant">
+          当前账号无权限访问员工管理，仅企业主可查看和管理员工列表。
+        </div>
       ) : error ? (
         <div className="rounded-xl bg-error-container p-6 text-sm text-error space-y-3">
           <div>{error}</div>
@@ -139,11 +174,35 @@ export default function EmployeesPage() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <StatCard title="企业总人数" value={stats?.totalCount ?? 0} description="当前企业账号总量" icon="groups" />
             <StatCard title="企业主数量" value={stats?.ownerCount ?? 0} description="拥有最高权限" icon="shield_person" />
             <StatCard title="管理员数量" value={stats?.hrCount ?? 0} description="可管理招聘流程" icon="admin_panel_settings" />
-            <StatCard title="招聘专员数量" value={stats?.recruiterCount ?? 0} description="负责候选人推进" icon="person_search" />
+          </div>
+
+          <div className="bg-surface-container-lowest rounded-xl p-6 mb-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold font-headline text-on-surface">待加入员工</h3>
+              <div className="text-sm text-on-surface-variant">共 {sortedPendingList.length} 条申请</div>
+            </div>
+            {sortedPendingList.length === 0 ? (
+              <div className="rounded-xl bg-surface-container-low p-4 text-sm text-on-surface-variant">暂无待审批申请</div>
+            ) : (
+              <div className="space-y-3">
+                {sortedPendingList.map((staff) => (
+                  <div key={staff.id} className="flex items-center justify-between rounded-lg bg-surface-container-low px-4 py-3">
+                    <div>
+                      <div className="font-medium text-on-surface">{staffName(staff)}</div>
+                      <div className="text-xs text-tertiary">{staff.username || `用户 #${staff.userId}`}</div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button className="rounded-lg bg-primary text-white text-xs px-3 py-2" onClick={() => void handleApproveJoin(staff)}>通过</button>
+                      <button className="rounded-lg bg-surface-container text-on-surface text-xs px-3 py-2" onClick={() => void handleRejectJoin(staff)}>拒绝</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
@@ -215,20 +274,16 @@ export default function EmployeesPage() {
                 <div className="space-y-4 text-sm text-on-surface-variant">
                   <div>
                     <div className="font-semibold text-on-surface mb-1">企业主</div>
-                    <p>可创建员工、重置员工密码，并查看全部企业招聘数据。</p>
+                    <p>可创建员工、审批加入、重置员工密码，并查看全部企业招聘数据。</p>
                   </div>
                   <div>
                     <div className="font-semibold text-on-surface mb-1">管理员</div>
                     <p>负责团队配置与招聘流程管理。</p>
                   </div>
-                  <div>
-                    <div className="font-semibold text-on-surface mb-1">招聘专员</div>
-                    <p>负责职位推进、筛选简历和候选人跟进。</p>
-                  </div>
                 </div>
                 <div className="mt-8 p-4 bg-primary-fixed/30 rounded-lg text-xs text-on-surface-variant border border-primary-fixed">
                   <span className="font-medium text-primary block mb-1">AI 提示：</span>
-                  创建员工和重置密码均已接入真实后端权限校验，当前页不会再使用假数据。
+                  创建员工、审批加入与重置密码均已接入真实后端权限校验，当前页不会再使用假数据。
                 </div>
               </div>
             </div>

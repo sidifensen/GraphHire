@@ -56,6 +56,8 @@ class CompanyControllerIT extends BaseControllerIT {
     void setUp() throws Exception {
         setupHeaders();
         companyHeaders = loginHeaders(TEST_COMPANY_USERNAME, TEST_COMPANY_PASSWORD);
+        // 避免测试间状态污染：提交认证材料后会变为待审核，影响后续职位发布相关用例
+        jdbcTemplate.update("UPDATE company SET auth_status = 1 WHERE user_id = ?", companyUserId);
     }
 
     @Test
@@ -324,8 +326,7 @@ class CompanyControllerIT extends BaseControllerIT {
             .andExpect(jsonPath("$.code").value(200))
             .andExpect(jsonPath("$.data.totalCount").isNumber())
             .andExpect(jsonPath("$.data.ownerCount").isNumber())
-            .andExpect(jsonPath("$.data.hrCount").isNumber())
-            .andExpect(jsonPath("$.data.recruiterCount").isNumber());
+            .andExpect(jsonPath("$.data.hrCount").isNumber());
     }
 
     @Test

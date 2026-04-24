@@ -53,8 +53,7 @@ describe('AdminEnterpriseReviewPage', () => {
   it('切换状态筛选后会重新请求列表', async () => {
     render(<AdminEnterpriseReviewPage />);
 
-    const statusSelect = await screen.findByDisplayValue('全部');
-    fireEvent.change(statusSelect, { target: { value: 'APPROVED' } });
+    fireEvent.click(await screen.findByRole('button', { name: '已通过' }));
 
     await waitFor(() => {
       expect(adminApi.getCompanyAuthList).toHaveBeenCalledWith(

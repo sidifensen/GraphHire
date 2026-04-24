@@ -137,16 +137,19 @@ CREATE TABLE company_staff
     user_id     BIGINT      NOT NULL UNIQUE,
     company_id  BIGINT      NOT NULL,
     post        VARCHAR(20) NOT NULL,
+    status      VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
     create_time TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
     update_time TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT chk_post CHECK (post IN ('OWNER', 'HR', 'RECRUITER'))
+    CONSTRAINT chk_post CHECK (post IN ('OWNER', 'HR')),
+    CONSTRAINT chk_company_staff_status CHECK (status IN ('PENDING_JOIN', 'ACTIVE', 'REJECTED', 'DISABLED'))
 );
 
 COMMENT ON TABLE company_staff IS '企业员工关联表：建立用户与企业的多对一关系';
 COMMENT ON COLUMN company_staff.user_id IS '用户ID（唯一，每个用户只能属于一个企业）';
 COMMENT ON COLUMN company_staff.company_id IS '企业ID';
-COMMENT ON COLUMN company_staff.post IS '职务：OWNER-企业主 HR-HR专员 RECRUITER-招聘专员';
+COMMENT ON COLUMN company_staff.post IS '职务：OWNER-企业主 HR-企业员工（管理员）';
+COMMENT ON COLUMN company_staff.status IS '员工状态：PENDING_JOIN-待老板确认 ACTIVE-在职 REJECTED-拒绝加入 DISABLED-禁用';
 
 CREATE INDEX idx_company_staff_company_id ON company_staff (company_id);
 CREATE INDEX idx_company_staff_user_id ON company_staff (user_id);

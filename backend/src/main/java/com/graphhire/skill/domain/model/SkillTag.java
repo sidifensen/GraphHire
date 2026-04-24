@@ -2,6 +2,7 @@ package com.graphhire.skill.domain.model;
 
 import com.graphhire.common.model.BaseAggregateRoot;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -30,6 +31,10 @@ public class SkillTag extends BaseAggregateRoot {
     private String description;
     /** 使用计数，统计该技能在简历/职位中的出现次数 */
     private Integer usageCount = 0;
+    /** 创建时间 */
+    private LocalDateTime createTime;
+    /** 更新时间 */
+    private LocalDateTime updateTime;
 
     public SkillTag() {
     }
@@ -119,5 +124,21 @@ public class SkillTag extends BaseAggregateRoot {
 
     public void setUsageCount(Integer usageCount) {
         this.usageCount = usageCount;
+    }
+
+    public LocalDateTime getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(LocalDateTime createTime) {
+        this.createTime = createTime;
+    }
+
+    public LocalDateTime getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(LocalDateTime updateTime) {
+        this.updateTime = updateTime;
     }
 }

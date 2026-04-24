@@ -9,6 +9,8 @@ public class AdminSkillItemResponse {
     private String category;
     private List<String> synonyms = new ArrayList<>();
     private long jobCount;
+    private String createdAt;
+    private String updatedAt;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -20,4 +22,8 @@ public class AdminSkillItemResponse {
     public void setSynonyms(List<String> synonyms) { this.synonyms = synonyms; }
     public long getJobCount() { return jobCount; }
     public void setJobCount(long jobCount) { this.jobCount = jobCount; }
+    public String getCreatedAt() { return createdAt; }
+    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+    public String getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
 }

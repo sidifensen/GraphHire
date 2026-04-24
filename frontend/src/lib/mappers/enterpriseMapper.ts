@@ -24,8 +24,6 @@ export function formatStaffPost(post?: string | null) {
       return '企业主';
     case 'HR':
       return '管理员';
-    case 'RECRUITER':
-      return '招聘专员';
     default:
       return post || '未知';
   }

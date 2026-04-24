@@ -15,12 +15,17 @@ import com.graphhire.auth.domain.vo.AuthStatus;
 import com.graphhire.auth.domain.vo.UserType;
 import com.graphhire.auth.infrastructure.mail.MailService;
 import com.graphhire.auth.interfaces.dto.response.LoginResponse;
-import com.graphhire.common.vo.Result;
+import com.graphhire.job.domain.model.Company;
+import com.graphhire.job.domain.model.CompanyStaff;
+import com.graphhire.job.domain.repository.CompanyRepository;
+import com.graphhire.job.domain.repository.CompanyStaffRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -59,6 +64,12 @@ public class AuthAppService {
 
     @Autowired
     private StringRedisTemplate redisTemplate;
+
+    @Autowired
+    private CompanyRepository companyRepository;
+
+    @Autowired
+    private CompanyStaffRepository companyStaffRepository;
 
     private static final int MAX_LOGIN_ATTEMPTS = 20;
     private static final int MAX_VERIFY_CODE_SEND_PER_HOUR = 10;
@@ -166,6 +177,7 @@ public class AuthAppService {
      * 步骤6：执行 Sa-Token 登录
      * 步骤7：构建登录响应
      */
+    @Transactional
     public LoginResponse registerCompany(CompanyRegisterCmd cmd) {
         // 步骤1：校验验证码
         validateVerifyCode(cmd.getUsername(), cmd.getVerifyCode(), "register");
@@ -185,6 +197,23 @@ public class AuthAppService {
 
         // 步骤5：保存用户
         userRepository.save(user);
+
+        Optional<Company> existingCompany = companyRepository.findByName(cmd.getCompanyName());
+        Company company = existingCompany.orElseGet(() -> {
+            Company created = new Company();
+            created.setName(cmd.getCompanyName());
+            created.setUnifiedSocialCreditCode(cmd.getUnifiedSocialCreditCode());
+            created.setAuthStatus(AuthStatus.PENDING_VERIFY);
+            return companyRepository.save(created);
+        });
+
+        CompanyStaff staff = new CompanyStaff();
+        staff.setCompanyId(company.getId());
+        staff.setUserId(user.getId());
+        boolean isFirstForCompany = existingCompany.isEmpty();
+        staff.setPost(isFirstForCompany ? CompanyStaff.POST_OWNER : CompanyStaff.POST_HR);
+        staff.setStatus(isFirstForCompany ? CompanyStaff.STATUS_ACTIVE : CompanyStaff.STATUS_PENDING_JOIN);
+        companyStaffRepository.save(staff);
 
         // 步骤6：Sa-Token 登录
         doLogin(user);

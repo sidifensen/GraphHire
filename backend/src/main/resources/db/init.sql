@@ -36,8 +36,8 @@ INSERT INTO company (id, user_id, name, code, license_path, auth_status, industr
 ON CONFLICT (code) DO NOTHING;
 
 -- IT测试公司员工关联
-INSERT INTO company_staff (user_id, company_id, post, create_time, update_time) VALUES
-(101, 100, 'OWNER', '2026-04-16 00:00:00', '2026-04-16 00:00:00')
+INSERT INTO company_staff (user_id, company_id, post, status, create_time, update_time) VALUES
+(101, 100, 'OWNER', 'ACTIVE', '2026-04-16 00:00:00', '2026-04-16 00:00:00')
 ON CONFLICT (user_id) DO NOTHING;
 
 -- IT测试用个人简历
@@ -194,9 +194,9 @@ ON CONFLICT (code) DO NOTHING;
 -- =============================================
 -- 5. 企业员工关联
 -- =============================================
-INSERT INTO company_staff (user_id, company_id, post, create_time, update_time) VALUES
-(2, 1, 'OWNER', '2026-04-15 11:00:00', '2026-04-15 11:00:00'),
-(3, 2, 'OWNER', '2026-04-15 11:30:00', '2026-04-15 11:30:00')
+INSERT INTO company_staff (user_id, company_id, post, status, create_time, update_time) VALUES
+(2, 1, 'OWNER', 'ACTIVE', '2026-04-15 11:00:00', '2026-04-15 11:00:00'),
+(3, 2, 'OWNER', 'ACTIVE', '2026-04-15 11:30:00', '2026-04-15 11:30:00')
 ON CONFLICT (user_id) DO NOTHING;
 
 -- =============================================

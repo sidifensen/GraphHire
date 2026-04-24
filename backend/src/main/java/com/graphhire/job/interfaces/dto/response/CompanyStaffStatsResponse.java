@@ -4,7 +4,6 @@ public class CompanyStaffStatsResponse {
     private long totalCount;
     private long ownerCount;
     private long hrCount;
-    private long recruiterCount;
 
     public long getTotalCount() {
         return totalCount;
@@ -28,13 +27,5 @@ public class CompanyStaffStatsResponse {
 
     public void setHrCount(long hrCount) {
         this.hrCount = hrCount;
-    }
-
-    public long getRecruiterCount() {
-        return recruiterCount;
-    }
-
-    public void setRecruiterCount(long recruiterCount) {
-        this.recruiterCount = recruiterCount;
     }
 }

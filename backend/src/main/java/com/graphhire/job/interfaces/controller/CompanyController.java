@@ -128,6 +128,7 @@ public class CompanyController {
     @PostMapping("/job")
     public Result<Long> publishJob(@RequestBody PublishJobCmd cmd) {
         Long companyId = currentCompanyId();
+        ensureCompanyVerified(companyId);
         Job job = jobAppService.createJob(companyId, cmd.getTitle(), cmd.getDepartment(), cmd.getHeadcount(),
                 cmd.getLocation(), cmd.getSalaryRange(), cmd.getSkills(),
                 cmd.getDescription());
@@ -173,6 +174,7 @@ public class CompanyController {
         Job job = jobAppService.getJobById(id);
         ensureJobOwnership(job, companyId);
         if (request.isPublish()) {
+            ensureCompanyVerified(companyId);
             if (job.getStatus() != JobStatus.PUBLISHED) {
                 jobAppService.publishJob(id, null);
             }
@@ -187,6 +189,7 @@ public class CompanyController {
     @PostMapping("/job/{id}/publish")
     public Result<Void> publishJob(@PathVariable Long id) {
         Long companyId = currentCompanyId();
+        ensureCompanyVerified(companyId);
         Job job = jobAppService.getJobById(id);
         ensureJobOwnership(job, companyId);
         if (job.getStatus() != JobStatus.PUBLISHED) {
@@ -293,8 +296,11 @@ public class CompanyController {
 
     @GetMapping("/staff/list")
     public Result<List<CompanyStaffListItemResponse>> getStaffList() {
-        Long companyId = currentCompanyId();
+        CompanyStaff currentStaff = currentStaff();
+        assertOwner(currentStaff);
+        Long companyId = currentStaff.getCompanyId();
         List<CompanyStaffListItemResponse> staffList = companyStaffRepository.findByCompanyId(companyId).stream()
+                .filter(this::isActiveStaff)
                 .sorted(Comparator.comparing(CompanyStaff::getId, Comparator.nullsLast(Long::compareTo)))
                 .map(this::toStaffListItem)
                 .toList();
@@ -303,22 +309,34 @@ public class CompanyController {
 
     @GetMapping("/staff/stats")
     public Result<CompanyStaffStatsResponse> getStaffStats() {
-        Long companyId = currentCompanyId();
-        List<CompanyStaff> staffList = companyStaffRepository.findByCompanyId(companyId);
+        CompanyStaff currentStaff = currentStaff();
+        assertOwner(currentStaff);
+        List<CompanyStaff> staffList = companyStaffRepository.findByCompanyId(currentStaff.getCompanyId()).stream()
+                .filter(this::isActiveStaff)
+                .toList();
         CompanyStaffStatsResponse response = new CompanyStaffStatsResponse();
         response.setTotalCount(staffList.size());
-        response.setOwnerCount(staffList.stream().filter(staff -> "OWNER".equalsIgnoreCase(staff.getPost())).count());
-        response.setHrCount(staffList.stream().filter(staff -> "HR".equalsIgnoreCase(staff.getPost())).count());
-        response.setRecruiterCount(staffList.stream().filter(staff -> "RECRUITER".equalsIgnoreCase(staff.getPost())).count());
+        response.setOwnerCount(staffList.stream().filter(staff -> CompanyStaff.POST_OWNER.equalsIgnoreCase(staff.getPost())).count());
+        response.setHrCount(staffList.stream().filter(staff -> CompanyStaff.POST_HR.equalsIgnoreCase(staff.getPost())).count());
         return Result.success(response);
+    }
+
+    @GetMapping("/staff/pending")
+    public Result<List<CompanyStaffListItemResponse>> getPendingJoinStaff() {
+        CompanyStaff currentStaff = currentStaff();
+        assertOwner(currentStaff);
+        List<CompanyStaffListItemResponse> pendingList = companyStaffRepository.findByCompanyId(currentStaff.getCompanyId()).stream()
+                .filter(staff -> CompanyStaff.STATUS_PENDING_JOIN.equalsIgnoreCase(staff.getStatus()))
+                .sorted(Comparator.comparing(CompanyStaff::getId, Comparator.nullsLast(Long::compareTo)))
+                .map(this::toStaffListItem)
+                .toList();
+        return Result.success(pendingList);
     }
 
     @PostMapping("/staff/create")
     public Result<Void> createStaff(@RequestBody CreateStaffRequest request) {
         CompanyStaff currentStaff = currentStaff();
-        if (!"OWNER".equals(currentStaff.getPost())) {
-            throw new Exceptions.ForbiddenException("只有企业主可以创建员工账号");
-        }
+        assertOwner(currentStaff);
         if (request.getUsername() == null || request.getUsername().isBlank()) {
             throw new Exceptions.ValidationException("用户名不能为空");
         }
@@ -329,8 +347,8 @@ public class CompanyController {
             throw new Exceptions.ValidationException("职位不能为空");
         }
         String post = request.getPost().toUpperCase();
-        if (!"HR".equals(post) && !"RECRUITER".equals(post)) {
-            throw new Exceptions.ValidationException("职位必须是HR或RECRUITER");
+        if (!CompanyStaff.POST_HR.equals(post)) {
+            throw new Exceptions.ValidationException("职位必须是HR");
         }
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             throw Exceptions.BusinessException.of("用户名已存在");
@@ -347,24 +365,60 @@ public class CompanyController {
         newStaff.setUserId(newUser.getId());
         newStaff.setCompanyId(currentStaff.getCompanyId());
         newStaff.setPost(post);
+        newStaff.setStatus(CompanyStaff.STATUS_ACTIVE);
         companyStaffRepository.save(newStaff);
 
+        return Result.success();
+    }
+
+    @PostMapping("/staff/{staffId}/approve-join")
+    public Result<Void> approveJoinRequest(@PathVariable Long staffId) {
+        CompanyStaff currentStaff = currentStaff();
+        assertOwner(currentStaff);
+
+        CompanyStaff targetStaff = companyStaffRepository.findById(staffId)
+                .orElseThrow(() -> Exceptions.BusinessException.of("员工不存在"));
+        if (!targetStaff.getCompanyId().equals(currentStaff.getCompanyId())) {
+            throw new Exceptions.ForbiddenException("无权审批此员工");
+        }
+        if (!CompanyStaff.STATUS_PENDING_JOIN.equalsIgnoreCase(targetStaff.getStatus())) {
+            throw Exceptions.BusinessException.of("仅可审批待加入员工");
+        }
+        targetStaff.setStatus(CompanyStaff.STATUS_ACTIVE);
+        targetStaff.setPost(CompanyStaff.POST_HR);
+        companyStaffRepository.save(targetStaff);
+        return Result.success();
+    }
+
+    @PostMapping("/staff/{staffId}/reject-join")
+    public Result<Void> rejectJoinRequest(@PathVariable Long staffId) {
+        CompanyStaff currentStaff = currentStaff();
+        assertOwner(currentStaff);
+
+        CompanyStaff targetStaff = companyStaffRepository.findById(staffId)
+                .orElseThrow(() -> Exceptions.BusinessException.of("员工不存在"));
+        if (!targetStaff.getCompanyId().equals(currentStaff.getCompanyId())) {
+            throw new Exceptions.ForbiddenException("无权审批此员工");
+        }
+        if (!CompanyStaff.STATUS_PENDING_JOIN.equalsIgnoreCase(targetStaff.getStatus())) {
+            throw Exceptions.BusinessException.of("仅可拒绝待加入员工");
+        }
+        targetStaff.setStatus(CompanyStaff.STATUS_REJECTED);
+        companyStaffRepository.save(targetStaff);
         return Result.success();
     }
 
     @PostMapping("/staff/{staffId}/reset-password")
     public Result<Map<String, String>> resetStaffPassword(@PathVariable Long staffId) {
         CompanyStaff currentStaff = currentStaff();
-        if (!"OWNER".equals(currentStaff.getPost())) {
-            throw new Exceptions.ForbiddenException("只有企业主可以重置员工密码");
-        }
+        assertOwner(currentStaff);
 
         CompanyStaff targetStaff = companyStaffRepository.findById(staffId)
                 .orElseThrow(() -> Exceptions.BusinessException.of("员工不存在"));
         if (!targetStaff.getCompanyId().equals(currentStaff.getCompanyId())) {
             throw new Exceptions.ForbiddenException("无权重置此员工密码");
         }
-        if ("OWNER".equals(targetStaff.getPost())) {
+        if (CompanyStaff.POST_OWNER.equals(targetStaff.getPost())) {
             throw new Exceptions.ForbiddenException("不能重置企业主密码");
         }
 
@@ -382,23 +436,19 @@ public class CompanyController {
     @PutMapping("/staff/{staffId}/status")
     public Result<Void> updateStaffStatus(@PathVariable Long staffId, @RequestParam boolean disabled) {
         CompanyStaff currentStaff = currentStaff();
-        if (!"OWNER".equals(currentStaff.getPost())) {
-            throw new Exceptions.ForbiddenException("只有企业主可以修改员工状态");
-        }
+        assertOwner(currentStaff);
 
         CompanyStaff targetStaff = companyStaffRepository.findById(staffId)
                 .orElseThrow(() -> Exceptions.BusinessException.of("员工不存在"));
         if (!targetStaff.getCompanyId().equals(currentStaff.getCompanyId())) {
             throw new Exceptions.ForbiddenException("无权操作此员工");
         }
-        if ("OWNER".equals(targetStaff.getPost())) {
+        if (CompanyStaff.POST_OWNER.equals(targetStaff.getPost())) {
             throw new Exceptions.ForbiddenException("不能禁用企业主账号");
         }
 
-        User targetUser = userRepository.findById(targetStaff.getUserId())
-                .orElseThrow(() -> Exceptions.BusinessException.of("用户不存在"));
-        targetUser.setStatus(disabled ? AuthStatus.DISABLED : AuthStatus.VERIFIED);
-        userRepository.save(targetUser);
+        targetStaff.setStatus(disabled ? CompanyStaff.STATUS_DISABLED : CompanyStaff.STATUS_ACTIVE);
+        companyStaffRepository.save(targetStaff);
         return Result.success();
     }
 
@@ -426,6 +476,19 @@ public class CompanyController {
         Long currentUserId = StpUtil.getLoginIdAsLong();
         return companyStaffRepository.findByUserId(currentUserId)
                 .orElseThrow(() -> Exceptions.BusinessException.of("非企业用户"));
+    }
+
+    private void assertOwner(CompanyStaff staff) {
+        if (!CompanyStaff.POST_OWNER.equals(staff.getPost())) {
+            throw new Exceptions.ForbiddenException("只有企业主可以执行此操作");
+        }
+    }
+
+    private void ensureCompanyVerified(Long companyId) {
+        Company company = companyAppService.getCompanyById(companyId);
+        if (company.getAuthStatus() != AuthStatus.VERIFIED) {
+            throw Exceptions.BusinessException.of("企业审核通过后才可发布岗位");
+        }
     }
 
     private void ensureJobOwnership(Job job, Long companyId) {
@@ -473,13 +536,12 @@ public class CompanyController {
         item.setId(staff.getId());
         item.setUserId(staff.getUserId());
         item.setPost(staff.getPost());
-        item.setStatus("ACTIVE");
+        item.setStatus(staff.getStatus() == null ? CompanyStaff.STATUS_ACTIVE : staff.getStatus());
         userRepository.findById(staff.getUserId()).ifPresent(user -> {
             String username = user.getUsername() != null ? user.getUsername().getValue() : null;
             item.setUsername(username);
             item.setDisplayName(username != null && username.contains("@") ? username.substring(0, username.indexOf('@')) : username);
             item.setLastLoginTime("-");
-            item.setStatus(user.getStatus() == AuthStatus.DISABLED ? "DISABLED" : "ACTIVE");
         });
         return item;
     }
@@ -492,5 +554,9 @@ public class CompanyController {
             password.append(chars.charAt(random.nextInt(chars.length())));
         }
         return password.toString();
+    }
+
+    private boolean isActiveStaff(CompanyStaff staff) {
+        return staff.getStatus() == null || CompanyStaff.STATUS_ACTIVE.equalsIgnoreCase(staff.getStatus());
     }
 }

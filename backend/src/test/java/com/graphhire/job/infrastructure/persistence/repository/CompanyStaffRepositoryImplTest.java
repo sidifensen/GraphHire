@@ -142,7 +142,7 @@ class CompanyStaffRepositoryImplTest {
             staff.setId(1L);
             staff.setCompanyId(10L);
             staff.setUserId(1L);
-            staff.setPost("RECRUITER");
+            staff.setPost("HR");
 
             // When
             CompanyStaff result = companyStaffRepository.save(staff);

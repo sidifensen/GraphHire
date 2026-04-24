@@ -66,6 +66,14 @@ public class CompanyRepositoryImpl implements CompanyRepository {
         return Optional.ofNullable(po).map(this::toDomain);
     }
 
+    @Override
+    public Optional<Company> findByName(String companyName) {
+        LambdaQueryWrapper<CompanyPO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CompanyPO::getCompanyName, companyName);
+        CompanyPO po = companyMapper.selectOne(wrapper);
+        return Optional.ofNullable(po).map(this::toDomain);
+    }
+
     /**
      * 根据认证状态查询公司列表
      */

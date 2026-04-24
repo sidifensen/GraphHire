@@ -107,6 +107,8 @@ public abstract class BaseControllerIT {
                                                   JdbcTemplate jdbcTemplate,
                                                   MockMvc mockMvc,
                                                   ObjectMapper objectMapper) throws Exception {
+        ensureCompanyStaffStatusColumn(jdbcTemplate);
+
         // Create test users via direct JDBC (avoids verifyCode requirement)
         personUserId = createUserViaJdbc(jdbcTemplate, TEST_PERSON_USERNAME, TEST_PERSON_PASSWORD, "PERSON");
         companyUserId = createUserViaJdbc(jdbcTemplate, TEST_COMPANY_USERNAME, TEST_COMPANY_PASSWORD, "COMPANY");
@@ -167,10 +169,15 @@ public abstract class BaseControllerIT {
 
         // Create company_staff record linking user to company (post: OWNER)
         jdbc.update(
-            "INSERT INTO company_staff (company_id, user_id, post, create_time, update_time) " +
-            "VALUES (?, ?, 'OWNER', NOW(), NOW())",
+            "INSERT INTO company_staff (company_id, user_id, post, status, create_time, update_time) " +
+            "VALUES (?, ?, 'OWNER', 'ACTIVE', NOW(), NOW())",
             companyId, companyUserId
         );
+    }
+
+    private static void ensureCompanyStaffStatusColumn(JdbcTemplate jdbc) {
+        jdbc.execute("ALTER TABLE company_staff ADD COLUMN IF NOT EXISTS status VARCHAR(20)");
+        jdbc.execute("UPDATE company_staff SET status = 'ACTIVE' WHERE status IS NULL");
     }
 
     private static String doHttpLogin(MockMvc mockMvc, ObjectMapper objectMapper,

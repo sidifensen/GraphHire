@@ -3,7 +3,7 @@ package com.graphhire.job.interfaces.dto.request;
 public class CreateStaffRequest {
     private String username;
     private String password;
-    private String post;  // HR or RECRUITER
+    private String post;  // HR
 
     public String getUsername() {
         return username;

@@ -33,6 +33,10 @@ public class CompanyAppService {
     public Company createCompany(String name, String unifiedSocialCreditCode,
                                  String licenseUrl, String contactName,
                                  String contactPhone, String contactEmail) {
+        companyRepository.findByName(name).ifPresent(existing -> {
+            throw Exceptions.BusinessException.of("公司名称已存在");
+        });
+
         // 步骤1：构建公司领域模型
         Company company = new Company();
         company.setName(name);

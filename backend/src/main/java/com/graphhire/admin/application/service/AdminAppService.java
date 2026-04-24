@@ -523,6 +523,8 @@ public class AdminAppService {
         item.setCategory(null);
         item.setSynonyms(new ArrayList<>(skill.getSynonyms()));
         item.setJobCount(skill.getUsageCount() == null ? 0 : skill.getUsageCount());
+        item.setCreatedAt(formatDateTime(skill.getCreateTime()));
+        item.setUpdatedAt(formatDateTime(skill.getUpdateTime()));
         return item;
     }
 

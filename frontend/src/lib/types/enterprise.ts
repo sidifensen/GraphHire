@@ -88,8 +88,8 @@ export interface EnterpriseStaffListItem {
   userId: number;
   username?: string | null;
   displayName?: string | null;
-  post: 'OWNER' | 'HR' | 'RECRUITER' | string;
-  status: 'ACTIVE' | 'DISABLED' | string;
+  post: 'OWNER' | 'HR' | string;
+  status: 'PENDING_JOIN' | 'ACTIVE' | 'REJECTED' | 'DISABLED' | string;
   lastLoginTime?: string | null;
 }
 
@@ -97,13 +97,12 @@ export interface EnterpriseStaffStats {
   totalCount: number;
   ownerCount: number;
   hrCount: number;
-  recruiterCount: number;
 }
 
 export interface EnterpriseCreateStaffRequest {
   username: string;
   password: string;
-  post: 'HR' | 'RECRUITER';
+  post: 'HR';
 }
 
 export interface EnterpriseCreateJobRequest {

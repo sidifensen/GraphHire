@@ -21,8 +21,10 @@ public class CompanyStaffPO {
     private Long companyId;
     /** 用户ID */
     private Long userId;
-    /** 岗位角色：OWNER/HR/RECRUITER */
+    /** 岗位角色：OWNER/HR */
     private String post;
+    /** 员工状态：PENDING_JOIN/ACTIVE/REJECTED/DISABLED */
+    private String status;
     /** 创建时间 */
     @TableField("create_time")
     private LocalDateTime createTime;
@@ -57,6 +59,14 @@ public class CompanyStaffPO {
 
     public void setPost(String post) {
         this.post = post;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public LocalDateTime getCreateTime() {

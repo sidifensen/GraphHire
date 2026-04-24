@@ -21,6 +21,9 @@ public interface CompanyRepository {
     /** 根据统一社会信用代码查询企业（用于企业唯一性校验） */
     Optional<Company> findByUnifiedSocialCreditCode(String unifiedSocialCreditCode);
 
+    /** 根据企业名称查询企业（用于企业名唯一性校验） */
+    Optional<Company> findByName(String companyName);
+
     /** 根据认证状态查询企业列表 */
     List<Company> findByAuthStatus(AuthStatus authStatus);
 

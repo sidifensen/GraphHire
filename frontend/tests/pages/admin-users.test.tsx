@@ -77,13 +77,13 @@ describe('AdminUsersPage', () => {
     render(<AdminUsersPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('详情')).toBeInTheDocument();
+      expect(screen.getByText('禁用')).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByText('详情'));
+    fireEvent.click(screen.getByRole('button', { name: '禁用' }));
 
     await waitFor(() => {
-      expect(adminApi.getUserDetail).toHaveBeenCalledWith(1);
+      expect(adminApi.updateUserStatus).toHaveBeenCalledWith(1, 'DISABLED');
     });
   });
 });

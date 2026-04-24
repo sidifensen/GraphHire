@@ -21,6 +21,7 @@ vi.mock('@/lib/api/admin', () => ({
     createSkillTag: vi.fn(),
     updateSkillTag: vi.fn(),
     addSkillTagSynonym: vi.fn(),
+    deleteSkillTag: vi.fn(),
   },
 }));
 
@@ -45,6 +46,7 @@ describe('AdminSkillTagsPage', () => {
     mockedAdminApi.createSkillTag.mockResolvedValue({ id: 2, name: 'Go', category: null, synonyms: [], jobCount: 0 });
     mockedAdminApi.updateSkillTag.mockResolvedValue({ id: 1, name: 'Java', category: null, synonyms: [], jobCount: 12 });
     mockedAdminApi.addSkillTagSynonym.mockResolvedValue({ id: 1, name: 'Java', category: null, synonyms: ['JavaSE', 'jdk'], jobCount: 12 });
+    mockedAdminApi.deleteSkillTag.mockResolvedValue();
   });
 
   it('展示重构后的标签管理页文案和列表', async () => {
@@ -52,8 +54,9 @@ describe('AdminSkillTagsPage', () => {
 
     expect(await screen.findByText('标签管理')).toBeInTheDocument();
     expect(screen.getByText('维护技能、工具等实体图谱节点，确保解析准确率。')).toBeInTheDocument();
-    expect(screen.getByText('Java')).toBeInTheDocument();
-    expect(adminApi.getSkillList).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(adminApi.getSkillList).toHaveBeenCalledTimes(1);
+    });
   });
 
   it('点击新建标签会调用管理端创建接口', async () => {

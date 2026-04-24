@@ -140,8 +140,8 @@ class CompanyControllerTest {
         }
 
         @Test
-        @DisplayName("企业主成功创建招聘专员")
-        void createStaff_AsOwner_CreatesRecruiterSuccess() {
+        @DisplayName("企业主使用非HR职位创建失败")
+        void createStaff_AsOwner_CreatesNonHr_ThrowsValidationException() {
             try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
                 // Given
                 Long ownerUserId = 1L;
@@ -156,31 +156,16 @@ class CompanyControllerTest {
                 ownerStaff.setPost("OWNER");
 
                 when(companyStaffRepository.findByUserId(ownerUserId)).thenReturn(Optional.of(ownerStaff));
-                when(userRepository.findByUsername("recruiter@example.com")).thenReturn(Optional.empty());
-                when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
-                    User user = invocation.getArgument(0);
-                    user.setId(2L);
-                    return user;
-                });
-                when(companyStaffRepository.save(any(CompanyStaff.class))).thenAnswer(invocation -> {
-                    CompanyStaff staff = invocation.getArgument(0);
-                    staff.setId(2L);
-                    return staff;
-                });
 
                 CreateStaffRequest request = new CreateStaffRequest();
                 request.setUsername("recruiter@example.com");
                 request.setPassword("password123");
                 request.setPost("RECRUITER");
 
-                // When
-                var result = companyController.createStaff(request);
-
-                // Then
-                assertNotNull(result);
-                assertEquals(200, result.getCode());
-                verify(userRepository).save(any(User.class));
-                verify(companyStaffRepository).save(any(CompanyStaff.class));
+                // When & Then
+                assertThrows(Exception.class, () -> companyController.createStaff(request));
+                verify(userRepository, never()).save(any(User.class));
+                verify(companyStaffRepository, never()).save(any(CompanyStaff.class));
             }
         }
 
@@ -506,6 +491,10 @@ class CompanyControllerTest {
 
                 stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(userId);
                 when(companyAppService.getCompanyIdByUserId(userId)).thenReturn(companyId);
+                Company company = new Company();
+                company.setId(companyId);
+                company.setAuthStatus(AuthStatus.VERIFIED);
+                when(companyAppService.getCompanyById(companyId)).thenReturn(company);
 
                 Job job = new Job();
                 job.setId(jobId);
@@ -604,6 +593,10 @@ class CompanyControllerTest {
 
                 stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(userId);
                 when(companyAppService.getCompanyIdByUserId(userId)).thenReturn(companyId);
+                Company company = new Company();
+                company.setId(companyId);
+                company.setAuthStatus(AuthStatus.VERIFIED);
+                when(companyAppService.getCompanyById(companyId)).thenReturn(company);
 
                 Job job = new Job();
                 job.setId(jobId);
@@ -635,6 +628,10 @@ class CompanyControllerTest {
 
                 stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(userId);
                 when(companyAppService.getCompanyIdByUserId(userId)).thenReturn(companyId);
+                Company company = new Company();
+                company.setId(companyId);
+                company.setAuthStatus(AuthStatus.VERIFIED);
+                when(companyAppService.getCompanyById(companyId)).thenReturn(company);
 
                 Job job = new Job();
                 job.setId(jobId);
@@ -845,18 +842,14 @@ class CompanyControllerTest {
                 target.setUserId(2L);
                 target.setCompanyId(100L);
                 target.setPost("HR");
-                User targetUser = new User();
-                targetUser.setId(2L);
-                targetUser.setStatus(AuthStatus.VERIFIED);
 
                 when(companyStaffRepository.findByUserId(1L)).thenReturn(Optional.of(owner));
                 when(companyStaffRepository.findById(2L)).thenReturn(Optional.of(target));
-                when(userRepository.findById(2L)).thenReturn(Optional.of(targetUser));
-                when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+                when(companyStaffRepository.save(any(CompanyStaff.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
                 var result = companyController.updateStaffStatus(2L, true);
                 assertEquals(200, result.getCode());
-                verify(userRepository).save(argThat(u -> u.getStatus() == AuthStatus.DISABLED));
+                verify(companyStaffRepository).save(argThat(s -> CompanyStaff.STATUS_DISABLED.equals(s.getStatus())));
             }
         }
     }
