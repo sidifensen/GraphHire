@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
 import AdminSkillTagsPage from '@/app/admin/skill-tags/page';
 import { adminApi } from '@/lib/api/admin';
 
@@ -36,26 +36,12 @@ describe('AdminSkillTagsPage', () => {
     });
   });
 
-  it('加载数据时渲染技能标签页面', async () => {
-    const { container } = render(<AdminSkillTagsPage />);
+  it('展示重构后的标签管理页文案和列表', async () => {
+    render(<AdminSkillTagsPage />);
 
-    await waitFor(() => {
-      expect(container.querySelector('[class*="border"]')).toBeTruthy();
-    }, { timeout: 3000 });
-  });
-
-  it('页面包含认知图谱标题', async () => {
-    const { getByText } = render(<AdminSkillTagsPage />);
-
-    await waitFor(() => {
-      expect(getByText('认知图谱与标签治理')).toBeTruthy();
-    }, { timeout: 3000 });
-  });
-
-  it('使用 AdminHeader 组件', async () => {
-    const { getByTestId } = render(<AdminSkillTagsPage />);
-    await waitFor(() => {
-      expect(getByTestId('admin-header').textContent).toContain('header');
-    }, { timeout: 3000 });
+    expect(await screen.findByText('标签管理')).toBeInTheDocument();
+    expect(screen.getByText('维护技能、工具等实体图谱节点，确保解析准确率。')).toBeInTheDocument();
+    expect(screen.getByText('Java')).toBeInTheDocument();
+    expect(adminApi.getSkillList).toHaveBeenCalledTimes(1);
   });
 });

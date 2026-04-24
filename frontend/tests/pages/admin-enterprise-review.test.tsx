@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import AdminEnterpriseReviewPage from '@/app/admin/enterprise-review/page';
 import { adminApi } from '@/lib/api/admin';
 
@@ -42,19 +42,24 @@ describe('AdminEnterpriseReviewPage', () => {
     });
   });
 
-  it('加载数据时渲染企业审核列表', async () => {
-    const { container } = render(<AdminEnterpriseReviewPage />);
+  it('展示重构后的企业审核标题与说明', async () => {
+    render(<AdminEnterpriseReviewPage />);
 
-    await waitFor(() => {
-      expect(container.querySelector('[class*="grid"]')).toBeTruthy();
-    }, { timeout: 3000 });
+    expect(await screen.findByText('企业审核')).toBeInTheDocument();
+    expect(screen.getByText('管理和审批入驻企业资质与账号信息')).toBeInTheDocument();
+    expect(screen.getByText('待审核企业')).toBeInTheDocument();
   });
 
-  it('页面包含企业审核标题', async () => {
-    const { getByText } = render(<AdminEnterpriseReviewPage />);
+  it('切换状态筛选后会重新请求列表', async () => {
+    render(<AdminEnterpriseReviewPage />);
+
+    const statusSelect = await screen.findByDisplayValue('全部');
+    fireEvent.change(statusSelect, { target: { value: 'APPROVED' } });
 
     await waitFor(() => {
-      expect(getByText('企业审核')).toBeTruthy();
-    }, { timeout: 3000 });
+      expect(adminApi.getCompanyAuthList).toHaveBeenCalledWith(
+        expect.objectContaining({ status: 'APPROVED' })
+      );
+    });
   });
 });

@@ -21,6 +21,7 @@ import com.graphhire.notification.domain.repository.NotificationRepository;
 import com.graphhire.notification.domain.vo.NotificationType;
 import com.graphhire.resume.application.service.ResumeAppService;
 import com.graphhire.resume.domain.model.ParseTask;
+import com.graphhire.resume.domain.repository.PersonInfoRepository;
 import com.graphhire.resume.domain.repository.ParseTaskRepository;
 import com.graphhire.skill.application.service.SkillTagAppService;
 import com.graphhire.skill.domain.model.SkillTag;
@@ -63,6 +64,8 @@ class AdminAppServiceTest {
     private SkillTagAppService skillTagAppService;
     @Mock
     private JobRepository jobRepository;
+    @Mock
+    private PersonInfoRepository personInfoRepository;
     @Mock
     private CompanyAppService companyAppService;
 
