@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
 import AdminDashboardPage from '@/app/admin/dashboard/page';
 import { adminApi } from '@/lib/api/admin';
 
@@ -22,45 +22,31 @@ const mockedAdminApi = vi.mocked(adminApi);
 describe('AdminDashboardPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockedAdminApi.getDashboardStats.mockResolvedValue({
+      totalUsers: 124592,
+      totalCompanies: 3840,
+      totalResumes: 892105,
+      totalJobs: 45210,
+      todayNewUsers: 128,
+      todayNewJobs: 420,
+      pendingCompanyAudit: 12,
+      pendingTaskCount: 38,
+      failedTaskCount: 8,
+      matchCount: 12845,
+      taskSuccessRate: 99.4,
+      weeklyNewCompanies: 56,
+      pendingSkillSuggestions: 45,
+      trend: [{ date: '2026-04-24', activeUsers: 5200, newData: 3600 }],
+    });
   });
 
-  it('加载数据时渲染页面结构', async () => {
-    mockedAdminApi.getDashboardStats.mockResolvedValue({
-      totalUsers: 100,
-      totalCompanies: 20,
-      totalResumes: 30,
-      totalJobs: 40,
-      todayNewUsers: 5,
-      todayNewJobs: 6,
-      pendingCompanyAudit: 7,
-      pendingTaskCount: 8,
-      failedTaskCount: 2,
-      matchCount: 99,
-      taskSuccessRate: 98.5,
-      weeklyNewCompanies: 3,
-      pendingSkillSuggestions: 4,
-      trend: [{ date: '2026-04-21', activeUsers: 10, newData: 9 }],
-    });
+  it('展示重构后的仪表盘核心区块', async () => {
+    render(<AdminDashboardPage />);
 
-    const { container } = render(<AdminDashboardPage />);
-
-    await waitFor(() => {
-      expect(container.querySelector('[class*="grid"]')).toBeTruthy();
-    }, { timeout: 3000 });
-  });
-
-  it('页面包含数据总览标题', async () => {
-    mockedAdminApi.getDashboardStats.mockResolvedValue({
-      totalUsers: 1, totalCompanies: 1, totalResumes: 1, totalJobs: 1,
-      todayNewUsers: 0, todayNewJobs: 0, pendingCompanyAudit: 0,
-      pendingTaskCount: 0, failedTaskCount: 0, matchCount: 0,
-      taskSuccessRate: 0, weeklyNewCompanies: 0, pendingSkillSuggestions: 0, trend: [],
-    });
-
-    const { getByText } = render(<AdminDashboardPage />);
-
-    await waitFor(() => {
-      expect(getByText('数据总览')).toBeTruthy();
-    }, { timeout: 3000 });
+    expect(await screen.findByText('概览数据')).toBeInTheDocument();
+    expect(screen.getByText('待办与预警')).toBeInTheDocument();
+    expect(screen.getByText('最近系统动态')).toBeInTheDocument();
+    expect(screen.getByText('热门技能榜单 (Top 5)')).toBeInTheDocument();
+    expect(adminApi.getDashboardStats).toHaveBeenCalledTimes(1);
   });
 });

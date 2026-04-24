@@ -383,12 +383,7 @@ public class AdminAppService {
     }
 
     private boolean matchesSkill(SkillTag skill, String category, String keyword) {
-        if (category != null && !category.isBlank()) {
-            String skillCategory = skill.getCategory() == null ? "" : skill.getCategory().getDescription();
-            if (!category.equalsIgnoreCase(skillCategory)) {
-                return false;
-            }
-        }
+        // 技能分类字段已下线，保留参数但不再按分类过滤
         if (keyword == null || keyword.isBlank()) {
             return true;
         }
@@ -472,7 +467,7 @@ public class AdminAppService {
         AdminSkillItemResponse item = new AdminSkillItemResponse();
         item.setId(skill.getId());
         item.setName(skill.getName());
-        item.setCategory(skill.getCategory() == null ? null : skill.getCategory().getDescription());
+        item.setCategory(null);
         item.setSynonyms(new ArrayList<>(skill.getSynonyms()));
         item.setJobCount(skill.getUsageCount() == null ? 0 : skill.getUsageCount());
         return item;

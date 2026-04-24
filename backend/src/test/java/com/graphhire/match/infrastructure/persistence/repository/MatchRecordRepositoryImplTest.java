@@ -23,6 +23,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -150,48 +152,91 @@ class MatchRecordRepositoryImplTest {
         @DisplayName("should insert when id is null")
         void save_Insert() {
             sampleRecord.setId(null);
-            when(matchRecordMapper.insert(any(MatchRecordPO.class))).thenReturn(1);
+            ArgumentCaptor<String> detailCaptor = ArgumentCaptor.forClass(String.class);
 
             MatchRecord result = repository.save(sampleRecord);
 
             assertNotNull(result);
-            verify(matchRecordMapper).insert(any(MatchRecordPO.class));
-            verify(matchRecordMapper, never()).updateById(any(MatchRecordPO.class));
+            verify(matchRecordMapper).insertWithJsonb(
+                eq(10L),
+                eq(20L),
+                isNull(),
+                any(BigDecimal.class),
+                any(BigDecimal.class),
+                any(BigDecimal.class),
+                any(BigDecimal.class),
+                any(BigDecimal.class),
+                any(BigDecimal.class),
+                detailCaptor.capture(),
+                eq(0)
+            );
+            verify(matchRecordMapper, never()).updateWithJsonb(
+                anyLong(), any(), any(), any(), any(), any(), any(), any(), any(), any()
+            );
+            assertEquals(sampleRecord.getMatchReason(), JSONUtil.parseObj(detailCaptor.getValue()).getStr("reason"));
         }
 
         @Test
         @DisplayName("should update when id is not null")
         void save_Update() {
-            when(matchRecordMapper.updateById(any(MatchRecordPO.class))).thenReturn(1);
+            ArgumentCaptor<String> detailCaptor = ArgumentCaptor.forClass(String.class);
 
             MatchRecord result = repository.save(sampleRecord);
 
             assertNotNull(result);
-            verify(matchRecordMapper).updateById(any(MatchRecordPO.class));
-            verify(matchRecordMapper, never()).insert(any(MatchRecordPO.class));
+            verify(matchRecordMapper).updateWithJsonb(
+                eq(1L),
+                isNull(),
+                any(BigDecimal.class),
+                any(BigDecimal.class),
+                any(BigDecimal.class),
+                any(BigDecimal.class),
+                any(BigDecimal.class),
+                any(BigDecimal.class),
+                detailCaptor.capture(),
+                eq(0)
+            );
+            verify(matchRecordMapper, never()).insertWithJsonb(
+                anyLong(), anyLong(), any(), any(), any(), any(), any(), any(), any(), any(), any()
+            );
+            assertEquals(sampleRecord.getMatchReason(), JSONUtil.parseObj(detailCaptor.getValue()).getStr("reason"));
         }
 
         @Test
         @DisplayName("should correctly map all fields to PO on save")
         void save_MapsAllFieldsCorrectly() {
-            ArgumentCaptor<MatchRecordPO> poCaptor = ArgumentCaptor.forClass(MatchRecordPO.class);
-            when(matchRecordMapper.updateById(any(MatchRecordPO.class))).thenReturn(1);
+            ArgumentCaptor<BigDecimal> overallCaptor = ArgumentCaptor.forClass(BigDecimal.class);
+            ArgumentCaptor<BigDecimal> skillCaptor = ArgumentCaptor.forClass(BigDecimal.class);
+            ArgumentCaptor<BigDecimal> expCaptor = ArgumentCaptor.forClass(BigDecimal.class);
+            ArgumentCaptor<BigDecimal> cityCaptor = ArgumentCaptor.forClass(BigDecimal.class);
+            ArgumentCaptor<BigDecimal> eduCaptor = ArgumentCaptor.forClass(BigDecimal.class);
+            ArgumentCaptor<BigDecimal> salCaptor = ArgumentCaptor.forClass(BigDecimal.class);
+            ArgumentCaptor<String> detailCaptor = ArgumentCaptor.forClass(String.class);
+            ArgumentCaptor<Integer> viewedCaptor = ArgumentCaptor.forClass(Integer.class);
 
             repository.save(sampleRecord);
 
-            verify(matchRecordMapper).updateById(poCaptor.capture());
-            MatchRecordPO captured = poCaptor.getValue();
-            assertEquals(1L, captured.getId());
-            assertEquals(10L, captured.getResumeId());
-            assertEquals(20L, captured.getJobId());
-            assertEquals("{\"skills\": [\"Java\", \"Python\"]}", captured.getMatchDetail());
-            assertEquals(0, captured.getViewed());
-            assertNotNull(captured.getOverallScore());
-            assertEquals(90.0, captured.getSkillScore().doubleValue());
-            assertEquals(85.0, captured.getExperienceScore().doubleValue());
-            assertEquals(80.0, captured.getCityScore().doubleValue());
-            assertEquals(75.0, captured.getEducationScore().doubleValue());
-            assertEquals(95.0, captured.getSalaryScore().doubleValue());
+            verify(matchRecordMapper).updateWithJsonb(
+                eq(1L),
+                isNull(),
+                overallCaptor.capture(),
+                skillCaptor.capture(),
+                expCaptor.capture(),
+                cityCaptor.capture(),
+                eduCaptor.capture(),
+                salCaptor.capture(),
+                detailCaptor.capture(),
+                viewedCaptor.capture()
+            );
+            assertNotNull(overallCaptor.getValue());
+            assertEquals(86.25, overallCaptor.getValue().doubleValue());
+            assertEquals(90.0, skillCaptor.getValue().doubleValue());
+            assertEquals(85.0, expCaptor.getValue().doubleValue());
+            assertEquals(80.0, cityCaptor.getValue().doubleValue());
+            assertEquals(75.0, eduCaptor.getValue().doubleValue());
+            assertEquals(95.0, salCaptor.getValue().doubleValue());
+            assertEquals(0, viewedCaptor.getValue());
+            assertEquals(sampleRecord.getMatchReason(), JSONUtil.parseObj(detailCaptor.getValue()).getStr("reason"));
         }
     }
 
@@ -248,7 +293,7 @@ class MatchRecordRepositoryImplTest {
 
             Optional<MatchRecord> result = repository.findById(1L);
 
-            assertNotNull(result.get().getScore());
+            assertNull(result.get().getScore());
         }
     }
 
@@ -263,9 +308,20 @@ class MatchRecordRepositoryImplTest {
 
             repository.save(sampleRecord);
 
-            ArgumentCaptor<MatchRecordPO> poCaptor = ArgumentCaptor.forClass(MatchRecordPO.class);
-            verify(matchRecordMapper).updateById(poCaptor.capture());
-            assertEquals(1, poCaptor.getValue().getViewed());
+            ArgumentCaptor<Integer> viewedCaptor = ArgumentCaptor.forClass(Integer.class);
+            verify(matchRecordMapper).updateWithJsonb(
+                eq(1L),
+                isNull(),
+                any(BigDecimal.class),
+                any(BigDecimal.class),
+                any(BigDecimal.class),
+                any(BigDecimal.class),
+                any(BigDecimal.class),
+                any(BigDecimal.class),
+                anyString(),
+                viewedCaptor.capture()
+            );
+            assertEquals(1, viewedCaptor.getValue());
         }
 
         @Test
@@ -275,9 +331,20 @@ class MatchRecordRepositoryImplTest {
 
             repository.save(sampleRecord);
 
-            ArgumentCaptor<MatchRecordPO> poCaptor = ArgumentCaptor.forClass(MatchRecordPO.class);
-            verify(matchRecordMapper).updateById(poCaptor.capture());
-            assertEquals(0, poCaptor.getValue().getViewed());
+            ArgumentCaptor<Integer> viewedCaptor = ArgumentCaptor.forClass(Integer.class);
+            verify(matchRecordMapper).updateWithJsonb(
+                eq(1L),
+                isNull(),
+                any(BigDecimal.class),
+                any(BigDecimal.class),
+                any(BigDecimal.class),
+                any(BigDecimal.class),
+                any(BigDecimal.class),
+                any(BigDecimal.class),
+                anyString(),
+                viewedCaptor.capture()
+            );
+            assertEquals(0, viewedCaptor.getValue());
         }
     }
 }

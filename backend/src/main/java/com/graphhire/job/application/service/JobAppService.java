@@ -5,18 +5,18 @@ import com.graphhire.job.domain.model.Job;
 import com.graphhire.job.domain.repository.JobRepository;
 import com.graphhire.job.domain.vo.JobStatus;
 import com.graphhire.job.domain.vo.Location;
-import com.graphhire.job.domain.vo.ParseStatus;
 import com.graphhire.job.domain.vo.SalaryRange;
 import com.graphhire.job.infrastructure.mq.JobMQProducer;
-import com.graphhire.job.infrastructure.mq.JobParseMQProducer;
-import com.graphhire.resume.domain.model.ParseTask;
-import com.graphhire.resume.domain.repository.ParseTaskRepository;
+import com.graphhire.skill.domain.repository.SkillTagRepository;
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class JobAppService {
@@ -27,11 +27,8 @@ public class JobAppService {
     @Autowired(required = false)
     private JobMQProducer jobMQProducer;
 
-    @Autowired(required = false)
-    private JobParseMQProducer jobParseMQProducer;
-
     @Autowired
-    private ParseTaskRepository parseTaskRepository;
+    private SkillTagRepository skillTagRepository;
 
     // =====================================================
     // 【第一部分】职位 CRUD 操作
@@ -51,15 +48,14 @@ public class JobAppService {
      * @param headcount      招聘人数
      * @param location       工作地点
      * @param salaryRange    薪资范围
-     * @param requiredSkills 必填技能列表
-     * @param preferredSkills 偏好技能列表
+     * @param skills        岗位技能列表
      * @param description    职位描述
      * @return 保存后的职位领域模型
      */
     @Transactional
     public Job createJob(Long companyId, String title, String department, Integer headcount,
                          Location location, SalaryRange salaryRange,
-                         List<String> requiredSkills, List<String> preferredSkills,
+                         List<String> skills,
                          String description) {
         // 步骤1：构建职位领域模型并填充基础信息
         Job job = new Job();
@@ -69,8 +65,7 @@ public class JobAppService {
         job.setHeadcount(headcount);
         job.setLocation(location);
         job.setSalaryRange(salaryRange);
-        job.setRequiredSkills(requiredSkills);
-        job.setPreferredSkills(preferredSkills);
+        job.setSkills(validateAndNormalizeSkills(skills));
         job.setDescription(description);
 
         // 步骤2：设置职位初始状态为草稿（DRAFT）
@@ -101,7 +96,7 @@ public class JobAppService {
         // 步骤2：调用领域模型更新方法修改信息
         job.updateInfo(cmd.getTitle(), cmd.getDepartment(), cmd.getHeadcount(),
                 cmd.getLocation(), cmd.getSalaryRange(),
-                cmd.getRequiredSkills(), cmd.getPreferredSkills(),
+                validateAndNormalizeSkills(cmd.getSkills()),
                 cmd.getDescription());
 
         // 步骤3：保存更新后的职位信息
@@ -140,7 +135,7 @@ public class JobAppService {
      * 步骤3：变更职位状态为已发布
      * 步骤4：保存发布时间并持久化
      * 步骤5：发送职位发布事件消息
-     * 步骤6：触发职位文档解析任务（如有附件）
+     * 步骤6：发布完成后等待候选人投递
      *
      * @param jobId 职位ID
      * @param cmd   更新指令（发布时可选择性更新部分字段，为null则仅发布）
@@ -156,11 +151,8 @@ public class JobAppService {
         if (cmd != null) {
             job.updateInfo(cmd.getTitle(), cmd.getDepartment(), cmd.getHeadcount(),
                     cmd.getLocation(), cmd.getSalaryRange(),
-                    cmd.getRequiredSkills(), cmd.getPreferredSkills(),
+                    validateAndNormalizeSkills(cmd.getSkills()),
                     cmd.getDescription());
-            if (cmd.getFilePath() != null) {
-                job.setFilePath(cmd.getFilePath());
-            }
         }
 
         // 步骤3：变更职位状态为已发布
@@ -173,11 +165,6 @@ public class JobAppService {
         // 步骤5：发送职位发布事件消息
         if (jobMQProducer != null) {
             jobMQProducer.sendJobPublishedEvent(savedJob);
-        }
-
-        // 步骤6：触发职位文档解析任务（如有附件）
-        if (savedJob.getFilePath() != null && !savedJob.getFilePath().isBlank()) {
-            triggerJobParse(savedJob.getId());
         }
 
         return savedJob;
@@ -233,49 +220,7 @@ public class JobAppService {
     }
 
     // =====================================================
-    // 【第三部分】职位解析任务
-    // =====================================================
-
-    /**
-     * 触发职位解析
-     * 【功能说明】创建职位文档解析任务，发送至消息队列供异步处理，并更新职位解析状态。
-     * 【业务步骤】
-     * 步骤1：根据职位ID查询职位领域模型
-     * 步骤2：创建解析任务并设置初始状态
-     * 步骤3：保存解析任务记录
-     * 步骤4：更新职位的解析状态为待处理
-     * 步骤5：发送解析任务消息至消息队列
-     *
-     * @param jobId 职位ID
-     */
-    @Transactional
-    public void triggerJobParse(Long jobId) {
-        // 步骤1：根据职位ID查询职位领域模型
-        Job job = jobRepository.findById(jobId)
-                .orElseThrow(() -> new IllegalArgumentException("职位不存在"));
-
-        // 步骤2：创建解析任务并设置初始状态
-        ParseTask task = new ParseTask();
-        task.setJobId(jobId);
-        task.setTaskType("JOB_PARSE");
-        task.setStatus(ParseTask.TaskStatus.PENDING);
-        task.setCreatedAt(LocalDateTime.now());
-
-        // 步骤3：保存解析任务记录
-        ParseTask savedTask = parseTaskRepository.save(task);
-
-        // 步骤4：更新职位的解析状态为待处理
-        job.setParseStatus(ParseStatus.PENDING);
-        jobRepository.save(job);
-
-        // 步骤5：发送解析任务消息至消息队列
-        if (jobParseMQProducer != null) {
-            jobParseMQProducer.sendJobParseTask(jobId, savedTask.getId());
-        }
-    }
-
-    // =====================================================
-    // 【第四部分】查询方法
+    // 【第三部分】查询方法
     // =====================================================
 
     /**
@@ -318,5 +263,30 @@ public class JobAppService {
     public List<Job> getPublishedJobs() {
         // 步骤1：查询状态为已发布的所有职位
         return jobRepository.findByStatus(JobStatus.PUBLISHED);
+    }
+
+    private List<String> validateAndNormalizeSkills(List<String> skills) {
+        if (CollUtil.isEmpty(skills)) {
+            return List.of();
+        }
+        List<String> normalized = skills.stream()
+                .filter(StrUtil::isNotBlank)
+                .map(StrUtil::trim)
+                .distinct()
+                .collect(Collectors.toList());
+        if (CollUtil.isEmpty(normalized)) {
+            return List.of();
+        }
+        List<String> allowed = skillTagRepository.findByNames(normalized).stream()
+                .map(tag -> StrUtil.trim(tag.getName()))
+                .filter(StrUtil::isNotBlank)
+                .collect(Collectors.toSet())
+                .stream()
+                .toList();
+        if (allowed.size() != normalized.size()) {
+            List<String> invalid = normalized.stream().filter(s -> !allowed.contains(s)).toList();
+            throw new IllegalArgumentException("存在未在技能标签库中的技能: " + String.join(", ", invalid));
+        }
+        return normalized;
     }
 }

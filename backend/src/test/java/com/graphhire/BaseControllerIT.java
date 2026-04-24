@@ -3,23 +3,28 @@ package com.graphhire;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.graphhire.auth.application.service.AuthAppService;
-import com.graphhire.auth.domain.model.User;
 import com.graphhire.auth.domain.repository.UserRepository;
 import com.graphhire.auth.domain.service.PasswordEncoder;
-import com.graphhire.auth.domain.vo.AuthStatus;
-import com.graphhire.auth.domain.vo.UserType;
-import com.graphhire.auth.interfaces.dto.response.LoginResponse;
+import com.graphhire.resume.infrastructure.file.RustFSClient;
 import cn.hutool.crypto.digest.BCrypt;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.mockito.Mockito;
+
+import java.nio.charset.StandardCharsets;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -43,6 +48,12 @@ public abstract class BaseControllerIT {
     @Autowired
     protected JdbcTemplate jdbcTemplate;
 
+    @MockBean
+    protected JavaMailSender javaMailSender;
+
+    @MockBean
+    protected RustFSClient rustFSClient;
+
     protected static String personToken;
     protected static String companyToken;
     protected static String adminToken;
@@ -61,6 +72,16 @@ public abstract class BaseControllerIT {
     protected static final String TEST_COMPANY_PASSWORD = "Test123456";
     protected static final String TEST_ADMIN_USERNAME = "test_admin@graphhire.com";
     protected static final String TEST_ADMIN_PASSWORD = "Test123456";
+
+    @BeforeEach
+    protected void setupExternalMocks() {
+        Mockito.lenient().when(rustFSClient.upload(any(byte[].class), anyString()))
+            .thenAnswer(invocation -> "s3://resumes/mock/" + invocation.getArgument(1, String.class));
+        Mockito.lenient().when(rustFSClient.download(anyString()))
+            .thenReturn("mock-file-content".getBytes(StandardCharsets.UTF_8));
+        Mockito.lenient().when(rustFSClient.exists(anyString())).thenReturn(true);
+        Mockito.lenient().doNothing().when(rustFSClient).delete(anyString());
+    }
 
     protected void setupHeaders() {
         personHeaders = new HttpHeaders();
@@ -86,10 +107,6 @@ public abstract class BaseControllerIT {
                                                   JdbcTemplate jdbcTemplate,
                                                   MockMvc mockMvc,
                                                   ObjectMapper objectMapper) throws Exception {
-        if (personToken != null && companyToken != null && adminToken != null) {
-            return; // Already initialized
-        }
-
         // Create test users via direct JDBC (avoids verifyCode requirement)
         personUserId = createUserViaJdbc(jdbcTemplate, TEST_PERSON_USERNAME, TEST_PERSON_PASSWORD, "PERSON");
         companyUserId = createUserViaJdbc(jdbcTemplate, TEST_COMPANY_USERNAME, TEST_COMPANY_PASSWORD, "COMPANY");

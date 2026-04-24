@@ -12,7 +12,6 @@ public class SkillTagPO {
     @TableId(type = IdType.AUTO)
     private Long id;
     private String name;
-    private String category;
     @TableField("create_time")
     private LocalDateTime createTime;
 
@@ -30,14 +29,6 @@ public class SkillTagPO {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
     }
 
     public LocalDateTime getCreateTime() {

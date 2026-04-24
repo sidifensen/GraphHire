@@ -5,12 +5,8 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.graphhire.job.domain.model.Job;
-import com.graphhire.job.domain.model.JobSkill;
 import com.graphhire.job.domain.repository.JobRepository;
-import com.graphhire.job.domain.repository.JobSkillRepository;
 import com.graphhire.match.interfaces.vo.GraphMatchVO;
-import com.graphhire.skill.domain.model.SkillTag;
-import com.graphhire.skill.domain.repository.SkillTagRepository;
 import com.graphhire.skill.infrastructure.graph.SkillGraphClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +23,7 @@ import java.util.stream.Collectors;
  *
  * 【匹配逻辑】
  * 步骤1：从Memgraph获取用户技能图谱
- * 步骤2：从数据库获取职位技能要求（Job.requiredSkills + JobSkill关联表）
+ * 步骤2：从数据库获取职位技能要求（Job.skills）
  * 步骤3：计算matchedSkills和missingSkills
  * 步骤4：计算匹配率和总分
  * 步骤5：确定匹配等级并生成原因说明
@@ -46,12 +42,6 @@ public class MatchGraphServiceImpl implements MatchGraphService {
 
     @Autowired
     private JobRepository jobRepository;
-
-    @Autowired
-    private JobSkillRepository jobSkillRepository;
-
-    @Autowired
-    private SkillTagRepository skillTagRepository;
 
     @Override
     public GraphMatchVO calculateGraphMatchScore(Long personId, Long jobId) {
@@ -213,25 +203,13 @@ public class MatchGraphServiceImpl implements MatchGraphService {
     private Set<String> collectJobRequiredSkills(Job job) {
         Set<String> requiredSkills = new HashSet<>();
 
-        // 1. 从Job.requiredSkills字段获取
-        List<String> jobRequiredSkills = job.getRequiredSkills();
+        // 从Job.skills字段获取
+        List<String> jobRequiredSkills = job.getSkills();
         if (CollUtil.isNotEmpty(jobRequiredSkills)) {
             requiredSkills.addAll(jobRequiredSkills.stream()
                 .filter(StrUtil::isNotBlank)
                 .map(String::trim)
                 .collect(Collectors.toSet()));
-        }
-
-        // 2. 从JobSkill关联表获取必填技能（isRequired=true）
-        List<JobSkill> jobSkills = jobSkillRepository.findByJobId(job.getId());
-        if (CollUtil.isNotEmpty(jobSkills)) {
-            for (JobSkill jobSkill : jobSkills) {
-                if (Boolean.TRUE.equals(jobSkill.getIsRequired())) {
-                    // 通过skillTagId获取技能名称
-                    skillTagRepository.findById(jobSkill.getSkillTagId())
-                        .ifPresent(skillTag -> requiredSkills.add(skillTag.getName().trim()));
-                }
-            }
         }
 
         return requiredSkills;

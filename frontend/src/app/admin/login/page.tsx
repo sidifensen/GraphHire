@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Network } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { adminApi } from '@/lib/api/admin';
 import { adminAuthStore } from '@/lib/stores/auth-store';
@@ -20,12 +21,10 @@ export default function AdminLoginPage() {
 
     try {
       const response = await adminApi.login({ username, password });
-
       adminAuthStore.getState().setAuth(
         { accessToken: response.accessToken, refreshToken: response.refreshToken },
         { id: response.userId, username, type: response.userType }
       );
-
       router.push('/admin/dashboard');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : '登录失败，请检查用户名和密码';
@@ -36,138 +35,97 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div
-      data-testid="admin-login-page"
-      className="min-h-screen flex flex-col justify-between items-center text-on-surface antialiased"
-      style={{
-        backgroundImage: 'radial-gradient(circle at 0% 0%, #dbe9ff 0%, #f8f9ff 50%), radial-gradient(circle at 100% 100%, #e5eeff 0%, #f8f9ff 50%)',
-        backgroundColor: '#f8f9ff',
-      }}
-    >
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-slate-50 text-slate-900">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.15),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(14,165,233,0.12),transparent_35%)]" />
 
-      {/* Top AppBar */}
-      <header className="w-full flex justify-between items-center px-12 py-6 max-w-full">
-        <div className="flex items-center gap-3">
-          <span className="material-symbols-outlined icon-fill text-primary text-3xl">hub</span>
-          <span className="font-headline text-2xl font-extrabold tracking-tighter text-primary">GraphHire 图谱智聘</span>
-          <span className="ml-4 px-2 py-1 rounded bg-primary-container text-on-primary-container text-xs font-semibold tracking-wider uppercase border border-primary/20">管理后台</span>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="w-full flex-grow flex items-center justify-center p-6">
-        <div className="w-full max-w-md bg-surface-container-lowest rounded-xl p-10 relative overflow-hidden" style={{ boxShadow: '0 24px 64px -12px rgba(0, 23, 75, 0.1)' }}>
-          <div
-            data-testid="admin-login-card-glow"
-            className="absolute top-0 right-0 w-48 h-48 bg-primary opacity-5 rounded-full blur-3xl -mr-20 -mt-20"
-          ></div>
-          <div className="text-center mb-10 relative z-10">
-            <h1 className="font-headline text-3xl font-extrabold text-on-surface mb-2">管理后台</h1>
-            <p className="text-on-surface-variant text-sm font-body tracking-wide">登录以访问系统控制台</p>
-          </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="mb-4 p-3 rounded-lg bg-error-container text-on-error-container text-sm">
-              {error}
+      <div className="relative mx-auto flex w-full max-w-[1500px] flex-1 flex-col px-6 lg:flex-row lg:px-20">
+        <section className="flex flex-1 flex-col justify-center py-20 lg:pr-12">
+          <div className="mb-8 flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600 text-white">
+              <Network className="h-5 w-5" />
             </div>
-          )}
+            <span className="text-2xl font-bold tracking-tight text-slate-900">GraphHire</span>
+          </div>
+          <h1 className="text-4xl font-bold leading-tight text-slate-900 lg:text-6xl">
+            开启 AI 智能
+            <br />
+            招聘管理
+            <br />
+            新篇章。
+          </h1>
+          <p className="mt-6 max-w-lg text-lg text-slate-500">于无声处见繁华，重新定义招聘管理体验。</p>
+        </section>
 
-          <form className="space-y-6 relative z-10" onSubmit={handleSubmit}>
-            {/* Account Input */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-on-surface-variant" htmlFor="account">
-                管理员账号 / 手机号
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <span className="material-symbols-outlined text-outline-variant text-xl">person</span>
-                </div>
+        <section className="flex flex-1 items-center justify-center py-10 lg:justify-end">
+          <div className="w-full max-w-[440px] rounded-3xl border border-white/40 bg-white/90 p-8 shadow-2xl backdrop-blur">
+            <div className="mb-6">
+              <h2 className="text-3xl font-bold text-slate-900">欢迎回来</h2>
+              <p className="mt-2 text-sm text-slate-500">请登录以继续管理 GraphHire 平台</p>
+            </div>
+
+            {error ? <div className="mb-4 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</div> : null}
+
+            <form className="space-y-5" onSubmit={handleSubmit}>
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700" htmlFor="account">
+                  账号 / 手机号
+                </label>
                 <input
-                  className="block w-full pl-10 pr-3 py-3 border-0 bg-surface-container-low text-on-surface rounded focus:ring-0 focus:bg-surface-container-lowest focus:shadow-[0_2px_0_0_#003da6] transition-all"
                   id="account"
-                  name="account"
-                  placeholder="请输入账号"
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
+                  placeholder="请输入您的账号"
+                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-800 outline-none transition focus:border-blue-300 focus:bg-white"
                   required
                 />
               </div>
-            </div>
 
-            {/* Password Input */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-on-surface-variant" htmlFor="password">
-                密码
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <span className="material-symbols-outlined text-outline-variant text-xl">lock</span>
-                </div>
-                <input
-                  className="block w-full pl-10 pr-10 py-3 border-0 bg-surface-container-low text-on-surface rounded focus:ring-0 focus:bg-surface-container-lowest focus:shadow-[0_2px_0_0_#003da6] transition-all"
-                  id="password"
-                  name="password"
-                  placeholder="请输入密码"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-                <div
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  <span className="material-symbols-outlined text-outline-variant text-xl hover:text-on-surface-variant transition-colors">
-                    {showPassword ? 'visibility' : 'visibility_off'}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Remember & Forgot */}
-            <div className="flex items-center justify-between mt-4">
-              <div className="flex items-center">
-                <input
-                  className="h-4 w-4 text-primary bg-surface-container-low border-outline-variant rounded focus:ring-primary focus:ring-offset-surface-container-lowest"
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                />
-                <label className="ml-2 block text-sm text-on-surface-variant" htmlFor="remember-me">
-                  记住账号
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700" htmlFor="password">
+                  密码
                 </label>
+                <div className="relative">
+                  <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="请输入密码"
+                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 pr-10 text-sm text-slate-800 outline-none transition focus:border-blue-300 focus:bg-white"
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                  >
+                    <span className="material-symbols-outlined text-lg">{showPassword ? 'visibility' : 'visibility_off'}</span>
+                  </button>
+                </div>
               </div>
-              <div className="text-sm">
-                <a className="font-medium text-primary hover:text-primary-container transition-colors" href="#">
+
+              <div className="flex items-center justify-between text-sm">
+                <label className="flex items-center gap-2 text-slate-500">
+                  <input type="checkbox" className="h-4 w-4 rounded border-slate-300" />
+                  记住我
+                </label>
+                <a href="#" className="font-medium text-slate-700 hover:text-blue-600">
                   忘记密码?
                 </a>
               </div>
-            </div>
 
-            {/* Submit Button */}
-            <div className="pt-4">
               <button
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md text-sm font-medium text-on-primary bg-gradient-to-br from-primary to-primary-container hover:opacity-90 focus:outline-none transition-all shadow-[0_8px_16px_-4px_rgba(0,61,166,0.2)] disabled:opacity-50"
                 type="submit"
+                className="w-full rounded-lg bg-blue-600 py-3 text-base font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:opacity-90 disabled:opacity-50"
                 disabled={loading}
               >
-                {loading ? '登录中...' : '登录'}
+                {loading ? '登录中...' : '登 录'}
               </button>
-            </div>
-          </form>
-        </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="w-full px-12 py-8 flex justify-between items-center text-on-surface/60 text-sm tracking-wide border-t border-outline/20">
-        <div>© 2024 GraphHire 管理后台</div>
-        <div className="flex gap-6">
-          <a className="hover:text-primary transition-opacity" href="#">隐私协议</a>
-          <a className="hover:text-primary transition-opacity" href="#">法律声明</a>
-        </div>
-      </footer>
+            </form>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import apiClient from './client';
 import type {
   EnterpriseCreateStaffRequest,
+  EnterpriseCreateJobRequest,
   EnterpriseDashboard,
   EnterpriseJobListItem,
   EnterpriseRecommendation,
@@ -51,6 +52,11 @@ export const companyApi = {
     return response.data;
   },
 
+  createJob: async (data: EnterpriseCreateJobRequest): Promise<number> => {
+    const response = await apiClient.post<number>('/company/job', data);
+    return response.data;
+  },
+
   publishJob: async (jobId: number): Promise<void> => {
     await apiClient.post(`/company/job/${jobId}/publish`);
   },
@@ -61,10 +67,6 @@ export const companyApi = {
 
   updateJobStatus: async (jobId: number, publish: boolean): Promise<void> => {
     await apiClient.put(`/company/job/${jobId}/status`, { publish });
-  },
-
-  parseJob: async (jobId: number): Promise<void> => {
-    await apiClient.post(`/company/job/${jobId}/parse`);
   },
 
   getJobGraph: async (jobId: number): Promise<JobGraph> => {

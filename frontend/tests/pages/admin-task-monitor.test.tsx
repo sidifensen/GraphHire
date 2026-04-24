@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import AdminTaskMonitorPage from '@/app/admin/task-monitor/page';
 import { adminApi } from '@/lib/api/admin';
 
@@ -43,19 +43,22 @@ describe('AdminTaskMonitorPage', () => {
     });
   });
 
-  it('加载数据时渲染任务监控页面', async () => {
-    const { container } = render(<AdminTaskMonitorPage />);
+  it('展示重构后的任务监控标题与说明', async () => {
+    render(<AdminTaskMonitorPage />);
 
-    await waitFor(() => {
-      expect(container.querySelector('[class*="grid"]')).toBeTruthy();
-    }, { timeout: 3000 });
+    expect(await screen.findByText('任务监控')).toBeInTheDocument();
+    expect(screen.getByText('实时追踪系统级数据处理任务的执行状态')).toBeInTheDocument();
+    expect(screen.getAllByText('失败').length).toBeGreaterThan(0);
   });
 
-  it('页面包含任务监控标题', async () => {
-    const { getByText } = render(<AdminTaskMonitorPage />);
+  it('点击失败任务重试会调用重试接口', async () => {
+    render(<AdminTaskMonitorPage />);
+
+    const retryButton = await screen.findByRole('button', { name: '重试' });
+    fireEvent.click(retryButton);
 
     await waitFor(() => {
-      expect(getByText('任务监控')).toBeTruthy();
-    }, { timeout: 3000 });
+      expect(adminApi.retryTask).toHaveBeenCalledWith(10);
+    });
   });
 });

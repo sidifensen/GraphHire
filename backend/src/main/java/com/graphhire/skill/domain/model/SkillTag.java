@@ -1,7 +1,6 @@
 package com.graphhire.skill.domain.model;
 
 import com.graphhire.common.model.BaseAggregateRoot;
-import com.graphhire.skill.domain.vo.SkillCategory;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -25,8 +24,6 @@ public class SkillTag extends BaseAggregateRoot {
     private Long id;
     /** 技能标签名称，如"Java"、"Spring Boot" */
     private String name;
-    /** 技能分类，用于分类检索和统计 */
-    private SkillCategory category;
     /** 同义词集合，支持一个标签对应多个名称变体 */
     private Set<String> synonyms = new HashSet<>();
     /** 技能标签详细描述 */
@@ -37,9 +34,8 @@ public class SkillTag extends BaseAggregateRoot {
     public SkillTag() {
     }
 
-    public SkillTag(String name, SkillCategory category) {
+    public SkillTag(String name) {
         this.name = name;
-        this.category = category;
     }
 
     /**
@@ -60,18 +56,6 @@ public class SkillTag extends BaseAggregateRoot {
         if (synonym != null) {
             this.synonyms.remove(synonym.trim().toLowerCase());
         }
-    }
-
-    /**
-     * 更新技能分类
-     * @param newCategory 新的分类，不允许为null
-     * @throws IllegalArgumentException 当分类为null时抛出
-     */
-    public void updateCategory(SkillCategory newCategory) {
-        if (newCategory == null) {
-            throw new IllegalArgumentException("Category cannot be null");
-        }
-        this.category = newCategory;
     }
 
     /** 增加使用计数，用于统计技能的热门程度 */
@@ -111,10 +95,6 @@ public class SkillTag extends BaseAggregateRoot {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public SkillCategory getCategory() {
-        return category;
     }
 
     public Set<String> getSynonyms() {

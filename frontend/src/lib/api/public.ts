@@ -63,6 +63,7 @@ export const publicApi = {
   jobs: {
     search: async (params?: {
       keyword?: string;
+      companyId?: number;
       city?: string;
       salaryMin?: number;
       salaryMax?: number;

@@ -171,7 +171,7 @@ class GraphBuildServiceTest {
     class BuildGraphForJobTests {
 
         @Test
-        @DisplayName("Successfully build graph for job with required and preferred skills")
+        @DisplayName("Successfully build graph for job with skills")
         void buildGraphForJob_WithSkills_Success() {
             // Given
             Job job = new Job();
@@ -187,7 +187,7 @@ class GraphBuildServiceTest {
             verify(skillGraphClient).buildJobSkillGraph(
                 eq(1L),
                 eq(Arrays.asList("Java", "Spring")),
-                eq(Arrays.asList("Kubernetes", "Docker"))
+                eq(Collections.emptyList())
             );
         }
 
@@ -208,12 +208,12 @@ class GraphBuildServiceTest {
             verify(skillGraphClient).buildJobSkillGraph(
                 eq(1L),
                 eq(Arrays.asList("Java", "Python")),
-                isNull()
+                eq(Collections.emptyList())
             );
         }
 
         @Test
-        @DisplayName("Build graph with only preferred skills")
+        @DisplayName("Build graph with only preferred skills (ignored in new model)")
         void buildGraphForJob_OnlyPreferredSkills_Success() {
             // Given
             Job job = new Job();
@@ -226,11 +226,7 @@ class GraphBuildServiceTest {
             graphBuildService.buildGraphForJob(job);
 
             // Then
-            verify(skillGraphClient).buildJobSkillGraph(
-                eq(1L),
-                isNull(),
-                eq(Arrays.asList("React", "Vue"))
-            );
+            verify(skillGraphClient, never()).buildJobSkillGraph(any(), any(), any());
         }
 
         @Test
@@ -294,7 +290,7 @@ class GraphBuildServiceTest {
             graphBuildService.buildGraphForJob(job);
 
             // Then
-            verify(skillGraphClient).buildJobSkillGraph(eq(1L), any(), isNull());
+            verify(skillGraphClient).buildJobSkillGraph(eq(1L), any(), eq(Collections.emptyList()));
         }
     }
 }

@@ -93,7 +93,7 @@ class CompanyControllerIT extends BaseControllerIT {
             "{\"title\":\"Senior Engineer %s\",\"department\":\"Tech\",\"headcount\":2," +
             "\"location\":{\"province\":\"Beijing\",\"city\":\"Beijing\",\"district\":\"Haidian\"}," +
             "\"salaryRange\":{\"min\":20000,\"max\":40000,\"unit\":\"MONTH\"}," +
-            "\"requiredSkills\":[\"Java\",\"Spring\"],\"preferredSkills\":[\"Python\"]," +
+            "\"requiredSkills\":[\"Java\",\"Spring Boot\"],\"preferredSkills\":[\"Python\"]," +
             "\"description\":\"We are hiring!\"}",
             uuid);
 
@@ -138,7 +138,7 @@ class CompanyControllerIT extends BaseControllerIT {
             "{\"title\":\"Updated Title %s\",\"department\":\"HR\",\"headcount\":1," +
             "\"location\":{\"province\":\"Shanghai\",\"city\":\"Shanghai\"}," +
             "\"salaryRange\":{\"min\":15000,\"max\":30000,\"unit\":\"MONTH\"}," +
-            "\"requiredSkills\":[\"Go\"],\"preferredSkills\":[],\"description\":\"Updated\"}",
+            "\"requiredSkills\":[\"Python\"],\"preferredSkills\":[],\"description\":\"Updated\"}",
             UUID.randomUUID().toString().substring(0, 8));
 
         mockMvc.perform(put("/company/job/{id}", createdJobId)
@@ -207,17 +207,7 @@ class CompanyControllerIT extends BaseControllerIT {
     }
 
     @Test
-    @DisplayName("13 - 重新解析职位")
-    void reparseJob_Success() throws Exception {
-        assertNotNull(createdJobId);
-
-        mockMvc.perform(post("/company/job/{id}/parse", createdJobId)
-                .headers(companyHeaders))
-            .andExpect(jsonPath("$.code").value(200));
-    }
-
-    @Test
-    @DisplayName("14 - 获取企业推荐简历列表")
+    @DisplayName("13 - 获取企业推荐简历列表")
     void getRecommendedResumes_Success() throws Exception {
         mockMvc.perform(get("/company/recommend/resumes")
                 .headers(companyHeaders))
@@ -260,7 +250,7 @@ class CompanyControllerIT extends BaseControllerIT {
     }
 
     @Test
-    @DisplayName("17 - 删除职位")
+    @DisplayName("16 - 删除职位")
     void deleteJob_Success() throws Exception {
         assertNotNull(createdJobId);
 
@@ -270,7 +260,7 @@ class CompanyControllerIT extends BaseControllerIT {
     }
 
     @Test
-    @DisplayName("18 - 创建员工账号")
+    @DisplayName("17 - 创建员工账号")
     void createStaff_Success() throws Exception {
         long ts = System.currentTimeMillis();
         String json = String.format(
@@ -285,7 +275,7 @@ class CompanyControllerIT extends BaseControllerIT {
     }
 
     @Test
-    @DisplayName("19 - 获取企业首页聚合数据")
+    @DisplayName("18 - 获取企业首页聚合数据")
     void getDashboard_Success() throws Exception {
         mockMvc.perform(get("/company/dashboard")
                 .headers(companyHeaders))
@@ -298,7 +288,7 @@ class CompanyControllerIT extends BaseControllerIT {
     }
 
     @Test
-    @DisplayName("20 - 根据状态和关键字筛选职位列表")
+    @DisplayName("19 - 根据状态和关键字筛选职位列表")
     void listJobs_WithFilters() throws Exception {
         mockMvc.perform(get("/company/job/list")
                 .headers(companyHeaders)
@@ -310,7 +300,7 @@ class CompanyControllerIT extends BaseControllerIT {
     }
 
     @Test
-    @DisplayName("21 - 获取员工列表")
+    @DisplayName("20 - 获取员工列表")
     void getStaffList_Success() throws Exception {
         ensureExtraStaffExists();
 
@@ -324,7 +314,7 @@ class CompanyControllerIT extends BaseControllerIT {
     }
 
     @Test
-    @DisplayName("22 - 获取员工统计")
+    @DisplayName("21 - 获取员工统计")
     void getStaffStats_Success() throws Exception {
         ensureExtraStaffExists();
 
@@ -339,7 +329,7 @@ class CompanyControllerIT extends BaseControllerIT {
     }
 
     @Test
-    @DisplayName("23 - 重置员工密码")
+    @DisplayName("22 - 重置员工密码")
     void resetStaffPassword_Success() throws Exception {
         Long staffId = ensureExtraStaffExists();
 

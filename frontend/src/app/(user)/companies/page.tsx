@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { fetchPublicCompanies } from '@/lib/api/homeApi';
 import type { HomeCompanyCard } from '@/lib/types/home';
 
 export default function CompaniesPage() {
+  const router = useRouter();
   const [keyword, setKeyword] = useState('');
   const [companies, setCompanies] = useState<HomeCompanyCard[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,7 +73,9 @@ export default function CompaniesPage() {
             {companies.map((company) => (
               <article
                 key={company.id}
+                aria-label={company.name}
                 className="bg-surface-container-lowest rounded-xl p-6 flex flex-col gap-6 transition-all duration-300 hover:shadow-[0_12px_32px_-4px_rgba(14,28,44,0.06)] relative overflow-hidden group"
+                onClick={() => router.push(`/companies/${company.id}`)}
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-primary-fixed/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
                 <div className="flex justify-between items-start z-10 gap-4">

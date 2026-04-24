@@ -4,7 +4,6 @@ import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.graphhire.skill.domain.model.SkillTag;
 import com.graphhire.skill.domain.repository.SkillTagRepository;
-import com.graphhire.skill.domain.vo.SkillCategory;
 import com.graphhire.skill.infrastructure.persistence.mapper.SkillTagMapper;
 import com.graphhire.skill.infrastructure.persistence.po.SkillTagPO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +23,6 @@ import java.util.Optional;
  * - findById：根据ID查询技能标签
  * - findByName：根据名称查询技能标签
  * - findBySynonym：根据同义词查询
- * - findByCategory：根据分类查询
  * - findAll：查询所有标签
  * - save：保存技能标签
  * - delete：删除技能标签
@@ -63,16 +61,6 @@ public class SkillTagRepositoryImpl implements SkillTagRepository {
     public Optional<SkillTag> findBySynonym(String synonym) {
         // 当前schema的skill_tag表没有synonyms列，返回空
         return Optional.empty();
-    }
-
-    /**
-     * 根据分类查询技能标签
-     */
-    @Override
-    public List<SkillTag> findByCategory(SkillCategory category) {
-        List<SkillTagPO> pos = skillTagMapper.selectList(
-            new LambdaQueryWrapper<SkillTagPO>().eq(SkillTagPO::getCategory, category.name()));
-        return pos.stream().map(this::toDomain).toList();
     }
 
     /**
@@ -132,11 +120,8 @@ public class SkillTagRepositoryImpl implements SkillTagRepository {
     private SkillTag toDomain(SkillTagPO po) {
         if (po == null) return null;
         SkillTag tag = new SkillTag();
-        // 使用 BeanUtil 复制基础字段，category 枚举单独转换
+        // 使用 BeanUtil 复制基础字段
         BeanUtil.copyProperties(po, tag);
-        if (po.getCategory() != null) {
-            tag.updateCategory(SkillCategory.valueOf(po.getCategory()));
-        }
         return tag;
     }
 
@@ -146,7 +131,6 @@ public class SkillTagRepositoryImpl implements SkillTagRepository {
     private SkillTagPO toPO(SkillTag tag) {
         SkillTagPO po = new SkillTagPO();
         BeanUtil.copyProperties(tag, po);
-        po.setCategory(tag.getCategory() != null ? tag.getCategory().name() : null);
         return po;
     }
 }

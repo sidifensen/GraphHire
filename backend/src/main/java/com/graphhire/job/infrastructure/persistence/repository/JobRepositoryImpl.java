@@ -121,11 +121,8 @@ public class JobRepositoryImpl implements JobRepository {
         } else {
             job.setSalaryRange(SalaryRange.empty());
         }
-        if (job.getRequiredSkills() == null) {
-            job.setRequiredSkills(new ArrayList<>());
-        }
-        if (job.getPreferredSkills() == null) {
-            job.setPreferredSkills(new ArrayList<>());
+        if (job.getSkills() == null) {
+            job.setSkills(new ArrayList<>());
         }
         return job;
     }
@@ -144,10 +141,18 @@ public class JobRepositoryImpl implements JobRepository {
             po.setSalaryMax(job.getSalaryRange().getMax());
             po.setSalaryUnit(job.getSalaryRange().getUnit());
         }
-        List<String> requiredSkills = job.getRequiredSkills();
-        List<String> preferredSkills = job.getPreferredSkills();
-        po.setRequiredSkills(requiredSkills != null ? String.join(",", requiredSkills) : null);
-        po.setPreferredSkills(preferredSkills != null ? String.join(",", preferredSkills) : null);
+        po.setSkills(normalizeSkills(job.getSkills()));
         return po;
+    }
+
+    private List<String> normalizeSkills(List<String> skills) {
+        if (skills == null || skills.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return skills.stream()
+                .filter(StrUtil::isNotBlank)
+                .map(StrUtil::trim)
+                .distinct()
+                .toList();
     }
 }

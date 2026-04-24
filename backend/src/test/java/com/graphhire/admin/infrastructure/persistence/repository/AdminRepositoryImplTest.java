@@ -9,6 +9,7 @@ import com.graphhire.match.infrastructure.persistence.mapper.MatchRecordMapper;
 import com.graphhire.match.infrastructure.persistence.po.MatchRecordPO;
 import com.graphhire.resume.infrastructure.persistence.mapper.ResumeMapper;
 import com.graphhire.resume.infrastructure.persistence.po.ResumePO;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,9 @@ class AdminRepositoryImplTest {
 
     @MockBean
     private MatchRecordMapper matchRecordMapper;
+
+    @MockBean
+    private JavaMailSender javaMailSender;
 
     @Autowired
     private AdminRepository adminRepository;

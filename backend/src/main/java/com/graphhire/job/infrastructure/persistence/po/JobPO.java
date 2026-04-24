@@ -4,8 +4,10 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.graphhire.job.infrastructure.persistence.typehandler.StringListArrayTypeHandler;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 职位持久化对象
@@ -13,7 +15,7 @@ import java.time.LocalDateTime;
  * 【模块说明】与数据库job表结构一一对应，用于MyBatis-Plus CRUD操作。
  * 【数据表】job
  */
-@TableName("job")
+@TableName(value = "job", autoResultMap = true)
 public class JobPO {
     /** 职位ID（主键，自增） */
     @TableId(type = IdType.AUTO)
@@ -46,27 +48,15 @@ public class JobPO {
     /** 薪资单位：月/小时/年 */
     @TableField("salary_unit")
     private String salaryUnit;
-    /** 必填技能（JSON数组字符串，数据库中不存在） */
-    @TableField(exist = false)
-    private String requiredSkills;
-    /** 优先技能（JSON数组字符串，数据库中不存在） */
-    @TableField(exist = false)
-    private String preferredSkills;
+    /** 岗位技能数组 */
+    @TableField(value = "skills", typeHandler = StringListArrayTypeHandler.class)
+    private List<String> skills;
     /** 职位状态：0=下架 1=上架 */
     @TableField("status")
     private Integer status;
-    /** 职位描述（数据库中不存在） */
-    @TableField(exist = false)
+    /** 职位描述 */
+    @TableField("description")
     private String description;
-    /** 文件路径 */
-    @TableField("file_path")
-    private String filePath;
-    /** 解析状态 */
-    @TableField("parse_status")
-    private Integer parseStatus;
-    /** AI解析结果 */
-    @TableField("parse_result")
-    private String parseResult;
     /** 经验要求 */
     @TableField("experience")
     private String experience;
@@ -174,20 +164,12 @@ public class JobPO {
         this.salaryUnit = salaryUnit;
     }
 
-    public String getRequiredSkills() {
-        return requiredSkills;
+    public List<String> getSkills() {
+        return skills;
     }
 
-    public void setRequiredSkills(String requiredSkills) {
-        this.requiredSkills = requiredSkills;
-    }
-
-    public String getPreferredSkills() {
-        return preferredSkills;
-    }
-
-    public void setPreferredSkills(String preferredSkills) {
-        this.preferredSkills = preferredSkills;
+    public void setSkills(List<String> skills) {
+        this.skills = skills;
     }
 
     public Integer getStatus() {
@@ -204,6 +186,30 @@ public class JobPO {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getExperience() {
+        return experience;
+    }
+
+    public void setExperience(String experience) {
+        this.experience = experience;
+    }
+
+    public String getEducation() {
+        return education;
+    }
+
+    public void setEducation(String education) {
+        this.education = education;
+    }
+
+    public Integer getJobType() {
+        return jobType;
+    }
+
+    public void setJobType(Integer jobType) {
+        this.jobType = jobType;
     }
 
     public LocalDateTime getCreateTime() {

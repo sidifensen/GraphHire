@@ -152,7 +152,11 @@ class CompanyRepositoryImplTest {
             company.setUnifiedSocialCreditCode("91110000XXXXXXXX");
             company.setAuthStatus(AuthStatus.PENDING_VERIFY);
 
-            when(companyMapper.insert(any(CompanyPO.class))).thenReturn(1);
+            doAnswer(invocation -> {
+                CompanyPO po = invocation.getArgument(0);
+                po.setId(1L);
+                return 1;
+            }).when(companyMapper).insert(any(CompanyPO.class));
 
             // When
             Company result = companyRepository.save(company);

@@ -33,6 +33,7 @@ public class PublicJobController {
     @GetMapping
     public Result<PageResult<PublicJobCardResponse>> searchJobs(
             @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long companyId,
             @RequestParam(required = false) String city,
             @RequestParam(required = false) Integer salaryMin,
             @RequestParam(required = false) Integer salaryMax,
@@ -46,7 +47,7 @@ public class PublicJobController {
         int safeSize = Math.max(size, 1);
         int offset = (safePage - 1) * safeSize;
 
-        if (CollUtil.isEmpty(skills)) {
+        if (CollUtil.isEmpty(skills) && companyId == null) {
             List<Job> pagedJobs = jobRepository.searchPublishedJobs(keyword, city, salaryMin, salaryMax, sortBy, offset, safeSize);
             long total = jobRepository.countPublishedJobs(keyword, city, salaryMin, salaryMax);
             Map<Long, Company> companyMap = companyRepository.findByIds(
@@ -58,6 +59,7 @@ public class PublicJobController {
 
         List<Job> filteredJobs = allPublishedJobs.stream()
                 .filter(job -> matchesKeyword(job, keyword))
+                .filter(job -> matchesCompany(job, companyId))
                 .filter(job -> matchesCity(job, city))
                 .filter(job -> matchesSalaryRange(job, salaryMin, salaryMax))
                 .filter(job -> matchesSkills(job, skills))
@@ -124,6 +126,13 @@ public class PublicJobController {
         }
         Location location = job.getLocation();
         return location != null && city.equals(location.getCity());
+    }
+
+    private boolean matchesCompany(Job job, Long companyId) {
+        if (companyId == null) {
+            return true;
+        }
+        return companyId.equals(job.getCompanyId());
     }
 
     private boolean matchesSalaryRange(Job job, Integer salaryMin, Integer salaryMax) {

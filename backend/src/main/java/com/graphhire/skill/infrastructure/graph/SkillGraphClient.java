@@ -211,6 +211,7 @@ public class SkillGraphClient {
     private Map<String, Object> getMockJobGraph(Long jobId) {
         Map<String, Object> graph = new HashMap<>();
         graph.put("jobId", jobId);
+        graph.put("jobTitle", "Software Engineer");
         graph.put("skills", List.of("Java", "Spring Boot", "MySQL"));
         graph.put("mock", true);
         return graph;

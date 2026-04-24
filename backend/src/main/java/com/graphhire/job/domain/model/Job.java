@@ -4,10 +4,8 @@ import com.graphhire.common.model.BaseAggregateRoot;
 import com.graphhire.job.domain.event.JobPublishedEvent;
 import com.graphhire.job.domain.vo.JobStatus;
 import com.graphhire.job.domain.vo.Location;
-import com.graphhire.job.domain.vo.ParseStatus;
 import com.graphhire.job.domain.vo.SalaryRange;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,8 +27,7 @@ import java.util.List;
  * - companyId：所属企业ID
  * - location：工作地点（城市、区县、详细地址）
  * - salaryRange：薪资范围（最低、最高、单位）
- * - requiredSkills/preferredSkills：必填/优先技能列表
- * - parseStatus：AI解析状态（用于简历文档智能解析）
+ * - skills：岗位技能列表（仅允许选择 skill_tag 中存在的技能）
  */
 public class Job extends BaseAggregateRoot {
     /** 职位ID（主键） */
@@ -47,24 +44,12 @@ public class Job extends BaseAggregateRoot {
     private Location location;
     /** 薪资范围 */
     private SalaryRange salaryRange;
-    /** 必填技能列表（JSON数组） */
-    private List<String> requiredSkills = new ArrayList<>();
-    /** 优先技能列表（JSON数组） */
-    private List<String> preferredSkills = new ArrayList<>();
+    /** 岗位技能列表 */
+    private List<String> skills = new ArrayList<>();
     /** 职位状态：DRAFT/PUBLISHED/CLOSED */
     private JobStatus status = JobStatus.DRAFT;
     /** 职位描述 */
     private String description;
-    /** 职位文档存储路径（RustFS） */
-    private String filePath;
-    /** AI解析状态：PENDING/PARSING/SUCCESS/FAILED */
-    private ParseStatus parseStatus = ParseStatus.PENDING;
-    /** AI解析结果JSON */
-    private String parseResult;
-    /** AI解析错误信息 */
-    private String parseError;
-    /** AI解析置信度 */
-    private BigDecimal confidence;
     /** 发布时间 */
     private LocalDateTime publishedAt;
 
@@ -114,7 +99,7 @@ public class Job extends BaseAggregateRoot {
      * 【功能说明】批量更新职位的基本信息，支持部分更新（null值保持原值）。
      */
     public void updateInfo(String title, String department, Integer headcount, Location location,
-                          SalaryRange salaryRange, List<String> requiredSkills, List<String> preferredSkills,
+                          SalaryRange salaryRange, List<String> skills,
                           String description) {
         this.title = title;
         this.department = department;
@@ -122,8 +107,7 @@ public class Job extends BaseAggregateRoot {
         this.location = location;
         this.salaryRange = salaryRange;
         // 非null时创建新的ArrayList副本，避免外部修改影响
-        this.requiredSkills = requiredSkills != null ? new ArrayList<>(requiredSkills) : this.requiredSkills;
-        this.preferredSkills = preferredSkills != null ? new ArrayList<>(preferredSkills) : this.preferredSkills;
+        this.skills = skills != null ? new ArrayList<>(skills) : this.skills;
         this.description = description;
     }
 
@@ -183,20 +167,12 @@ public class Job extends BaseAggregateRoot {
         this.salaryRange = salaryRange;
     }
 
-    public List<String> getRequiredSkills() {
-        return requiredSkills;
+    public List<String> getSkills() {
+        return skills;
     }
 
-    public void setRequiredSkills(List<String> requiredSkills) {
-        this.requiredSkills = requiredSkills;
-    }
-
-    public List<String> getPreferredSkills() {
-        return preferredSkills;
-    }
-
-    public void setPreferredSkills(List<String> preferredSkills) {
-        this.preferredSkills = preferredSkills;
+    public void setSkills(List<String> skills) {
+        this.skills = skills;
     }
 
     public JobStatus getStatus() {
@@ -215,51 +191,28 @@ public class Job extends BaseAggregateRoot {
         this.description = description;
     }
 
-    public String getFilePath() {
-        return filePath;
-    }
-
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
-    }
-
-    public ParseStatus getParseStatus() {
-        return parseStatus;
-    }
-
-    public void setParseStatus(ParseStatus parseStatus) {
-        this.parseStatus = parseStatus;
-    }
-
-    public String getParseResult() {
-        return parseResult;
-    }
-
-    public void setParseResult(String parseResult) {
-        this.parseResult = parseResult;
-    }
-
-    public String getParseError() {
-        return parseError;
-    }
-
-    public void setParseError(String parseError) {
-        this.parseError = parseError;
-    }
-
-    public BigDecimal getConfidence() {
-        return confidence;
-    }
-
-    public void setConfidence(BigDecimal confidence) {
-        this.confidence = confidence;
-    }
-
     public LocalDateTime getPublishedAt() {
         return publishedAt;
     }
 
     public void setPublishedAt(LocalDateTime publishedAt) {
         this.publishedAt = publishedAt;
+    }
+
+    // 兼容旧接口字段，统一映射到 skills
+    public List<String> getRequiredSkills() {
+        return getSkills();
+    }
+
+    public void setRequiredSkills(List<String> requiredSkills) {
+        setSkills(requiredSkills);
+    }
+
+    public List<String> getPreferredSkills() {
+        return new ArrayList<>();
+    }
+
+    public void setPreferredSkills(List<String> preferredSkills) {
+        // no-op
     }
 }

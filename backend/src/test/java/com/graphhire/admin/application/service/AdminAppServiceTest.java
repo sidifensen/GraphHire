@@ -21,10 +21,10 @@ import com.graphhire.notification.domain.repository.NotificationRepository;
 import com.graphhire.notification.domain.vo.NotificationType;
 import com.graphhire.resume.application.service.ResumeAppService;
 import com.graphhire.resume.domain.model.ParseTask;
+import com.graphhire.resume.domain.repository.PersonInfoRepository;
 import com.graphhire.resume.domain.repository.ParseTaskRepository;
 import com.graphhire.skill.application.service.SkillTagAppService;
 import com.graphhire.skill.domain.model.SkillTag;
-import com.graphhire.skill.domain.vo.SkillCategory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -63,6 +63,8 @@ class AdminAppServiceTest {
     private SkillTagAppService skillTagAppService;
     @Mock
     private JobRepository jobRepository;
+    @Mock
+    private PersonInfoRepository personInfoRepository;
     @Mock
     private CompanyAppService companyAppService;
 
@@ -216,13 +218,13 @@ class AdminAppServiceTest {
         @Test
         @DisplayName("技能分页")
         void getSkillListSuccess() {
-            SkillTag javaSkill = new SkillTag("Java", SkillCategory.技术技能);
+            SkillTag javaSkill = new SkillTag("Java");
             javaSkill.setId(1L);
             javaSkill.setUsageCount(12);
             javaSkill.setSynonyms(java.util.Set.of("javase"));
             when(skillTagAppService.getAllSkillTags()).thenReturn(List.of(javaSkill));
 
-            AdminPageResponse<AdminSkillItemResponse> page = adminAppService.getSkillList("技术技能", "Java", 1, 10);
+            AdminPageResponse<AdminSkillItemResponse> page = adminAppService.getSkillList(null, "Java", 1, 10);
 
             assertEquals(1, page.getTotal());
             assertEquals("Java", page.getList().get(0).getName());
