@@ -195,10 +195,10 @@ export default function AdminTaskMonitorPage() {
             data={tasks}
             pagination={{ currentPage: page, totalPages, totalItems: total }}
             columns={[
-              { header: '任务ID', accessor: 'taskCode', className: 'font-mono text-xs font-bold text-slate-700 dark:text-slate-300' },
-              { header: '任务类型', accessor: 'type', className: 'text-sm text-on-surface' },
-              { header: '重试次数', accessor: 'retries', className: 'w-16 text-center text-sm text-outline' },
-              { header: '最后执行时间', accessor: (task) => <span className="font-display text-xs text-outline-variant">{task.lastTime}</span> },
+              { header: '任务ID', accessor: (task) => <span className="font-mono text-xs font-bold text-slate-700 dark:text-slate-300">{task.taskCode}</span> },
+              { header: '任务类型', accessor: (task) => <span className="text-sm text-on-surface">{task.type}</span> },
+              { header: '重试次数', accessor: (task) => <span className="inline-block min-w-16 text-center text-sm text-outline">{task.retries}</span> },
+              { header: '最后执行时间', accessor: (task) => <span className="font-display text-xs text-slate-600 dark:text-slate-300">{task.lastTime}</span> },
               {
                 header: '状态',
                 accessor: (task) => (
