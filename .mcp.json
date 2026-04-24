@@ -1,28 +1,28 @@
 {
   "mcpServers": {
     "postgres": {
-      "command": "C:\\Windows\\System32\\cmd.exe",
+      "command": "cmd",
       "args": [
         "/c",
-        "D:\\Program Files\\nodejs\\npx.cmd",
+        "npx",
         "-y",
         "enhanced-postgres-mcp-server",
         "postgresql://postgres:postgres@localhost:5432/graphhire"
       ]
     },
     "redis": {
-      "command": "C:\\Windows\\System32\\cmd.exe",
+      "command": "cmd",
       "args": [
         "/c",
-        "D:\\Program Files\\nodejs\\npx.cmd",
+        "npx",
         "-y",
         "@modelcontextprotocol/server-redis",
         "redis://default:redis@localhost:6379/2"
       ]
     },
     "chrome-devtools": {
-      "command": "C:\\Windows\\System32\\cmd.exe",
-      "args": ["/c", "D:\\Program Files\\nodejs\\npx.cmd", "-y", "chrome-devtools-mcp"]
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "chrome-devtools-mcp"]
     }
   }
 }

@@ -1,0 +1,6 @@
+{
+  "name": "GraphHire 图谱智聘",
+  "description": "基于知识图谱的智能招聘管理系统，包含用户管理、企业审核、标签管理及任务监控功能。",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
