@@ -1,7 +1,6 @@
 package com.graphhire.skill.domain.repository;
 
 import com.graphhire.skill.domain.model.SkillTag;
-import com.graphhire.skill.domain.vo.SkillCategory;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,9 +18,6 @@ public interface SkillTagRepository {
 
     /** 根据别名查询技能标签（用于同义词匹配） */
     Optional<SkillTag> findBySynonym(String synonym);
-
-    /** 根据分类查询所有相关技能标签 */
-    List<SkillTag> findByCategory(SkillCategory category);
 
     /** 查询所有技能标签 */
     List<SkillTag> findAll();

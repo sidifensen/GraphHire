@@ -4,7 +4,6 @@ import com.graphhire.common.vo.Exceptions;
 import com.graphhire.skill.application.command.CreateSkillTagCmd;
 import com.graphhire.skill.domain.model.SkillTag;
 import com.graphhire.skill.domain.repository.SkillTagRepository;
-import com.graphhire.skill.domain.vo.SkillCategory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,8 +22,7 @@ import java.util.List;
  * - createSkillTag：创建新技能标签
  * - updateSkillTag：更新技能标签信息
  * - addSynonym/removeSynonym：管理同义词
- * - updateCategory：更新技能分类
- * - getSkillTagById/getSkillTagByName/getAllSkillTags/getSkillTagsByCategory：查询方法
+ * - getSkillTagById/getSkillTagByName/getAllSkillTags：查询方法
  * - normalizeSkills：技能名称标准化（批量）
  * - deleteSkillTag：删除技能标签
  */
@@ -55,7 +53,7 @@ public class SkillTagAppService {
         }
 
         // 步骤2：构建技能标签领域对象
-        SkillTag skillTag = new SkillTag(cmd.getName(), cmd.getCategory());
+        SkillTag skillTag = new SkillTag(cmd.getName());
         skillTag.setDescription(cmd.getDescription());
 
         // 步骤3：保存到数据库并返回
@@ -64,7 +62,7 @@ public class SkillTagAppService {
 
     /**
      * 更新技能标签
-     * 【功能说明】更新指定ID的技能标签信息，包括名称、分类、描述。
+     * 【功能说明】更新指定ID的技能标签信息，包括名称、描述。
      * 【业务步骤】
      * 步骤1：根据ID查询标签，不存在则抛异常
      * 步骤2：更新标签的各项属性
@@ -78,7 +76,6 @@ public class SkillTagAppService {
 
         // 步骤2：更新标签的各项属性
         skillTag.setName(cmd.getName());
-        skillTag.updateCategory(cmd.getCategory());
         skillTag.setDescription(cmd.getDescription());
 
         // 步骤3：保存更新后的标签
@@ -128,27 +125,6 @@ public class SkillTagAppService {
     }
 
     /**
-     * 更新技能分类
-     * 【功能说明】修改指定技能标签所属的分类，用于分类体系的调整。
-     * 【业务步骤】
-     * 步骤1：根据ID查询标签，不存在则抛异常
-     * 步骤2：调用领域对象更新分类
-     * 步骤3：保存更新后的标签
-     */
-    @Transactional
-    public void updateCategory(Long skillTagId, SkillCategory newCategory) {
-        // 步骤1：根据ID查询标签
-        SkillTag skillTag = repository.findById(skillTagId)
-            .orElseThrow(() -> new Exceptions.BusinessException("Skill tag not found: " + skillTagId));
-
-        // 步骤2：调用领域对象更新分类
-        skillTag.updateCategory(newCategory);
-
-        // 步骤3：保存更新后的标签
-        repository.save(skillTag);
-    }
-
-    /**
      * 根据ID获取技能标签
      * 【功能说明】通过标签ID查询对应的技能标签信息，若不存在则抛出业务异常。
      * 【业务步骤】
@@ -183,17 +159,6 @@ public class SkillTagAppService {
      */
     public List<SkillTag> getAllSkillTags() {
         return repository.findAll();
-    }
-
-    /**
-     * 根据分类获取技能标签
-     * 【功能说明】根据指定的技能分类筛选对应的标签列表，用于分类导航或过滤。
-     * 【业务步骤】
-     * 步骤1：根据分类从仓储查询标签列表
-     * 步骤2：返回该分类下的所有标签
-     */
-    public List<SkillTag> getSkillTagsByCategory(SkillCategory category) {
-        return repository.findByCategory(category);
     }
 
     /**

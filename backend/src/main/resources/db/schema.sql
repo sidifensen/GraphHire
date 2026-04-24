@@ -198,8 +198,6 @@ CREATE TABLE skill_tag
 (
     id          BIGSERIAL PRIMARY KEY,
     name        VARCHAR(50) NOT NULL UNIQUE,
-    category    VARCHAR(50),
-    parent_id   BIGINT,
     synonyms    JSONB,
     create_time TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
     update_time TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -208,13 +206,9 @@ CREATE TABLE skill_tag
 COMMENT ON TABLE skill_tag IS '技能标签表：统一管理所有技能标签（技术技能/软技能）';
 COMMENT ON COLUMN skill_tag.id IS '主键ID';
 COMMENT ON COLUMN skill_tag.name IS '技能名称（如：Java、Python、项目管理）';
-COMMENT ON COLUMN skill_tag.category IS '分类：技术技能/软技能';
-COMMENT ON COLUMN skill_tag.parent_id IS '父级分类ID（用于构建技能分类树）';
 COMMENT ON COLUMN skill_tag.synonyms IS '同义词列表JSON（如：["Spring Boot", "Spring"]）';
 
 CREATE INDEX idx_skill_tag_name ON skill_tag (name);
-CREATE INDEX idx_skill_tag_category ON skill_tag (category);
-CREATE INDEX idx_skill_tag_parent_id ON skill_tag (parent_id) WHERE parent_id IS NOT NULL;
 CREATE INDEX idx_skill_tag_synonyms ON skill_tag USING GIN (synonyms);
 
 -- =============================================
@@ -535,35 +529,12 @@ CREATE INDEX idx_talent_pool_resume_id ON talent_pool (resume_id);
 CREATE INDEX idx_talent_pool_added_at ON talent_pool (added_at DESC);
 
 -- =============================================
--- 16. 技能分类表 skill_category
--- =============================================
-CREATE TABLE skill_category
-(
-    id          BIGSERIAL PRIMARY KEY,
-    name        VARCHAR(50)  NOT NULL UNIQUE,
-    description TEXT,
-    created_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-COMMENT ON TABLE skill_category IS '技能分类表：统一管理技能标签的分类';
-COMMENT ON COLUMN skill_category.id IS '主键ID';
-COMMENT ON COLUMN skill_category.name IS '分类名称';
-COMMENT ON COLUMN skill_category.description IS '分类描述';
-COMMENT ON COLUMN skill_category.created_at IS '创建时间';
-
-CREATE INDEX idx_skill_category_name ON skill_category (name);
-
--- =============================================
 -- 表结构扩展
 -- =============================================
 
 -- person_info 表添加头像字段
 ALTER TABLE person_info ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500);
 COMMENT ON COLUMN person_info.avatar_url IS '头像URL';
-
--- skill_tag 表添加分类关联字段
-ALTER TABLE skill_tag ADD COLUMN IF NOT EXISTS category_id BIGINT REFERENCES skill_category(id);
-COMMENT ON COLUMN skill_tag.category_id IS '所属分类ID';
 
 -- notification 表扩展类型约束（支持6-简历投递 7-面试邀请）
 ALTER TABLE notification DROP CONSTRAINT IF EXISTS chk_notif_type;

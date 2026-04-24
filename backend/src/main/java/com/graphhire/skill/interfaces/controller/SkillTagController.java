@@ -1,11 +1,9 @@
 package com.graphhire.skill.interfaces.controller;
 
-import com.graphhire.common.vo.PageQuery;
 import com.graphhire.common.vo.Result;
 import com.graphhire.skill.application.command.CreateSkillTagCmd;
 import com.graphhire.skill.application.service.SkillTagAppService;
 import com.graphhire.skill.domain.model.SkillTag;
-import com.graphhire.skill.domain.vo.SkillCategory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -82,17 +80,6 @@ public class SkillTagController {
     }
 
     /**
-     * 根据分类获取技能标签
-     * @param category 分类
-     * @return 技能标签列表
-     */
-    @GetMapping("/category/{category}")
-    public Result<List<SkillTag>> getSkillTagsByCategory(@PathVariable SkillCategory category) {
-        List<SkillTag> skillTags = appService.getSkillTagsByCategory(category);
-        return Result.success(skillTags);
-    }
-
-    /**
      * 添加同义词
      * @param id 标签ID
      * @param synonym 同义词
@@ -113,18 +100,6 @@ public class SkillTagController {
     @DeleteMapping("/{id}/synonyms/{synonym}")
     public Result<Void> removeSynonym(@PathVariable Long id, @PathVariable String synonym) {
         appService.removeSynonym(id, synonym);
-        return Result.success();
-    }
-
-    /**
-     * 更新分类
-     * @param id 标签ID
-     * @param category 新分类
-     * @return 操作结果
-     */
-    @PutMapping("/{id}/category")
-    public Result<Void> updateCategory(@PathVariable Long id, @RequestParam SkillCategory category) {
-        appService.updateCategory(id, category);
         return Result.success();
     }
 
