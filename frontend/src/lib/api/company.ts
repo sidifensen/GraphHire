@@ -2,6 +2,7 @@ import apiClient from './client';
 import type {
   EnterpriseCreateStaffRequest,
   EnterpriseCreateJobRequest,
+  EnterpriseUpdateJobRequest,
   EnterpriseDashboard,
   EnterpriseJobDetail,
   EnterpriseJobListItem,
@@ -93,6 +94,10 @@ export const companyApi = {
   getStaffList: async (): Promise<EnterpriseStaffListItem[]> => {
     const response = await apiClient.get<EnterpriseStaffListItem[]>('/company/staff/list');
     return response.data;
+  },
+
+  updateJob: async (jobId: number, data: EnterpriseUpdateJobRequest): Promise<void> => {
+    await apiClient.put(`/company/job/${jobId}`, data);
   },
 
   getPendingStaffList: async (): Promise<EnterpriseStaffListItem[]> => {

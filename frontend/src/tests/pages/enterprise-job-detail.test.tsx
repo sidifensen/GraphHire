@@ -4,13 +4,15 @@ import JobDetailPage from '@/app/enterprise/jobs/[id]/page';
 import { companyApi } from '@/lib/api/company';
 
 const useParamsMock = vi.fn();
+const pushMock = vi.fn();
+const backMock = vi.fn();
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
-    push: vi.fn(),
+    push: pushMock,
     replace: vi.fn(),
     refresh: vi.fn(),
-    back: vi.fn(),
+    back: backMock,
     forward: vi.fn(),
     prefetch: vi.fn(),
   }),
@@ -28,6 +30,8 @@ vi.mock('@/lib/api/company', () => ({
 describe('Enterprise Job Detail Page', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    pushMock.mockReset();
+    backMock.mockReset();
     useParamsMock.mockReturnValue({ id: '1' });
     vi.mocked(companyApi.getJobDetail).mockResolvedValue({
       id: 1,
@@ -86,5 +90,25 @@ describe('Enterprise Job Detail Page', () => {
     await waitFor(() => {
       expect(screen.getAllByText('高级算法工程师').length).toBeGreaterThan(0);
     });
+  });
+
+  test('左上返回按钮可回到上一页', async () => {
+    const user = userEvent.setup();
+    render(<JobDetailPage />);
+
+    await screen.findByText('负责算法平台设计与落地');
+    await user.click(screen.getByRole('button', { name: '返回' }));
+
+    expect(backMock).toHaveBeenCalledTimes(1);
+  });
+
+  test('右上修改按钮跳转到修改职位页', async () => {
+    const user = userEvent.setup();
+    render(<JobDetailPage />);
+
+    await screen.findByText('负责算法平台设计与落地');
+    await user.click(screen.getByRole('button', { name: '修改职位' }));
+
+    expect(pushMock).toHaveBeenCalledWith('/enterprise/jobs/1/edit');
   });
 });

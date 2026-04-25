@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import EnterpriseContent from '@/components/enterprise/EnterpriseContent';
 import EnterprisePageHeader from '@/components/enterprise/EnterprisePageHeader';
 import { companyApi } from '@/lib/api/company';
@@ -16,6 +16,7 @@ function formatDetailSalary(job?: EnterpriseJobDetail | null) {
 }
 
 export default function EnterpriseJobDetailPage() {
+  const router = useRouter();
   const params = useParams<{ id: string }>();
   const [job, setJob] = useState<EnterpriseJobDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -48,14 +49,25 @@ export default function EnterpriseJobDetailPage() {
 
   return (
     <EnterpriseContent>
+      <div className="mb-4">
+        <button
+          className="px-4 py-2 rounded-lg bg-surface-container text-on-surface text-sm"
+          onClick={() => router.back()}
+        >
+          返回
+        </button>
+      </div>
       <EnterprisePageHeader
         title={job?.title || '职位详情'}
         description="查看职位信息与招聘指标"
         action={
           Number.isFinite(jobId) && jobId > 0 ? (
-            <a className="bg-gradient-to-br from-primary to-primary-container text-white px-6 py-3 rounded-lg font-medium shadow-lg shadow-primary-container/20" href={`/enterprise/recommendations?jobId=${jobId}`}>
-              查看匹配候选人
-            </a>
+            <button
+              className="bg-gradient-to-br from-primary to-primary-container text-white px-6 py-3 rounded-lg font-medium shadow-lg shadow-primary-container/20"
+              onClick={() => router.push(`/enterprise/jobs/${jobId}/edit`)}
+            >
+              修改职位
+            </button>
           ) : null
         }
       />
@@ -74,6 +86,11 @@ export default function EnterpriseJobDetailPage() {
       ) : (
         <div className="space-y-6">
           <div className="rounded-xl bg-surface-container-lowest p-6 space-y-4">
+            <div>
+              <a className="px-4 py-2 rounded-lg bg-primary-fixed text-on-primary-fixed text-sm font-medium" href={`/enterprise/recommendations?jobId=${jobId}`}>
+                查看匹配候选人
+              </a>
+            </div>
             <div className="flex flex-wrap items-center gap-3">
               <h3 className="text-xl font-bold font-headline text-on-surface">{job.title}</h3>
               <span className="px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface text-xs font-medium">{formatJobStatus(job.status)}</span>

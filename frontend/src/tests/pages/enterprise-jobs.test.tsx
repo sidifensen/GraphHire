@@ -3,6 +3,14 @@ import userEvent from '@testing-library/user-event';
 import JobsPage from '@/app/enterprise/jobs/page';
 import { companyApi } from '@/lib/api/company';
 
+const pushMock = vi.fn();
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: pushMock,
+  }),
+}));
+
 vi.mock('@/lib/api/company', () => ({
   companyApi: {
     getJobList: vi.fn(),
@@ -14,6 +22,7 @@ vi.mock('@/lib/api/company', () => ({
 describe('JobsPage', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    pushMock.mockReset();
     vi.mocked(companyApi.getJobList).mockResolvedValue([
       {
         id: 1,
@@ -70,6 +79,16 @@ describe('JobsPage', () => {
       expect(companyApi.closeJob).toHaveBeenCalledWith(1);
     });
     expect(await screen.findByText('职位状态已更新')).toBeInTheDocument();
+  });
+
+  test('点击职位卡片可跳转到详情页', async () => {
+    const user = userEvent.setup();
+    render(<JobsPage />);
+
+    await screen.findByText('高级算法工程师');
+    await user.click(screen.getByRole('heading', { name: '高级算法工程师' }));
+
+    expect(pushMock).toHaveBeenCalledWith('/enterprise/jobs/1');
   });
 
   test('加载失败后可以重试', async () => {

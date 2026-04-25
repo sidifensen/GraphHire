@@ -117,3 +117,9 @@ export interface EnterpriseCreateJobRequest {
   };
   description: string;
 }
+
+export interface EnterpriseUpdateJobRequest extends EnterpriseCreateJobRequest {
+  department?: string;
+  headcount?: number;
+  skills?: string[];
+}

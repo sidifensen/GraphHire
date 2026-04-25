@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import EnterpriseContent from '@/components/enterprise/EnterpriseContent';
 import EnterprisePageHeader from '@/components/enterprise/EnterprisePageHeader';
 import { companyApi } from '@/lib/api/company';
@@ -15,6 +16,7 @@ const statusOptions = [
 ];
 
 export default function JobsPage() {
+  const router = useRouter();
   const [jobs, setJobs] = useState<EnterpriseJobListItem[]>([]);
   const [status, setStatus] = useState('');
   const [keyword, setKeyword] = useState('');
@@ -110,7 +112,19 @@ export default function JobsPage() {
       ) : (
         <div className="flex flex-col gap-4">
           {jobs.map((job) => (
-            <div key={job.id} className="bg-surface-container-lowest rounded-xl p-6">
+            <div
+              key={job.id}
+              className="bg-surface-container-lowest rounded-xl p-6 cursor-pointer hover:shadow-md transition-shadow"
+              role="button"
+              tabIndex={0}
+              onClick={() => router.push(`/enterprise/jobs/${job.id}`)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  router.push(`/enterprise/jobs/${job.id}`);
+                }
+              }}
+            >
               <div className="flex flex-col md:flex-row justify-between gap-6">
                 <div className="flex-1 space-y-4">
                   <div className="flex items-center gap-3">
@@ -139,15 +153,41 @@ export default function JobsPage() {
                   </div>
                 </div>
                 <div className="flex md:flex-col justify-end gap-2 border-t md:border-t-0 md:border-l border-surface-container-high pt-4 md:pt-0 md:pl-6">
-                  <a className="px-4 py-2 bg-surface-container text-on-surface text-sm font-medium rounded-lg text-center" href={`/enterprise/jobs/${job.id}`}>详情</a>
-                  <a className="px-4 py-2 bg-primary-fixed text-on-primary-fixed text-sm font-medium rounded-lg text-center" href={`/enterprise/recommendations?jobId=${job.id}`}>匹配候选人</a>
+                  <a
+                    className="px-4 py-2 bg-surface-container text-on-surface text-sm font-medium rounded-lg text-center"
+                    href={`/enterprise/jobs/${job.id}`}
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    详情
+                  </a>
+                  <a
+                    className="px-4 py-2 bg-primary-fixed text-on-primary-fixed text-sm font-medium rounded-lg text-center"
+                    href={`/enterprise/recommendations?jobId=${job.id}`}
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    匹配候选人
+                  </a>
                   <div className="flex justify-end gap-2 pt-2">
                     {job.status === 'PUBLISHED' ? (
-                      <button className="p-2 text-outline hover:text-error" title="暂停" onClick={() => void handleAction('close', job.id)}>
+                      <button
+                        className="p-2 text-outline hover:text-error"
+                        title="暂停"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          void handleAction('close', job.id);
+                        }}
+                      >
                         <span className="material-symbols-outlined text-[20px]">pause_circle</span>
                       </button>
                     ) : (
-                      <button className="p-2 text-outline hover:text-primary" title="发布" onClick={() => void handleAction('publish', job.id)}>
+                      <button
+                        className="p-2 text-outline hover:text-primary"
+                        title="发布"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          void handleAction('publish', job.id);
+                        }}
+                      >
                         <span className="material-symbols-outlined text-[20px]">publish</span>
                       </button>
                     )}
