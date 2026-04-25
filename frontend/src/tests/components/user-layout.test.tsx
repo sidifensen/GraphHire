@@ -31,12 +31,6 @@ describe('UserLayout footer visibility by route', () => {
     expect(screen.queryByTestId('footer')).toBeNull();
   });
 
-  it('hides footer on match detail route', () => {
-    usePathnameMock.mockReturnValue('/match/123');
-    render(<UserLayout><div>content</div></UserLayout>);
-    expect(screen.queryByTestId('footer')).toBeNull();
-  });
-
   it('shows footer on non-detail route', () => {
     usePathnameMock.mockReturnValue('/jobs');
     render(<UserLayout><div>content</div></UserLayout>);

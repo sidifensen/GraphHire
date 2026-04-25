@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -101,7 +101,7 @@ export default function CompanyDetailPage() {
                   <div className="pt-2">
                     <button
                       className="text-sm text-primary hover:underline"
-                      onClick={() => router.push(`/match/${job.id}`)}
+                      onClick={() => router.push(`/jobs/${job.id}`)}
                     >
                       查看职位匹配
                     </button>
@@ -115,3 +115,4 @@ export default function CompanyDetailPage() {
     </div>
   );
 }
+

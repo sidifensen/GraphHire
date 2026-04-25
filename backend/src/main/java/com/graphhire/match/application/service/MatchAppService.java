@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -160,6 +161,7 @@ public class MatchAppService {
                 Resume resume = resumeRepository.findById(r.getResumeId()).orElse(null);
                 return new MatchDetailResponse(r, resume, job);
             })
+            .sorted(recommendationScoreDescComparator())
             .toList();
     }
 
@@ -228,7 +230,20 @@ public class MatchAppService {
                 }
             }
         }
-        return recommendations;
+        return recommendations.stream()
+            .sorted(recommendationScoreDescComparator())
+            .toList();
+    }
+
+    private Comparator<MatchDetailResponse> recommendationScoreDescComparator() {
+        return Comparator.comparingDouble(this::extractTotalScore).reversed();
+    }
+
+    private double extractTotalScore(MatchDetailResponse response) {
+        if (response == null || response.getScore() == null) {
+            return Double.NEGATIVE_INFINITY;
+        }
+        return response.getScore().getTotal();
     }
 
     /**

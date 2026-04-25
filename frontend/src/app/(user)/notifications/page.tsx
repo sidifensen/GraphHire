@@ -44,7 +44,7 @@ function getAction(notification: Notification) {
     case 'RESUME_PARSED':
       return { label: '查看图谱', href: '/skill-graph' };
     case 'JOB_RECOMMENDATION':
-      return notification.referenceId ? { label: '查看匹配', href: `/match/${notification.referenceId}` } : { label: '查看职位', href: '/jobs' };
+      return notification.referenceId ? { label: '查看匹配', href: `/jobs/${notification.referenceId}` } : { label: '查看职位', href: '/jobs' };
     case 'RESUME_VIEWED':
     case 'RESUME_SUBMITTED':
     case 'INTERVIEW_INVITED':
@@ -270,3 +270,4 @@ export default function NotificationsPage() {
     </div>
   );
 }
+
