@@ -19,6 +19,7 @@ function RecommendationsContent() {
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [triggeringMatch, setTriggeringMatch] = useState(false);
 
   const loadRecommendations = async (jobId: number) => {
     setLoadingRecommendations(true);
@@ -100,6 +101,31 @@ function RecommendationsContent() {
     }
   };
 
+  const handleRefresh = async () => {
+    if (!selectedJobId) {
+      return;
+    }
+    setMessage(null);
+    await loadRecommendations(selectedJobId);
+  };
+
+  const handleTriggerMatch = async () => {
+    if (!selectedJobId) {
+      return;
+    }
+    setTriggeringMatch(true);
+    setMessage(null);
+    try {
+      await companyApi.triggerJobMatch(selectedJobId);
+      setMessage('已开始匹配，正在刷新候选人推荐');
+      await loadRecommendations(selectedJobId);
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : '触发匹配失败，请稍后重试');
+    } finally {
+      setTriggeringMatch(false);
+    }
+  };
+
   return (
     <EnterpriseContent>
       <EnterprisePageHeader
@@ -164,6 +190,22 @@ function RecommendationsContent() {
                 {selectedJob && <span className="text-outline">· {selectedJob.title}</span>}
               </div>
               <div className="flex gap-3">
+                <button
+                  className="flex items-center gap-2 px-4 py-2 bg-surface-container-high text-on-surface rounded-md font-medium text-sm hover:bg-surface-container transition-colors"
+                  onClick={() => void handleRefresh()}
+                  disabled={loadingRecommendations || !selectedJobId}
+                >
+                  <span className="material-symbols-outlined text-[18px]">refresh</span>
+                  刷新
+                </button>
+                <button
+                  className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-md font-medium text-sm hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
+                  onClick={() => void handleTriggerMatch()}
+                  disabled={triggeringMatch || !selectedJobId}
+                >
+                  <span className="material-symbols-outlined text-[18px]">bolt</span>
+                  {triggeringMatch ? '匹配中...' : '一键匹配候选人'}
+                </button>
                 <button className="flex items-center gap-2 px-4 py-2 bg-surface-container-high text-outline rounded-md font-medium text-sm cursor-not-allowed" disabled>
                   <span className="material-symbols-outlined text-[18px]">download</span>
                   批量导出（待接入）

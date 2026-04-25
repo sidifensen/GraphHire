@@ -104,7 +104,8 @@ describe('User Job Detail Inline Match', () => {
     await user.click(matchButton);
 
     await waitFor(() => expect(getGraphScore).toHaveBeenCalledWith(1, 9));
-    await screen.findByText('综合匹配度 90%');
+    await screen.findByTestId('match-score-ring');
+    await screen.findByText('90%');
     await screen.findByText('技能匹配：95%');
     await screen.findByText('岗位要求匹配：82%');
     expect(screen.getByRole('button', { name: '立即投递' })).toBeDefined();

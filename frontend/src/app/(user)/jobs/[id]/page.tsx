@@ -35,6 +35,39 @@ function formatTime(dateStr: string | null | undefined) {
   }
 }
 
+function MatchScoreRing({ score }: { score: number }) {
+  const safeScore = Math.max(0, Math.min(100, score));
+  const radius = 34;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference * (1 - safeScore / 100);
+
+  return (
+    <div className="flex items-center gap-3 rounded-xl bg-primary/10 px-3 py-2" data-testid="match-score-ring">
+      <div className="relative h-20 w-20">
+        <svg viewBox="0 0 80 80" className="h-20 w-20 -rotate-90" aria-label={`综合匹配度 ${safeScore}%`}>
+          <circle cx="40" cy="40" r={radius} stroke="currentColor" strokeWidth="6" fill="none" className="text-primary/20" />
+          <circle
+            cx="40"
+            cy="40"
+            r={radius}
+            stroke="currentColor"
+            strokeWidth="6"
+            fill="none"
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+            className="text-primary transition-all duration-500 ease-out"
+          />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center text-base font-bold text-primary">
+          {safeScore}%
+        </div>
+      </div>
+      <div className="text-primary font-semibold">综合匹配度</div>
+    </div>
+  );
+}
+
 export default function JobDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -280,9 +313,7 @@ export default function JobDetailPage() {
 
               {matchLoaded && (
                 <div className="mb-4 space-y-3">
-                  <div className="rounded-lg bg-primary/10 text-primary px-3 py-2 font-semibold">
-                    综合匹配度 {totalScore}%
-                  </div>
+                  <MatchScoreRing score={totalScore} />
                   <div className="text-sm text-on-surface-variant">
                     匹配等级：{graphScore?.matchLevel || '暂无'}
                   </div>

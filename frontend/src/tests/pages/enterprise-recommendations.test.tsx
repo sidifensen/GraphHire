@@ -7,6 +7,7 @@ vi.mock('@/lib/api/company', () => ({
   companyApi: {
     getJobList: vi.fn(),
     getRecommendedResumes: vi.fn(),
+    triggerJobMatch: vi.fn(),
   },
 }));
 
@@ -74,5 +75,30 @@ describe('RecommendationsPage', () => {
 
     expect(await screen.findByText('城市匹配：70%')).toBeInTheDocument();
     expect(screen.getByText('附件名称：lin.pdf')).toBeInTheDocument();
+  });
+
+  test('支持一键匹配候选人并提示', async () => {
+    vi.mocked(companyApi.triggerJobMatch).mockResolvedValue(undefined);
+    const user = userEvent.setup();
+    render(<RecommendationsPage />);
+
+    await screen.findByText('林晓静');
+    await user.click(screen.getByRole('button', { name: /一键匹配候选人/ }));
+
+    expect(companyApi.triggerJobMatch).toHaveBeenCalledWith(1);
+    expect(await screen.findByText('已开始匹配，正在刷新候选人推荐')).toBeInTheDocument();
+  });
+
+  test('支持刷新当前岗位推荐列表', async () => {
+    const user = userEvent.setup();
+    render(<RecommendationsPage />);
+
+    await screen.findByText('林晓静');
+    await user.click(screen.getByRole('button', { name: /刷新/ }));
+
+    await waitFor(() => {
+      expect(companyApi.getRecommendedResumes).toHaveBeenCalledTimes(2);
+      expect(companyApi.getRecommendedResumes).toHaveBeenLastCalledWith({ jobId: 1 });
+    });
   });
 });
