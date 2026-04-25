@@ -1,8 +1,10 @@
 package com.graphhire.resume.interfaces.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
+import com.graphhire.resume.application.service.PersonAbilityAssessmentService;
 import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.repository.PersonInfoRepository;
+import com.graphhire.resume.interfaces.dto.AbilityAssessmentResponse;
 import com.graphhire.resume.interfaces.dto.request.PersonUpdateRequest;
 import com.graphhire.skill.infrastructure.graph.SkillGraphClient;
 import com.graphhire.match.application.service.MatchAppService;
@@ -35,6 +37,9 @@ class PersonControllerTest {
 
     @Mock
     private SkillGraphClient skillGraphClient;
+
+    @Mock
+    private PersonAbilityAssessmentService personAbilityAssessmentService;
 
     @InjectMocks
     private PersonController personController;
@@ -101,6 +106,30 @@ class PersonControllerTest {
 
             assertNotNull(result.getData());
             assertEquals("/person/avatar/public/300", result.getData().getAvatarUrl());
+        }
+    }
+
+    @Test
+    @DisplayName("获取综合能力评估时返回五维分数与总分")
+    void getAbilityAssessment_ReturnsAssessmentPayload() {
+        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+            stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(300L);
+            AbilityAssessmentResponse expected = new AbilityAssessmentResponse(
+                88,
+                "HIGH",
+                5,
+                new AbilityAssessmentResponse.DimensionScores(90, 85, 80, 75, 70),
+                "2026-04-25T00:00:00Z"
+            );
+            when(personAbilityAssessmentService.assess(300L)).thenReturn(expected);
+
+            var result = personController.getAbilityAssessment();
+
+            assertNotNull(result.getData());
+            assertEquals(88, result.getData().getTotalScore());
+            assertEquals(90, result.getData().getDimensions().getBreadth());
+            assertEquals("HIGH", result.getData().getLevel());
+            verify(personAbilityAssessmentService).assess(300L);
         }
     }
 }

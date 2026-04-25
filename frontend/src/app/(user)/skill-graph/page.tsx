@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { authStore } from '@/lib/stores/auth-store';
-import { personApi } from '@/lib/api/person';
+import { personApi, type AbilityAssessment } from '@/lib/api/person';
 
 type GraphNode = {
   id: string;
@@ -77,6 +77,7 @@ export default function SkillGraphPage() {
   const [skills, setSkills] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [assessment, setAssessment] = useState<AbilityAssessment | null>(null);
   const [focusedNode, setFocusedNode] = useState('');
   const [viewport, setViewport] = useState({ width: 920, height: 620 });
   const graphRef = useRef<any>(null);
@@ -86,8 +87,12 @@ export default function SkillGraphPage() {
     try {
       setLoading(true);
       setError('');
-      const graph = await personApi.getGraph();
+      const [graph, ability] = await Promise.all([
+        personApi.getGraph(),
+        personApi.getAbilityAssessment().catch(() => null),
+      ]);
       setSkills(graph.skills ?? []);
+      setAssessment(ability);
     } catch (err) {
       setError(err instanceof Error ? err.message : '图谱加载失败');
     } finally {
@@ -145,7 +150,7 @@ export default function SkillGraphPage() {
     }
   }, [skills]);
 
-  const score = Math.min(skills.length * 10, 100);
+  const score = assessment?.totalScore ?? Math.min(skills.length * 10, 100);
   const ringRadius = 34;
   const ringCircumference = 2 * Math.PI * ringRadius;
   const ringOffset = ringCircumference * (1 - score / 100);
@@ -306,6 +311,15 @@ export default function SkillGraphPage() {
                 <span className="font-headline text-6xl font-black text-primary tracking-tighter leading-none">{score}</span>
                 <span className="text-on-surface-variant font-medium pb-1">/ 100</span>
               </div>
+              {assessment?.dimensions && (
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-on-surface-variant mt-2">
+                  <span>广度：{assessment.dimensions.breadth}</span>
+                  <span>深度：{assessment.dimensions.depth}</span>
+                  <span>结构性：{assessment.dimensions.structure}</span>
+                  <span>时效性：{assessment.dimensions.freshness}</span>
+                  <span>稀缺性：{assessment.dimensions.rarity}</span>
+                </div>
+              )}
               <p className="text-sm text-on-surface-variant mt-2">当前图谱已识别 {skills.length} 项技能节点，后续会继续随着简历解析结果动态更新。</p>
             </div>
 

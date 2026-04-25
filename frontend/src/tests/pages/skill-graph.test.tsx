@@ -4,6 +4,7 @@ import { forwardRef, useImperativeHandle } from 'react';
 import SkillGraphPage, { buildSkillGraphData } from '@/app/(user)/skill-graph/page';
 
 const getGraph = vi.fn();
+const getAbilityAssessment = vi.fn();
 const authStoreMock = vi.fn();
 const zoomToFitMock = vi.fn();
 
@@ -27,6 +28,7 @@ vi.mock('next/dynamic', () => ({
 vi.mock('@/lib/api/person', () => ({
   personApi: {
     getGraph: (...args: unknown[]) => getGraph(...args),
+    getAbilityAssessment: (...args: unknown[]) => getAbilityAssessment(...args),
   },
 }));
 
@@ -38,6 +40,13 @@ describe('SkillGraphPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     authStoreMock.mockImplementation((selector) => selector({ user: { id: 1, username: 'alice', type: 'PERSON' } }));
+    getAbilityAssessment.mockResolvedValue({
+      totalScore: 88,
+      level: 'HIGH',
+      skillCount: 2,
+      dimensions: { breadth: 90, depth: 80, structure: 70, freshness: 60, rarity: 50 },
+      evaluatedAt: '2026-04-25T00:00:00Z',
+    });
   });
 
   it('shows loading state while api is pending', () => {
@@ -70,6 +79,7 @@ describe('SkillGraphPage', () => {
     expect(screen.getByTestId('force-graph')).toBeDefined();
     expect(screen.getByText(/节点数：/)).toBeDefined();
     expect(screen.getByText(/连线数：/)).toBeDefined();
+    expect(screen.getByText('88')).toBeDefined();
 
     fireEvent.click(screen.getByRole('button', { name: '重置视图' }));
     expect(zoomToFitMock).toHaveBeenCalled();

@@ -34,6 +34,20 @@ export interface SkillGraph {
   mock?: boolean;
 }
 
+export interface AbilityAssessment {
+  totalScore: number;
+  level: 'LOW' | 'MEDIUM' | 'HIGH' | string;
+  skillCount: number;
+  dimensions: {
+    breadth: number;
+    depth: number;
+    structure: number;
+    freshness: number;
+    rarity: number;
+  };
+  evaluatedAt?: string;
+}
+
 export interface MatchScoreDetail {
   total: number;
   skillScore: number;
@@ -92,6 +106,11 @@ export const personApi = {
 
   getGraph: async (): Promise<SkillGraph> => {
     const response = await apiClient.get<SkillGraph>('/person/graph');
+    return response.data;
+  },
+
+  getAbilityAssessment: async (): Promise<AbilityAssessment> => {
+    const response = await apiClient.get<AbilityAssessment>('/person/ability-assessment');
     return response.data;
   },
 

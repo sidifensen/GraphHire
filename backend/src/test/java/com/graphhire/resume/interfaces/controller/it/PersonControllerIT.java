@@ -96,7 +96,17 @@ class PersonControllerIT extends BaseControllerIT {
     }
 
     @Test
-    @DisplayName("05 - 获取匹配详情")
+    @DisplayName("05 - 获取综合能力评估")
+    void getAbilityAssessment_Success() throws Exception {
+        mockMvc.perform(get("/person/ability-assessment")
+                .headers(personHeaders))
+            .andExpect(jsonPath("$.code").value(200))
+            .andExpect(jsonPath("$.data.totalScore").exists())
+            .andExpect(jsonPath("$.data.dimensions.breadth").exists());
+    }
+
+    @Test
+    @DisplayName("06 - 获取匹配详情")
     void getMatchDetail_NoData() throws Exception {
         mockMvc.perform(get("/person/recommend/jobs")
                 .headers(personHeaders))

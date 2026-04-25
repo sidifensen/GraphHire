@@ -4,6 +4,7 @@ import { forwardRef } from 'react';
 import SkillGraphPage from '@/app/(user)/skill-graph/page';
 
 const getGraph = vi.fn();
+const getAbilityAssessment = vi.fn();
 const authStoreMock = vi.fn();
 
 vi.mock('next/dynamic', () => ({
@@ -18,6 +19,7 @@ vi.mock('@/lib/stores/auth-store', () => ({
 vi.mock('@/lib/api/person', () => ({
   personApi: {
     getGraph: (...args: unknown[]) => getGraph(...args),
+    getAbilityAssessment: (...args: unknown[]) => getAbilityAssessment(...args),
   },
 }));
 
@@ -29,6 +31,13 @@ describe('SkillGraphPage', () => {
       personId: 1,
       skills: ['Java', 'Spring Boot', 'React'],
       success: true,
+    });
+    getAbilityAssessment.mockResolvedValue({
+      totalScore: 86,
+      level: 'HIGH',
+      skillCount: 3,
+      dimensions: { breadth: 90, depth: 85, structure: 80, freshness: 75, rarity: 70 },
+      evaluatedAt: '2026-04-25T00:00:00Z',
     });
   });
 

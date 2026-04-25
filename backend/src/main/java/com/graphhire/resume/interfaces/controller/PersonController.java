@@ -4,8 +4,10 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.graphhire.common.vo.Result;
 import com.graphhire.match.application.service.MatchAppService;
 import com.graphhire.match.interfaces.dto.response.MatchDetailResponse;
+import com.graphhire.resume.application.service.PersonAbilityAssessmentService;
 import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.repository.PersonInfoRepository;
+import com.graphhire.resume.interfaces.dto.AbilityAssessmentResponse;
 import com.graphhire.resume.interfaces.dto.PersonInfoResponse;
 import com.graphhire.resume.interfaces.dto.request.PersonUpdateRequest;
 import com.graphhire.skill.infrastructure.graph.SkillGraphClient;
@@ -31,6 +33,9 @@ public class PersonController {
 
     @Autowired
     private SkillGraphClient skillGraphClient;
+
+    @Autowired
+    private PersonAbilityAssessmentService personAbilityAssessmentService;
 
     /**
      * 获取个人信息
@@ -105,6 +110,16 @@ public class PersonController {
         Long userId = StpUtil.getLoginIdAsLong();
         Map<String, Object> graph = skillGraphClient.getPersonSkillGraph(userId);
         return Result.success(graph);
+    }
+
+    /**
+     * 获取个人综合能力评估
+     * @return 评估结果
+     */
+    @GetMapping("/ability-assessment")
+    public Result<AbilityAssessmentResponse> getAbilityAssessment() {
+        Long userId = StpUtil.getLoginIdAsLong();
+        return Result.success(personAbilityAssessmentService.assess(userId));
     }
 
     /**
