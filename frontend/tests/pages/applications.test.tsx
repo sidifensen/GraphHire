@@ -41,6 +41,12 @@ describe('ApplicationsPage', () => {
     expect(screen.getByText('公司-1')).toBeDefined();
   });
 
+  it('shows match percentage with 匹配度 label', async () => {
+    render(<ApplicationsPage />);
+    await screen.findByText('职位-2');
+    expect(screen.getByText('匹配度：81%')).toBeDefined();
+  });
+
   it('filters by status', async () => {
     render(<ApplicationsPage />);
     await screen.findByText('职位-1');

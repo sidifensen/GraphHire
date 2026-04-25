@@ -154,7 +154,7 @@ export default function ApplicationsPage() {
                 </div>
                 <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-on-surface-variant">
                   <p>投递时间：{formatAppliedTime(item.appliedAt)}</p>
-                  <p>匹配分：{item.matchScore ?? '-'}</p>
+                  <p>匹配度：{item.matchScore == null ? '-' : `${item.matchScore}%`}</p>
                 </div>
               </article>
             ))}
