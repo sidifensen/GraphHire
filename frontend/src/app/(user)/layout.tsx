@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import UserLayout from '@/components/UserLayout';
+import UserLayout from '@/components/layout/UserLayout';
 
 export const metadata: Metadata = {
   title: 'GraphHire 图谱智聘 - 用户端',

@@ -7,7 +7,9 @@ public class PersonInfoResponse {
     private Integer gender;
     private Integer age;
     private String phone;
+    private String email;
     private String education;
+    private String school;
     private String city;
     private String targetCity;
     private Integer expectedSalary;
@@ -17,7 +19,7 @@ public class PersonInfoResponse {
     }
 
     public PersonInfoResponse(Long id, Long userId, String realName, Integer gender, Integer age,
-                              String phone, String education, String city, String targetCity,
+                              String phone, String email, String education, String school, String city, String targetCity,
                               Integer expectedSalary, String avatarUrl) {
         this.id = id;
         this.userId = userId;
@@ -25,7 +27,9 @@ public class PersonInfoResponse {
         this.gender = gender;
         this.age = age;
         this.phone = phone;
+        this.email = email;
         this.education = education;
+        this.school = school;
         this.city = city;
         this.targetCity = targetCity;
         this.expectedSalary = expectedSalary;
@@ -80,12 +84,28 @@ public class PersonInfoResponse {
         this.phone = phone;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
     public String getEducation() {
         return education;
     }
 
     public void setEducation(String education) {
         this.education = education;
+    }
+
+    public String getSchool() {
+        return school;
+    }
+
+    public void setSchool(String school) {
+        this.school = school;
     }
 
     public String getCity() {

@@ -1,5 +1,7 @@
 package com.graphhire.job.domain.event;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.graphhire.common.model.BaseAggregateRoot;
 import com.graphhire.job.domain.model.Job;
 
@@ -13,7 +15,8 @@ public class JobPublishedEvent extends BaseAggregateRoot.DomainEvent {
     /** 发布成功的职位实体 */
     private final Job job;
 
-    public JobPublishedEvent(Job job) {
+    @JsonCreator
+    public JobPublishedEvent(@JsonProperty("job") Job job) {
         this.job = job;
     }
 

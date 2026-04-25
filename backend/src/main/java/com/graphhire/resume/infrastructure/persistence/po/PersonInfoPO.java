@@ -43,6 +43,9 @@ public class PersonInfoPO {
     /** 邮箱 */
     @TableField("email")
     private String email;
+    /** 学校 */
+    @TableField("school")
+    private String school;
     /** 期望薪资 */
     @TableField("expected_salary")
     private Integer expectedSalary;
@@ -88,6 +91,9 @@ public class PersonInfoPO {
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
+
+    public String getSchool() { return school; }
+    public void setSchool(String school) { this.school = school; }
 
     public Integer getExpectedSalary() { return expectedSalary; }
     public void setExpectedSalary(Integer expectedSalary) { this.expectedSalary = expectedSalary; }

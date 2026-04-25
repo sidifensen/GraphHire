@@ -5,7 +5,9 @@ public class PersonUpdateRequest {
     private Integer gender;
     private Integer age;
     private String phone;
+    private String email;
     private String education;
+    private String school;
     private String city;
     private String targetCity;
     private Integer expectedSalary;
@@ -48,6 +50,22 @@ public class PersonUpdateRequest {
 
     public void setEducation(String education) {
         this.education = education;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getSchool() {
+        return school;
+    }
+
+    public void setSchool(String school) {
+        this.school = school;
     }
 
     public String getCity() {

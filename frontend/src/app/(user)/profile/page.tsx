@@ -11,7 +11,9 @@ const defaultProfile: PersonProfile = {
   gender: null,
   age: null,
   phone: '',
+  email: '',
   education: '',
+  school: '',
   city: '',
   targetCity: '',
   expectedSalary: null,
@@ -27,7 +29,7 @@ export default function ProfilePage() {
   const [message, setMessage] = useState('');
 
   const completeness = useMemo(() => {
-    const values = [profile.realName, profile.phone, profile.education, profile.city, profile.targetCity, profile.expectedSalary];
+    const values = [profile.realName, profile.phone, profile.email, profile.education, profile.school, profile.city, profile.targetCity, profile.expectedSalary];
     const filled = values.filter((item) => item !== null && item !== undefined && String(item).trim() !== '').length;
     return Math.round((filled / values.length) * 100);
   }, [profile]);
@@ -64,7 +66,9 @@ export default function ProfilePage() {
         gender: profile.gender === 0 ? null : (profile.gender ?? null),
         age: profile.age ?? null,
         phone: profile.phone ?? '',
+        email: profile.email ?? '',
         education: profile.education ?? '',
+        school: profile.school ?? '',
         city: profile.city ?? '',
         targetCity: profile.targetCity ?? '',
         expectedSalary: profile.expectedSalary ?? null,
@@ -173,10 +177,13 @@ export default function ProfilePage() {
                     <input className="w-full bg-surface-container-lowest text-on-surface p-3 rounded border-b-2 border-transparent focus:border-primary transition-colors text-sm font-medium outline-none" type="number" value={profile.age ?? ''} onChange={(e) => updateField('age', e.target.value ? Number(e.target.value) : null)} placeholder="例如：28" />
                   </Field>
                   <Field label="电子邮箱">
-                    <input className="w-full bg-surface-container-lowest text-on-surface p-3 rounded border-b-2 border-transparent focus:border-primary transition-colors text-sm font-medium outline-none" value={authUser?.username ?? ''} readOnly placeholder="登录邮箱" />
+                    <input className="w-full bg-surface-container-lowest text-on-surface p-3 rounded border-b-2 border-transparent focus:border-primary transition-colors text-sm font-medium outline-none" value={profile.email ?? ''} onChange={(e) => updateField('email', e.target.value)} placeholder="用于联系的邮箱" />
                   </Field>
                   <Field label="学历">
                     <input className="w-full bg-surface-container-lowest text-on-surface p-3 rounded border-b-2 border-transparent focus:border-primary transition-colors text-sm font-medium outline-none" value={profile.education ?? ''} onChange={(e) => updateField('education', e.target.value)} placeholder="最高学历" />
+                  </Field>
+                  <Field label="学校">
+                    <input className="w-full bg-surface-container-lowest text-on-surface p-3 rounded border-b-2 border-transparent focus:border-primary transition-colors text-sm font-medium outline-none" value={profile.school ?? ''} onChange={(e) => updateField('school', e.target.value)} placeholder="毕业院校" />
                   </Field>
                   <Field label="所在城市">
                     <input className="w-full bg-surface-container-lowest text-on-surface p-3 rounded border-b-2 border-transparent focus:border-primary transition-colors text-sm font-medium outline-none" value={profile.city ?? ''} onChange={(e) => updateField('city', e.target.value)} placeholder="当前所在城市" />

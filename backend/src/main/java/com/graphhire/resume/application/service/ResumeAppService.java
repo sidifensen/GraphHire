@@ -3,13 +3,18 @@ package com.graphhire.resume.application.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import com.graphhire.common.vo.Exceptions;
 import com.graphhire.common.vo.PageResult;
 import com.graphhire.resume.application.command.UploadResumeCmd;
 import com.graphhire.resume.application.service.dto.ResumePreviewFile;
 import com.graphhire.resume.domain.model.ParseTask;
+import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.model.Resume;
 import com.graphhire.resume.domain.repository.ParseTaskRepository;
+import com.graphhire.resume.domain.repository.PersonInfoRepository;
 import com.graphhire.resume.domain.repository.ResumeRepository;
 import com.graphhire.resume.domain.vo.ParseStatus;
 import com.graphhire.resume.interfaces.dto.ParseProgressResponse;
@@ -43,6 +48,12 @@ public class ResumeAppService {
 
     @Autowired(required = false)
     private ResumeMQProducer mqProducer;
+
+    @Autowired
+    private PersonInfoRepository personInfoRepository;
+
+    @Autowired
+    private GraphBuildService graphBuildService;
 
     @Transactional
     public Resume uploadResume(UploadResumeCmd cmd) throws IOException {
@@ -180,7 +191,7 @@ public class ResumeAppService {
      * 步骤4：将目标简历设为默认并保存
      */
     @Transactional
-    public void setDefaultResume(Long resumeId, Long userId) {
+    public void setDefaultResume(Long resumeId, Long userId, boolean syncPersonInfo) {
         Resume resume = getResumeById(resumeId);
         if (!resume.getUserId().equals(userId)) {
             throw new RuntimeException("无权设置此简历");
@@ -199,9 +210,111 @@ public class ResumeAppService {
         // 将此简历设为默认
         resume.setIsDefault(true);
         resumeRepository.save(resume);
+        graphBuildService.buildGraphForResume(resume);
+        if (syncPersonInfo) {
+            syncPersonInfoFromResume(userId, resume.getParseResult());
+        }
         if (mqProducer != null) {
             mqProducer.sendResumeDefaultChangedMessage(resumeId);
         }
+    }
+
+    private void syncPersonInfoFromResume(Long userId, String parseResult) {
+        JSONObject root = JSONUtil.parseObj(StrUtil.blankToDefault(parseResult, "{}"));
+        PersonInfo personInfo = personInfoRepository.findByUserId(userId).orElseGet(() -> {
+            PersonInfo newInfo = new PersonInfo();
+            newInfo.setUserId(userId);
+            return newInfo;
+        });
+        personInfo.setRealName(getString(root, "name", "realName", "姓名"));
+        personInfo.setGender(parseGender(root));
+        personInfo.setPhone(getString(root, "phone", "mobile", "tel"));
+        personInfo.setEmail(getString(root, "email", "mail"));
+        personInfo.setAge(parseAge(root));
+        personInfo.setEducation(parseEducation(root));
+        personInfo.setSchool(parseSchool(root));
+        personInfoRepository.save(personInfo);
+    }
+
+    private String parseEducation(JSONObject root) {
+        Object educationObj = firstPresent(root, "education", "学历");
+        if (educationObj == null) {
+            return null;
+        }
+        if (educationObj instanceof CharSequence) {
+            return StrUtil.emptyToNull(educationObj.toString().trim());
+        }
+        if (educationObj instanceof JSONArray educationArray && !educationArray.isEmpty()) {
+            Object first = educationArray.get(0);
+            if (first instanceof JSONObject eduItem) {
+                return StrUtil.emptyToNull(getString(eduItem, "degree", "学历", "education"));
+            }
+            return StrUtil.emptyToNull(String.valueOf(first));
+        }
+        return null;
+    }
+
+    private String parseSchool(JSONObject root) {
+        Object educationObj = firstPresent(root, "education", "学历");
+        if (educationObj instanceof JSONArray educationArray && !educationArray.isEmpty()) {
+            Object first = educationArray.get(0);
+            if (first instanceof JSONObject eduItem) {
+                return StrUtil.emptyToNull(getString(eduItem, "school", "学校", "university"));
+            }
+        }
+        return StrUtil.emptyToNull(getString(root, "school", "学校", "university"));
+    }
+
+    private Integer parseGender(JSONObject root) {
+        String raw = StrUtil.blankToDefault(getString(root, "gender", "sex", "性别"), "").trim();
+        if (StrUtil.isBlank(raw)) {
+            return null;
+        }
+        if ("1".equals(raw) || raw.contains("男")) {
+            return 1;
+        }
+        if ("2".equals(raw) || raw.contains("女")) {
+            return 2;
+        }
+        return null;
+    }
+
+    private Integer parseAge(JSONObject root) {
+        Object ageObj = firstPresent(root, "age", "年龄");
+        if (ageObj == null) {
+            return null;
+        }
+        if (ageObj instanceof Number number) {
+            return number.intValue();
+        }
+        String ageText = ageObj.toString();
+        String ageDigits = ageText.replaceAll("[^0-9]", "");
+        if (StrUtil.isBlank(ageDigits)) {
+            return null;
+        }
+        return Integer.parseInt(ageDigits);
+    }
+
+    private Object firstPresent(JSONObject root, String... keys) {
+        for (String key : keys) {
+            if (root.containsKey(key)) {
+                Object value = root.get(key);
+                if (value != null) {
+                    return value;
+                }
+            }
+        }
+        return null;
+    }
+
+    private String getString(JSONObject root, String... keys) {
+        for (String key : keys) {
+            String value = root.getStr(key);
+            if (StrUtil.isNotBlank(value)) {
+                return value.trim();
+            }
+        }
+        return null;
     }
 
     /**

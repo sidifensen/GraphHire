@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import ManagePage from '@/app/(user)/resume/manage/page';
 
 const getMyResumes = vi.fn();
@@ -63,11 +63,23 @@ describe('ManagePage', () => {
     expect(getMyResumes).toHaveBeenCalledTimes(2);
   });
 
-  it('supports setting default resume', async () => {
+  it('supports setting default resume without syncing profile', async () => {
     render(<ManagePage />);
     await screen.findByText('真实运营总监简历.docx');
     screen.getByText('设为默认').click();
-    await waitFor(() => expect(setDefault).toHaveBeenCalledWith(2));
+    await screen.findByText('同步个人信息');
+    fireEvent.click(screen.getByText('否，不同步'));
+    await waitFor(() => expect(setDefault).toHaveBeenCalledWith(2, false));
+    expect(getMyResumes).toHaveBeenCalledTimes(2);
+  });
+
+  it('supports setting default resume with syncing profile', async () => {
+    render(<ManagePage />);
+    await screen.findByText('真实运营总监简历.docx');
+    screen.getByText('设为默认').click();
+    await screen.findByText('同步个人信息');
+    fireEvent.click(screen.getByText('是，同步'));
+    await waitFor(() => expect(setDefault).toHaveBeenCalledWith(2, true));
     expect(getMyResumes).toHaveBeenCalledTimes(2);
   });
 

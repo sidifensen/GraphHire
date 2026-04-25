@@ -56,7 +56,9 @@ public class PersonController {
             personInfo.getGender(),
             personInfo.getAge(),
             personInfo.getPhone(),
+            personInfo.getEmail(),
             personInfo.getEducation(),
+            personInfo.getSchool(),
             personInfo.getCity(),
             personInfo.getTargetCity(),
             personInfo.getExpectedSalary(),
@@ -85,7 +87,9 @@ public class PersonController {
         personInfo.setGender(normalizeGender(request.getGender()));
         personInfo.setAge(request.getAge());
         personInfo.setPhone(request.getPhone());
+        personInfo.setEmail(request.getEmail());
         personInfo.setEducation(request.getEducation());
+        personInfo.setSchool(request.getSchool());
         personInfo.setCity(request.getCity());
         personInfo.setTargetCity(request.getTargetCity());
         personInfo.setExpectedSalary(request.getExpectedSalary());

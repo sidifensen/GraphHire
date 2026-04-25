@@ -1,5 +1,6 @@
 package com.graphhire.config;
 
+import com.graphhire.common.vo.Exceptions;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -45,8 +46,16 @@ public class LoggingAspect {
             return result;
         } catch (Exception e) {
             long duration = System.currentTimeMillis() - startTime;
-            // 步骤3：记录异常日志并重新抛出
-            log.error("[API] {} failed after {}ms", methodName, duration, e);
+            // 业务异常属于可预期分支，避免输出 ERROR 堆栈污染日志
+            if (e instanceof Exceptions.BusinessException
+                || e instanceof Exceptions.UnauthorizedException
+                || e instanceof Exceptions.ForbiddenException
+                || e instanceof Exceptions.ValidationException) {
+                log.warn("[API] {} failed after {}ms: {}", methodName, duration, e.getMessage());
+            } else {
+                // 仅系统异常输出堆栈
+                log.error("[API] {} failed after {}ms", methodName, duration, e);
+            }
             throw e;
         }
     }

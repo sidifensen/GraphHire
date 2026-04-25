@@ -137,4 +137,20 @@ describe('User Job Detail Inline Match', () => {
     expect(apply).not.toHaveBeenCalled();
     expect(screen.getByText('请先设置默认简历')).toBeDefined();
   });
+
+  it('投递失败时展示后端返回的真实错误文案', async () => {
+    const user = userEvent.setup();
+    getMyResumes.mockResolvedValue([
+      { id: 201, fileName: '默认简历.pdf', isDefault: true },
+    ]);
+    apply.mockRejectedValue(new Error('已投递过该职位'));
+
+    render(<JobDetailPage />);
+
+    await user.click(await screen.findByRole('button', { name: '开始智能匹配' }));
+    await user.click(await screen.findByRole('button', { name: '立即投递' }));
+
+    await waitFor(() => expect(apply).toHaveBeenCalledWith({ jobId: 9, resumeId: 201 }));
+    expect(screen.getByText('已投递过该职位')).toBeDefined();
+  });
 });

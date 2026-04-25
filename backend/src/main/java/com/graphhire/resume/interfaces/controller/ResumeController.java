@@ -88,9 +88,10 @@ public class ResumeController {
      * @return 设置结果
      */
     @PutMapping("/{id}/default")
-    public Result<Void> setDefaultResume(@PathVariable Long id) {
+    public Result<Void> setDefaultResume(@PathVariable Long id,
+                                         @RequestParam(defaultValue = "false") boolean syncPersonInfo) {
         Long userId = StpUtil.getLoginIdAsLong();
-        resumeService.setDefaultResume(id, userId);
+        resumeService.setDefaultResume(id, userId, syncPersonInfo);
         return Result.success();
     }
 

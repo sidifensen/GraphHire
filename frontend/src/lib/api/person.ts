@@ -20,7 +20,9 @@ export interface PersonProfile {
   gender?: number | null;
   age?: number | null;
   phone?: string | null;
+  email?: string | null;
   education?: string | null;
+  school?: string | null;
   city?: string | null;
   targetCity?: string | null;
   expectedSalary?: number | null;

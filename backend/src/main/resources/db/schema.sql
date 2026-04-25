@@ -63,6 +63,7 @@ CREATE TABLE person_info
     expected_salary INT,
     phone       VARCHAR(20),
     email       VARCHAR(100),
+    school      VARCHAR(255),
     create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted     SMALLINT  NOT NULL DEFAULT 0,
@@ -81,6 +82,7 @@ COMMENT ON COLUMN person_info.target_city IS '意向工作城市';
 COMMENT ON COLUMN person_info.expected_salary IS '期望月薪';
 COMMENT ON COLUMN person_info.phone IS '手机号';
 COMMENT ON COLUMN person_info.email IS '电子邮箱';
+COMMENT ON COLUMN person_info.school IS '毕业院校';
 
 CREATE INDEX idx_person_info_user_id ON person_info (user_id);
 CREATE INDEX idx_person_info_city_target ON person_info (city, target_city) WHERE deleted = 0;

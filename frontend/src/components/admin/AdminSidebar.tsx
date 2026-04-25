@@ -1,100 +1,97 @@
-﻿'use client';
+'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, ShieldCheck, Users, Tags, Activity, Network } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const navItems = [
   { icon: LayoutDashboard, label: '仪表盘', path: '/admin/dashboard' },
-  { icon: ShieldCheck, label: '企业审核', path: '/admin/enterprise-review' },
+  { icon: ShieldCheck, label: '企业审核', path: '/admin/company/audit' },
   { icon: Users, label: '用户管理', path: '/admin/users' },
-  { icon: Tags, label: '标签管理', path: '/admin/skill-tags' },
-  { icon: Activity, label: '任务监控', path: '/admin/task-monitor' },
+  { icon: Tags, label: '标签管理', path: '/admin/skills' },
+  { icon: Activity, label: '任务监控', path: '/admin/tasks' },
 ];
 
-interface AdminSidebarProps {
-  isCollapsed: boolean;
-}
-
-export default function AdminSidebar({ isCollapsed }: AdminSidebarProps) {
+export function AdminSidebar({ isCollapsed = false }: { isCollapsed?: boolean }) {
   const pathname = usePathname();
 
   return (
     <motion.aside
-      initial={false}
-      animate={{ width: isCollapsed ? 80 : 240 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="fixed left-0 top-0 z-50 flex h-full flex-col overflow-hidden border-r border-outline-variant bg-white py-6 transition-colors duration-300 dark:border-white/10 dark:bg-[#03060d]"
+      animate={{ width: isCollapsed ? 80 : 256 }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      className="fixed left-0 top-0 h-full border-r border-slate-200 bg-white dark:bg-slate-900 dark:border-white/10 flex flex-col py-6 z-50 overflow-hidden transition-colors duration-300"
     >
-      <div className={cn('mb-8 h-12 px-4 transition-all duration-300', !isCollapsed && 'px-6')}>
-        <div className="flex h-full items-center justify-center transition-all duration-300">
-          <AnimatePresence mode="wait">
-            {!isCollapsed ? (
-              <motion.div
-                key="expanded"
-                initial={false}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
-                className="flex items-center gap-3 overflow-hidden whitespace-nowrap"
-              >
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-primary text-white">
-                  <Network size={20} />
-                </div>
-                <div className="flex flex-col">
-                  <h1 className="font-display text-xl font-bold text-primary">GraphHire</h1>
-                  <span className="text-xs text-slate-400 dark:text-slate-500 font-normal">图谱智聘</span>
-                </div>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="collapsed"
-                initial={false}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary text-white"
-              >
-                <Network size={24} />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+      <div className={cn(
+        "px-6 mb-8 flex items-center justify-between transition-all duration-300",
+        isCollapsed && "px-4 justify-center"
+      )}>
+        <AnimatePresence mode="wait">
+          {!isCollapsed && (
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              className="flex items-center gap-3 overflow-hidden whitespace-nowrap"
+            >
+              <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white shrink-0">
+                <Network size={20} />
+              </div>
+              <h1 className="text-xl font-bold text-blue-600 font-display">GraphHire</h1>
+            </motion.div>
+          )}
+          {isCollapsed && (
+             <motion.div
+               initial={{ opacity: 0, scale: 0.8 }}
+               animate={{ opacity: 1, scale: 1 }}
+               exit={{ opacity: 0, scale: 0.8 }}
+               className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white shrink-0"
+             >
+               <Network size={24} />
+             </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      <nav className="flex-1 space-y-1 px-3">
+      <nav className="flex-1 px-3 space-y-1">
         {navItems.map((item) => {
           const isActive = pathname === item.path;
           return (
-            <Link key={item.path} href={item.path} className="group relative block" title={isCollapsed ? item.label : ''}>
+            <Link
+              key={item.path}
+              href={item.path}
+              className="group relative block"
+              title={isCollapsed ? item.label : ""}
+            >
               <div
                 className={cn(
-                  'flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-300 ease-in-out',
-                  isActive ? 'font-bold text-primary' : 'select-none text-slate-600 hover:text-on-surface',
-                  isCollapsed && 'h-12 justify-center px-0'
+                  "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 ease-in-out font-medium text-sm",
+                  isActive
+                    ? "text-blue-600 font-bold"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800",
+                  isCollapsed && "px-0 justify-center h-12"
                 )}
               >
-                {isActive ? (
+                {isActive && (
                   <motion.div
-                    layoutId="admin-active-nav"
-                    className="absolute inset-0 -z-10 rounded-lg bg-blue-50/80 dark:bg-[#0b1630]"
-                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    layoutId="active-nav"
+                    className="absolute inset-0 bg-blue-50/80 dark:bg-blue-600/10 rounded-lg -z-10"
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
                   />
-                ) : null}
+                )}
 
-                {isActive ? (
+                {isActive && (
                   <motion.div
-                    layoutId="admin-active-border"
-                    className="absolute bottom-2 left-0 top-2 w-1 rounded-full bg-primary"
-                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    layoutId="active-border"
+                    className="absolute left-0 top-2 bottom-2 w-1 bg-blue-600 rounded-full"
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
                   />
-                ) : null}
+                )}
 
                 <motion.div
-                  initial={false}
                   animate={{
                     scale: isActive ? 1.1 : 1,
-                    color: isActive ? 'var(--color-primary)' : 'currentColor',
                   }}
                   transition={{ duration: 0.2 }}
                   className="shrink-0"
@@ -103,34 +100,39 @@ export default function AdminSidebar({ isCollapsed }: AdminSidebarProps) {
                 </motion.div>
 
                 <AnimatePresence>
-                  {!isCollapsed ? (
+                  {!isCollapsed && (
                     <motion.span
-                      initial={false}
+                      initial={{ opacity: 0, x: -5 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -5 }}
-                      className="relative z-10 overflow-hidden whitespace-nowrap"
+                      className="relative z-10 whitespace-nowrap overflow-hidden"
                     >
                       {item.label}
                     </motion.span>
-                  ) : null}
+                  )}
                 </AnimatePresence>
 
-                {!isActive ? <div className="absolute inset-0 -z-20 rounded-lg bg-slate-50 opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:bg-slate-800" /> : null}
+                {!isActive && (
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-slate-50 dark:bg-slate-800 rounded-lg -z-20 transition-opacity duration-300" />
+                )}
               </div>
             </Link>
           );
         })}
       </nav>
 
-      <div className="mt-auto px-4">
-        <div className={cn('rounded-xl border border-outline-variant/30 bg-surface p-4 text-center transition-all', isCollapsed && 'border-none bg-transparent p-2')}>
+      <div className="px-4 mt-auto">
+        <div className={cn(
+          "p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 text-center transition-all",
+          isCollapsed && "p-2 bg-transparent border-none"
+        )}>
           {!isCollapsed ? (
             <>
-              <p className="mb-2 text-xs text-outline">系统版本 V2.5.0</p>
-              <p className="text-[10px] text-outline/60">© 2026 GraphHire</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">系统版本 V2.4.0</p>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500">© 2024 GraphHire</p>
             </>
           ) : (
-            <div className="text-[10px] font-bold text-outline/60">V 2.5</div>
+            <div className="text-[10px] text-slate-400 dark:text-slate-500 font-bold">V 2.4</div>
           )}
         </div>
       </div>

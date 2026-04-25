@@ -3,8 +3,10 @@ package com.graphhire.resume.application.service;
 import com.graphhire.common.vo.Exceptions;
 import com.graphhire.resume.application.command.UploadResumeCmd;
 import com.graphhire.resume.application.service.dto.ResumePreviewFile;
+import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.model.Resume;
 import com.graphhire.resume.domain.repository.ParseTaskRepository;
+import com.graphhire.resume.domain.repository.PersonInfoRepository;
 import com.graphhire.resume.domain.repository.ResumeRepository;
 import com.graphhire.resume.domain.vo.ParseStatus;
 import com.graphhire.resume.infrastructure.file.RustFSClient;
@@ -43,6 +45,12 @@ class ResumeAppServiceTest {
     @Mock
     private ResumeMQProducer mqProducer;
 
+    @Mock
+    private PersonInfoRepository personInfoRepository;
+
+    @Mock
+    private GraphBuildService graphBuildService;
+
     private ResumeAppService resumeAppService;
 
     @BeforeEach
@@ -52,6 +60,8 @@ class ResumeAppServiceTest {
         setField(resumeAppService, "parseTaskRepository", parseTaskRepository);
         setField(resumeAppService, "rustFSClient", rustFSClient);
         setField(resumeAppService, "mqProducer", mqProducer);
+        setField(resumeAppService, "personInfoRepository", personInfoRepository);
+        setField(resumeAppService, "graphBuildService", graphBuildService);
     }
 
     @Test
@@ -81,14 +91,14 @@ class ResumeAppServiceTest {
 
         Exceptions.BusinessException ex = assertThrows(
             Exceptions.BusinessException.class,
-            () -> resumeAppService.setDefaultResume(20L, 9L)
+            () -> resumeAppService.setDefaultResume(20L, 9L, false)
         );
 
         assertEquals("请先解析成功后再设为默认", ex.getMessage());
     }
 
     @Test
-    @DisplayName("setDefaultResume SUCCESS状态设默认后应发送默认变更消息")
+    @DisplayName("setDefaultResume SUCCESS状态设默认后应发送默认变更消息并更新图谱")
     void setDefaultResume_shouldSendDefaultChangedMessageWhenSuccess() {
         Resume resume = buildResume(30L, 9L, "resume.pdf", "s3://r.pdf", "pdf");
         resume.setStatus(ParseStatus.SUCCESS);
@@ -99,9 +109,38 @@ class ResumeAppServiceTest {
         when(resumeRepository.findById(30L)).thenReturn(Optional.of(resume));
         when(resumeRepository.findByUserId(9L)).thenReturn(List.of(oldDefault, resume));
 
-        resumeAppService.setDefaultResume(30L, 9L);
+        resumeAppService.setDefaultResume(30L, 9L, false);
 
+        verify(graphBuildService).buildGraphForResume(resume);
         verify(mqProducer).sendResumeDefaultChangedMessage(30L);
+        verifyNoInteractions(personInfoRepository);
+    }
+
+    @Test
+    @DisplayName("setDefaultResume 勾选同步个人信息时应强制覆盖个人字段")
+    void setDefaultResume_shouldSyncPersonInfoWhenEnabled() {
+        Resume resume = buildResume(40L, 10L, "sync.pdf", "s3://sync.pdf", "pdf");
+        resume.setStatus(ParseStatus.SUCCESS);
+        resume.setIsDefault(false);
+        resume.setParseResult("""
+            {"name":"李雷","gender":"男","phone":"13900001111","email":"li.lei@example.com","age":"26","education":[{"school":"清华大学","degree":"本科"}]}
+            """);
+        when(resumeRepository.findById(40L)).thenReturn(Optional.of(resume));
+        when(resumeRepository.findByUserId(10L)).thenReturn(List.of(resume));
+        when(personInfoRepository.findByUserId(10L)).thenReturn(Optional.empty());
+
+        resumeAppService.setDefaultResume(40L, 10L, true);
+
+        org.mockito.ArgumentCaptor<PersonInfo> captor = org.mockito.ArgumentCaptor.forClass(PersonInfo.class);
+        verify(personInfoRepository).save(captor.capture());
+        PersonInfo saved = captor.getValue();
+        assertEquals("李雷", saved.getRealName());
+        assertEquals(1, saved.getGender());
+        assertEquals("13900001111", saved.getPhone());
+        assertEquals("li.lei@example.com", saved.getEmail());
+        assertEquals(26, saved.getAge());
+        assertEquals("本科", saved.getEducation());
+        assertEquals("清华大学", saved.getSchool());
     }
 
     @Test

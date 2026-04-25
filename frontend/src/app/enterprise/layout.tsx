@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import '@/styles/globals.css';
 import EnterpriseHeader from '@/components/enterprise/EnterpriseHeader';
 import EnterpriseAuthGuard from '@/components/enterprise/EnterpriseAuthGuard';
-import RouteTransition from '@/components/RouteTransition';
+import RouteTransition from '@/components/layout/RouteTransition';
 
 export const metadata: Metadata = {
   title: 'GraphHire 图谱智聘 - 企业端',

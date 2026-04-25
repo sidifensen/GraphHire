@@ -53,6 +53,8 @@ public class PersonInfoRepositoryImpl implements PersonInfoRepository {
                 .set("city", po.getCity())
                 .set("target_city", po.getTargetCity())
                 .set("phone", po.getPhone())
+                .set("email", po.getEmail())
+                .set("school", po.getSchool())
                 .set("expected_salary", po.getExpectedSalary())
                 .set("avatar_url", po.getAvatarUrl());
             personInfoMapper.update(null, wrapper);

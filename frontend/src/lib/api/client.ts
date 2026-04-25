@@ -67,15 +67,25 @@ apiClient.interceptors.response.use(
         if (resultCode === 401) {
           handleUnauthorized();
         }
-        return Promise.reject({
-          response: {
-            status: resultCode === 401 ? 401 : undefined,
-            data: {
-              code: resultCode,
-              message: response.data.message || 'Request failed',
-            },
+        const message = response.data.message || 'Request failed';
+        const apiError = new Error(message) as Error & {
+          response?: {
+            status?: number;
+            data?: {
+              code?: number;
+              message?: string;
+            };
+          };
+        };
+        apiError.name = 'ApiError';
+        apiError.response = {
+          status: resultCode === 401 ? 401 : undefined,
+          data: {
+            code: resultCode,
+            message,
           },
-        });
+        };
+        return Promise.reject(apiError);
       }
       response.data = response.data.data;
     }

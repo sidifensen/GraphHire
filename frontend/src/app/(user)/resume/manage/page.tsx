@@ -48,6 +48,8 @@ export default function ManagePage() {
   const [previewFileName, setPreviewFileName] = useState('');
   const [previewType, setPreviewType] = useState('');
   const [previewUrl, setPreviewUrl] = useState('');
+  const [syncDialogOpen, setSyncDialogOpen] = useState(false);
+  const [pendingDefaultResumeId, setPendingDefaultResumeId] = useState<number | null>(null);
 
   const loadResumes = async () => {
     try {
@@ -71,8 +73,8 @@ export default function ManagePage() {
     await loadResumes();
   };
 
-  const handleSetDefault = async (id: number) => {
-    await resumeApi.setDefault(id);
+  const handleSetDefault = async (id: number, syncPersonInfo: boolean) => {
+    await resumeApi.setDefault(id, syncPersonInfo);
     await loadResumes();
   };
 
@@ -177,7 +179,13 @@ export default function ManagePage() {
 
                 <div className="flex items-center gap-2 w-full md:w-auto justify-end shrink-0 flex-wrap">
                   {!resume.isDefault && (
-                    <button className="px-4 py-2 text-sm font-medium text-tertiary hover:text-primary bg-transparent hover:bg-surface-container-low rounded-lg transition-colors flex items-center gap-1" onClick={() => void handleSetDefault(resume.id)}>
+                    <button
+                      className="px-4 py-2 text-sm font-medium text-tertiary hover:text-primary bg-transparent hover:bg-surface-container-low rounded-lg transition-colors flex items-center gap-1"
+                      onClick={() => {
+                        setPendingDefaultResumeId(resume.id);
+                        setSyncDialogOpen(true);
+                      }}
+                    >
                       设为默认
                     </button>
                   )}
@@ -264,6 +272,52 @@ export default function ManagePage() {
                   </>
                 );
               })()}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {syncDialogOpen && pendingDefaultResumeId !== null && (
+        <div className="fixed inset-0 z-50 bg-black/45 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-md rounded-xl bg-surface-container-lowest border border-surface-variant shadow-xl p-6">
+            <h3 className="text-lg font-semibold text-on-surface mb-2">同步个人信息</h3>
+            <p className="text-sm text-tertiary mb-6">是否使用这份默认简历解析结果同步个人信息？</p>
+            <div className="flex items-center justify-end gap-3">
+              <button
+                className="px-4 py-2 text-sm rounded-lg bg-surface-container text-on-surface"
+                onClick={() => {
+                  setSyncDialogOpen(false);
+                  setPendingDefaultResumeId(null);
+                }}
+              >
+                取消
+              </button>
+              <button
+                className="px-4 py-2 text-sm rounded-lg bg-surface-container-high text-primary"
+                onClick={() => {
+                  const resumeId = pendingDefaultResumeId;
+                  setSyncDialogOpen(false);
+                  setPendingDefaultResumeId(null);
+                  if (resumeId !== null) {
+                    void handleSetDefault(resumeId, false);
+                  }
+                }}
+              >
+                否，不同步
+              </button>
+              <button
+                className="px-4 py-2 text-sm rounded-lg bg-primary text-white"
+                onClick={() => {
+                  const resumeId = pendingDefaultResumeId;
+                  setSyncDialogOpen(false);
+                  setPendingDefaultResumeId(null);
+                  if (resumeId !== null) {
+                    void handleSetDefault(resumeId, true);
+                  }
+                }}
+              >
+                是，同步
+              </button>
             </div>
           </div>
         </div>

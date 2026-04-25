@@ -1,5 +1,0 @@
-{
-  "dependencies": {
-    "@modelcontextprotocol/server-redis": "^2025.4.25"
-  }
-}

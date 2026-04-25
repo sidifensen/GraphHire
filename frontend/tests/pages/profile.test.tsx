@@ -38,7 +38,9 @@ describe('ProfilePage', () => {
       gender: 2,
       age: 28,
       phone: '13800138000',
+      email: 'profile@example.com',
       education: '硕士',
+      school: '浙江大学',
       city: '杭州',
       targetCity: '上海',
       expectedSalary: 30000,
@@ -52,7 +54,7 @@ describe('ProfilePage', () => {
     expect(screen.getByText('个人资料加载中...')).toBeDefined();
     await screen.findByDisplayValue('林静宜');
     expect(screen.getByDisplayValue('13800138000')).toBeDefined();
-    expect(screen.getByDisplayValue('real@example.com')).toBeDefined();
+    expect(screen.getByDisplayValue('profile@example.com')).toBeDefined();
     expect(screen.getByText('图谱认知引擎就绪')).toBeDefined();
   });
 

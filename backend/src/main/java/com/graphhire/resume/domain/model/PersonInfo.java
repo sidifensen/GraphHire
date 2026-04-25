@@ -19,8 +19,12 @@ public class PersonInfo extends BaseEntity {
     private Integer age;
     /** 联系电话 */
     private String phone;
+    /** 邮箱 */
+    private String email;
     /** 学历 */
     private String education;
+    /** 学校 */
+    private String school;
     /** 所在城市 */
     private String city;
     /** 目标城市（求职意向） */
@@ -84,6 +88,22 @@ public class PersonInfo extends BaseEntity {
 
     public void setEducation(String education) {
         this.education = education;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getSchool() {
+        return school;
+    }
+
+    public void setSchool(String school) {
+        this.school = school;
     }
 
     public String getCity() {

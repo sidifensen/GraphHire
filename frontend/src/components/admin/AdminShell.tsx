@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { motion } from 'framer-motion';
-import AdminSidebar from '@/components/admin/AdminSidebar';
+import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import AdminTopbar from '@/components/admin/AdminTopbar';
-import RouteTransition from '@/components/RouteTransition';
+import RouteTransition from '@/components/layout/RouteTransition';
 
 interface AdminShellProps {
   children: ReactNode;

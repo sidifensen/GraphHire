@@ -156,8 +156,10 @@ export const resumeApi = {
   /**
    * PUT /resume/{id}/default - 设置默认简历
    */
-  setDefault: async (id: number): Promise<void> => {
-    await apiClient.put(`/resume/${id}/default`);
+  setDefault: async (id: number, syncPersonInfo = false): Promise<void> => {
+    await apiClient.put(`/resume/${id}/default`, null, {
+      params: { syncPersonInfo },
+    });
   },
 
   /**

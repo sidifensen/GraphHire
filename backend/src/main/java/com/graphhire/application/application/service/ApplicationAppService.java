@@ -7,6 +7,7 @@ import com.graphhire.application.domain.model.TalentPool;
 import com.graphhire.application.domain.repository.ApplicationRepository;
 import com.graphhire.application.domain.repository.FavoriteRepository;
 import com.graphhire.application.domain.repository.TalentPoolRepository;
+import com.graphhire.common.vo.Exceptions;
 import com.graphhire.job.domain.model.Job;
 import com.graphhire.job.domain.repository.JobRepository;
 import com.graphhire.job.domain.vo.JobStatus;
@@ -76,21 +77,21 @@ public class ApplicationAppService {
     public Application applyJob(Long userId, Long resumeId, Long jobId) {
         // 步骤1：校验简历存在且属于用户
         Resume resume = resumeRepository.findById(resumeId)
-            .orElseThrow(() -> new RuntimeException("Resume not found: " + resumeId));
+            .orElseThrow(() -> Exceptions.BusinessException.of(404, "简历不存在"));
         if (!resume.getUserId().equals(userId)) {
-            throw new RuntimeException("Resume does not belong to user");
+            throw Exceptions.BusinessException.of(403, "默认简历不属于当前账号");
         }
 
         // 步骤2：校验职位已发布
         Job job = jobRepository.findById(jobId)
-            .orElseThrow(() -> new RuntimeException("Job not found: " + jobId));
+            .orElseThrow(() -> Exceptions.BusinessException.of(404, "职位不存在或已下线"));
         if (job.getStatus() != JobStatus.PUBLISHED) {
-            throw new RuntimeException("Job is not published");
+            throw Exceptions.BusinessException.of(400, "职位未发布，暂不可投递");
         }
 
         // 步骤3：校验未投递过该职位
         if (applicationRepository.existsByResumeIdAndJobId(resumeId, jobId)) {
-            throw new RuntimeException("Already applied to this job");
+            throw Exceptions.BusinessException.of(409, "已投递过该职位");
         }
 
         // 步骤4：创建投递记录
