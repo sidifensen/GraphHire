@@ -57,6 +57,6 @@ describe('JobsPage', () => {
     render(<JobsPage />);
     const title = await screen.findByText('真实 Java 工程师');
     title.closest('article')?.click();
-    expect(push).toHaveBeenCalledWith('/match/1');
+    expect(push).toHaveBeenCalledWith('/jobs/1');
   });
 });

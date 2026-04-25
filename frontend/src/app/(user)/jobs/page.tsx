@@ -120,7 +120,7 @@ function JobsContent() {
                 ref={setCardRef(index)}
                 role="button"
                 tabIndex={0}
-                onClick={() => router.push(`/match/${job.id}`)}
+                onClick={() => router.push(`/jobs/${job.id}`)}
                 onKeyDown={handleKeyDown}
                 className="job-card bg-surface-container-lowest rounded-[1.5rem] p-8 flex items-center justify-between relative overflow-hidden cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >

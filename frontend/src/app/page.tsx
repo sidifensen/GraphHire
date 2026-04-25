@@ -148,7 +148,21 @@ export default function HomePage() {
                 </div>
 
                 {overview.featuredJobs.map((job) => (
-                  <JobCard key={job.id} job={job} />
+                  <div
+                    key={job.id}
+                    className="cursor-pointer"
+                    onClick={() => router.push(`/jobs/${job.id}`)}
+                    role="link"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        router.push(`/jobs/${job.id}`);
+                      }
+                    }}
+                  >
+                    <JobCard job={job} />
+                  </div>
                 ))}
               </div>
 

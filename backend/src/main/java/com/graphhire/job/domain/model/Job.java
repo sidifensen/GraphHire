@@ -50,6 +50,12 @@ public class Job extends BaseAggregateRoot {
     private JobStatus status = JobStatus.DRAFT;
     /** 职位描述 */
     private String description;
+    /** 经验要求 */
+    private String experience;
+    /** 学历要求 */
+    private String education;
+    /** 工作类型（0=未知 1=全职 2=兼职 3=实习） */
+    private Integer jobType;
     /** 发布时间 */
     private LocalDateTime publishedAt;
 
@@ -189,6 +195,30 @@ public class Job extends BaseAggregateRoot {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getExperience() {
+        return experience;
+    }
+
+    public void setExperience(String experience) {
+        this.experience = experience;
+    }
+
+    public String getEducation() {
+        return education;
+    }
+
+    public void setEducation(String education) {
+        this.education = education;
+    }
+
+    public Integer getJobType() {
+        return jobType;
+    }
+
+    public void setJobType(Integer jobType) {
+        this.jobType = jobType;
     }
 
     public LocalDateTime getPublishedAt() {

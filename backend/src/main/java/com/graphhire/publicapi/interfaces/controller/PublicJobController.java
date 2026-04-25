@@ -107,7 +107,12 @@ public class PublicJobController {
                 salaryRange != null ? salaryRange.getMin() : null,
                 salaryRange != null ? salaryRange.getMax() : null,
                 salaryRange != null ? salaryRange.getUnit() : null,
-                job.getRequiredSkills() != null ? job.getRequiredSkills() : List.of()
+                job.getRequiredSkills() != null ? job.getRequiredSkills() : List.of(),
+                job.getDescription(),
+                job.getExperience(),
+                job.getEducation(),
+                job.getJobType(),
+                job.getPublishedAt()
         );
     }
 

@@ -20,6 +20,11 @@ export interface Job {
   salaryMax?: number | null;
   salaryUnit?: string | null;
   requiredSkills?: string[];
+  description?: string | null;
+  experience?: string | null;
+  education?: string | null;
+  jobType?: number | null;
+  publishedAt?: string | null;
 }
 
 export interface BackendPageResult<T> {

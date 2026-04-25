@@ -1,5 +1,6 @@
 package com.graphhire.publicapi.interfaces.dto.response;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public record PublicJobCardResponse(
@@ -12,6 +13,11 @@ public record PublicJobCardResponse(
     Integer salaryMin,
     Integer salaryMax,
     String salaryUnit,
-    List<String> requiredSkills
+    List<String> requiredSkills,
+    String description,
+    String experience,
+    String education,
+    Integer jobType,
+    LocalDateTime publishedAt
 ) {
 }

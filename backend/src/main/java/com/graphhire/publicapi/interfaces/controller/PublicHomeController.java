@@ -70,7 +70,12 @@ public class PublicHomeController {
                 job.getSalaryRange() != null ? job.getSalaryRange().getMin() : null,
                 job.getSalaryRange() != null ? job.getSalaryRange().getMax() : null,
                 job.getSalaryRange() != null ? job.getSalaryRange().getUnit() : null,
-                job.getRequiredSkills() != null ? job.getRequiredSkills() : List.of()
+                job.getRequiredSkills() != null ? job.getRequiredSkills() : List.of(),
+                job.getDescription(),
+                job.getExperience(),
+                job.getEducation(),
+                job.getJobType(),
+                job.getPublishedAt()
         );
     }
 
