@@ -918,4 +918,33 @@ class CompanyControllerTest {
             }
         }
     }
+
+    @Nested
+    @DisplayName("岗位一键匹配测试")
+    class TriggerMatchForJobTests {
+
+        @Test
+        @DisplayName("企业可触发指定岗位全量匹配")
+        void triggerMatchForJob_Success() {
+            try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+                Long userId = 1L;
+                Long companyId = 10L;
+                Long jobId = 101L;
+
+                stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(userId);
+                when(companyAppService.getCompanyIdByUserId(userId)).thenReturn(companyId);
+
+                Job job = new Job();
+                job.setId(jobId);
+                job.setCompanyId(companyId);
+                when(jobAppService.getJobById(jobId)).thenReturn(job);
+
+                var result = companyController.triggerMatchForJob(jobId);
+
+                assertNotNull(result);
+                assertEquals(200, result.getCode());
+                verify(matchAppService).triggerMatchForJob(jobId);
+            }
+        }
+    }
 }

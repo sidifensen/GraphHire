@@ -86,6 +86,10 @@ export const companyApi = {
     return response.data;
   },
 
+  triggerJobMatch: async (jobId: number): Promise<void> => {
+    await apiClient.post(`/company/job/${jobId}/match/trigger`);
+  },
+
   matchResume: async (resumeId: number, jobId: number): Promise<EnterpriseRecommendation> => {
     const response = await apiClient.get<EnterpriseRecommendation>(`/company/match/${resumeId}`, { params: { jobId } });
     return response.data;

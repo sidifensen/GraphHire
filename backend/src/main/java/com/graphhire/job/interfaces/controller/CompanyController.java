@@ -256,6 +256,15 @@ public class CompanyController {
         return Result.success(recommendations);
     }
 
+    @PostMapping("/job/{id}/match/trigger")
+    public Result<Void> triggerMatchForJob(@PathVariable("id") Long jobId) {
+        Long companyId = currentCompanyId();
+        Job job = jobAppService.getJobById(jobId);
+        ensureJobOwnership(job, companyId);
+        matchAppService.triggerMatchForJob(jobId);
+        return Result.success();
+    }
+
     @PostMapping("/create")
     public Result<Long> createCompany(@RequestParam String name,
                                       @RequestParam String unifiedSocialCreditCode,

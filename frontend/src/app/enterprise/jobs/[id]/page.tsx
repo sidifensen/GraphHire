@@ -21,6 +21,8 @@ export default function EnterpriseJobDetailPage() {
   const [job, setJob] = useState<EnterpriseJobDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [triggeringMatch, setTriggeringMatch] = useState(false);
+  const [matchNotice, setMatchNotice] = useState<string | null>(null);
 
   const jobId = useMemo(() => Number(params?.id), [params?.id]);
 
@@ -46,6 +48,22 @@ export default function EnterpriseJobDetailPage() {
   useEffect(() => {
     void loadDetail();
   }, [jobId]);
+
+  const triggerMatch = async () => {
+    if (!Number.isFinite(jobId) || jobId <= 0) {
+      return;
+    }
+    setTriggeringMatch(true);
+    setMatchNotice(null);
+    try {
+      await companyApi.triggerJobMatch(jobId);
+      setMatchNotice('已开始匹配，正在刷新候选人推荐');
+    } catch (err) {
+      setMatchNotice(err instanceof Error ? err.message : '触发匹配失败，请稍后重试');
+    } finally {
+      setTriggeringMatch(false);
+    }
+  };
 
   return (
     <EnterpriseContent>
@@ -87,9 +105,23 @@ export default function EnterpriseJobDetailPage() {
         <div className="space-y-6">
           <div className="rounded-xl bg-surface-container-lowest p-6 space-y-4">
             <div>
-              <a className="px-4 py-2 rounded-lg bg-primary-fixed text-on-primary-fixed text-sm font-medium" href={`/enterprise/recommendations?jobId=${jobId}`}>
-                查看匹配候选人
-              </a>
+              <div className="flex flex-wrap items-center gap-3">
+                <a className="px-4 py-2 rounded-lg bg-primary-fixed text-on-primary-fixed text-sm font-medium" href={`/enterprise/recommendations?jobId=${jobId}`}>
+                  查看匹配候选人
+                </a>
+                <button
+                  className="px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+                  onClick={() => void triggerMatch()}
+                  disabled={triggeringMatch}
+                >
+                  {triggeringMatch ? '匹配启动中...' : '一键匹配全部候选人'}
+                </button>
+              </div>
+              {matchNotice ? (
+                <div className="mt-3 text-sm text-on-surface-variant">
+                  {matchNotice}
+                </div>
+              ) : null}
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <h3 className="text-xl font-bold font-headline text-on-surface">{job.title}</h3>

@@ -24,6 +24,7 @@ vi.mock('next/navigation', () => ({
 vi.mock('@/lib/api/company', () => ({
   companyApi: {
     getJobDetail: vi.fn(),
+    triggerJobMatch: vi.fn(),
   },
 }));
 
@@ -110,5 +111,29 @@ describe('Enterprise Job Detail Page', () => {
     await user.click(screen.getByRole('button', { name: '修改职位' }));
 
     expect(pushMock).toHaveBeenCalledWith('/enterprise/jobs/1/edit');
+  });
+
+  test('点击一键匹配后禁用按钮并提示已开始匹配', async () => {
+    let resolveTrigger: (() => void) | null = null;
+    vi.mocked(companyApi.triggerJobMatch).mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveTrigger = resolve;
+        }),
+    );
+    const user = userEvent.setup();
+
+    render(<JobDetailPage />);
+    await screen.findByText('负责算法平台设计与落地');
+
+    const triggerButton = screen.getByRole('button', { name: '一键匹配全部候选人' });
+    await user.click(triggerButton);
+
+    expect(companyApi.triggerJobMatch).toHaveBeenCalledWith(1);
+    expect(screen.getByRole('button', { name: '匹配启动中...' })).toBeDisabled();
+
+    resolveTrigger?.();
+
+    expect(await screen.findByText('已开始匹配，正在刷新候选人推荐')).toBeInTheDocument();
   });
 });
