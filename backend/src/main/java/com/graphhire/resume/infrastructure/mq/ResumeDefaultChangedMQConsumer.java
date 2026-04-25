@@ -31,9 +31,9 @@ public class ResumeDefaultChangedMQConsumer implements RocketMQListener<String> 
             Resume resume = resumeRepository.findById(resumeId)
                 .orElseThrow(() -> new RuntimeException("Resume not found: " + resumeId));
             graphBuildService.buildGraphForResume(resume);
-            log.info("Successfully rebuilt graph after default resume changed: resumeId={}", resumeId);
+            log.info("默认简历变更后图谱重建成功: resumeId={}", resumeId);
         } catch (Exception e) {
-            log.error("Failed to process default resume changed message {}: {}", message, e.getMessage(), e);
+            log.error("处理默认简历变更消息{}失败: {}", message, e.getMessage(), e);
         }
     }
 }

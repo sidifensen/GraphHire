@@ -462,7 +462,7 @@ public class ResumeAppService {
             }
 
             Resume fallbackResume = fallbackResumeOpt.get();
-            log.warn("Resume preview fallback: resumeId={} filePath={} -> fallbackResumeId={} fallbackPath={}",
+            log.warn("简历预览降级：resumeId={} filePath={} -> 降级简历Id={} 降级路径={}",
                 resume.getId(), resume.getFilePath(), fallbackResume.getId(), fallbackResume.getFilePath());
             byte[] fallbackContent = rustFSClient.download(fallbackResume.getFilePath());
             return new ResumePreviewFile(fallbackContent, resume.getFileName(), resolveContentType(fallbackResume));

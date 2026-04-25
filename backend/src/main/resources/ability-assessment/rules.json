@@ -1,0 +1,44 @@
+{
+  "categoryKeys": [
+    "language",
+    "framework",
+    "database",
+    "middleware",
+    "frontend",
+    "engineering"
+  ],
+  "categoryKeywords": {
+    "language": ["java", "python", "go", "javascript", "typescript", "kotlin", "jvm"],
+    "framework": ["spring", "spring boot", "spring cloud", "mvc", "react", "vue", "mybatis", "drools"],
+    "database": ["mysql", "postgresql", "redis", "elasticsearch", "sql", "nosql"],
+    "middleware": ["rabbitmq", "kafka", "nacos", "gateway", "seata", "feign"],
+    "frontend": ["html", "css", "javascript", "typescript", "react", "vue", "element"],
+    "engineering": ["docker", "kubernetes", "ci", "cd", "aop", "线程池", "并发", "微服务"]
+  },
+  "domainKeywords": {
+    "java-backend": ["java", "jvm", "spring", "spring boot", "mybatis"],
+    "distributed": ["spring cloud", "gateway", "nacos", "seata", "mq", "rabbitmq"],
+    "frontend": ["javascript", "typescript", "react", "vue", "html", "css"],
+    "storage": ["mysql", "redis", "elasticsearch"]
+  },
+  "freshnessKeywords": ["spring cloud", "kubernetes", "docker", "react", "vue", "typescript", "elasticsearch", "gateway", "nacos"],
+  "rarityKeywords": {
+    "kubernetes": 20,
+    "seata": 20,
+    "rabbitmq": 15,
+    "elasticsearch": 15,
+    "gateway": 15,
+    "spring cloud": 15,
+    "nacos": 15,
+    "drools": 20,
+    "aop": 10,
+    "mvcc": 15
+  },
+  "weights": {
+    "breadth": 0.25,
+    "depth": 0.25,
+    "structure": 0.2,
+    "freshness": 0.15,
+    "rarity": 0.15
+  }
+}

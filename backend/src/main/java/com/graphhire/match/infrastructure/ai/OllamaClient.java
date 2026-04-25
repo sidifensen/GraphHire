@@ -1,9 +1,13 @@
 package com.graphhire.match.infrastructure.ai;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 /**
@@ -18,6 +22,35 @@ public class OllamaClient {
     private String ollamaUrl;
 
     private final RestTemplate restTemplate = new RestTemplate();
+    private String ollamaPrompt;
+
+    public OllamaClient() {
+        loadPrompt();
+    }
+
+    private void loadPrompt() {
+        try {
+            ClassPathResource resource = new ClassPathResource("prompts/generate-match-reason.md");
+            String content;
+            try (InputStream is = resource.getInputStream()) {
+                content = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+            }
+            int start = content.indexOf("## Ollama (本地模型)");
+            if (start != -1) {
+                start = content.indexOf("## prompt", start) + "## prompt".length();
+                int end = content.length();
+                int nextSection = content.indexOf("---", start);
+                if (nextSection != -1) {
+                    end = nextSection;
+                }
+                ollamaPrompt = content.substring(start, end).trim();
+            } else {
+                ollamaPrompt = "Explain why resume %d matches job %d in brief";
+            }
+        } catch (IOException e) {
+            ollamaPrompt = "Explain why resume %d matches job %d in brief";
+        }
+    }
 
     /**
      * 生成匹配原因说明
@@ -31,7 +64,7 @@ public class OllamaClient {
 
         Map<String, Object> requestBody = Map.of(
             "model", "llama2",
-            "prompt", String.format("Explain why resume %d matches job %d in brief", resumeId, jobId),
+            "prompt", String.format(ollamaPrompt, resumeId, jobId),
             "stream", false
         );
 

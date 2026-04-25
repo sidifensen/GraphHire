@@ -35,9 +35,9 @@ public class ResumeGraphMQConsumer implements RocketMQListener<String> {
             Resume resume = resumeRepository.findById(resumeId)
                 .orElseThrow(() -> new RuntimeException("Resume not found: " + resumeId));
             graphBuildService.buildGraphForResume(resume);
-            log.info("Successfully built graph for resume {}", resumeId);
+            log.info("简历{}图谱构建成功", resumeId);
         } catch (Exception e) {
-            log.error("Failed to build graph for resume {}: {}", message, e.getMessage());
+            log.error("简历{}图谱构建失败: {}", message, e.getMessage());
             // 不重新抛出异常，以免影响主MQ流程
         }
     }

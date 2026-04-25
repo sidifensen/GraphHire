@@ -39,7 +39,7 @@ public class SkillGraphClient {
     @PostConstruct
     public void init() {
         if (!enabled) {
-            log.info("Memgraph integration disabled by config.");
+            log.info("Memgraph集成已被配置禁用");
             driver = null;
             return;
         }
@@ -59,10 +59,10 @@ public class SkillGraphClient {
             // 测试连接
             try (Session session = driver.session()) {
                 session.run("RETURN 1");
-                log.info("Connected to Memgraph via Bolt: {}", boltUrl);
+                log.info("已成功连接Memgraph Bolt: {}", boltUrl);
             }
         } catch (Exception e) {
-            log.warn("Failed to connect to Memgraph: {}. Graph operations will be skipped.", e.getMessage());
+            log.warn("连接Memgraph失败: {}，图操作将被跳过", e.getMessage());
             driver = null;
         }
     }
@@ -79,16 +79,16 @@ public class SkillGraphClient {
      */
     public void buildPersonSkillGraph(Long personId, List<String> skills) {
         if (driver == null || skills == null || skills.isEmpty()) {
-            log.info("Skipping graph build: driver unavailable or no skills");
+            log.info("跳过图谱构建：驱动不可用或技能列表为空");
             return;
         }
 
         try (Session session = driver.session()) {
             String cypher = buildPersonSkillCypher(personId, skills);
             session.run(cypher);
-            log.info("Built person-skill graph for person {} with {} skills", personId, skills.size());
+            log.info("为人员{}构建技能图谱，包含{}项技能", personId, skills.size());
         } catch (Exception e) {
-            log.error("Failed to build person-skill graph for person {}: {}", personId, e.getMessage());
+            log.error("为人员{}构建技能图谱失败: {}", personId, e.getMessage());
         }
     }
 
@@ -97,21 +97,21 @@ public class SkillGraphClient {
      */
     public void buildJobSkillGraph(Long jobId, List<String> requiredSkills, List<String> preferredSkills) {
         if (driver == null) {
-            log.info("Skipping job graph build: driver unavailable");
+            log.info("跳过职位图谱构建：驱动不可用");
             return;
         }
 
         try (Session session = driver.session()) {
             if (requiredSkills != null && !requiredSkills.isEmpty()) {
                 session.run(buildJobSkillCypher(jobId, requiredSkills, "REQUIRES_SKILL"));
-                log.info("Built job-skill graph for job {} with {} required skills", jobId, requiredSkills.size());
+                log.info("为职位{}构建技能图谱，包含{}项必填技能", jobId, requiredSkills.size());
             }
             if (preferredSkills != null && !preferredSkills.isEmpty()) {
                 session.run(buildJobSkillCypher(jobId, preferredSkills, "PREFERS_SKILL"));
-                log.info("Built job-skill graph for job {} with {} preferred skills", jobId, preferredSkills.size());
+                log.info("为职位{}构建技能图谱，包含{}项偏好技能", jobId, preferredSkills.size());
             }
         } catch (Exception e) {
-            log.error("Failed to build job-skill graph for job {}: {}", jobId, e.getMessage());
+            log.error("为职位{}构建技能图谱失败: {}", jobId, e.getMessage());
         }
     }
 
@@ -165,7 +165,7 @@ public class SkillGraphClient {
                 graphData.put("success", true);
             }
         } catch (Exception e) {
-            log.error("Failed to get person skill graph for person {}: {}", personId, e.getMessage());
+            log.error("获取人员{}技能图谱失败: {}", personId, e.getMessage());
             return getMockPersonGraph(personId);
         }
         return graphData;
@@ -194,7 +194,7 @@ public class SkillGraphClient {
                 graphData.put("success", true);
             }
         } catch (Exception e) {
-            log.error("Failed to get job skill graph for job {}: {}", jobId, e.getMessage());
+            log.error("获取职位{}技能图谱失败: {}", jobId, e.getMessage());
             return getMockJobGraph(jobId);
         }
         return graphData;

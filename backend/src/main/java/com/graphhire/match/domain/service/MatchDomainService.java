@@ -10,7 +10,9 @@ import com.graphhire.match.domain.model.MatchRecord;
 import com.graphhire.match.domain.vo.MatchScore;
 import com.graphhire.match.domain.vo.RequirementScoreDetail;
 import com.graphhire.match.infrastructure.ai.DeepSeekClient;
+import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.model.Resume;
+import com.graphhire.resume.domain.repository.PersonInfoRepository;
 import com.graphhire.resume.domain.repository.ResumeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,9 @@ public class MatchDomainService {
 
     @Autowired
     private ResumeRepository resumeRepository;
+
+    @Autowired
+    private PersonInfoRepository personInfoRepository;
 
     @Autowired
     private JobRepository jobRepository;
@@ -54,7 +59,7 @@ public class MatchDomainService {
         double skillScore = calculateSkillScore(profile.skills, safeSkills(job.getRequiredSkills()));
         double cityScore = cityMatchScorer.score(profile.targetCity, job.getLocation() == null ? null : job.getLocation().getCity());
         double salaryScore = salaryMatchScorer.score(profile.expectedSalary, job.getSalaryRange() == null ? null : job.getSalaryRange().getMin(), job.getSalaryRange() == null ? null : job.getSalaryRange().getMax());
-        double educationScore = educationMatchScorer.score(profile.education, extractEducationRequiredFromDescription(job.getDescription()));
+        double educationScore = educationMatchScorer.score(profile.education, extractJobEducationRequired(job));
 
         RequirementScoreDetail detail = RequirementScoreDetail.of(cityScore, salaryScore, educationScore);
         MatchScore score = MatchScore.of(skillScore, detail);
@@ -105,8 +110,13 @@ public class MatchDomainService {
     }
 
     private Profile extractProfile(Resume resume) {
+        Optional<PersonInfo> personInfoOpt = personInfoRepository.findByUserId(resume.getUserId());
+        String personTargetCity = personInfoOpt.map(PersonInfo::getTargetCity).orElse(null);
+        Integer personExpectedSalary = personInfoOpt.map(PersonInfo::getExpectedSalary).orElse(null);
+        String personEducation = personInfoOpt.map(PersonInfo::getEducation).orElse(null);
+
         if (StrUtil.isBlank(resume.getParseResult())) {
-            return new Profile(Collections.emptyList(), null, null, null);
+            return new Profile(Collections.emptyList(), personTargetCity, personExpectedSalary, personEducation);
         }
         try {
             JsonNode root = MAPPER.readTree(resume.getParseResult());
@@ -117,12 +127,12 @@ public class MatchDomainService {
                     skills.add(node.asText());
                 }
             }
-            String targetCity = readFirstString(root, "target_city", "expected_location", "city");
-            Integer expectedSalary = readInteger(root, "expected_salary");
-            String education = extractEducation(root);
+            String targetCity = StrUtil.blankToDefault(personTargetCity, readFirstString(root, "target_city", "expected_location", "city"));
+            Integer expectedSalary = personExpectedSalary != null ? personExpectedSalary : readInteger(root, "expected_salary");
+            String education = StrUtil.blankToDefault(personEducation, extractEducation(root));
             return new Profile(skills, targetCity, expectedSalary, education);
         } catch (Exception ignored) {
-            return new Profile(Collections.emptyList(), null, null, null);
+            return new Profile(Collections.emptyList(), personTargetCity, personExpectedSalary, personEducation);
         }
     }
 
@@ -182,6 +192,16 @@ public class MatchDomainService {
         if (description.contains("本科")) return "本科";
         if (description.contains("大专")) return "大专";
         return "本科";
+    }
+
+    private String extractJobEducationRequired(Job job) {
+        if (job == null) {
+            return "本科";
+        }
+        if (StrUtil.isNotBlank(job.getEducation())) {
+            return job.getEducation();
+        }
+        return extractEducationRequiredFromDescription(job.getDescription());
     }
 
     private record Profile(List<String> skills, String targetCity, Integer expectedSalary, String education) {

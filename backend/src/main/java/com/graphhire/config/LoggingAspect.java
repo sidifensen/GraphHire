@@ -39,9 +39,9 @@ public class LoggingAspect {
             long duration = System.currentTimeMillis() - startTime;
 
             if (duration >= slowApiThresholdMs) {
-                log.warn("[API] {} slow call: {}ms", methodName, duration);
+                log.warn("[API] {} 慢调用: {}ms", methodName, duration);
             } else if (log.isDebugEnabled()) {
-                log.debug("[API] {} completed in {}ms", methodName, duration);
+                log.debug("[API] {} 完成，耗时 {}ms", methodName, duration);
             }
             return result;
         } catch (Exception e) {
@@ -51,10 +51,10 @@ public class LoggingAspect {
                 || e instanceof Exceptions.UnauthorizedException
                 || e instanceof Exceptions.ForbiddenException
                 || e instanceof Exceptions.ValidationException) {
-                log.warn("[API] {} failed after {}ms: {}", methodName, duration, e.getMessage());
+                log.warn("[API] {} 失败，耗时 {}ms: {}", methodName, duration, e.getMessage());
             } else {
                 // 仅系统异常输出堆栈
-                log.error("[API] {} failed after {}ms", methodName, duration, e);
+                log.error("[API] {} 异常，耗时 {}ms", methodName, duration, e);
             }
             throw e;
         }

@@ -43,7 +43,7 @@ public class GraphBuildService {
      */
     public void buildGraphForResume(Resume resume) {
         if (resume == null || resume.getParseResult() == null) {
-            log.info("Resume or parse result is null, skipping graph build");
+            log.info("简历或解析结果为空，跳过图谱构建");
             return;
         }
 
@@ -53,12 +53,12 @@ public class GraphBuildService {
             if (skills != null && !skills.isEmpty()) {
                 // 构建图谱关系
                 skillGraphClient.buildPersonSkillGraph(resume.getUserId(), skills);
-                log.info("Built person-skill graph for user {} with {} skills", resume.getUserId(), skills.size());
+                log.info("为用户{}构建人员技能图谱，包含{}项技能", resume.getUserId(), skills.size());
             } else {
-                log.info("No skills found in parse result for resume {}", resume.getId());
+                log.info("简历{}解析结果中未找到技能", resume.getId());
             }
         } catch (Exception e) {
-            log.error("Failed to build graph for resume {}: {}", resume.getId(), e.getMessage());
+            log.error("简历{}图谱构建失败: {}", resume.getId(), e.getMessage());
             // 不导致解析失败，仅记录错误
         }
     }
@@ -70,7 +70,7 @@ public class GraphBuildService {
      */
     public void buildGraphForJob(Job job) {
         if (job == null) {
-            log.info("Job is null, skipping graph build");
+            log.info("职位为空，跳过图谱构建");
             return;
         }
 
@@ -80,18 +80,18 @@ public class GraphBuildService {
 
             if ((requiredSkills == null || requiredSkills.isEmpty()) &&
                 (preferredSkills == null || preferredSkills.isEmpty())) {
-                log.info("No skills found for job {}", job.getId());
+                log.info("职位{}未找到技能", job.getId());
                 return;
             }
 
             // 构建图谱关系
             skillGraphClient.buildJobSkillGraph(job.getId(), requiredSkills, preferredSkills);
-            log.info("Built job-skill graph for job {} with {} required and {} preferred skills",
+            log.info("为职位{}构建技能图谱，包含{}项必填技能和{}项偏好技能",
                     job.getId(),
                     requiredSkills != null ? requiredSkills.size() : 0,
                     preferredSkills != null ? preferredSkills.size() : 0);
         } catch (Exception e) {
-            log.error("Failed to build graph for job {}: {}", job.getId(), e.getMessage());
+            log.error("职位{}图谱构建失败: {}", job.getId(), e.getMessage());
             // 不导致解析失败，仅记录错误
         }
     }
@@ -148,7 +148,7 @@ public class GraphBuildService {
             }
 
         } catch (Exception e) {
-            log.error("Failed to parse skills from parse result: {}", e.getMessage());
+            log.error("从解析结果中提取技能失败: {}", e.getMessage());
         }
 
         return skills;

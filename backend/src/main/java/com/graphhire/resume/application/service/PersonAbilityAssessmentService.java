@@ -2,6 +2,7 @@ package com.graphhire.resume.application.service;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.graphhire.resume.config.AbilityAssessmentProperties;
 import com.graphhire.resume.interfaces.dto.AbilityAssessmentResponse;
 import com.graphhire.skill.infrastructure.graph.SkillGraphClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,43 +18,11 @@ import java.util.stream.Collectors;
 @Service
 public class PersonAbilityAssessmentService {
 
-    private static final List<String> CATEGORY_KEYS = List.of("language", "framework", "database", "middleware", "frontend", "engineering");
-
-    private static final Map<String, List<String>> CATEGORY_KEYWORDS = Map.of(
-        "language", List.of("java", "python", "go", "javascript", "typescript", "kotlin", "jvm"),
-        "framework", List.of("spring", "spring boot", "spring cloud", "mvc", "react", "vue", "mybatis", "drools"),
-        "database", List.of("mysql", "postgresql", "redis", "elasticsearch", "sql", "nosql"),
-        "middleware", List.of("rabbitmq", "kafka", "nacos", "gateway", "seata", "feign"),
-        "frontend", List.of("html", "css", "javascript", "typescript", "react", "vue", "element"),
-        "engineering", List.of("docker", "kubernetes", "ci", "cd", "aop", "线程池", "并发", "微服务")
-    );
-
-    private static final Map<String, List<String>> DOMAIN_KEYWORDS = Map.of(
-        "java-backend", List.of("java", "jvm", "spring", "spring boot", "mybatis"),
-        "distributed", List.of("spring cloud", "gateway", "nacos", "seata", "mq", "rabbitmq"),
-        "frontend", List.of("javascript", "typescript", "react", "vue", "html", "css"),
-        "storage", List.of("mysql", "redis", "elasticsearch")
-    );
-
-    private static final List<String> FRESHNESS_KEYWORDS = List.of(
-        "spring cloud", "kubernetes", "docker", "react", "vue", "typescript", "elasticsearch", "gateway", "nacos"
-    );
-
-    private static final Map<String, Integer> RARITY_KEYWORDS = Map.ofEntries(
-        Map.entry("kubernetes", 20),
-        Map.entry("seata", 20),
-        Map.entry("rabbitmq", 15),
-        Map.entry("elasticsearch", 15),
-        Map.entry("gateway", 15),
-        Map.entry("spring cloud", 15),
-        Map.entry("nacos", 15),
-        Map.entry("drools", 20),
-        Map.entry("aop", 10),
-        Map.entry("mvcc", 15)
-    );
-
     @Autowired
     private SkillGraphClient skillGraphClient;
+
+    @Autowired
+    private AbilityAssessmentProperties abilityAssessmentProperties;
 
     public AbilityAssessmentResponse assess(Long personId) {
         Map<String, Object> graph = skillGraphClient.getPersonSkillGraph(personId);
@@ -75,7 +44,11 @@ public class PersonAbilityAssessmentService {
         int rarity = calcRarity(skills);
 
         int totalScore = clamp((int) Math.round(
-            breadth * 0.25 + depth * 0.25 + structure * 0.20 + freshness * 0.15 + rarity * 0.15
+            breadth * abilityAssessmentProperties.getWeights().getBreadth()
+                + depth * abilityAssessmentProperties.getWeights().getDepth()
+                + structure * abilityAssessmentProperties.getWeights().getStructure()
+                + freshness * abilityAssessmentProperties.getWeights().getFreshness()
+                + rarity * abilityAssessmentProperties.getWeights().getRarity()
         ));
 
         return new AbilityAssessmentResponse(
@@ -102,14 +75,15 @@ public class PersonAbilityAssessmentService {
 
     private int calcBreadth(List<String> skills) {
         Set<String> hitCategories = detectCategories(skills);
-        return clamp((int) Math.round((hitCategories.size() * 100.0) / CATEGORY_KEYS.size()));
+        int categorySize = Math.max(1, abilityAssessmentProperties.getCategoryKeys().size());
+        return clamp((int) Math.round((hitCategories.size() * 100.0) / categorySize));
     }
 
     private int calcDepth(List<String> skills) {
         if (CollUtil.isEmpty(skills)) {
             return 0;
         }
-        double aggregate = DOMAIN_KEYWORDS.values().stream()
+        double aggregate = abilityAssessmentProperties.getDomainKeywords().values().stream()
             .mapToDouble(domainKeywords -> {
                 long hit = skills.stream().filter(skill -> containsAny(skill, domainKeywords)).count();
                 return Math.min(1.0, hit / (double) Math.max(1, domainKeywords.size())) * 100;
@@ -130,13 +104,13 @@ public class PersonAbilityAssessmentService {
     }
 
     private int calcFreshness(List<String> skills) {
-        long modernHits = skills.stream().filter(skill -> containsAny(skill, FRESHNESS_KEYWORDS)).count();
+        long modernHits = skills.stream().filter(skill -> containsAny(skill, abilityAssessmentProperties.getFreshnessKeywords())).count();
         int score = (int) Math.round((modernHits * 100.0) / Math.max(1, skills.size()));
         return clamp(score);
     }
 
     private int calcRarity(List<String> skills) {
-        int total = skills.stream().mapToInt(skill -> RARITY_KEYWORDS.entrySet().stream()
+        int total = skills.stream().mapToInt(skill -> abilityAssessmentProperties.getRarityKeywords().entrySet().stream()
             .filter(entry -> containsSkillKeyword(skill, entry.getKey()))
             .mapToInt(Map.Entry::getValue)
             .max()
@@ -147,8 +121,8 @@ public class PersonAbilityAssessmentService {
     private Set<String> detectCategories(List<String> skills) {
         Set<String> categories = new HashSet<>();
         for (String skill : skills) {
-            for (String category : CATEGORY_KEYS) {
-                if (containsAny(skill, CATEGORY_KEYWORDS.getOrDefault(category, List.of()))) {
+            for (String category : abilityAssessmentProperties.getCategoryKeys()) {
+                if (containsAny(skill, abilityAssessmentProperties.getCategoryKeywords().getOrDefault(category, List.of()))) {
                     categories.add(category);
                 }
             }

@@ -150,6 +150,9 @@ app:
     slow-api-threshold-ms: ${SLOW_API_THRESHOLD_MS:500}
 
 management:
+  health:
+    neo4j:
+      enabled: false
   endpoints:
     web:
       exposure:

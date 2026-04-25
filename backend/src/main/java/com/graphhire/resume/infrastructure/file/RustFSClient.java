@@ -86,11 +86,11 @@ public class RustFSClient {
         try {
             s3Client.headBucket(HeadBucketRequest.builder().bucket(bucketName).build());
         } catch (NoSuchBucketException e) {
-            log.info("Bucket '{}' does not exist, creating...", bucketName);
+            log.info("桶'{}'不存在，正在创建...", bucketName);
             s3Client.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
-            log.info("Bucket '{}' created", bucketName);
+            log.info("桶'{}'创建成功", bucketName);
         } catch (Exception e) {
-            log.error("Failed to ensure bucket exists: {}", e.getMessage(), e);
+            log.error("确保桶存在失败: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to ensure bucket exists: " + e.getMessage(), e);
         }
     }
@@ -108,7 +108,7 @@ public class RustFSClient {
                     .key(candidateKey)
                     .build())) {
                 if (!StrUtil.equals(candidateKey, objectLocation.key())) {
-                    log.warn("RustFS key fallback hit, original key='{}', resolved key='{}'", objectLocation.key(), candidateKey);
+                    log.warn("RustFS Key降级命中，原Key='{}'，解析后Key='{}'", objectLocation.key(), candidateKey);
                 }
                 return is.readAllBytes();
             } catch (NoSuchKeyException e) {

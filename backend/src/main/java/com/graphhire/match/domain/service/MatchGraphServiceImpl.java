@@ -11,7 +11,9 @@ import com.graphhire.job.domain.repository.JobRepository;
 import com.graphhire.match.domain.vo.MatchScore;
 import com.graphhire.match.domain.vo.RequirementScoreDetail;
 import com.graphhire.match.interfaces.vo.GraphMatchVO;
+import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.model.Resume;
+import com.graphhire.resume.domain.repository.PersonInfoRepository;
 import com.graphhire.resume.domain.repository.ResumeRepository;
 import com.graphhire.skill.infrastructure.graph.SkillGraphClient;
 import org.slf4j.Logger;
@@ -36,6 +38,9 @@ public class MatchGraphServiceImpl implements MatchGraphService {
 
     @Autowired
     private ResumeRepository resumeRepository;
+
+    @Autowired
+    private PersonInfoRepository personInfoRepository;
 
     @Autowired
     private CityMatchScorer cityMatchScorer;
@@ -77,7 +82,7 @@ public class MatchGraphServiceImpl implements MatchGraphService {
         Profile profile = resolveProfile(personId);
         double cityScore = cityMatchScorer.score(profile.targetCity, job.getLocation() == null ? null : job.getLocation().getCity());
         double salaryScore = salaryMatchScorer.score(profile.expectedSalary, job.getSalaryRange() == null ? null : job.getSalaryRange().getMin(), job.getSalaryRange() == null ? null : job.getSalaryRange().getMax());
-        double educationScore = educationMatchScorer.score(profile.education, extractEducationRequiredFromDescription(job.getDescription()));
+        double educationScore = educationMatchScorer.score(profile.education, extractJobEducationRequired(job));
         RequirementScoreDetail requirementDetail = RequirementScoreDetail.of(cityScore, salaryScore, educationScore);
 
         MatchScore score = MatchScore.of(skillScore, requirementDetail);
@@ -102,6 +107,15 @@ public class MatchGraphServiceImpl implements MatchGraphService {
     }
 
     private Profile resolveProfile(Long userId) {
+        Optional<PersonInfo> personInfoOpt = personInfoRepository.findByUserId(userId);
+        String personTargetCity = personInfoOpt.map(PersonInfo::getTargetCity).orElse(null);
+        Integer personExpectedSalary = personInfoOpt.map(PersonInfo::getExpectedSalary).orElse(null);
+        String personEducation = personInfoOpt.map(PersonInfo::getEducation).orElse(null);
+        boolean personProfileReady = StrUtil.isNotBlank(personTargetCity) || personExpectedSalary != null || StrUtil.isNotBlank(personEducation);
+        if (personProfileReady) {
+            return new Profile(personTargetCity, personExpectedSalary, personEducation);
+        }
+
         List<Resume> resumes = resumeRepository.findByUserId(userId);
         if (CollUtil.isEmpty(resumes)) {
             return new Profile(null, null, null);
@@ -121,6 +135,16 @@ public class MatchGraphServiceImpl implements MatchGraphService {
         }
     }
 
+    private String extractJobEducationRequired(Job job) {
+        if (job == null) {
+            return "本科";
+        }
+        if (StrUtil.isNotBlank(job.getEducation())) {
+            return job.getEducation();
+        }
+        return extractEducationRequiredFromDescription(job.getDescription());
+    }
+
     @SuppressWarnings("unchecked")
     private Set<String> extractSkillsFromGraph(Map<String, Object> personGraph) {
         Set<String> skills = new HashSet<>();
@@ -133,7 +157,12 @@ public class MatchGraphServiceImpl implements MatchGraphService {
             if (skillsObj instanceof List) {
                 List<?> skillsList = (List<?>) skillsObj;
                 for (Object item : skillsList) {
-                    if (item instanceof Map) {
+                    if (item instanceof String) {
+                        String skillName = ((String) item).trim();
+                        if (StrUtil.isNotBlank(skillName)) {
+                            skills.add(skillName.toLowerCase(Locale.ROOT));
+                        }
+                    } else if (item instanceof Map) {
                         Map<?, ?> skillMap = (Map<?, ?>) item;
                         Object skillName = skillMap.get("skill");
                         if (skillName != null) {
@@ -151,7 +180,12 @@ public class MatchGraphServiceImpl implements MatchGraphService {
                     if (dataSkills instanceof List) {
                         List<?> dataSkillsList = (List<?>) dataSkills;
                         for (Object item : dataSkillsList) {
-                            if (item instanceof Map) {
+                            if (item instanceof String) {
+                                String skillName = ((String) item).trim();
+                                if (StrUtil.isNotBlank(skillName)) {
+                                    skills.add(skillName.toLowerCase(Locale.ROOT));
+                                }
+                            } else if (item instanceof Map) {
                                 Map<?, ?> skillMap = (Map<?, ?>) item;
                                 Object skillName = skillMap.get("skill");
                                 if (skillName != null) {
@@ -181,7 +215,7 @@ public class MatchGraphServiceImpl implements MatchGraphService {
                             }
                         }
                     } catch (Exception e) {
-                        log.debug("解析图数据JSON失败: {}", e.getMessage());
+                        log.error("解析图数据JSON失败: {}", e.getMessage());
                     }
                 }
             }

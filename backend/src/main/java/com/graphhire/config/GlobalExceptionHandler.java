@@ -61,7 +61,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public Result<Void> handleGeneral(Exception e) {
-        log.error("Unhandled exception", e);
+        log.error("未处理的异常", e);
         return Result.error(500, "服务器内部错误");
     }
 }

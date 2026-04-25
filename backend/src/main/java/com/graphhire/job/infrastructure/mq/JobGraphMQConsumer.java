@@ -29,9 +29,9 @@ public class JobGraphMQConsumer implements RocketMQListener<JobPublishedEvent> {
     public void onMessage(JobPublishedEvent event) {
         try {
             graphBuildService.buildGraphForJob(event.getJob());
-            log.info("Successfully built graph for job {}", event.getJob().getId());
+            log.info("职位{}图谱构建成功", event.getJob().getId());
         } catch (Exception e) {
-            log.error("Failed to build graph for job {}: {}", event.getJob().getId(), e.getMessage());
+            log.error("职位{}图谱构建失败: {}", event.getJob().getId(), e.getMessage());
             // 不重新抛出异常，以免影响主MQ流程
         }
     }

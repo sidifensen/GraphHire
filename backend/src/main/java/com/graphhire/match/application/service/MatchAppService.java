@@ -274,8 +274,15 @@ public class MatchAppService {
                 return new MatchDetailResponse(record, resume, job);
             }
         }
-        // 步骤5：未找到匹配记录则抛出异常
-        throw new RuntimeException("匹配记录不存在");
+        // 步骤5：未找到匹配记录时即时计算并落库（避免前端首次进入详情报错）
+        Resume targetResume = resumes.stream()
+            .filter(r -> Boolean.TRUE.equals(r.getIsDefault()))
+            .findFirst()
+            .orElse(resumes.get(0));
+        MatchRecord generatedRecord = matchDomainService.calculateMatch(targetResume.getId(), jobId);
+        MatchRecord savedRecord = matchRecordRepository.save(generatedRecord);
+        Job job = jobRepository.findById(jobId).orElse(null);
+        return new MatchDetailResponse(savedRecord, targetResume, job);
     }
 
     /**

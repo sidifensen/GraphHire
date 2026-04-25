@@ -1,11 +1,15 @@
 package com.graphhire.match.infrastructure.ai;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import cn.hutool.core.thread.ThreadUtil;
@@ -53,6 +57,62 @@ public class DeepSeekClient {
     @Value("${ai.deepseek.retry.backoff-ms:200}")
     private long retryBackoffMs;
 
+    // 提示词内容
+    private String calculateMatchSystemPrompt;
+    private String calculateMatchUserPrompt;
+    private String parseResumeSystemPrompt;
+    private String parseResumeUserPrompt;
+    private String parseJobSystemPrompt;
+    private String parseJobUserPrompt;
+    private String generateMatchReasonSystemPrompt;
+    private String generateMatchReasonUserPrompt;
+
+    public DeepSeekClient() {
+        loadPrompts();
+    }
+
+    private void loadPrompts() {
+        calculateMatchSystemPrompt = loadPrompt("prompts/calculate-match.md", "## system prompt");
+        calculateMatchUserPrompt = loadPrompt("prompts/calculate-match.md", "## user prompt");
+        parseResumeSystemPrompt = loadPrompt("prompts/parse-resume.md", "## system prompt");
+        parseResumeUserPrompt = loadPrompt("prompts/parse-resume.md", "## user prompt");
+        parseJobSystemPrompt = loadPrompt("prompts/parse-job.md", "## system prompt");
+        parseJobUserPrompt = loadPrompt("prompts/parse-job.md", "## user prompt");
+        generateMatchReasonSystemPrompt = loadPrompt("prompts/generate-match-reason.md", "## DeepSeek", "## system prompt");
+        generateMatchReasonUserPrompt = loadPrompt("prompts/generate-match-reason.md", "## user prompt", "---");
+    }
+
+    private String loadPrompt(String resourcePath, String... sectionMarkers) {
+        try {
+            ClassPathResource resource = new ClassPathResource(resourcePath);
+            String content;
+            try (InputStream is = resource.getInputStream()) {
+                content = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+            }
+            if (sectionMarkers.length == 0) {
+                return content.trim();
+            }
+            String section = sectionMarkers[0];
+            int start = content.indexOf(section);
+            if (start == -1) {
+                log.warn("提示词片段'{}'在{}中未找到，使用空字符串", section, resourcePath);
+                return "";
+            }
+            start = content.indexOf("\n", start) + 1;
+            if (sectionMarkers.length > 1) {
+                int end = content.indexOf(sectionMarkers[1], start);
+                if (end == -1) {
+                    end = content.length();
+                }
+                return content.substring(start, end).trim();
+            }
+            return content.substring(start).trim();
+        } catch (IOException e) {
+            log.error("加载提示词文件{}失败: {}", resourcePath, e.getMessage());
+            return "";
+        }
+    }
+
     // =====================================================
     // 【第一部分】匹配计算
     // =====================================================
@@ -70,15 +130,15 @@ public class DeepSeekClient {
 
         String content = invokeChatCompletion(
             "generateMatchReason",
-            "You are a recruitment assistant explaining why a candidate matches a job.",
-            String.format("Explain why resume %d matches job %d", resumeId, jobId)
+            generateMatchReasonSystemPrompt,
+            String.format(generateMatchReasonUserPrompt, resumeId, jobId)
         );
         if (StrUtil.isBlank(content)) {
-            log.warn("DeepSeek generateMatchReason fallback: missing AI content.");
+            log.warn("DeepSeek generateMatchReason降级：AI内容为空");
             return DEFAULT_MATCH_REASON;
         }
 
-        log.info("DeepSeek generateMatchReason success: using AI-generated explanation.");
+        log.info("DeepSeek generateMatchReason成功：使用AI生成的匹配原因");
         return content.trim();
     }
 
@@ -98,38 +158,22 @@ public class DeepSeekClient {
 
         String content = invokeChatCompletion(
             "calculateMatch",
-            """
-                You are a recruitment matching AI. Calculate match scores between a candidate and job.
-                Return a JSON object with:
-                - skill_score: 0-100 based on skill matching
-                - experience_score: 0-100 based on experience matching
-                - city_score: 0-100 based on city matching
-                - education_score: 0-100 based on education matching
-                - salary_score: 0-100 based on salary range matching
-                - overall_score: weighted average (skill 50%, experience 20%, city 15%, education 10%, salary 5%)
-                - match_reasons: explanation of why they match
-                - gaps: areas where candidate doesn't meet requirements
-                - suggestions: recommendations for improvement
-                """,
-            String.format("""
-                User Info: %s
-                Job Info: %s
-                Calculate the match scores and return JSON.
-                """, userInfo, jobInfo)
+            calculateMatchSystemPrompt,
+            String.format(calculateMatchUserPrompt, userInfo, jobInfo)
         );
 
         if (StrUtil.isBlank(content)) {
-            log.warn("DeepSeek calculateMatch fallback: empty content.");
+            log.warn("DeepSeek calculateMatch降级：响应内容为空");
             return fallbackCalculateMatch(userInfo, jobInfo);
         }
 
         Map<String, Object> result = parseDeepSeekResponse(content);
         if (result == null || result.isEmpty()) {
-            log.warn("DeepSeek calculateMatch fallback: unable to parse AI JSON content.");
+            log.warn("DeepSeek calculateMatch降级：无法解析AI返回的JSON内容");
             return fallbackCalculateMatch(userInfo, jobInfo);
         }
 
-        log.info("DeepSeek calculateMatch success: using AI scoring result.");
+        log.info("DeepSeek calculateMatch成功：使用AI评分结果");
         return result;
     }
 
@@ -272,7 +316,7 @@ public class DeepSeekClient {
             result.put("overall_score", jsonObj.getDouble("overall_score", calculateOverallScore(result)));
             return result;
         } catch (Exception e) {
-            log.warn("DeepSeek calculateMatch parse failure: {}", safeMessage(e));
+            log.warn("DeepSeek calculateMatch解析失败: {}", safeMessage(e));
             return null;
         }
     }
@@ -302,37 +346,23 @@ public class DeepSeekClient {
             return getMockParseResult(text);
         }
 
-        String prompt = """
-            You are a resume parsing assistant. Extract structured information from the following resume text.
-            Return a JSON object with the following fields:
-            - name: candidate's full name
-            - email: candidate's email
-            - phone: candidate's phone number
-            - skills: array of skill tags
-            - experience: array of work experiences, each with company, position, duration
-            - education: array of education entries, each with school, degree, major, graduation year
-            - summary: brief professional summary
-
-            Resume text:
-            """ + text;
-
         String content = invokeChatCompletion(
             "parseResume",
-            "You are a professional resume parsing assistant. Always return valid JSON.",
-            prompt
+            parseResumeSystemPrompt,
+            String.format(parseResumeUserPrompt, text)
         );
         if (StrUtil.isBlank(content)) {
-            log.warn("DeepSeek parseResume fallback: empty content.");
+            log.warn("DeepSeek parseResume降级：响应内容为空");
             return getMockParseResult(text);
         }
 
         Map<String, Object> result = parseResumeContent(content);
         if (result == null || result.isEmpty()) {
-            log.warn("DeepSeek parseResume fallback: unable to build structured result.");
+            log.warn("DeepSeek parseResume降级：无法构建结构化结果");
             return getMockParseResult(text);
         }
 
-        log.info("DeepSeek parseResume success: using AI parsing result.");
+        log.info("DeepSeek parseResume成功：使用AI解析结果");
         return result;
     }
 
@@ -352,7 +382,7 @@ public class DeepSeekClient {
             result.put("summary", resumeJson.getStr("summary", ""));
             return result;
         } catch (Exception e) {
-            log.warn("DeepSeek parseResume JSON parse failure, using text extraction fallback: {}", safeMessage(e));
+            log.warn("DeepSeek parseResume JSON解析失败，改用文本提取降级方案: {}", safeMessage(e));
             Map<String, Object> result = new HashMap<>();
             result.put("raw_response", content);
             result.put("name", extractNameFromText(content));
@@ -419,39 +449,23 @@ public class DeepSeekClient {
             return getMockJobParseResult(text, jobTitle);
         }
 
-        String prompt = """
-            You are a job description parsing assistant. Extract structured information from the following job description.
-            Return a JSON object with the following fields:
-            - title: job title (use the provided title if suitable)
-            - skills: array of required skill tags
-            - requiredExperience: years of experience required
-            - education: education requirement
-            - salaryRange: salary range if mentioned
-            - responsibilities: array of key responsibilities
-            - summary: brief job summary
-
-            Job title: %s
-
-            Job description text:
-            """.formatted(jobTitle) + text;
-
         String content = invokeChatCompletion(
             "parseJob",
-            "You are a professional job description parsing assistant. Always return valid JSON.",
-            prompt
+            parseJobSystemPrompt,
+            String.format(parseJobUserPrompt, jobTitle, text)
         );
         if (StrUtil.isBlank(content)) {
-            log.warn("DeepSeek parseJob fallback: empty content.");
+            log.warn("DeepSeek parseJob降级：响应内容为空");
             return getMockJobParseResult(text, jobTitle);
         }
 
         Map<String, Object> result = parseJobJsonResponse(content);
         if (result == null || result.isEmpty()) {
-            log.warn("DeepSeek parseJob fallback: unable to parse AI JSON content.");
+            log.warn("DeepSeek parseJob降级：无法解析AI返回的JSON内容");
             return getMockJobParseResult(text, jobTitle);
         }
 
-        log.info("DeepSeek parseJob success: using AI parsing result.");
+        log.info("DeepSeek parseJob成功：使用AI解析结果");
         return result;
     }
 
@@ -476,7 +490,7 @@ public class DeepSeekClient {
             }
             return result;
         } catch (Exception e) {
-            log.warn("DeepSeek parseJob JSON parse failure: {}", safeMessage(e));
+            log.warn("DeepSeek parseJob JSON解析失败: {}", safeMessage(e));
             return null;
         }
     }
@@ -500,7 +514,7 @@ public class DeepSeekClient {
     private boolean isAiAvailable(String operation) {
         boolean available = enabled && StrUtil.isNotBlank(apiKey);
         if (!available) {
-            log.info("DeepSeek {} fallback: ai disabled or api key missing.", operation);
+            log.info("DeepSeek {}降级：AI未启用或API Key缺失", operation);
         }
         return available;
     }
@@ -528,7 +542,7 @@ public class DeepSeekClient {
                 int status = response.getStatus();
                 String responseBody = response.body();
                 if (status < 200 || status >= 300) {
-                    log.warn("DeepSeek {} attempt {}/{} got non-2xx status={}, bodySummary={}", operation, attempt, attempts, status, summarize(responseBody));
+                    log.warn("DeepSeek {} 请求第{}/{}次失败：HTTP状态码={}，响应摘要={}", operation, attempt, attempts, status, summarize(responseBody));
                     if (attempt < attempts) {
                         ThreadUtil.safeSleep(retryBackoffMs * attempt);
                         continue;
@@ -536,18 +550,18 @@ public class DeepSeekClient {
                     return null;
                 }
                 if (StrUtil.isBlank(responseBody)) {
-                    log.warn("DeepSeek {} fallback: empty response body.", operation);
+                    log.warn("DeepSeek {}降级：响应体为空", operation);
                     return null;
                 }
 
                 String content = extractMessageContent(responseBody, operation);
                 if (StrUtil.isBlank(content)) {
-                    log.warn("DeepSeek {} fallback: empty content.", operation);
+                    log.warn("DeepSeek {}降级：内容为空", operation);
                     return null;
                 }
                 return content;
             } catch (Exception e) {
-                log.warn("DeepSeek {} attempt {}/{} request failed: {}", operation, attempt, attempts, safeMessage(e));
+                log.warn("DeepSeek {} 请求第{}/{}次失败: {}", operation, attempt, attempts, safeMessage(e));
                 if (attempt < attempts) {
                     ThreadUtil.safeSleep(retryBackoffMs * attempt);
                     continue;
@@ -563,17 +577,17 @@ public class DeepSeekClient {
             JSONObject jsonObj = JSONUtil.parseObj(responseBody);
             JSONArray choices = jsonObj.getJSONArray("choices");
             if (choices == null || choices.isEmpty()) {
-                log.warn("DeepSeek {} fallback: choices missing in response.", operation);
+                log.warn("DeepSeek {}降级：响应中缺少choices字段", operation);
                 return null;
             }
             JSONObject message = choices.getJSONObject(0).getJSONObject("message");
             if (message == null) {
-                log.warn("DeepSeek {} fallback: message missing in first choice.", operation);
+                log.warn("DeepSeek {}降级：第一个choice中缺少message字段", operation);
                 return null;
             }
             return message.getStr("content");
         } catch (Exception e) {
-            log.warn("DeepSeek {} fallback: response parse failure: {}", operation, safeMessage(e));
+            log.warn("DeepSeek {}降级：响应解析失败: {}", operation, safeMessage(e));
             return null;
         }
     }
