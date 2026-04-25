@@ -13,6 +13,8 @@ import com.graphhire.job.domain.model.Company;
 import com.graphhire.job.domain.repository.CompanyRepository;
 import com.graphhire.job.domain.repository.JobRepository;
 import com.graphhire.job.domain.vo.JobStatus;
+import com.graphhire.match.domain.model.MatchRecord;
+import com.graphhire.match.domain.repository.MatchRecordRepository;
 import com.graphhire.notification.application.service.NotificationAppService;
 import com.graphhire.notification.domain.vo.NotificationType;
 import com.graphhire.resume.domain.model.Resume;
@@ -48,6 +50,7 @@ public class ApplicationAppService {
     private final TalentPoolRepository talentPoolRepository;
     private final JobRepository jobRepository;
     private final CompanyRepository companyRepository;
+    private final MatchRecordRepository matchRecordRepository;
     private final ResumeRepository resumeRepository;
     private final NotificationAppService notificationAppService;
 
@@ -57,6 +60,7 @@ public class ApplicationAppService {
                                   TalentPoolRepository talentPoolRepository,
                                   JobRepository jobRepository,
                                   CompanyRepository companyRepository,
+                                  MatchRecordRepository matchRecordRepository,
                                   ResumeRepository resumeRepository,
                                   NotificationAppService notificationAppService) {
         this.applicationRepository = applicationRepository;
@@ -64,6 +68,7 @@ public class ApplicationAppService {
         this.talentPoolRepository = talentPoolRepository;
         this.jobRepository = jobRepository;
         this.companyRepository = companyRepository;
+        this.matchRecordRepository = matchRecordRepository;
         this.resumeRepository = resumeRepository;
         this.notificationAppService = notificationAppService;
     }
@@ -145,6 +150,13 @@ public class ApplicationAppService {
             item.setJobId(application.getJobId());
             item.setAppliedAt(application.getAppliedAt());
             item.setStatus(application.getStatus() == null ? null : application.getStatus().name());
+            List<MatchRecord> matchRecords = matchRecordRepository.findByResumeIdAndJobId(
+                application.getResumeId(),
+                application.getJobId()
+            );
+            if (!matchRecords.isEmpty() && matchRecords.get(0).getScore() != null) {
+                item.setMatchScore((int) Math.round(matchRecords.get(0).getScore().getTotal()));
+            }
 
             Job job = jobRepository.findById(application.getJobId()).orElse(null);
             if (job != null) {

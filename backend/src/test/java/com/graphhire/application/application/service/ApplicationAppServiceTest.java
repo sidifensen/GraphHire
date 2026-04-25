@@ -10,6 +10,9 @@ import com.graphhire.job.domain.model.Company;
 import com.graphhire.job.domain.model.Job;
 import com.graphhire.job.domain.repository.CompanyRepository;
 import com.graphhire.job.domain.repository.JobRepository;
+import com.graphhire.match.domain.model.MatchRecord;
+import com.graphhire.match.domain.repository.MatchRecordRepository;
+import com.graphhire.match.domain.vo.MatchScore;
 import com.graphhire.notification.application.service.NotificationAppService;
 import com.graphhire.resume.domain.repository.ResumeRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -41,6 +44,8 @@ class ApplicationAppServiceTest {
     @Mock
     private CompanyRepository companyRepository;
     @Mock
+    private MatchRecordRepository matchRecordRepository;
+    @Mock
     private ResumeRepository resumeRepository;
     @Mock
     private NotificationAppService notificationAppService;
@@ -71,6 +76,8 @@ class ApplicationAppServiceTest {
         when(applicationRepository.findByUserId(100L)).thenReturn(List.of(application));
         when(jobRepository.findById(20L)).thenReturn(Optional.of(job));
         when(companyRepository.findById(30L)).thenReturn(Optional.of(company));
+        MatchRecord matchRecord = MatchRecord.create(10L, 20L, MatchScore.of(88.4, 70.0));
+        when(matchRecordRepository.findByResumeIdAndJobId(10L, 20L)).thenReturn(List.of(matchRecord));
 
         List<PersonApplicationListItemResponse> list = applicationAppService.getUserApplicationList(100L);
 
@@ -79,6 +86,7 @@ class ApplicationAppServiceTest {
         assertEquals("高级前端工程师", item.getJobTitle());
         assertEquals("图谱智聘科技", item.getCompanyName());
         assertEquals("PENDING", item.getStatus());
+        assertEquals(81, item.getMatchScore());
     }
 
     @Test
