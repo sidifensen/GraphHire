@@ -4,6 +4,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.graphhire.application.application.service.ApplicationAppService;
 import com.graphhire.application.domain.model.Application;
 import com.graphhire.application.domain.model.Favorite;
+import com.graphhire.application.interfaces.dto.response.PersonApplicationListItemResponse;
 import com.graphhire.common.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -28,9 +29,9 @@ public class PersonApplicationController {
     }
 
     @GetMapping("/list")
-    public Result<List<Application>> getMyApplications() {
+    public Result<List<PersonApplicationListItemResponse>> getMyApplications() {
         Long userId = StpUtil.getLoginIdAsLong();
-        return Result.success(applicationAppService.getUserApplications(userId));
+        return Result.success(applicationAppService.getUserApplicationList(userId));
     }
 
     @GetMapping("/{id}")

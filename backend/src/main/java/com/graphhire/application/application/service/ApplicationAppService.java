@@ -9,17 +9,21 @@ import com.graphhire.application.domain.repository.FavoriteRepository;
 import com.graphhire.application.domain.repository.TalentPoolRepository;
 import com.graphhire.common.vo.Exceptions;
 import com.graphhire.job.domain.model.Job;
+import com.graphhire.job.domain.model.Company;
+import com.graphhire.job.domain.repository.CompanyRepository;
 import com.graphhire.job.domain.repository.JobRepository;
 import com.graphhire.job.domain.vo.JobStatus;
 import com.graphhire.notification.application.service.NotificationAppService;
 import com.graphhire.notification.domain.vo.NotificationType;
 import com.graphhire.resume.domain.model.Resume;
 import com.graphhire.resume.domain.repository.ResumeRepository;
+import com.graphhire.application.interfaces.dto.response.PersonApplicationListItemResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -43,6 +47,7 @@ public class ApplicationAppService {
     private final FavoriteRepository favoriteRepository;
     private final TalentPoolRepository talentPoolRepository;
     private final JobRepository jobRepository;
+    private final CompanyRepository companyRepository;
     private final ResumeRepository resumeRepository;
     private final NotificationAppService notificationAppService;
 
@@ -51,12 +56,14 @@ public class ApplicationAppService {
                                   FavoriteRepository favoriteRepository,
                                   TalentPoolRepository talentPoolRepository,
                                   JobRepository jobRepository,
+                                  CompanyRepository companyRepository,
                                   ResumeRepository resumeRepository,
                                   NotificationAppService notificationAppService) {
         this.applicationRepository = applicationRepository;
         this.favoriteRepository = favoriteRepository;
         this.talentPoolRepository = talentPoolRepository;
         this.jobRepository = jobRepository;
+        this.companyRepository = companyRepository;
         this.resumeRepository = resumeRepository;
         this.notificationAppService = notificationAppService;
     }
@@ -122,6 +129,36 @@ public class ApplicationAppService {
      */
     public List<Application> getUserApplications(Long userId) {
         return applicationRepository.findByUserId(userId);
+    }
+
+    /**
+     * 获取用户投递列表（展示信息）
+     * 【功能说明】在投递基础信息上补充职位名称和企业名称，供前端展示。
+     */
+    public List<PersonApplicationListItemResponse> getUserApplicationList(Long userId) {
+        List<Application> applications = applicationRepository.findByUserId(userId);
+        List<PersonApplicationListItemResponse> result = new ArrayList<>(applications.size());
+        for (Application application : applications) {
+            PersonApplicationListItemResponse item = new PersonApplicationListItemResponse();
+            item.setId(application.getId());
+            item.setResumeId(application.getResumeId());
+            item.setJobId(application.getJobId());
+            item.setAppliedAt(application.getAppliedAt());
+            item.setStatus(application.getStatus() == null ? null : application.getStatus().name());
+
+            Job job = jobRepository.findById(application.getJobId()).orElse(null);
+            if (job != null) {
+                item.setJobTitle(job.getTitle());
+            }
+
+            Company company = companyRepository.findById(application.getCompanyId()).orElse(null);
+            if (company != null) {
+                item.setCompanyName(company.getName());
+            }
+
+            result.add(item);
+        }
+        return result;
     }
 
     /**
