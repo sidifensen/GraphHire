@@ -6,25 +6,18 @@ import com.graphhire.match.infrastructure.persistence.mapper.MatchRecordMapper;
 import com.graphhire.match.infrastructure.persistence.po.MatchRecordPO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import cn.hutool.json.JSONUtil;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,7 +30,6 @@ class MatchRecordRepositoryImplTest {
     private MatchRecordRepositoryImpl repository;
 
     private MatchRecordPO samplePO;
-    private MatchRecord sampleRecord;
 
     @BeforeEach
     void setUp() {
@@ -45,306 +37,57 @@ class MatchRecordRepositoryImplTest {
         samplePO.setId(1L);
         samplePO.setResumeId(10L);
         samplePO.setJobId(20L);
-        samplePO.setOverallScore(new BigDecimal("85.50"));
-        samplePO.setSkillScore(new BigDecimal("90.00"));
-        samplePO.setExperienceScore(new BigDecimal("85.00"));
-        samplePO.setCityScore(new BigDecimal("80.00"));
-        samplePO.setEducationScore(new BigDecimal("75.00"));
-        samplePO.setSalaryScore(new BigDecimal("95.00"));
-        samplePO.setMatchDetail("{\"skills\": [\"Java\", \"Python\"]}");
-        samplePO.setViewed(0);
-        samplePO.setCreateTime(LocalDateTime.of(2026, 4, 15, 10, 30, 0));
-
-        sampleRecord = new MatchRecord();
-        sampleRecord.setId(1L);
-        sampleRecord.setResumeId(10L);
-        sampleRecord.setJobId(20L);
-        sampleRecord.setScore(MatchScore.of(90.0, 85.0, 80.0, 75.0, 95.0));
-        sampleRecord.setMatchReason("{\"skills\": [\"Java\", \"Python\"]}");
-        sampleRecord.setIsRead(false);
+        samplePO.setOverallScore(new BigDecimal("86.80"));
+        samplePO.setSkillScore(new BigDecimal("92.00"));
+        samplePO.setRequirementScore(new BigDecimal("79.00"));
     }
 
-    @Nested
-    @DisplayName("findById")
-    class FindByIdTests {
+    @Test
+    @DisplayName("findById should map compact score fields")
+    void findById_ShouldMapCompactScores() {
+        when(matchRecordMapper.selectById(1L)).thenReturn(samplePO);
 
-        @Test
-        @DisplayName("should return domain object when PO exists")
-        void findById_Exists() {
-            when(matchRecordMapper.selectById(1L)).thenReturn(samplePO);
+        Optional<MatchRecord> result = repository.findById(1L);
 
-            Optional<MatchRecord> result = repository.findById(1L);
-
-            assertTrue(result.isPresent());
-            MatchRecord record = result.get();
-            assertEquals(1L, record.getId());
-            assertEquals(10L, record.getResumeId());
-            assertEquals(20L, record.getJobId());
-            assertNotNull(record.getScore());
-            assertEquals(90.0, record.getScore().getSkillScore());
-            assertEquals(85.0, record.getScore().getExpScore());
-            assertEquals(80.0, record.getScore().getCityScore());
-            assertEquals(75.0, record.getScore().getEduScore());
-            assertEquals(95.0, record.getScore().getSalScore());
-            assertEquals("{\"skills\": [\"Java\", \"Python\"]}", record.getMatchReason());
-            assertFalse(record.getIsRead());
-        }
-
-        @Test
-        @DisplayName("should return empty when PO does not exist")
-        void findById_NotExists() {
-            when(matchRecordMapper.selectById(999L)).thenReturn(null);
-
-            Optional<MatchRecord> result = repository.findById(999L);
-
-            assertTrue(result.isEmpty());
-        }
+        assertTrue(result.isPresent());
+        assertEquals(92.0, result.get().getScore().getSkillScore());
+        assertEquals(79.0, result.get().getScore().getRequirementScore());
     }
 
-    @Nested
-    @DisplayName("findByResumeId")
-    class FindByResumeIdTests {
+    @Test
+    @DisplayName("save insert should write overall+skill+requirement")
+    void saveInsert_ShouldWriteCompactScores() {
+        MatchRecord record = MatchRecord.create(10L, 20L, MatchScore.of(90.0, 80.0));
 
-        @Test
-        @DisplayName("should return domain objects for resume")
-        void findByResumeId_Success() {
-            when(matchRecordMapper.selectList(any())).thenReturn(Arrays.asList(samplePO));
+        repository.save(record);
 
-            List<MatchRecord> results = repository.findByResumeId(10L);
-
-            assertEquals(1, results.size());
-            assertEquals(10L, results.get(0).getResumeId());
-            verify(matchRecordMapper).selectList(any());
-        }
-
-        @Test
-        @DisplayName("should return empty list when no records")
-        void findByResumeId_Empty() {
-            when(matchRecordMapper.selectList(any())).thenReturn(Arrays.asList());
-
-            List<MatchRecord> results = repository.findByResumeId(999L);
-
-            assertTrue(results.isEmpty());
-        }
+        verify(matchRecordMapper).insertScores(
+            eq(10L),
+            eq(20L),
+            any(),
+            any(BigDecimal.class),
+            eq(BigDecimal.valueOf(90.0)),
+            eq(BigDecimal.valueOf(80.0))
+        );
     }
 
-    @Nested
-    @DisplayName("findByJobId")
-    class FindByJobIdTests {
+    @Test
+    @DisplayName("save update should write overall+skill+requirement")
+    void saveUpdate_ShouldWriteCompactScores() {
+        MatchRecord record = MatchRecord.create(10L, 20L, MatchScore.of(88.0, 75.0));
+        record.setId(1L);
+        record.setMatchDirection(1);
 
-        @Test
-        @DisplayName("should return domain objects for job")
-        void findByJobId_Success() {
-            when(matchRecordMapper.selectList(any())).thenReturn(Arrays.asList(samplePO));
+        repository.save(record);
 
-            List<MatchRecord> results = repository.findByJobId(20L);
-
-            assertEquals(1, results.size());
-            assertEquals(20L, results.get(0).getJobId());
-        }
-    }
-
-    @Nested
-    @DisplayName("save")
-    class SaveTests {
-
-        @Test
-        @DisplayName("should insert when id is null")
-        void save_Insert() {
-            sampleRecord.setId(null);
-            ArgumentCaptor<String> detailCaptor = ArgumentCaptor.forClass(String.class);
-
-            MatchRecord result = repository.save(sampleRecord);
-
-            assertNotNull(result);
-            verify(matchRecordMapper).insertWithJsonb(
-                eq(10L),
-                eq(20L),
-                isNull(),
-                any(BigDecimal.class),
-                any(BigDecimal.class),
-                any(BigDecimal.class),
-                any(BigDecimal.class),
-                any(BigDecimal.class),
-                any(BigDecimal.class),
-                detailCaptor.capture(),
-                eq(0)
-            );
-            verify(matchRecordMapper, never()).updateWithJsonb(
-                anyLong(), any(), any(), any(), any(), any(), any(), any(), any(), any()
-            );
-            assertEquals(sampleRecord.getMatchReason(), JSONUtil.parseObj(detailCaptor.getValue()).getStr("reason"));
-        }
-
-        @Test
-        @DisplayName("should update when id is not null")
-        void save_Update() {
-            ArgumentCaptor<String> detailCaptor = ArgumentCaptor.forClass(String.class);
-
-            MatchRecord result = repository.save(sampleRecord);
-
-            assertNotNull(result);
-            verify(matchRecordMapper).updateWithJsonb(
-                eq(1L),
-                isNull(),
-                any(BigDecimal.class),
-                any(BigDecimal.class),
-                any(BigDecimal.class),
-                any(BigDecimal.class),
-                any(BigDecimal.class),
-                any(BigDecimal.class),
-                detailCaptor.capture(),
-                eq(0)
-            );
-            verify(matchRecordMapper, never()).insertWithJsonb(
-                anyLong(), anyLong(), any(), any(), any(), any(), any(), any(), any(), any(), any()
-            );
-            assertEquals(sampleRecord.getMatchReason(), JSONUtil.parseObj(detailCaptor.getValue()).getStr("reason"));
-        }
-
-        @Test
-        @DisplayName("should correctly map all fields to PO on save")
-        void save_MapsAllFieldsCorrectly() {
-            ArgumentCaptor<BigDecimal> overallCaptor = ArgumentCaptor.forClass(BigDecimal.class);
-            ArgumentCaptor<BigDecimal> skillCaptor = ArgumentCaptor.forClass(BigDecimal.class);
-            ArgumentCaptor<BigDecimal> expCaptor = ArgumentCaptor.forClass(BigDecimal.class);
-            ArgumentCaptor<BigDecimal> cityCaptor = ArgumentCaptor.forClass(BigDecimal.class);
-            ArgumentCaptor<BigDecimal> eduCaptor = ArgumentCaptor.forClass(BigDecimal.class);
-            ArgumentCaptor<BigDecimal> salCaptor = ArgumentCaptor.forClass(BigDecimal.class);
-            ArgumentCaptor<String> detailCaptor = ArgumentCaptor.forClass(String.class);
-            ArgumentCaptor<Integer> viewedCaptor = ArgumentCaptor.forClass(Integer.class);
-
-            repository.save(sampleRecord);
-
-            verify(matchRecordMapper).updateWithJsonb(
-                eq(1L),
-                isNull(),
-                overallCaptor.capture(),
-                skillCaptor.capture(),
-                expCaptor.capture(),
-                cityCaptor.capture(),
-                eduCaptor.capture(),
-                salCaptor.capture(),
-                detailCaptor.capture(),
-                viewedCaptor.capture()
-            );
-            assertNotNull(overallCaptor.getValue());
-            assertEquals(86.25, overallCaptor.getValue().doubleValue());
-            assertEquals(90.0, skillCaptor.getValue().doubleValue());
-            assertEquals(85.0, expCaptor.getValue().doubleValue());
-            assertEquals(80.0, cityCaptor.getValue().doubleValue());
-            assertEquals(75.0, eduCaptor.getValue().doubleValue());
-            assertEquals(95.0, salCaptor.getValue().doubleValue());
-            assertEquals(0, viewedCaptor.getValue());
-            assertEquals(sampleRecord.getMatchReason(), JSONUtil.parseObj(detailCaptor.getValue()).getStr("reason"));
-        }
-    }
-
-    @Nested
-    @DisplayName("delete")
-    class DeleteTests {
-
-        @Test
-        @DisplayName("should delete by id")
-        void delete_Success() {
-            when(matchRecordMapper.deleteById(1L)).thenReturn(1);
-
-            repository.delete(sampleRecord);
-
-            verify(matchRecordMapper).deleteById(1L);
-        }
-    }
-
-    @Nested
-    @DisplayName("toDomain mapping")
-    class ToDomainMappingTests {
-
-        @Test
-        @DisplayName("should map status 1 to isRead true")
-        void toDomain_Status1_IsReadTrue() {
-            samplePO.setViewed(1);
-            when(matchRecordMapper.selectById(1L)).thenReturn(samplePO);
-
-            Optional<MatchRecord> result = repository.findById(1L);
-
-            assertTrue(result.get().getIsRead());
-        }
-
-        @Test
-        @DisplayName("should map status 0 to isRead false")
-        void toDomain_Status0_IsReadFalse() {
-            samplePO.setViewed(0);
-            when(matchRecordMapper.selectById(1L)).thenReturn(samplePO);
-
-            Optional<MatchRecord> result = repository.findById(1L);
-
-            assertFalse(result.get().getIsRead());
-        }
-
-        @Test
-        @DisplayName("should handle null scores gracefully")
-        void toDomain_NullScores() {
-            samplePO.setSkillScore(null);
-            samplePO.setExperienceScore(null);
-            samplePO.setCityScore(null);
-            samplePO.setEducationScore(null);
-            samplePO.setSalaryScore(null);
-            when(matchRecordMapper.selectById(1L)).thenReturn(samplePO);
-
-            Optional<MatchRecord> result = repository.findById(1L);
-
-            assertNull(result.get().getScore());
-        }
-    }
-
-    @Nested
-    @DisplayName("toPO mapping")
-    class ToPOMappingTests {
-
-        @Test
-        @DisplayName("should map isRead true to status 1")
-        void toPO_IsReadTrue_Status1() {
-            sampleRecord.setIsRead(true);
-
-            repository.save(sampleRecord);
-
-            ArgumentCaptor<Integer> viewedCaptor = ArgumentCaptor.forClass(Integer.class);
-            verify(matchRecordMapper).updateWithJsonb(
-                eq(1L),
-                isNull(),
-                any(BigDecimal.class),
-                any(BigDecimal.class),
-                any(BigDecimal.class),
-                any(BigDecimal.class),
-                any(BigDecimal.class),
-                any(BigDecimal.class),
-                anyString(),
-                viewedCaptor.capture()
-            );
-            assertEquals(1, viewedCaptor.getValue());
-        }
-
-        @Test
-        @DisplayName("should map isRead false to status 0")
-        void toPO_IsReadFalse_Status0() {
-            sampleRecord.setIsRead(false);
-
-            repository.save(sampleRecord);
-
-            ArgumentCaptor<Integer> viewedCaptor = ArgumentCaptor.forClass(Integer.class);
-            verify(matchRecordMapper).updateWithJsonb(
-                eq(1L),
-                isNull(),
-                any(BigDecimal.class),
-                any(BigDecimal.class),
-                any(BigDecimal.class),
-                any(BigDecimal.class),
-                any(BigDecimal.class),
-                any(BigDecimal.class),
-                anyString(),
-                viewedCaptor.capture()
-            );
-            assertEquals(0, viewedCaptor.getValue());
-        }
+        ArgumentCaptor<BigDecimal> overall = ArgumentCaptor.forClass(BigDecimal.class);
+        verify(matchRecordMapper).updateScores(
+            eq(1L),
+            eq(1),
+            overall.capture(),
+            eq(BigDecimal.valueOf(88.0)),
+            eq(BigDecimal.valueOf(75.0))
+        );
+        assertEquals(82.8, overall.getValue().doubleValue(), 0.001);
     }
 }

@@ -72,7 +72,12 @@ describe('User Job Detail Inline Match', () => {
     getGraphScore.mockResolvedValue({
       personId: 1,
       jobId: 9,
-      totalScore: 92,
+      totalScore: 90,
+      skillScore: 95,
+      requirementScore: 82,
+      cityScore: 70,
+      salaryScore: 85,
+      educationScore: 90,
       matchLevel: '极力推荐',
       matchedSkills: ['Java', 'Spring Boot'],
       missingSkills: ['MySQL'],
@@ -84,10 +89,9 @@ describe('User Job Detail Inline Match', () => {
       matchId: 101,
       resumeId: 201,
       jobId: 9,
-      score: { total: 92, skillScore: 95, expScore: 90, cityScore: 85, eduScore: 100, salScore: 88 },
+      score: { total: 90, skillScore: 95, requirementScore: 82 },
       level: 'HIGH',
       matchReason: '基于真实简历和岗位要求，当前匹配度较高。',
-      isRead: false,
       job: { id: 9, title: '高级 Java 工程师', companyName: '星海人工智能研究院' },
     });
   });
@@ -100,7 +104,9 @@ describe('User Job Detail Inline Match', () => {
     await user.click(matchButton);
 
     await waitFor(() => expect(getGraphScore).toHaveBeenCalledWith(1, 9));
-    await screen.findByText('匹配度 95%');
+    await screen.findByText('综合匹配度 90%');
+    await screen.findByText('技能匹配：95%');
+    await screen.findByText('岗位要求匹配：82%');
     expect(screen.getByRole('button', { name: '立即投递' })).toBeDefined();
   });
 
@@ -154,3 +160,4 @@ describe('User Job Detail Inline Match', () => {
     expect(screen.getByText('已投递过该职位')).toBeDefined();
   });
 });
+

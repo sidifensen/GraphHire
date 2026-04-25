@@ -18,6 +18,7 @@ import com.graphhire.resume.domain.repository.PersonInfoRepository;
 import com.graphhire.resume.domain.repository.ResumeRepository;
 import com.graphhire.resume.domain.vo.ParseStatus;
 import com.graphhire.resume.interfaces.dto.ParseProgressResponse;
+import com.graphhire.match.application.service.MatchAppService;
 
 import java.io.IOException;
 import com.graphhire.resume.interfaces.dto.ResumeVO;
@@ -54,6 +55,9 @@ public class ResumeAppService {
 
     @Autowired
     private GraphBuildService graphBuildService;
+
+    @Autowired
+    private MatchAppService matchAppService;
 
     @Transactional
     public Resume uploadResume(UploadResumeCmd cmd) throws IOException {
@@ -199,10 +203,12 @@ public class ResumeAppService {
         if (resume.getStatus() != ParseStatus.SUCCESS) {
             throw Exceptions.BusinessException.of(400, "请先解析成功后再设为默认");
         }
+        Long previousDefaultResumeId = null;
         // 取消该用户的其他默认简历
         List<Resume> userResumes = getResumesByUserId(userId);
         for (Resume r : userResumes) {
             if (Boolean.TRUE.equals(r.getIsDefault())) {
+                previousDefaultResumeId = r.getId();
                 r.setIsDefault(false);
                 resumeRepository.save(r);
             }
@@ -210,6 +216,10 @@ public class ResumeAppService {
         // 将此简历设为默认
         resume.setIsDefault(true);
         resumeRepository.save(resume);
+        if (previousDefaultResumeId != null) {
+            matchAppService.clearMatchCacheForResume(previousDefaultResumeId);
+        }
+        matchAppService.clearMatchCacheForResume(resume.getId());
         graphBuildService.buildGraphForResume(resume);
         if (syncPersonInfo) {
             syncPersonInfoFromResume(userId, resume.getParseResult());

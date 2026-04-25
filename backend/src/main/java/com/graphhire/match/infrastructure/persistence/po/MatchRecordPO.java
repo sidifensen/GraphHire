@@ -8,52 +8,32 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * 匹配记录持久化对象
- * 对应数据库 match_record 表，用于MyBatis-Plus CRUD操作
- */
 @TableName(value = "match_record", autoResultMap = true)
 public class MatchRecordPO {
-    /** 主键自增ID */
     @TableId(type = IdType.AUTO)
     private Long id;
-    /** 关联简历ID */
+
     @TableField("resume_id")
     private Long resumeId;
-    /** 关联职位ID */
+
     @TableField("job_id")
     private Long jobId;
-    /** 匹配方向：1=简历→职位 2=职位→简历 */
+
     @TableField("match_direction")
     private Integer matchDirection;
-    /** 总分（加权平均分） */
+
     @TableField("match_score")
     private BigDecimal overallScore;
-    /** 技能匹配分数 */
+
     @TableField("skill_score")
     private BigDecimal skillScore;
-    /** 经验匹配分数 */
-    @TableField("exp_score")
-    private BigDecimal experienceScore;
-    /** 城市匹配分数 */
-    @TableField("city_score")
-    private BigDecimal cityScore;
-    /** 学历匹配分数 */
-    @TableField("edu_score")
-    private BigDecimal educationScore;
-    /** 薪资匹配分数 */
-    @TableField("salary_score")
-    private BigDecimal salaryScore;
-    /** 匹配报告（JSON格式字符串，包含匹配原因、差距、建议等） */
-    @TableField("match_detail")
-    private String matchDetail;
-    /** 状态：0=未读，1=已读 */
-    @TableField("viewed")
-    private Integer viewed;
-    /** 创建时间 */
+
+    @TableField("requirement_score")
+    private BigDecimal requirementScore;
+
     @TableField("create_time")
     private LocalDateTime createTime;
-    /** 更新时间 */
+
     @TableField("update_time")
     private LocalDateTime updateTime;
 
@@ -75,23 +55,8 @@ public class MatchRecordPO {
     public BigDecimal getSkillScore() { return skillScore; }
     public void setSkillScore(BigDecimal skillScore) { this.skillScore = skillScore; }
 
-    public BigDecimal getExperienceScore() { return experienceScore; }
-    public void setExperienceScore(BigDecimal experienceScore) { this.experienceScore = experienceScore; }
-
-    public BigDecimal getCityScore() { return cityScore; }
-    public void setCityScore(BigDecimal cityScore) { this.cityScore = cityScore; }
-
-    public BigDecimal getEducationScore() { return educationScore; }
-    public void setEducationScore(BigDecimal educationScore) { this.educationScore = educationScore; }
-
-    public BigDecimal getSalaryScore() { return salaryScore; }
-    public void setSalaryScore(BigDecimal salaryScore) { this.salaryScore = salaryScore; }
-
-    public String getMatchDetail() { return matchDetail; }
-    public void setMatchDetail(String matchDetail) { this.matchDetail = matchDetail; }
-
-    public Integer getViewed() { return viewed; }
-    public void setViewed(Integer viewed) { this.viewed = viewed; }
+    public BigDecimal getRequirementScore() { return requirementScore; }
+    public void setRequirementScore(BigDecimal requirementScore) { this.requirementScore = requirementScore; }
 
     public LocalDateTime getCreateTime() { return createTime; }
     public void setCreateTime(LocalDateTime createTime) { this.createTime = createTime; }

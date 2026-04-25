@@ -4,6 +4,11 @@ export interface GraphScore {
   personId: number;
   jobId: number;
   totalScore: number;
+  skillScore: number;
+  requirementScore: number;
+  cityScore: number;
+  salaryScore: number;
+  educationScore: number;
   matchLevel: string;
   matchedSkills: string[];
   missingSkills: string[];

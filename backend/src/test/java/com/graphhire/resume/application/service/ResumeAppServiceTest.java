@@ -11,6 +11,7 @@ import com.graphhire.resume.domain.repository.ResumeRepository;
 import com.graphhire.resume.domain.vo.ParseStatus;
 import com.graphhire.resume.infrastructure.file.RustFSClient;
 import com.graphhire.resume.infrastructure.mq.ResumeMQProducer;
+import com.graphhire.match.application.service.MatchAppService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -50,6 +51,8 @@ class ResumeAppServiceTest {
 
     @Mock
     private GraphBuildService graphBuildService;
+    @Mock
+    private MatchAppService matchAppService;
 
     private ResumeAppService resumeAppService;
 
@@ -62,6 +65,7 @@ class ResumeAppServiceTest {
         setField(resumeAppService, "mqProducer", mqProducer);
         setField(resumeAppService, "personInfoRepository", personInfoRepository);
         setField(resumeAppService, "graphBuildService", graphBuildService);
+        setField(resumeAppService, "matchAppService", matchAppService);
     }
 
     @Test
@@ -112,6 +116,8 @@ class ResumeAppServiceTest {
         resumeAppService.setDefaultResume(30L, 9L, false);
 
         verify(graphBuildService).buildGraphForResume(resume);
+        verify(matchAppService).clearMatchCacheForResume(31L);
+        verify(matchAppService).clearMatchCacheForResume(30L);
         verify(mqProducer).sendResumeDefaultChangedMessage(30L);
         verifyNoInteractions(personInfoRepository);
     }

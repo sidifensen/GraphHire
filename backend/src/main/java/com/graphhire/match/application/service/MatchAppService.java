@@ -310,20 +310,13 @@ public class MatchAppService {
         Resume resume = resumeRepository.findById(resumeId)
             .orElseThrow(() -> new RuntimeException("Resume not found"));
 
-        // 步骤5：检查该企业是否首次查看，未查看则标记为已读并发送type=5通知
-        if (record.getIsRead() == null || !record.getIsRead()) {
-            // 首次查看 - 标记为已读并发送通知
-            record.setIsRead(true);
-            matchRecordRepository.save(record);
-
-            // 为简历所有者创建type=5（简历被查看）通知
-            notificationAppService.create(
-                resume.getUserId(),
-                NotificationType.RESUME_VIEWED,
-                "简历被查看",
-                "您的简历被企业查看"
-            );
-        }
+        // 步骤5：企业查看匹配详情时通知简历所有者（不再记录viewed状态）
+        notificationAppService.create(
+            resume.getUserId(),
+            NotificationType.RESUME_VIEWED,
+            "简历被查看",
+            "您的简历被企业查看"
+        );
 
         // 步骤6：组装并返回匹配详情响应
         return new MatchDetailResponse(record, resume, job);

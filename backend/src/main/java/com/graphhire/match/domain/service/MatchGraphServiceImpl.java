@@ -4,9 +4,15 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.graphhire.job.domain.model.Job;
 import com.graphhire.job.domain.repository.JobRepository;
+import com.graphhire.match.domain.vo.MatchScore;
+import com.graphhire.match.domain.vo.RequirementScoreDetail;
 import com.graphhire.match.interfaces.vo.GraphMatchVO;
+import com.graphhire.resume.domain.model.Resume;
+import com.graphhire.resume.domain.repository.ResumeRepository;
 import com.graphhire.skill.infrastructure.graph.SkillGraphClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,26 +22,11 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * 技能图谱匹配服务实现
- *
- * 【模块说明】基于Memgraph技能图谱和数据库技能要求，计算人岗技能匹配分数。
- *
- * 【匹配逻辑】
- * 步骤1：从Memgraph获取用户技能图谱
- * 步骤2：从数据库获取职位技能要求（Job.skills）
- * 步骤3：计算matchedSkills和missingSkills
- * 步骤4：计算匹配率和总分
- * 步骤5：确定匹配等级并生成原因说明
- */
 @Service
 public class MatchGraphServiceImpl implements MatchGraphService {
 
     private static final Logger log = LoggerFactory.getLogger(MatchGraphServiceImpl.class);
-
-    /** 匹配等级阈值 */
-    private static final double HIGH_THRESHOLD = 80.0;
-    private static final double MEDIUM_THRESHOLD = 50.0;
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     @Autowired
     private SkillGraphClient skillGraphClient;
@@ -43,9 +34,20 @@ public class MatchGraphServiceImpl implements MatchGraphService {
     @Autowired
     private JobRepository jobRepository;
 
+    @Autowired
+    private ResumeRepository resumeRepository;
+
+    @Autowired
+    private CityMatchScorer cityMatchScorer;
+
+    @Autowired
+    private SalaryMatchScorer salaryMatchScorer;
+
+    @Autowired
+    private EducationMatchScorer educationMatchScorer;
+
     @Override
     public GraphMatchVO calculateGraphMatchScore(Long personId, Long jobId) {
-        // 步骤1：校验参数
         if (personId == null || personId <= 0) {
             throw new IllegalArgumentException("用户ID无效");
         }
@@ -53,64 +55,80 @@ public class MatchGraphServiceImpl implements MatchGraphService {
             throw new IllegalArgumentException("职位ID无效");
         }
 
-        // 步骤2：从Memgraph获取用户技能图谱
         Map<String, Object> personGraph = skillGraphClient.getPersonSkillGraph(personId);
         Set<String> personSkills = extractSkillsFromGraph(personGraph);
 
-        // 步骤3：从数据库获取职位技能要求
         Job job = jobRepository.findById(jobId)
             .orElseThrow(() -> new IllegalArgumentException("职位不存在: " + jobId));
         Set<String> requiredSkills = collectJobRequiredSkills(job);
 
-        // 步骤4：计算matchedSkills和missingSkills
         List<String> matchedSkills = new ArrayList<>();
         List<String> missingSkills = new ArrayList<>();
 
         for (String requiredSkill : requiredSkills) {
-            if (personSkills.contains(requiredSkill)) {
+            if (personSkills.contains(requiredSkill.toLowerCase(Locale.ROOT))) {
                 matchedSkills.add(requiredSkill);
             } else {
                 missingSkills.add(requiredSkill);
             }
         }
 
-        // 步骤5：计算匹配率
-        double matchRate = calculateMatchRate(matchedSkills, missingSkills);
-        double totalScore = matchRate;
+        double skillScore = calculateSkillScore(matchedSkills, missingSkills);
+        Profile profile = resolveProfile(personId);
+        double cityScore = cityMatchScorer.score(profile.targetCity, job.getLocation() == null ? null : job.getLocation().getCity());
+        double salaryScore = salaryMatchScorer.score(profile.expectedSalary, job.getSalaryRange() == null ? null : job.getSalaryRange().getMin(), job.getSalaryRange() == null ? null : job.getSalaryRange().getMax());
+        double educationScore = educationMatchScorer.score(profile.education, extractEducationRequiredFromDescription(job.getDescription()));
+        RequirementScoreDetail requirementDetail = RequirementScoreDetail.of(cityScore, salaryScore, educationScore);
 
-        // 步骤6：确定匹配等级
-        String matchLevel = determineMatchLevel(totalScore);
-
-        // 步骤7：生成匹配原因说明
-        String reason = generateMatchReason(matchedSkills, missingSkills, totalScore);
+        MatchScore score = MatchScore.of(skillScore, requirementDetail);
+        String matchLevel = determineMatchLevel(score.getTotal());
+        String reason = generateMatchReason(matchedSkills, missingSkills, score.getTotal());
 
         return new GraphMatchVO(
             personId,
             jobId,
-            totalScore,
+            score.getTotal(),
+            score.getSkillScore(),
+            score.getRequirementScore(),
+            score.getCityScore(),
+            score.getSalaryScore(),
+            score.getEducationScore(),
             matchLevel,
             matchedSkills,
             missingSkills,
-            matchRate,
+            score.getSkillScore(),
             reason
         );
     }
 
-    /**
-     * 从图数据中提取技能列表
-     * @param personGraph 图数据
-     * @return 技能名称集合
-     */
+    private Profile resolveProfile(Long userId) {
+        List<Resume> resumes = resumeRepository.findByUserId(userId);
+        if (CollUtil.isEmpty(resumes)) {
+            return new Profile(null, null, null);
+        }
+        Resume preferred = resumes.stream().filter(r -> Boolean.TRUE.equals(r.getIsDefault())).findFirst().orElse(resumes.get(0));
+        if (StrUtil.isBlank(preferred.getParseResult())) {
+            return new Profile(null, null, null);
+        }
+        try {
+            JsonNode root = MAPPER.readTree(preferred.getParseResult());
+            String targetCity = readFirstString(root, "target_city", "expected_location", "city");
+            Integer expectedSalary = readInteger(root, "expected_salary");
+            String education = extractEducation(root);
+            return new Profile(targetCity, expectedSalary, education);
+        } catch (Exception e) {
+            return new Profile(null, null, null);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private Set<String> extractSkillsFromGraph(Map<String, Object> personGraph) {
         Set<String> skills = new HashSet<>();
-
         if (personGraph == null || personGraph.isEmpty()) {
             return skills;
         }
 
         try {
-            // 尝试从skills字段提取
             Object skillsObj = personGraph.get("skills");
             if (skillsObj instanceof List) {
                 List<?> skillsList = (List<?>) skillsObj;
@@ -119,13 +137,12 @@ public class MatchGraphServiceImpl implements MatchGraphService {
                         Map<?, ?> skillMap = (Map<?, ?>) item;
                         Object skillName = skillMap.get("skill");
                         if (skillName != null) {
-                            skills.add(skillName.toString().trim());
+                            skills.add(skillName.toString().trim().toLowerCase(Locale.ROOT));
                         }
                     }
                 }
             }
 
-            // 如果是mock数据，尝试从data字段提取
             if (skills.isEmpty()) {
                 Object dataObj = personGraph.get("data");
                 if (dataObj instanceof Map) {
@@ -138,7 +155,7 @@ public class MatchGraphServiceImpl implements MatchGraphService {
                                 Map<?, ?> skillMap = (Map<?, ?>) item;
                                 Object skillName = skillMap.get("skill");
                                 if (skillName != null) {
-                                    skills.add(skillName.toString().trim());
+                                    skills.add(skillName.toString().trim().toLowerCase(Locale.ROOT));
                                 }
                             }
                         }
@@ -146,7 +163,6 @@ public class MatchGraphServiceImpl implements MatchGraphService {
                 }
             }
 
-            // 尝试解析JSON格式的数据
             if (skills.isEmpty()) {
                 String dataStr = String.valueOf(personGraph.get("data"));
                 if (StrUtil.isNotBlank(dataStr) && !dataStr.equals("null")) {
@@ -159,7 +175,7 @@ public class MatchGraphServiceImpl implements MatchGraphService {
                                     JSONObject skillObj = jsonSkills.getJSONObject(i);
                                     String skillName = skillObj.getString("skill");
                                     if (StrUtil.isNotBlank(skillName)) {
-                                        skills.add(skillName.trim());
+                                        skills.add(skillName.trim().toLowerCase(Locale.ROOT));
                                     }
                                 }
                             }
@@ -169,41 +185,15 @@ public class MatchGraphServiceImpl implements MatchGraphService {
                     }
                 }
             }
-
-            // 兼容mock数据格式
-            if (skills.isEmpty() && Boolean.TRUE.equals(personGraph.get("mock"))) {
-                Object skillsObj2 = personGraph.get("skills");
-                if (skillsObj2 instanceof List) {
-                    List<?> mockSkills = (List<?>) skillsObj2;
-                    for (Object item : mockSkills) {
-                        if (item instanceof Map) {
-                            Map<?, ?> skillMap = (Map<?, ?>) item;
-                            Object skillName = skillMap.get("skill");
-                            if (skillName != null) {
-                                skills.add(skillName.toString().trim());
-                            }
-                        }
-                    }
-                }
-            }
-
         } catch (Exception e) {
             log.warn("提取用户技能图谱异常: {}", e.getMessage());
         }
 
-        log.debug("从图谱提取用户技能: personId对应的技能数量={}", skills.size());
         return skills;
     }
 
-    /**
-     * 收集职位的必填技能
-     * @param job 职位
-     * @return 必填技能名称集合
-     */
     private Set<String> collectJobRequiredSkills(Job job) {
         Set<String> requiredSkills = new HashSet<>();
-
-        // 从Job.skills字段获取
         List<String> jobRequiredSkills = job.getSkills();
         if (CollUtil.isNotEmpty(jobRequiredSkills)) {
             requiredSkills.addAll(jobRequiredSkills.stream()
@@ -211,53 +201,31 @@ public class MatchGraphServiceImpl implements MatchGraphService {
                 .map(String::trim)
                 .collect(Collectors.toSet()));
         }
-
         return requiredSkills;
     }
 
-    /**
-     * 计算技能匹配率
-     * @param matchedSkills 匹配的技能列表
-     * @param missingSkills 缺失的技能列表
-     * @return 匹配率百分比 (0-100)
-     */
-    private double calculateMatchRate(List<String> matchedSkills, List<String> missingSkills) {
+    private double calculateSkillScore(List<String> matchedSkills, List<String> missingSkills) {
         int matchedSize = matchedSkills.size();
         int missingSize = missingSkills.size();
         int total = matchedSize + missingSize;
-
         if (total == 0) {
             return 0.0;
         }
-
         return Math.round((double) matchedSize / total * 10000.0) / 100.0;
     }
 
-    /**
-     * 根据总分确定匹配等级
-     * @param totalScore 总分
-     * @return 匹配等级字符串
-     */
     private String determineMatchLevel(double totalScore) {
-        if (totalScore >= HIGH_THRESHOLD) {
+        if (totalScore >= 80) {
             return "HIGH";
-        } else if (totalScore >= MEDIUM_THRESHOLD) {
+        } else if (totalScore >= 50) {
             return "MEDIUM";
         } else {
             return "LOW";
         }
     }
 
-    /**
-     * 生成匹配原因说明
-     * @param matchedSkills 匹配的技能列表
-     * @param missingSkills 缺失的技能列表
-     * @param totalScore 总分
-     * @return 匹配原因说明
-     */
     private String generateMatchReason(List<String> matchedSkills, List<String> missingSkills, double totalScore) {
         StringBuilder reason = new StringBuilder();
-
         if (matchedSkills.isEmpty()) {
             reason.append("用户技能与职位要求不匹配");
         } else if (missingSkills.isEmpty()) {
@@ -265,33 +233,72 @@ public class MatchGraphServiceImpl implements MatchGraphService {
         } else {
             reason.append("用户匹配了").append(matchedSkills.size()).append("项技能，缺失").append(missingSkills.size()).append("项技能");
         }
-
-        // 添加匹配度描述
-        if (totalScore >= HIGH_THRESHOLD) {
-            reason.append("，匹配度极高");
-        } else if (totalScore >= MEDIUM_THRESHOLD) {
-            reason.append("，匹配度中等");
+        if (totalScore >= 80) {
+            reason.append("，综合匹配度极高");
+        } else if (totalScore >= 50) {
+            reason.append("，综合匹配度中等");
         } else {
-            reason.append("，建议提升相关技能");
+            reason.append("，建议补齐岗位相关能力");
         }
-
-        // 添加具体技能信息
-        if (CollUtil.isNotEmpty(matchedSkills)) {
-            String topSkills = matchedSkills.stream().limit(3).collect(Collectors.joining("、"));
-            reason.append("。核心匹配技能：").append(topSkills);
-            if (matchedSkills.size() > 3) {
-                reason.append("等");
-            }
-        }
-
-        if (CollUtil.isNotEmpty(missingSkills)) {
-            String missing = missingSkills.stream().limit(3).collect(Collectors.joining("、"));
-            reason.append("。建议提升：").append(missing);
-            if (missingSkills.size() > 3) {
-                reason.append("等");
-            }
-        }
-
         return reason.toString();
     }
+
+    private String extractEducationRequiredFromDescription(String description) {
+        if (StrUtil.isBlank(description)) {
+            return "本科";
+        }
+        if (description.contains("博士")) return "博士";
+        if (description.contains("硕士")) return "硕士";
+        if (description.contains("本科")) return "本科";
+        if (description.contains("大专")) return "大专";
+        return "本科";
+    }
+
+    private String extractEducation(JsonNode root) {
+        JsonNode educationNode = root.get("education");
+        if (educationNode == null || educationNode.isNull()) {
+            return null;
+        }
+        if (educationNode.isArray()) {
+            for (JsonNode node : educationNode) {
+                JsonNode degree = node.get("degree");
+                if (degree != null && !degree.isNull()) {
+                    return degree.asText();
+                }
+            }
+            return null;
+        }
+        return educationNode.asText();
+    }
+
+    private Integer readInteger(JsonNode root, String field) {
+        JsonNode node = root.get(field);
+        if (node == null || node.isNull()) {
+            return null;
+        }
+        if (node.isNumber()) {
+            return node.asInt();
+        }
+        String digits = node.asText().replaceAll("[^0-9]", "");
+        if (StrUtil.isBlank(digits)) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(digits);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private String readFirstString(JsonNode root, String... fields) {
+        for (String field : fields) {
+            JsonNode node = root.get(field);
+            if (node != null && !node.isNull() && StrUtil.isNotBlank(node.asText())) {
+                return node.asText();
+            }
+        }
+        return null;
+    }
+
+    private record Profile(String targetCity, Integer expectedSalary, String education) {}
 }

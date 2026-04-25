@@ -53,10 +53,7 @@ export interface AbilityAssessment {
 export interface MatchScoreDetail {
   total: number;
   skillScore: number;
-  expScore: number;
-  cityScore: number;
-  eduScore: number;
-  salScore: number;
+  requirementScore: number;
 }
 
 export interface PersonMatchDetail {
@@ -172,3 +169,4 @@ export const personApi = {
     return response.data;
   },
 };
+

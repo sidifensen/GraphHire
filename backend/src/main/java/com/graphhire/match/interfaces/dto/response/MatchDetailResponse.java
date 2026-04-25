@@ -13,7 +13,6 @@ public class MatchDetailResponse {
     private MatchScore score;
     private MatchLevel level;
     private String matchReason;
-    private Boolean isRead;
     private ResumeBasicInfo resume;
     private JobBasicInfo job;
 
@@ -27,46 +26,18 @@ public class MatchDetailResponse {
         this.score = record.getScore();
         this.level = record.getLevel();
         this.matchReason = record.getMatchReason();
-        this.isRead = record.getIsRead();
         this.resume = resume != null ? new ResumeBasicInfo(resume) : null;
         this.job = job != null ? new JobBasicInfo(job) : null;
     }
 
-    public Long getMatchId() {
-        return matchId;
-    }
-
-    public Long getResumeId() {
-        return resumeId;
-    }
-
-    public Long getJobId() {
-        return jobId;
-    }
-
-    public MatchScore getScore() {
-        return score;
-    }
-
-    public MatchLevel getLevel() {
-        return level;
-    }
-
-    public String getMatchReason() {
-        return matchReason;
-    }
-
-    public Boolean getIsRead() {
-        return isRead;
-    }
-
-    public ResumeBasicInfo getResume() {
-        return resume;
-    }
-
-    public JobBasicInfo getJob() {
-        return job;
-    }
+    public Long getMatchId() { return matchId; }
+    public Long getResumeId() { return resumeId; }
+    public Long getJobId() { return jobId; }
+    public MatchScore getScore() { return score; }
+    public MatchLevel getLevel() { return level; }
+    public String getMatchReason() { return matchReason; }
+    public ResumeBasicInfo getResume() { return resume; }
+    public JobBasicInfo getJob() { return job; }
 
     public static class ResumeBasicInfo {
         private Long id;
@@ -78,17 +49,9 @@ public class MatchDetailResponse {
             this.fileName = resume.getFileName();
         }
 
-        public Long getId() {
-            return id;
-        }
-
-        public String getFileName() {
-            return fileName;
-        }
-
-        public String getUserName() {
-            return userName;
-        }
+        public Long getId() { return id; }
+        public String getFileName() { return fileName; }
+        public String getUserName() { return userName; }
     }
 
     public static class JobBasicInfo {
@@ -101,16 +64,8 @@ public class MatchDetailResponse {
             this.title = job.getTitle();
         }
 
-        public Long getId() {
-            return id;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-
-        public String getCompanyName() {
-            return companyName;
-        }
+        public Long getId() { return id; }
+        public String getTitle() { return title; }
+        public String getCompanyName() { return companyName; }
     }
 }

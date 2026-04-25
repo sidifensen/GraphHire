@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -135,7 +135,7 @@ export default function JobDetailPage() {
   };
 
   const publishTime = formatTime(job?.publishedAt);
-  const totalScore = useMemo(() => Math.round(graphScore?.matchRate ?? 0), [graphScore?.matchRate]);
+  const totalScore = useMemo(() => Math.round(graphScore?.totalScore ?? 0), [graphScore?.totalScore]);
 
   const handleBack = () => {
     if (typeof window !== 'undefined' && window.history.length > 1) {
@@ -281,10 +281,16 @@ export default function JobDetailPage() {
               {matchLoaded && (
                 <div className="mb-4 space-y-3">
                   <div className="rounded-lg bg-primary/10 text-primary px-3 py-2 font-semibold">
-                    匹配度 {totalScore}%
+                    综合匹配度 {totalScore}%
                   </div>
                   <div className="text-sm text-on-surface-variant">
                     匹配等级：{graphScore?.matchLevel || '暂无'}
+                  </div>
+                  <div className="text-sm text-on-surface-variant">
+                    技能匹配：{Math.round(graphScore?.skillScore ?? 0)}%
+                  </div>
+                  <div className="text-sm text-on-surface-variant">
+                    岗位要求匹配：{Math.round(graphScore?.requirementScore ?? 0)}%
                   </div>
                   {graphScore?.matchedSkills?.length ? (
                     <div>
@@ -344,3 +350,4 @@ export default function JobDetailPage() {
     </div>
   );
 }
+
