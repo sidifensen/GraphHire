@@ -60,10 +60,31 @@ function formatTime(value: string | undefined) {
   return Number.isNaN(date.getTime()) ? value : date.toLocaleString('zh-CN', { hour12: false });
 }
 
+function localizeTitle(notification: Notification) {
+  if (notification.type === 'RESUME_SUBMITTED' && notification.title === 'Resume Submitted') {
+    return '简历投递成功';
+  }
+  return notification.title;
+}
+
+function localizeContent(notification: Notification) {
+  if (notification.type !== 'RESUME_SUBMITTED') {
+    return notification.content;
+  }
+  const prefix = 'Your resume has been submitted successfully for position:';
+  if (!notification.content.startsWith(prefix)) {
+    return notification.content;
+  }
+  const jobTitle = notification.content.slice(prefix.length).trim();
+  return `您的简历已成功投递至职位：${jobTitle}`;
+}
+
 function NotificationCard({ notification, onRead }: { notification: Notification; onRead: (id: number) => void }) {
   const isUnread = !notification.isRead;
   const action = getAction(notification);
   const tag = getTag(notification.type);
+  const title = localizeTitle(notification);
+  const content = localizeContent(notification);
 
   return (
     <article
@@ -81,12 +102,12 @@ function NotificationCard({ notification, onRead }: { notification: Notification
         <div className="flex justify-between items-start mb-1 gap-4">
           <h3 className={`font-headline text-lg flex items-center gap-2 ${isUnread ? 'font-bold' : 'font-semibold'} text-on-surface`}>
             {isUnread && <span className="w-2 h-2 bg-error rounded-full inline-block" />}
-            {notification.title}
+            {title}
           </h3>
           <span className="text-xs text-on-surface-variant whitespace-nowrap">{formatTime(notification.createdAt)}</span>
         </div>
 
-        <p className="text-on-surface-variant text-sm leading-relaxed mb-4">{notification.content}</p>
+        <p className="text-on-surface-variant text-sm leading-relaxed mb-4">{content}</p>
 
         <div className="flex items-center gap-3 flex-wrap">
           <span className="px-3 py-1 bg-surface-container text-on-surface text-xs rounded-full">{tag}</span>

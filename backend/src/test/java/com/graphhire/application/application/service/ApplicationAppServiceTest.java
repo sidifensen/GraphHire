@@ -10,10 +10,13 @@ import com.graphhire.job.domain.model.Company;
 import com.graphhire.job.domain.model.Job;
 import com.graphhire.job.domain.repository.CompanyRepository;
 import com.graphhire.job.domain.repository.JobRepository;
+import com.graphhire.job.domain.vo.JobStatus;
 import com.graphhire.match.domain.model.MatchRecord;
 import com.graphhire.match.domain.repository.MatchRecordRepository;
 import com.graphhire.match.domain.vo.MatchScore;
 import com.graphhire.notification.application.service.NotificationAppService;
+import com.graphhire.notification.domain.vo.NotificationType;
+import com.graphhire.resume.domain.model.Resume;
 import com.graphhire.resume.domain.repository.ResumeRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,6 +31,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -109,5 +114,42 @@ class ApplicationAppServiceTest {
         PersonApplicationListItemResponse item = list.get(0);
         assertNull(item.getJobTitle());
         assertNull(item.getCompanyName());
+    }
+
+    @Test
+    @DisplayName("投递成功后发送中文通知文案")
+    void applyJob_shouldSendChineseNotificationContent() {
+        Long userId = 100L;
+        Long resumeId = 10L;
+        Long jobId = 20L;
+
+        Resume resume = new Resume();
+        resume.setId(resumeId);
+        resume.setUserId(userId);
+
+        Job job = new Job();
+        job.setId(jobId);
+        job.setTitle("运营专员（校招）");
+        job.setCompanyId(30L);
+        job.setStatus(JobStatus.PUBLISHED);
+
+        when(resumeRepository.findById(resumeId)).thenReturn(Optional.of(resume));
+        when(jobRepository.findById(jobId)).thenReturn(Optional.of(job));
+        when(applicationRepository.existsByResumeIdAndJobId(resumeId, jobId)).thenReturn(false);
+        when(applicationRepository.save(org.mockito.ArgumentMatchers.any(Application.class))).thenAnswer(invocation -> {
+            Application app = invocation.getArgument(0);
+            app.setId(1L);
+            return app;
+        });
+
+        applicationAppService.applyJob(userId, resumeId, jobId);
+
+        verify(notificationAppService).create(
+            eq(userId),
+            eq(NotificationType.RESUME_SUBMITTED),
+            eq("简历投递成功"),
+            eq("您的简历已成功投递至职位：运营专员（校招）"),
+            eq(1L)
+        );
     }
 }

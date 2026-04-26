@@ -120,8 +120,8 @@ public class ApplicationAppService {
         notificationAppService.create(
             userId,
             NotificationType.RESUME_SUBMITTED,
-            "Resume Submitted",
-            "Your resume has been submitted successfully for position: " + job.getTitle(),
+            "简历投递成功",
+            "您的简历已成功投递至职位：" + job.getTitle(),
             application.getId()
         );
 
