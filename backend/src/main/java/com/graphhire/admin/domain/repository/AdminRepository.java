@@ -3,6 +3,7 @@ package com.graphhire.admin.domain.repository;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.graphhire.auth.domain.model.User;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 /**
@@ -34,6 +35,12 @@ public interface AdminRepository {
      * Count match records.
      */
     long countMatchRecords();
+    long countPersonsCreatedBetween(LocalDateTime startInclusive, LocalDateTime endExclusive);
+    long countCompaniesCreatedBetween(LocalDateTime startInclusive, LocalDateTime endExclusive);
+    long countResumesCreatedBetween(LocalDateTime startInclusive, LocalDateTime endExclusive);
+    long countJobsCreatedBetween(LocalDateTime startInclusive, LocalDateTime endExclusive);
+    long countMatchRecordsCreatedBetween(LocalDateTime startInclusive, LocalDateTime endExclusive);
+    long countPersonsLastLoginBetween(LocalDateTime startInclusive, LocalDateTime endExclusive);
 
     /**
      * Find user by ID.

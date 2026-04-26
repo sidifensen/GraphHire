@@ -39,6 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -89,11 +90,34 @@ public class AdminAppService {
     private CompanyAppService companyAppService;
 
     public DashboardStatsResponse getDashboardStats() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime todayStart = LocalDate.now().atStartOfDay();
+        LocalDateTime tomorrowStart = todayStart.plusDays(1);
+        LocalDateTime currentMonthStart = LocalDate.now().withDayOfMonth(1).atStartOfDay();
+        LocalDateTime previousMonthStart = currentMonthStart.minusMonths(1);
+        LocalDateTime weekStart = LocalDate.now().minusDays(6).atStartOfDay();
+
         long totalUsers = adminRepository.countPersons();
         long totalCompanies = adminRepository.countCompanies();
         long totalResumes = adminRepository.countResumes();
         long totalJobs = adminRepository.countPublishedJobs();
         long matchCount = adminRepository.countMatchRecords();
+        long dailyActiveUsers = adminRepository.countPersonsLastLoginBetween(todayStart, tomorrowStart);
+        long todayNewUsers = adminRepository.countPersonsCreatedBetween(todayStart, tomorrowStart);
+        long todayNewJobs = adminRepository.countJobsCreatedBetween(todayStart, tomorrowStart);
+        long weeklyNewCompanies = adminRepository.countCompaniesCreatedBetween(weekStart, tomorrowStart);
+
+        long currentMonthUsers = adminRepository.countPersonsCreatedBetween(currentMonthStart, now);
+        long previousMonthUsers = adminRepository.countPersonsCreatedBetween(previousMonthStart, currentMonthStart);
+        long currentMonthCompanies = adminRepository.countCompaniesCreatedBetween(currentMonthStart, now);
+        long previousMonthCompanies = adminRepository.countCompaniesCreatedBetween(previousMonthStart, currentMonthStart);
+        long currentMonthResumes = adminRepository.countResumesCreatedBetween(currentMonthStart, now);
+        long previousMonthResumes = adminRepository.countResumesCreatedBetween(previousMonthStart, currentMonthStart);
+        long currentMonthJobs = adminRepository.countJobsCreatedBetween(currentMonthStart, now);
+        long previousMonthJobs = adminRepository.countJobsCreatedBetween(previousMonthStart, currentMonthStart);
+        long currentMonthMatches = adminRepository.countMatchRecordsCreatedBetween(currentMonthStart, now);
+        long previousMonthMatches = adminRepository.countMatchRecordsCreatedBetween(previousMonthStart, currentMonthStart);
+
         long pendingCompanyAudit = companyRepository.countByAuthStatus(AuthStatus.PENDING_VERIFY);
 
         List<ParseTask> tasks = parseTaskRepository.findAll();
@@ -113,17 +137,32 @@ public class AdminAppService {
         response.setTotalCompanies(totalCompanies);
         response.setTotalResumes(totalResumes);
         response.setTotalJobs(totalJobs);
-        response.setTodayNewUsers(0L);
-        response.setTodayNewJobs(0L);
+        response.setDailyActiveUsers(dailyActiveUsers);
+        response.setTodayNewUsers(todayNewUsers);
+        response.setTodayNewJobs(todayNewJobs);
         response.setPendingCompanyAudit(pendingCompanyAudit);
         response.setPendingTaskCount(pendingTaskCount);
         response.setFailedTaskCount(failedTaskCount);
         response.setMatchCount(matchCount);
         response.setTaskSuccessRate(totalTaskCount == 0 ? 0D : completedTaskCount * 100.0 / totalTaskCount);
-        response.setWeeklyNewCompanies(0L);
+        response.setUserGrowthRate(calcGrowthRate(currentMonthUsers, previousMonthUsers));
+        response.setCompanyGrowthRate(calcGrowthRate(currentMonthCompanies, previousMonthCompanies));
+        response.setResumeGrowthRate(calcGrowthRate(currentMonthResumes, previousMonthResumes));
+        response.setJobGrowthRate(calcGrowthRate(currentMonthJobs, previousMonthJobs));
+        response.setMatchGrowthRate(calcGrowthRate(currentMonthMatches, previousMonthMatches));
+        response.setMatchConversionRate(totalResumes == 0 ? 0D : Math.min(100D, matchCount * 100.0 / totalResumes));
+        response.setWeeklyNewCompanies(weeklyNewCompanies);
         response.setPendingSkillSuggestions(0L);
+        response.setUpdatedAt(formatDateTime(now));
         response.setTrend(new ArrayList<>());
         return response;
+    }
+
+    private double calcGrowthRate(long current, long previous) {
+        if (previous <= 0) {
+            return current > 0 ? 100D : 0D;
+        }
+        return ((double) (current - previous) / previous) * 100.0;
     }
 
     @Transactional

@@ -12,6 +12,7 @@ public class DashboardStatsResponse {
     private long totalCompanies;
     private long totalResumes;
     private long totalJobs;
+    private long dailyActiveUsers;
 
     private long todayNewUsers;
     private long todayNewJobs;
@@ -22,8 +23,15 @@ public class DashboardStatsResponse {
 
     private long matchCount;
     private double taskSuccessRate;
+    private double userGrowthRate;
+    private double companyGrowthRate;
+    private double resumeGrowthRate;
+    private double jobGrowthRate;
+    private double matchGrowthRate;
+    private double matchConversionRate;
     private long weeklyNewCompanies;
     private long pendingSkillSuggestions;
+    private String updatedAt;
 
     private List<TrendPoint> trend = new ArrayList<>();
 
@@ -146,6 +154,54 @@ public class DashboardStatsResponse {
         this.taskSuccessRate = taskSuccessRate;
     }
 
+    public double getUserGrowthRate() {
+        return userGrowthRate;
+    }
+
+    public void setUserGrowthRate(double userGrowthRate) {
+        this.userGrowthRate = userGrowthRate;
+    }
+
+    public double getCompanyGrowthRate() {
+        return companyGrowthRate;
+    }
+
+    public void setCompanyGrowthRate(double companyGrowthRate) {
+        this.companyGrowthRate = companyGrowthRate;
+    }
+
+    public double getResumeGrowthRate() {
+        return resumeGrowthRate;
+    }
+
+    public void setResumeGrowthRate(double resumeGrowthRate) {
+        this.resumeGrowthRate = resumeGrowthRate;
+    }
+
+    public double getJobGrowthRate() {
+        return jobGrowthRate;
+    }
+
+    public void setJobGrowthRate(double jobGrowthRate) {
+        this.jobGrowthRate = jobGrowthRate;
+    }
+
+    public double getMatchGrowthRate() {
+        return matchGrowthRate;
+    }
+
+    public void setMatchGrowthRate(double matchGrowthRate) {
+        this.matchGrowthRate = matchGrowthRate;
+    }
+
+    public double getMatchConversionRate() {
+        return matchConversionRate;
+    }
+
+    public void setMatchConversionRate(double matchConversionRate) {
+        this.matchConversionRate = matchConversionRate;
+    }
+
     public long getWeeklyNewCompanies() {
         return weeklyNewCompanies;
     }
@@ -160,6 +216,22 @@ public class DashboardStatsResponse {
 
     public void setPendingSkillSuggestions(long pendingSkillSuggestions) {
         this.pendingSkillSuggestions = pendingSkillSuggestions;
+    }
+
+    public long getDailyActiveUsers() {
+        return dailyActiveUsers;
+    }
+
+    public void setDailyActiveUsers(long dailyActiveUsers) {
+        this.dailyActiveUsers = dailyActiveUsers;
+    }
+
+    public String getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(String updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     public List<TrendPoint> getTrend() {

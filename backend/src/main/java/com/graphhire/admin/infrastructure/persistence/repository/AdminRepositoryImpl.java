@@ -11,11 +11,15 @@ import com.graphhire.auth.domain.vo.AuthStatus;
 import com.graphhire.auth.domain.vo.Username;
 import com.graphhire.auth.domain.vo.UserType;
 import com.graphhire.job.infrastructure.persistence.mapper.JobMapper;
+import com.graphhire.job.infrastructure.persistence.po.JobPO;
 import com.graphhire.match.infrastructure.persistence.mapper.MatchRecordMapper;
+import com.graphhire.match.infrastructure.persistence.po.MatchRecordPO;
 import com.graphhire.resume.infrastructure.persistence.mapper.ResumeMapper;
+import com.graphhire.resume.infrastructure.persistence.po.ResumePO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -89,6 +93,58 @@ public class AdminRepositoryImpl implements AdminRepository {
     /** 统计匹配记录数量 */
     public long countMatchRecords() {
         return matchRecordMapper.selectCount(null);
+    }
+
+    @Override
+    public long countPersonsCreatedBetween(LocalDateTime startInclusive, LocalDateTime endExclusive) {
+        LambdaQueryWrapper<AdminPO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(AdminPO::getUserType, 1)
+            .ge(AdminPO::getCreateTime, startInclusive)
+            .lt(AdminPO::getCreateTime, endExclusive);
+        return adminMapper.selectCount(wrapper);
+    }
+
+    @Override
+    public long countCompaniesCreatedBetween(LocalDateTime startInclusive, LocalDateTime endExclusive) {
+        LambdaQueryWrapper<AdminPO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(AdminPO::getUserType, 2)
+            .ge(AdminPO::getCreateTime, startInclusive)
+            .lt(AdminPO::getCreateTime, endExclusive);
+        return adminMapper.selectCount(wrapper);
+    }
+
+    @Override
+    public long countResumesCreatedBetween(LocalDateTime startInclusive, LocalDateTime endExclusive) {
+        LambdaQueryWrapper<ResumePO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.ge(ResumePO::getCreateTime, startInclusive)
+            .lt(ResumePO::getCreateTime, endExclusive);
+        return resumeMapper.selectCount(wrapper);
+    }
+
+    @Override
+    public long countJobsCreatedBetween(LocalDateTime startInclusive, LocalDateTime endExclusive) {
+        LambdaQueryWrapper<JobPO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(JobPO::getStatus, 1)
+            .ge(JobPO::getCreateTime, startInclusive)
+            .lt(JobPO::getCreateTime, endExclusive);
+        return jobMapper.selectCount(wrapper);
+    }
+
+    @Override
+    public long countMatchRecordsCreatedBetween(LocalDateTime startInclusive, LocalDateTime endExclusive) {
+        LambdaQueryWrapper<MatchRecordPO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.ge(MatchRecordPO::getCreateTime, startInclusive)
+            .lt(MatchRecordPO::getCreateTime, endExclusive);
+        return matchRecordMapper.selectCount(wrapper);
+    }
+
+    @Override
+    public long countPersonsLastLoginBetween(LocalDateTime startInclusive, LocalDateTime endExclusive) {
+        LambdaQueryWrapper<AdminPO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(AdminPO::getUserType, 1)
+            .ge(AdminPO::getLastLoginTime, startInclusive)
+            .lt(AdminPO::getLastLoginTime, endExclusive);
+        return adminMapper.selectCount(wrapper);
     }
 
     @Override

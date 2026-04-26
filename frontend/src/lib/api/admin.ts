@@ -26,6 +26,7 @@ export interface AdminDashboardStats {
   totalCompanies: number;
   totalResumes: number;
   totalJobs: number;
+  dailyActiveUsers: number;
   todayNewUsers: number;
   todayNewJobs: number;
   pendingCompanyAudit: number;
@@ -33,8 +34,15 @@ export interface AdminDashboardStats {
   failedTaskCount: number;
   matchCount: number;
   taskSuccessRate: number;
+  userGrowthRate: number;
+  companyGrowthRate: number;
+  resumeGrowthRate: number;
+  jobGrowthRate: number;
+  matchGrowthRate: number;
+  matchConversionRate: number;
   weeklyNewCompanies: number;
   pendingSkillSuggestions: number;
+  updatedAt: string;
   trend: DashboardTrendPoint[];
 }
 

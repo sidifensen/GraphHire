@@ -84,6 +84,12 @@ class AdminAppServiceTest {
             when(adminRepository.countResumes()).thenReturn(20L);
             when(adminRepository.countPublishedJobs()).thenReturn(7L);
             when(adminRepository.countMatchRecords()).thenReturn(100L);
+            when(adminRepository.countPersonsCreatedBetween(any(), any())).thenReturn(4L, 2L, 1L);
+            when(adminRepository.countCompaniesCreatedBetween(any(), any())).thenReturn(2L, 1L, 1L);
+            when(adminRepository.countResumesCreatedBetween(any(), any())).thenReturn(8L, 4L);
+            when(adminRepository.countJobsCreatedBetween(any(), any())).thenReturn(6L, 3L, 2L);
+            when(adminRepository.countMatchRecordsCreatedBetween(any(), any())).thenReturn(12L, 6L);
+            when(adminRepository.countPersonsLastLoginBetween(any(), any())).thenReturn(5L);
             when(companyRepository.countByAuthStatus(AuthStatus.PENDING_VERIFY)).thenReturn(2L);
 
             ParseTask pending = new ParseTask();
@@ -104,6 +110,16 @@ class AdminAppServiceTest {
             assertEquals(2L, response.getPendingTaskCount());
             assertEquals(1L, response.getFailedTaskCount());
             assertEquals(100L, response.getMatchCount());
+            assertEquals(4L, response.getTodayNewUsers());
+            assertEquals(6L, response.getTodayNewJobs());
+            assertEquals(100.0, response.getUserGrowthRate());
+            assertEquals(0.0, response.getCompanyGrowthRate());
+            assertEquals(100.0, response.getResumeGrowthRate());
+            assertEquals(50.0, response.getJobGrowthRate());
+            assertEquals(100.0, response.getMatchGrowthRate());
+            assertEquals(100.0, response.getMatchConversionRate());
+            assertEquals(5L, response.getDailyActiveUsers());
+            assertNotNull(response.getUpdatedAt());
             assertNotNull(response.getTrend());
         }
     }

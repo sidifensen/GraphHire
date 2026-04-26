@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import {
   Users,
   Zap,
@@ -16,6 +17,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import AdminStatCard from '@/components/admin/AdminStatCard';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/context/ThemeContext';
+import { adminApi, type AdminDashboardStats } from '@/lib/api/admin';
 
 const chartData = [
   { name: '第一周', high: 3000, success: 1200 },
@@ -27,6 +29,35 @@ const chartData = [
 export default function AdminDashboardPage() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+  const [stats, setStats] = useState<AdminDashboardStats | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadDashboardStats = async () => {
+      try {
+        const data = await adminApi.getDashboardStats();
+        if (!cancelled && data) {
+          setStats(data);
+        }
+      } catch {
+        if (!cancelled) {
+          setStats(null);
+        }
+      }
+    };
+
+    void loadDashboardStats();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const formatNumber = (value: number | undefined) => new Intl.NumberFormat('zh-CN').format(value ?? 0);
+  const formatTrend = (value: number | undefined) => Number((value ?? 0).toFixed(1));
+  const formatPercent = (value: number | undefined) => `${(value ?? 0).toFixed(1)}%`;
+  const updatedAtText = stats?.updatedAt ? stats.updatedAt : '今日 08:00 AM';
 
   return (
           <div className="space-y-6 p-8">
@@ -43,7 +74,7 @@ export default function AdminDashboardPage() {
         <div className="flex items-end justify-between">
           <div>
             <h2 className="font-display text-2xl font-bold text-on-surface">概览数据</h2>
-            <p className="text-sm text-outline">更新时间: 今日 08:00 AM</p>
+            <p className="text-sm text-outline">更新时间: {updatedAtText}</p>
           </div>
           <button className="flex items-center gap-2 rounded-lg border border-outline-variant bg-white px-4 py-2 text-sm font-semibold text-on-surface shadow-sm transition-all hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800">
             <Download size={16} />
@@ -52,10 +83,46 @@ export default function AdminDashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-5">
-          <AdminStatCard title="总用户数" value="124,592" trend={12.5} trendLabel="较上月" icon={Users} variant="primary" subLabel="日活跃度" subValue="18.2k" />
-          <AdminStatCard title="入驻企业" value="3,840" trend={5.2} trendLabel="较上月" icon={Network} variant="indigo" subLabel="待审核企业" subValue="12 家" />
-          <AdminStatCard title="简历解析数" value="892,105" trend={24.1} trendLabel="较上月" icon={Zap} variant="purple" subLabel="解析成功率" subValue="99.4%" />
-          <AdminStatCard title="活跃职位数" value="45,210" trend={-1.8} trendLabel="较上月" icon={Users} variant="amber" subLabel="今日新增" subValue="+420" />
+          <AdminStatCard
+            title="总用户数"
+            value={formatNumber(stats?.totalUsers)}
+            trend={formatTrend(stats?.userGrowthRate)}
+            trendLabel="较上月"
+            icon={Users}
+            variant="primary"
+            subLabel="日活跃度"
+            subValue={formatNumber(stats?.dailyActiveUsers)}
+          />
+          <AdminStatCard
+            title="入驻企业"
+            value={formatNumber(stats?.totalCompanies)}
+            trend={formatTrend(stats?.companyGrowthRate)}
+            trendLabel="较上月"
+            icon={Network}
+            variant="indigo"
+            subLabel="待审核企业"
+            subValue={`${stats?.pendingCompanyAudit ?? 0} 家`}
+          />
+          <AdminStatCard
+            title="简历解析数"
+            value={formatNumber(stats?.totalResumes)}
+            trend={formatTrend(stats?.resumeGrowthRate)}
+            trendLabel="较上月"
+            icon={Zap}
+            variant="purple"
+            subLabel="解析成功率"
+            subValue={formatPercent(stats?.taskSuccessRate)}
+          />
+          <AdminStatCard
+            title="活跃职位数"
+            value={formatNumber(stats?.totalJobs)}
+            trend={formatTrend(stats?.jobGrowthRate)}
+            trendLabel="较上月"
+            icon={Users}
+            variant="amber"
+            subLabel="今日新增"
+            subValue={`+${stats?.todayNewJobs ?? 0}`}
+          />
           <div className="group relative overflow-hidden rounded-xl border bg-gradient-to-br from-primary to-blue-800 p-6 text-white shadow-lg shadow-primary/20 dark:border-white/10 dark:from-black/60 dark:to-black/40 dark:shadow-none dark:backdrop-blur-xl">
             <div className="absolute right-0 top-0 translate-x-4 -translate-y-4 opacity-10 transition-transform group-hover:scale-110">
               <Network size={120} />
@@ -68,16 +135,16 @@ export default function AdminDashboardPage() {
                     <Handshake size={20} />
                   </div>
                 </div>
-                <h3 className="font-display text-3xl font-bold">12,845</h3>
+                <h3 className="font-display text-3xl font-bold">{formatNumber(stats?.matchCount)}</h3>
                 <div className="mt-2 flex items-center gap-1 text-xs text-blue-200 dark:text-emerald-400">
                   <TrendingUp size={12} />
-                  <span className="font-bold">+32.4%</span>
+                  <span className="font-bold">{(stats?.matchGrowthRate ?? 0) >= 0 ? '+' : ''}{formatTrend(stats?.matchGrowthRate)}%</span>
                   <span className="opacity-70 dark:text-slate-500">较上月</span>
                 </div>
               </div>
               <div className="mt-4 flex items-center justify-between border-t border-white/20 pt-3 text-[10px] dark:border-white/5">
                 <span className="opacity-80 dark:text-slate-400">AI 推荐转化率</span>
-                <span className="font-bold">42.8%</span>
+                <span className="font-bold">{formatPercent(stats?.matchConversionRate)}</span>
               </div>
             </div>
           </div>
