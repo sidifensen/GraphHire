@@ -8,6 +8,7 @@ import { dashboardStatusText } from '@/lib/mappers/enterpriseMapper';
 
 export default function EnterpriseDashboardPage() {
   const [data, setData] = useState<EnterpriseDashboard | null>(null);
+  const [companyName, setCompanyName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -15,8 +16,12 @@ export default function EnterpriseDashboardPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await companyApi.getDashboard();
-      setData(response);
+      const [dashboard, companyInfo] = await Promise.all([
+        companyApi.getDashboard(),
+        companyApi.getInfo().catch(() => null),
+      ]);
+      setData(dashboard);
+      setCompanyName(companyInfo?.name ?? null);
     } catch (err) {
       setError(err instanceof Error ? err.message : '企业仪表盘加载失败');
     } finally {
@@ -30,9 +35,9 @@ export default function EnterpriseDashboardPage() {
 
   return (
     <EnterpriseContent>
-      <div>
-        <h2 className="text-3xl font-bold font-headline text-on-surface">欢迎回来，GraphHire 企业管理中心</h2>
-        <p className="text-on-surface-variant mt-2 text-sm max-w-2xl">您的AI智能招聘助手已就绪。正在为您实时分析人才图谱与职位匹配度。</p>
+      <div className="rounded-xl bg-surface-container-lowest p-6">
+        <p className="text-sm text-on-surface-variant">当前企业</p>
+        <h2 className="mt-2 text-2xl font-bold font-headline text-on-surface">{companyName || '未获取到企业名称'}</h2>
       </div>
 
       {loading ? (

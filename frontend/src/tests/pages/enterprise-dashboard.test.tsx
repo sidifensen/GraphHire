@@ -6,6 +6,7 @@ import { companyApi } from '@/lib/api/company';
 vi.mock('@/lib/api/company', () => ({
   companyApi: {
     getDashboard: vi.fn(),
+    getInfo: vi.fn(),
   },
 }));
 
@@ -23,11 +24,18 @@ describe('EnterpriseDashboardPage', () => {
         { id: 1, title: '高级前端工程师', department: '技术中心', applyCount: 5, matchCount: 7, status: 'PUBLISHED' },
       ],
     });
+    vi.mocked(companyApi.getInfo).mockResolvedValue({
+      id: 1,
+      name: '字节跳动科技有限公司',
+      authStatus: 'VERIFIED',
+    });
 
     render(<EnterpriseDashboardPage />);
 
     expect(screen.getByText('企业仪表盘加载中...')).toBeInTheDocument();
     expect(await screen.findByText('高级前端工程师')).toBeInTheDocument();
+    expect(screen.getByText('字节跳动科技有限公司')).toBeInTheDocument();
+    expect(screen.queryByText('欢迎回来，GraphHire 企业管理中心')).not.toBeInTheDocument();
     expect(screen.getByText('9')).toBeInTheDocument();
     expect(screen.getByText('14')).toBeInTheDocument();
     expect(screen.getByText('3')).toBeInTheDocument();
@@ -44,6 +52,11 @@ describe('EnterpriseDashboardPage', () => {
         activeJobCount: 1,
         recentJobs: [],
       });
+    vi.mocked(companyApi.getInfo).mockResolvedValue({
+      id: 1,
+      name: '测试企业',
+      authStatus: 'VERIFIED',
+    });
 
     const user = userEvent.setup();
     render(<EnterpriseDashboardPage />);
