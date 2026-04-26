@@ -381,6 +381,41 @@ class AuthAppServiceTest {
                 () -> authAppService.login(username, password));
             assertEquals("账号审核中，暂未开通，请等待企业负责人确认", ex.getMessage());
         }
+
+        @Test
+        @DisplayName("企业用户登录失败 - 企业审核中")
+        void login_CompanyPendingVerify_ShouldThrow() {
+            // Given
+            setupRedisMock();
+            String username = "owner@example.com";
+            String password = "password123";
+
+            User user = new User();
+            user.setId(11L);
+            user.setUsername(Username.of(username));
+            user.setPassword(EncryptedPassword.encode(password));
+            user.setUserType(UserType.COMPANY);
+            user.setStatus(AuthStatus.VERIFIED);
+
+            CompanyStaff staff = new CompanyStaff();
+            staff.setUserId(11L);
+            staff.setCompanyId(101L);
+            staff.setStatus(CompanyStaff.STATUS_ACTIVE);
+
+            Company company = new Company();
+            company.setId(101L);
+            company.setAuthStatus(AuthStatus.PENDING_VERIFY);
+
+            when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+            when(userRepository.save(any(User.class))).thenReturn(user);
+            when(companyStaffRepository.findByUserId(11L)).thenReturn(Optional.of(staff));
+            when(companyRepository.findById(101L)).thenReturn(Optional.of(company));
+
+            // When & Then
+            Exceptions.BusinessException ex = assertThrows(Exceptions.BusinessException.class,
+                () -> authAppService.login(username, password));
+            assertEquals("该公司正在审核中，暂不可进入企业端", ex.getMessage());
+        }
     }
 
     @Nested
@@ -425,6 +460,54 @@ class AuthAppServiceTest {
                     && CompanyStaff.POST_HR.equals(staff.getPost())
                     && Long.valueOf(200L).equals(staff.getUserId())
                     && Long.valueOf(300L).equals(staff.getCompanyId())
+            ));
+        }
+
+        @Test
+        @DisplayName("首次企业注册创建审核中企业并禁止直接进入企业端")
+        void registerCompany_FirstCompany_ShouldPendingVerifyAndNoLogin() {
+            // Given
+            setupRedisMock();
+            CompanyRegisterCmd cmd = new CompanyRegisterCmd();
+            cmd.setUsername("owner@example.com");
+            cmd.setPassword("password123");
+            cmd.setVerifyCode("123456");
+            cmd.setCompanyName("New Co");
+            cmd.setUnifiedSocialCreditCode("91110000000000003X");
+
+            when(valueOperations.get("email_code:owner@example.com:register")).thenReturn("123456");
+            when(userRepository.findByUsername("owner@example.com")).thenReturn(Optional.empty());
+            when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+                User saved = invocation.getArgument(0);
+                saved.setId(201L);
+                return saved;
+            });
+            when(companyRepository.findByName("New Co")).thenReturn(Optional.empty());
+            when(companyRepository.save(any(Company.class))).thenAnswer(invocation -> {
+                Company saved = invocation.getArgument(0);
+                saved.setId(301L);
+                return saved;
+            });
+            when(companyStaffRepository.save(any(CompanyStaff.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+            try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+                // When & Then
+                Exceptions.BusinessException ex = assertThrows(Exceptions.BusinessException.class,
+                    () -> authAppService.registerCompany(cmd));
+                assertEquals("该公司正在审核中，暂不可进入企业端", ex.getMessage());
+                stpUtilMock.verifyNoInteractions();
+            }
+
+            verify(companyRepository).save(argThat(company ->
+                "New Co".equals(company.getName())
+                    && "91110000000000003X".equals(company.getUnifiedSocialCreditCode())
+                    && AuthStatus.PENDING_VERIFY == company.getAuthStatus()
+            ));
+            verify(companyStaffRepository).save(argThat(staff ->
+                CompanyStaff.STATUS_ACTIVE.equals(staff.getStatus())
+                    && CompanyStaff.POST_OWNER.equals(staff.getPost())
+                    && Long.valueOf(201L).equals(staff.getUserId())
+                    && Long.valueOf(301L).equals(staff.getCompanyId())
             ));
         }
     }

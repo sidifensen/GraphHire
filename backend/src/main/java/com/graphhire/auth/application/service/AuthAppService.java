@@ -224,11 +224,13 @@ public class AuthAppService {
             throw Exceptions.BusinessException.of(20201, "已提交申请，等待企业负责人确认");
         }
 
-        // 步骤6：Sa-Token 登录
-        doLogin(user);
+        throw Exceptions.BusinessException.of(20205, "该公司正在审核中，暂不可进入企业端");
 
-        // 步骤7：构建登录响应
-        return buildLoginResponse(user);
+        // 步骤6：Sa-Token 登录
+//        doLogin(user);
+//
+//        // 步骤7：构建登录响应
+//        return buildLoginResponse(user);
     }
 
     /**
@@ -524,6 +526,15 @@ public class AuthAppService {
         }
         if (!CompanyStaff.STATUS_ACTIVE.equalsIgnoreCase(status)) {
             throw Exceptions.BusinessException.of("企业账号状态异常，暂不可登录");
+        }
+
+        Company company = companyRepository.findById(staff.getCompanyId())
+                .orElseThrow(() -> Exceptions.BusinessException.of("企业不存在"));
+        if (AuthStatus.PENDING_VERIFY.equals(company.getAuthStatus())) {
+            throw Exceptions.BusinessException.of(20205, "该公司正在审核中，暂不可进入企业端");
+        }
+        if (AuthStatus.REJECTED.equals(company.getAuthStatus())) {
+            throw Exceptions.BusinessException.of(20206, "该公司审核未通过，暂不可进入企业端");
         }
     }
 
