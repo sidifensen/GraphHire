@@ -14,13 +14,17 @@ const navItems = [
   { icon: Activity, label: '任务监控', path: '/admin/task-monitor' },
 ];
 
+const SIDEBAR_COLLAPSED_WIDTH = 80;
+const SIDEBAR_EXPANDED_WIDTH = 256;
+const SIDEBAR_TRANSITION = { duration: 0.22, ease: 'easeOut' as const };
+
 export function AdminSidebar({ isCollapsed = false }: { isCollapsed?: boolean }) {
   const pathname = usePathname();
 
   return (
     <motion.aside
-      animate={{ width: isCollapsed ? 80 : 256 }}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      animate={{ width: isCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_EXPANDED_WIDTH }}
+      transition={SIDEBAR_TRANSITION}
       className="fixed left-0 top-0 h-full border-r border-slate-200 bg-white dark:bg-black dark:border-white/10 flex flex-col py-6 z-50 overflow-hidden transition-colors duration-300"
     >
       <div className="px-6 mb-8 flex h-10 items-center overflow-hidden">
@@ -56,11 +60,9 @@ export function AdminSidebar({ isCollapsed = false }: { isCollapsed?: boolean })
               className="group relative block"
               title={isCollapsed ? item.label : ""}
             >
-              <motion.div
-                layout
-                transition={{ type: "spring", stiffness: 420, damping: 34 }}
+              <div
                 className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 ease-in-out font-medium text-sm",
+                  "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors duration-200 font-medium text-sm",
                   isActive
                     ? "text-blue-600 font-bold"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800",
@@ -71,7 +73,7 @@ export function AdminSidebar({ isCollapsed = false }: { isCollapsed?: boolean })
                   <motion.div
                     layoutId="active-nav"
                     className="absolute inset-0 bg-blue-50/80 dark:bg-blue-600/10 rounded-lg -z-10"
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    transition={SIDEBAR_TRANSITION}
                   />
                 )}
 
@@ -79,25 +81,23 @@ export function AdminSidebar({ isCollapsed = false }: { isCollapsed?: boolean })
                   <motion.div
                     layoutId="active-border"
                     className="absolute left-0 top-2 bottom-2 w-1 bg-blue-600 rounded-full"
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    transition={SIDEBAR_TRANSITION}
                   />
                 )}
 
                 <motion.div
-                  layout="position"
                   animate={{
                     scale: isActive ? 1.1 : 1,
                   }}
-                  transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                  transition={SIDEBAR_TRANSITION}
                   className="shrink-0"
                 >
                   <item.icon size={20} />
                 </motion.div>
 
-                <AnimatePresence initial={false} mode="popLayout">
+                <AnimatePresence initial={false}>
                   {!isCollapsed && (
                     <motion.span
-                      layout
                       initial={{ opacity: 0, x: -5 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -5 }}
@@ -109,9 +109,9 @@ export function AdminSidebar({ isCollapsed = false }: { isCollapsed?: boolean })
                 </AnimatePresence>
 
                 {!isActive && (
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-slate-50 dark:bg-slate-800 rounded-lg -z-20 transition-opacity duration-300" />
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-slate-50 dark:bg-slate-800 rounded-lg -z-20 transition-opacity duration-200" />
                 )}
-              </motion.div>
+              </div>
             </Link>
           );
         })}

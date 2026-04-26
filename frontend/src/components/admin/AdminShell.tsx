@@ -11,6 +11,10 @@ interface AdminShellProps {
   children: ReactNode;
 }
 
+const SIDEBAR_COLLAPSED_WIDTH = 80;
+const SIDEBAR_EXPANDED_WIDTH = 256;
+const SHELL_TRANSITION = { duration: 0.22, ease: 'easeOut' as const };
+
 export default function AdminShell({ children }: AdminShellProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -27,8 +31,8 @@ export default function AdminShell({ children }: AdminShellProps) {
       <AdminSidebar isCollapsed={isCollapsed} />
       <motion.div
         initial={false}
-        animate={{ marginLeft: isCollapsed ? 80 : 240 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        animate={{ marginLeft: isCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_EXPANDED_WIDTH }}
+        transition={SHELL_TRANSITION}
         className="flex h-full min-w-0 flex-1 flex-col overflow-hidden"
       >
         <AdminTopbar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />

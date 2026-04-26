@@ -3,7 +3,7 @@ import { vi } from 'vitest';
 import AdminShell from '@/components/admin/AdminShell';
 
 vi.mock('@/components/admin/AdminSidebar', () => ({
-  default: () => <aside data-testid="admin-sidebar" />,
+  AdminSidebar: () => <aside data-testid="admin-sidebar" />,
 }));
 
 vi.mock('@/components/admin/AdminTopbar', () => ({
