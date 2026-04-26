@@ -14,17 +14,12 @@ const navLinks = [
   { label: '能力图谱', href: '/skill-graph' },
 ];
 
-interface HeaderProps {
-  forceShowNotifications?: boolean;
-}
-
-export default function Header({ forceShowNotifications }: HeaderProps = {}) {
+export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const shouldReduceMotion = useReducedMotion();
   const isAuthenticated = userAuthStore((state) => state.isAuthenticated);
   const user = userAuthStore((state) => state.user);
-  const showNotificationBadge = forceShowNotifications || isAuthenticated;
   const [showDropdown, setShowDropdown] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
   const avatarSrc = user?.avatarUrl ?? null;
@@ -84,10 +79,6 @@ export default function Header({ forceShowNotifications }: HeaderProps = {}) {
         <div className="flex items-center gap-6">
           {isAuthenticated ? (
             <>
-              <button onClick={() => router.push('/notifications')} className="hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-all duration-300 p-2 rounded-full active:scale-95 opacity-80 transition-transform relative">
-                <span className="material-symbols-outlined">notifications</span>
-                {showNotificationBadge && <span className="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>}
-              </button>
               <button className="hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-all duration-300 p-2 rounded-full active:scale-95 opacity-80 transition-transform">
                 <span className="material-symbols-outlined">chat_bubble</span>
               </button>
@@ -134,19 +125,6 @@ export default function Header({ forceShowNotifications }: HeaderProps = {}) {
                 </div>
               )}
               </div>
-            </>
-          ) : showNotificationBadge ? (
-            <>
-              <button className="hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-all duration-300 p-2 rounded-full active:scale-95 opacity-80 transition-transform relative">
-                <span className="material-symbols-outlined">notifications</span>
-                <span className="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
-              </button>
-              <Link
-                href="/login"
-                className="px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors"
-              >
-                登录
-              </Link>
             </>
           ) : (
             <Link
