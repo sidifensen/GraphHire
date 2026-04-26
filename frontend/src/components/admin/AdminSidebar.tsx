@@ -38,14 +38,15 @@ export function AdminSidebar({ isCollapsed = false }: { isCollapsed?: boolean })
         </div>
         <AnimatePresence initial={false}>
           {!isCollapsed && (
-            <motion.h1
+            <motion.div
               initial={{ opacity: 0, x: -6 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -6 }}
-              className="ml-3 text-xl font-bold text-blue-600 font-display whitespace-nowrap"
+              className="ml-3 leading-tight"
             >
-              GraphHire
-            </motion.h1>
+              <h1 className="text-xl font-bold text-blue-600 font-display whitespace-nowrap">GraphHire</h1>
+              <p className="text-[11px] text-slate-500 whitespace-nowrap">图谱智聘</p>
+            </motion.div>
           )}
         </AnimatePresence>
       </div>
