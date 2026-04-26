@@ -65,8 +65,7 @@ export function AdminSidebar({ isCollapsed = false }: { isCollapsed?: boolean })
                   "flex h-12 items-center gap-3 px-4 rounded-lg transition-colors duration-200 font-medium text-sm",
                   isActive
                     ? "text-blue-600 font-bold"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800",
-                  isCollapsed && "px-0 justify-center"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800"
                 )}
               >
                 {isActive && (
@@ -88,6 +87,7 @@ export function AdminSidebar({ isCollapsed = false }: { isCollapsed?: boolean })
                 <motion.div
                   animate={{
                     scale: isActive ? 1.1 : 1,
+                    x: isCollapsed ? 14 : 0,
                   }}
                   transition={SIDEBAR_TRANSITION}
                   className="shrink-0"
