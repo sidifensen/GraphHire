@@ -1,5 +1,6 @@
 package com.graphhire.auth.application.service;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.graphhire.auth.application.command.CompanyRegisterCmd;
 import com.graphhire.auth.application.command.PersonRegisterCmd;
 import com.graphhire.auth.domain.model.User;
@@ -10,6 +11,10 @@ import com.graphhire.auth.domain.vo.UserType;
 import com.graphhire.auth.domain.vo.Username;
 import com.graphhire.auth.infrastructure.mail.MailService;
 import com.graphhire.common.vo.Exceptions;
+import com.graphhire.job.domain.model.Company;
+import com.graphhire.job.domain.model.CompanyStaff;
+import com.graphhire.job.domain.repository.CompanyRepository;
+import com.graphhire.job.domain.repository.CompanyStaffRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -50,6 +55,12 @@ class AuthAppServiceTest {
 
     @Mock
     private ValueOperations<String, String> valueOperations;
+
+    @Mock
+    private CompanyRepository companyRepository;
+
+    @Mock
+    private CompanyStaffRepository companyStaffRepository;
 
     @InjectMocks
     private AuthAppService authAppService;
@@ -339,6 +350,82 @@ class AuthAppServiceTest {
             // When & Then
             assertThrows(Exceptions.BusinessException.class,
                 () -> authAppService.login(username, wrongPassword));
+        }
+
+        @Test
+        @DisplayName("企业用户登录失败 - 待加入审批")
+        void login_CompanyPendingJoin_ShouldThrow() {
+            // Given
+            setupRedisMock();
+            String username = "hr@example.com";
+            String password = "password123";
+
+            User user = new User();
+            user.setId(10L);
+            user.setUsername(Username.of(username));
+            user.setPassword(EncryptedPassword.encode(password));
+            user.setUserType(UserType.COMPANY);
+            user.setStatus(AuthStatus.VERIFIED);
+
+            CompanyStaff staff = new CompanyStaff();
+            staff.setUserId(10L);
+            staff.setCompanyId(100L);
+            staff.setStatus(CompanyStaff.STATUS_PENDING_JOIN);
+
+            when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+            when(userRepository.save(any(User.class))).thenReturn(user);
+            when(companyStaffRepository.findByUserId(10L)).thenReturn(Optional.of(staff));
+
+            // When & Then
+            Exceptions.BusinessException ex = assertThrows(Exceptions.BusinessException.class,
+                () -> authAppService.login(username, password));
+            assertEquals("账号审核中，暂未开通，请等待企业负责人确认", ex.getMessage());
+        }
+    }
+
+    @Nested
+    @DisplayName("企业用户注册测试")
+    class CompanyRegisterTests {
+
+        @Test
+        @DisplayName("已存在企业注册后创建待加入记录且不自动登录")
+        void registerCompany_ExistingCompany_ShouldPendingAndNoLogin() {
+            // Given
+            setupRedisMock();
+            CompanyRegisterCmd cmd = new CompanyRegisterCmd();
+            cmd.setUsername("newhr@example.com");
+            cmd.setPassword("password123");
+            cmd.setVerifyCode("123456");
+            cmd.setCompanyName("Existing Co");
+            cmd.setUnifiedSocialCreditCode("91110000000000001X");
+
+            when(valueOperations.get("email_code:newhr@example.com:register")).thenReturn("123456");
+            when(userRepository.findByUsername("newhr@example.com")).thenReturn(Optional.empty());
+            when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+                User saved = invocation.getArgument(0);
+                saved.setId(200L);
+                return saved;
+            });
+            Company existing = new Company();
+            existing.setId(300L);
+            existing.setName("Existing Co");
+            when(companyRepository.findByName("Existing Co")).thenReturn(Optional.of(existing));
+            when(companyStaffRepository.save(any(CompanyStaff.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+            try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+                // When & Then
+                Exceptions.BusinessException ex = assertThrows(Exceptions.BusinessException.class,
+                    () -> authAppService.registerCompany(cmd));
+                assertEquals("已提交申请，等待企业负责人确认", ex.getMessage());
+                stpUtilMock.verifyNoInteractions();
+            }
+
+            verify(companyStaffRepository).save(argThat(staff ->
+                CompanyStaff.STATUS_PENDING_JOIN.equals(staff.getStatus())
+                    && CompanyStaff.POST_HR.equals(staff.getPost())
+                    && Long.valueOf(200L).equals(staff.getUserId())
+                    && Long.valueOf(300L).equals(staff.getCompanyId())
+            ));
         }
     }
 }

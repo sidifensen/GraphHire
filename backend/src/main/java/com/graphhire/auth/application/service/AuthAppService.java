@@ -15,6 +15,7 @@ import com.graphhire.auth.domain.vo.AuthStatus;
 import com.graphhire.auth.domain.vo.UserType;
 import com.graphhire.auth.infrastructure.mail.MailService;
 import com.graphhire.auth.interfaces.dto.response.LoginResponse;
+import com.graphhire.common.vo.Exceptions;
 import com.graphhire.job.domain.model.Company;
 import com.graphhire.job.domain.model.CompanyStaff;
 import com.graphhire.job.domain.repository.CompanyRepository;
@@ -121,6 +122,8 @@ public class AuthAppService {
         userRepository.save(user);
         clearLoginThrottle(username);
 
+        ensureCompanyUserCanLogin(user);
+
         // 步骤5：Sa-Token 登录
         doLogin(user);
 
@@ -179,7 +182,7 @@ public class AuthAppService {
      * 步骤6：执行 Sa-Token 登录
      * 步骤7：构建登录响应
      */
-    @Transactional
+    @Transactional(noRollbackFor = Exceptions.BusinessException.class)
     public LoginResponse registerCompany(CompanyRegisterCmd cmd) {
         // 步骤1：校验验证码
         validateVerifyCode(cmd.getUsername(), cmd.getVerifyCode(), "register");
@@ -216,6 +219,10 @@ public class AuthAppService {
         staff.setPost(isFirstForCompany ? CompanyStaff.POST_OWNER : CompanyStaff.POST_HR);
         staff.setStatus(isFirstForCompany ? CompanyStaff.STATUS_ACTIVE : CompanyStaff.STATUS_PENDING_JOIN);
         companyStaffRepository.save(staff);
+
+        if (!isFirstForCompany) {
+            throw Exceptions.BusinessException.of(20201, "已提交申请，等待企业负责人确认");
+        }
 
         // 步骤6：Sa-Token 登录
         doLogin(user);
@@ -494,6 +501,30 @@ public class AuthAppService {
         StpUtil.login(user.getId());
         StpUtil.getSession().set("role", user.getUserType().name());
         StpUtil.getSession().set("userType", user.getUserType().name());
+    }
+
+    private void ensureCompanyUserCanLogin(User user) {
+        if (user.getUserType() != UserType.COMPANY) {
+            return;
+        }
+        CompanyStaff staff = companyStaffRepository.findByUserId(user.getId())
+                .orElseThrow(() -> Exceptions.BusinessException.of("企业账号未绑定企业成员关系"));
+        String status = staff.getStatus();
+        if (StrUtil.isBlank(status)) {
+            return;
+        }
+        if (CompanyStaff.STATUS_PENDING_JOIN.equalsIgnoreCase(status)) {
+            throw Exceptions.BusinessException.of(20202, "账号审核中，暂未开通，请等待企业负责人确认");
+        }
+        if (CompanyStaff.STATUS_REJECTED.equalsIgnoreCase(status)) {
+            throw Exceptions.BusinessException.of(20203, "加入申请已被拒绝，请联系企业负责人");
+        }
+        if (CompanyStaff.STATUS_DISABLED.equalsIgnoreCase(status)) {
+            throw Exceptions.BusinessException.of(20204, "账号已被企业停用，请联系企业负责人");
+        }
+        if (!CompanyStaff.STATUS_ACTIVE.equalsIgnoreCase(status)) {
+            throw Exceptions.BusinessException.of("企业账号状态异常，暂不可登录");
+        }
     }
 
     /** 构建登录响应，包含 Token、过期时间、用户类型 */

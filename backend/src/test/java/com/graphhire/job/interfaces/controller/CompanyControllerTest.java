@@ -47,6 +47,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -388,6 +389,25 @@ class CompanyControllerTest {
                 assertEquals(200, result.getCode());
                 assertEquals(company, result.getData());
                 verify(companyAppService).getCompanyByUserId(userId);
+            }
+        }
+
+        @Test
+        @DisplayName("待加入成员访问企业信息应被拒绝")
+        void getCompanyInfo_PendingJoin_ShouldThrow() {
+            try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+                Long userId = 1L;
+                stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(userId);
+
+                CompanyStaff pendingStaff = new CompanyStaff();
+                pendingStaff.setUserId(userId);
+                pendingStaff.setCompanyId(100L);
+                pendingStaff.setPost("HR");
+                pendingStaff.setStatus(CompanyStaff.STATUS_PENDING_JOIN);
+                when(companyStaffRepository.findByUserId(userId)).thenReturn(Optional.of(pendingStaff));
+
+                assertThrows(Exception.class, () -> companyController.getCompanyInfo());
+                verify(companyAppService, never()).getCompanyByUserId(anyLong());
             }
         }
     }
