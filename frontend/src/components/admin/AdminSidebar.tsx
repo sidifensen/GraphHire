@@ -23,43 +23,25 @@ export function AdminSidebar({ isCollapsed = false }: { isCollapsed?: boolean })
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
       className="fixed left-0 top-0 h-full border-r border-slate-200 bg-white dark:bg-black dark:border-white/10 flex flex-col py-6 z-50 overflow-hidden transition-colors duration-300"
     >
-      <div className={cn(
-        "px-6 mb-8 flex items-center justify-between transition-all duration-300",
-        isCollapsed && "px-4 justify-center"
-      )}>
-        <AnimatePresence mode="wait">
+      <div className="px-6 mb-8 flex h-10 items-center overflow-hidden">
+        <div className="w-8 h-8 shrink-0">
+          <img
+            src="/favicon.svg"
+            alt="GraphHire logo"
+            data-testid="admin-brand-logo"
+            className="w-8 h-8 object-contain"
+          />
+        </div>
+        <AnimatePresence initial={false}>
           {!isCollapsed && (
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
+            <motion.h1
+              initial={{ opacity: 0, x: -6 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              className="flex h-10 items-center gap-3 overflow-hidden whitespace-nowrap"
+              exit={{ opacity: 0, x: -6 }}
+              className="ml-3 text-xl font-bold text-blue-600 font-display whitespace-nowrap"
             >
-              <div className="w-8 h-8 shrink-0">
-                <img
-                  src="/favicon.svg"
-                  alt="GraphHire logo"
-                  data-testid="admin-brand-logo"
-                  className="w-8 h-8 object-contain"
-                />
-              </div>
-              <h1 className="text-xl font-bold text-blue-600 font-display">GraphHire</h1>
-            </motion.div>
-          )}
-          {isCollapsed && (
-             <motion.div
-               initial={{ opacity: 0, scale: 0.8 }}
-               animate={{ opacity: 1, scale: 1 }}
-               exit={{ opacity: 0, scale: 0.8 }}
-               className="w-8 h-8 shrink-0"
-             >
-               <img
-                 src="/favicon.svg"
-                 alt="GraphHire logo"
-                 data-testid="admin-brand-logo"
-                 className="w-8 h-8 object-contain"
-               />
-             </motion.div>
+              GraphHire
+            </motion.h1>
           )}
         </AnimatePresence>
       </div>

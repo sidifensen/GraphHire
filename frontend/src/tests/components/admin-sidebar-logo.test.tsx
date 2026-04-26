@@ -1,9 +1,9 @@
-﻿import { render, screen } from '@testing-library/react';
+﻿import { render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 
 describe('AdminSidebar logo', () => {
-  it('uses favicon logo with consistent size in expanded and collapsed states', () => {
+  it('uses favicon logo with consistent size in expanded and collapsed states', async () => {
     const { rerender } = render(<AdminSidebar isCollapsed={false} />);
 
     const expandedLogo = screen.getByTestId('admin-brand-logo') as HTMLImageElement;
@@ -20,6 +20,9 @@ describe('AdminSidebar logo', () => {
     expect(collapsedLogo.getAttribute('src')).toBe('/favicon.svg');
     expect(collapsedLogo.className).toContain('w-8');
     expect(collapsedLogo.className).toContain('h-8');
-    expect(screen.queryByText('GraphHire')).not.toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.queryByText('GraphHire')).not.toBeInTheDocument();
+    });
   });
 });
