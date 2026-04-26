@@ -95,18 +95,16 @@ export function AdminSidebar({ isCollapsed = false }: { isCollapsed?: boolean })
                   <item.icon size={20} />
                 </motion.div>
 
-                <AnimatePresence initial={false}>
-                  {!isCollapsed && (
-                    <motion.span
-                      initial={{ opacity: 0, x: -5 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -5 }}
-                      className="relative z-10 whitespace-nowrap overflow-hidden"
-                    >
-                      {item.label}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
+                {!isCollapsed && (
+                  <motion.span
+                    initial={{ opacity: 0, x: -5 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={SIDEBAR_TRANSITION}
+                    className="relative z-10 whitespace-nowrap overflow-hidden"
+                  >
+                    {item.label}
+                  </motion.span>
+                )}
 
                 {!isActive && (
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-slate-50 dark:bg-slate-800 rounded-lg -z-20 transition-opacity duration-200" />
