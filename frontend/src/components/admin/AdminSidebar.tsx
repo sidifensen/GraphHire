@@ -21,7 +21,7 @@ export function AdminSidebar({ isCollapsed = false }: { isCollapsed?: boolean })
     <motion.aside
       animate={{ width: isCollapsed ? 80 : 256 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="fixed left-0 top-0 h-full border-r border-slate-200 bg-white dark:bg-slate-900 dark:border-white/10 flex flex-col py-6 z-50 overflow-hidden transition-colors duration-300"
+      className="fixed left-0 top-0 h-full border-r border-slate-200 bg-white dark:bg-black dark:border-white/10 flex flex-col py-6 z-50 overflow-hidden transition-colors duration-300"
     >
       <div className={cn(
         "px-6 mb-8 flex items-center justify-between transition-all duration-300",
@@ -132,11 +132,11 @@ export function AdminSidebar({ isCollapsed = false }: { isCollapsed?: boolean })
         )}>
           {!isCollapsed ? (
             <>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">系统版本 V2.4.0</p>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500">© 2024 GraphHire</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">系统版本 V2.5.0</p>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500">© 2026 GraphHire</p>
             </>
           ) : (
-            <div className="text-[10px] text-slate-400 dark:text-slate-500 font-bold">V 2.4</div>
+            <div className="text-[10px] text-slate-400 dark:text-slate-500 font-bold">V 2.5</div>
           )}
         </div>
       </div>
