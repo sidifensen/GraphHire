@@ -64,7 +64,9 @@ export function AdminSidebar({ isCollapsed = false }: { isCollapsed?: boolean })
               className="group relative block"
               title={isCollapsed ? item.label : ""}
             >
-              <div
+              <motion.div
+                layout
+                transition={{ type: "spring", stiffness: 420, damping: 34 }}
                 className={cn(
                   "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 ease-in-out font-medium text-sm",
                   isActive
@@ -90,18 +92,20 @@ export function AdminSidebar({ isCollapsed = false }: { isCollapsed?: boolean })
                 )}
 
                 <motion.div
+                  layout="position"
                   animate={{
                     scale: isActive ? 1.1 : 1,
                   }}
-                  transition={{ duration: 0.2 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 35 }}
                   className="shrink-0"
                 >
                   <item.icon size={20} />
                 </motion.div>
 
-                <AnimatePresence>
+                <AnimatePresence initial={false} mode="popLayout">
                   {!isCollapsed && (
                     <motion.span
+                      layout
                       initial={{ opacity: 0, x: -5 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -5 }}
@@ -115,7 +119,7 @@ export function AdminSidebar({ isCollapsed = false }: { isCollapsed?: boolean })
                 {!isActive && (
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-slate-50 dark:bg-slate-800 rounded-lg -z-20 transition-opacity duration-300" />
                 )}
-              </div>
+              </motion.div>
             </Link>
           );
         })}
