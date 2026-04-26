@@ -7,10 +7,16 @@ import { useRouter } from 'next/navigation';
 import { adminApi } from '@/lib/api/admin';
 import { adminAuthStore } from '@/lib/stores/auth-store';
 
+const isDev = process.env.NODE_ENV === 'development';
+const DEV_ADMIN_CREDENTIALS = {
+  username: 'admin',
+  password: '123456',
+};
+
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState(isDev ? DEV_ADMIN_CREDENTIALS.username : '');
+  const [password, setPassword] = useState(isDev ? DEV_ADMIN_CREDENTIALS.password : '');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -126,7 +132,7 @@ export default function AdminLoginPage() {
       </div>
 
       <footer className="font-display z-10 flex w-full flex-col items-center justify-between px-10 py-8 text-xs uppercase tracking-wider text-outline md:flex-row">
-        <p>© 2024 GRAPHHIRE. ALL RIGHTS RESERVED.</p>
+        <p>© 2026 GRAPHHIRE. ALL RIGHTS RESERVED.</p>
         <div className="mt-4 flex gap-6 lowercase md:mt-0">
           <a href="#" className="transition-colors hover:text-on-surface">
             隐私政策

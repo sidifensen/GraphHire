@@ -33,6 +33,18 @@ vi.mock('@/lib/api/admin', () => ({
 describe('AdminLoginPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.unstubAllEnvs();
+  });
+
+  it('开发模式下自动填充测试账号与密码', async () => {
+    vi.resetModules();
+    vi.stubEnv('NODE_ENV', 'development');
+    const { default: DevAdminLoginPage } = await import('@/app/admin/login/page');
+
+    render(<DevAdminLoginPage />);
+
+    expect(screen.getByLabelText('账号')).toHaveValue('admin');
+    expect(screen.getByLabelText('密码')).toHaveValue('123456');
   });
 
   it('展示重构后的登录页核心文案', () => {
