@@ -38,10 +38,10 @@ export default function AdminTopbar({ isCollapsed, setIsCollapsed }: AdminTopbar
   };
 
   return (
-    <header className="sticky top-0 z-40 flex h-20 w-full shrink-0 items-center justify-between border-b border-outline-variant bg-white/80 px-8 backdrop-blur-md transition-colors duration-300 dark:bg-black/60">
+    <header className="sticky top-0 z-40 flex h-20 w-full shrink-0 items-center justify-between border-b border-outline-variant bg-white/80 px-5 backdrop-blur-md transition-colors duration-300 dark:bg-black/60">
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="mr-4 rounded-lg p-2 text-outline transition-colors hover:bg-surface dark:hover:bg-slate-800"
+        className="mr-2 rounded-lg p-2 text-outline transition-colors hover:bg-surface dark:hover:bg-slate-800"
       >
         {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
       </button>
