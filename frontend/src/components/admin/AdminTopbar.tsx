@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 
-import { Bell, HelpCircle, Settings, Moon, Sun, Menu, ChevronLeft } from 'lucide-react';
+import { Bell, HelpCircle, Settings, Moon, Sun, ChevronRight, ChevronLeft } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { useState, useRef, useEffect } from 'react';
 import { adminAuthStore } from '@/lib/stores/auth-store';
@@ -43,7 +43,7 @@ export default function AdminTopbar({ isCollapsed, setIsCollapsed }: AdminTopbar
         onClick={() => setIsCollapsed(!isCollapsed)}
         className="mr-4 rounded-lg p-2 text-outline transition-colors hover:bg-surface dark:hover:bg-slate-800"
       >
-        {isCollapsed ? <Menu size={20} /> : <ChevronLeft size={20} />}
+        {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
       </button>
 
       <div className="flex flex-1 items-center" />

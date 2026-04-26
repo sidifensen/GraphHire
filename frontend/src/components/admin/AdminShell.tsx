@@ -11,8 +11,8 @@ interface AdminShellProps {
   children: ReactNode;
 }
 
-const SIDEBAR_COLLAPSED_WIDTH = 80;
-const SIDEBAR_EXPANDED_WIDTH = 256;
+const SIDEBAR_COLLAPSED_WIDTH = 72;
+const SIDEBAR_EXPANDED_WIDTH = 224;
 const SHELL_TRANSITION = { duration: 0.22, ease: 'easeOut' as const };
 
 export default function AdminShell({ children }: AdminShellProps) {

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -14,8 +14,8 @@ const navItems = [
   { icon: Activity, label: '任务监控', path: '/admin/task-monitor' },
 ];
 
-const SIDEBAR_COLLAPSED_WIDTH = 80;
-const SIDEBAR_EXPANDED_WIDTH = 256;
+const SIDEBAR_COLLAPSED_WIDTH = 72;
+const SIDEBAR_EXPANDED_WIDTH = 224;
 const SIDEBAR_TRANSITION = { duration: 0.22, ease: 'easeOut' as const };
 
 export function AdminSidebar({ isCollapsed = false }: { isCollapsed?: boolean }) {
