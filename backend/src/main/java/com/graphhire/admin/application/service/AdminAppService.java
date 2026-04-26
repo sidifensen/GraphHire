@@ -646,6 +646,7 @@ public class AdminAppService {
         List<Company> companies = loadCompaniesByStatus(status);
         List<AdminCompanyAuthItemResponse> list = companies.stream()
             .filter(company -> matchesCompany(company, keyword))
+            .sorted(Comparator.comparing(Company::getCreateTime, Comparator.nullsFirst(LocalDateTime::compareTo)).reversed())
             .map(this::toAdminCompanyAuthItem)
             .toList();
         return paginateList(list, page, pageSize);
