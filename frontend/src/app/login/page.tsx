@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
@@ -55,6 +55,15 @@ export default function LoginPage() {
   const [password, setPassword] = useState(isDev ? DEV_ACCOUNTS.jobseeker.password : '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [reviewPending, setReviewPending] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    const params = new URLSearchParams(window.location.search);
+    setReviewPending(params.get('review') === 'pending');
+  }, []);
 
   const handleRoleSwitch = (role: 'jobseeker' | 'recruiter') => {
     setActiveRole(role);
@@ -141,6 +150,11 @@ export default function LoginPage() {
               <h2 className="font-headline text-2xl font-bold mb-8 text-[#0e1c2c]">欢迎回来</h2>
 
               {/* Error Message */}
+              {reviewPending && (
+                <div className="mb-4 p-3 rounded-lg bg-blue-50 text-blue-700 text-sm">
+                  该公司正在审核中，当前无法进入企业端。请等待管理员审核通过后再登录。
+                </div>
+              )}
               {error && (
                 <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-600 text-sm">
                   {error}

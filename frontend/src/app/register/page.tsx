@@ -25,6 +25,7 @@ export default function RegisterPage() {
   const [verifyCodeLoading, setVerifyCodeLoading] = useState(false);
   const [verifyCodeCooldown, setVerifyCodeCooldown] = useState(0);
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
 
   const extractErrorMessage = (err: unknown, fallback: string) => {
     if (err && typeof err === 'object') {
@@ -55,6 +56,7 @@ export default function RegisterPage() {
   const handleRoleSwitch = (newRole: 'jobseeker' | 'recruiter') => {
     setRole(newRole);
     setError('');
+    setNotice('');
   };
 
   const handleSendVerifyCode = async () => {
@@ -65,6 +67,7 @@ export default function RegisterPage() {
 
     setVerifyCodeLoading(true);
     setError('');
+    setNotice('');
 
     try {
       await authApi.sendVerifyCode(email, 'register');
@@ -89,6 +92,7 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setNotice('');
 
     // Validations
     if (!email) {
@@ -155,6 +159,13 @@ export default function RegisterPage() {
       }
     } catch (err: unknown) {
       const message = extractErrorMessage(err, '注册失败，请稍后重试');
+      if (role === 'recruiter' && message.includes('该公司正在审核中，暂不可进入企业端')) {
+        setNotice('注册成功，企业已提交管理员审核。审核通过后即可进入企业端。');
+        window.setTimeout(() => {
+          router.push('/login?review=pending');
+        }, 1200);
+        return;
+      }
       setError(message);
     } finally {
       setLoading(false);
@@ -212,6 +223,11 @@ export default function RegisterPage() {
               {error && (
                 <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-600 text-sm">
                   {error}
+                </div>
+              )}
+              {notice && (
+                <div className="mb-4 p-3 rounded-lg bg-blue-50 text-blue-700 text-sm">
+                  {notice}
                 </div>
               )}
 
