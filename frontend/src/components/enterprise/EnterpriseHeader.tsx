@@ -12,7 +12,11 @@ export default function EnterpriseHeader() {
   const router = useRouter();
   const shouldReduceMotion = useReducedMotion();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const user = enterpriseAuthStore.getState().user;
+  const accountEmail = user?.email || user?.username || '企业账号';
+  const avatarSrc = user?.avatarUrl ?? null;
 
   const getActiveNav = () => {
     if (pathname.includes('/dashboard')) return 'dashboard';
@@ -44,6 +48,10 @@ export default function EnterpriseHeader() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    setAvatarError(false);
+  }, [avatarSrc]);
 
   return (
     <header className="flex justify-between items-center w-full px-6 py-3 h-16 z-10 border-b border-surface-container-highest/30 bg-[#F8F9FF]">
@@ -82,23 +90,30 @@ export default function EnterpriseHeader() {
       </div>
       <div className="flex items-center gap-4">
         <div className="relative" ref={dropdownRef}>
+          <span className="mr-2 text-sm text-[#394851]">{accountEmail}</span>
           <button
+            aria-label="账户菜单"
             onClick={() => setShowDropdown(!showDropdown)}
-            className="flex items-center gap-2 text-[#003DA6] hover:bg-blue-50 transition-colors p-2 rounded-full"
+            className="flex items-center justify-center w-10 h-10 text-[#003DA6] hover:bg-blue-50 transition-colors rounded-full overflow-hidden"
           >
-            <span className="material-symbols-outlined">account_circle</span>
+            {!avatarSrc || avatarError ? (
+              <span className="material-symbols-outlined">account_circle</span>
+            ) : (
+              <img
+                src={avatarSrc}
+                alt="企业用户头像"
+                className="w-full h-full object-cover"
+                onError={() => setAvatarError(true)}
+              />
+            )}
           </button>
           {showDropdown && (
             <div className="absolute right-0 top-full mt-2 w-48 bg-surface-container-lowest rounded-xl shadow-lg border border-surface-container-high overflow-hidden z-50">
               <div className="px-4 py-3 border-b border-surface-container-high">
-                <p className="text-sm font-medium text-on-surface">{enterpriseAuthStore.getState().user?.username}</p>
+                <p className="text-sm font-medium text-on-surface">{user?.username}</p>
                 <p className="text-xs text-tertiary">企业管理中心</p>
               </div>
               <div className="py-2">
-                <button className="w-full px-4 py-2 text-left text-sm text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors flex items-center gap-3">
-                  <span className="material-symbols-outlined text-lg">settings</span>
-                  设置
-                </button>
                 <button
                   onClick={handleLogout}
                   className="w-full px-4 py-2 text-left text-sm text-error hover:bg-error-container transition-colors flex items-center gap-3"

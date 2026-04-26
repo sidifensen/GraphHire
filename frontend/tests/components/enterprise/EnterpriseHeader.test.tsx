@@ -36,7 +36,7 @@ vi.mock('@/lib/stores/auth-store', () => ({
       isAuthenticated: true,
       accessToken: 'mock-token',
       refreshToken: 'mock-refresh',
-      user: { id: 1, username: 'TestUser', type: 'company' },
+      user: { id: 1, username: 'test@graphhire.com', email: 'test@graphhire.com', avatarUrl: 'https://cdn.example.com/avatar.png', type: 'company' },
       setAuth: vi.fn(),
       logout: vi.fn(),
     })),
@@ -138,22 +138,32 @@ describe('EnterpriseHeader', () => {
 
   it('renders account icon button', () => {
     render(<EnterpriseHeader />);
-    const accountButtons = document.querySelectorAll('button');
-    const accountButton = Array.from(accountButtons).find(btn =>
-      btn.querySelector('.material-symbols-outlined')
-    );
+    const accountButton = screen.getByRole('button', { name: '账户菜单' });
     expect(accountButton).toBeDefined();
+  });
+
+  it('shows account email on the right side', () => {
+    render(<EnterpriseHeader />);
+    expect(screen.getByText('test@graphhire.com')).toBeDefined();
+  });
+
+  it('renders real avatar image when avatarUrl exists', () => {
+    render(<EnterpriseHeader />);
+    const avatar = screen.getByAltText('企业用户头像');
+    expect(avatar).toBeDefined();
   });
 
   it('shows dropdown when account button is clicked', () => {
     render(<EnterpriseHeader />);
-    const accountButtons = document.querySelectorAll('button');
-    const accountButton = Array.from(accountButtons).find(btn =>
-      btn.querySelector('.material-symbols-outlined')
-    );
-    if (accountButton) {
-      fireEvent.click(accountButton);
-    }
+    const accountButton = screen.getByRole('button', { name: '账户菜单' });
+    fireEvent.click(accountButton);
+  });
+
+  it('does not show settings item in account dropdown', () => {
+    render(<EnterpriseHeader />);
+    const accountButton = screen.getByRole('button', { name: '账户菜单' });
+    fireEvent.click(accountButton);
+    expect(screen.queryByText('设置')).toBeNull();
   });
 
   it('has correct navigation links structure', () => {

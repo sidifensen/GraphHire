@@ -5,10 +5,10 @@ import type { UserType } from '@/lib/types';
 interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
-  user: { id: number; username: string; type: UserType; avatarUrl?: string | null } | null;
+  user: { id: number; username: string; email?: string; type: UserType; avatarUrl?: string | null } | null;
   isAuthenticated: boolean;
-  setAuth: (tokens: { accessToken: string; refreshToken?: string }, user: { id: number; username: string; type: UserType; avatarUrl?: string | null }) => void;
-  updateUser: (partial: Partial<{ id: number; username: string; type: UserType; avatarUrl?: string | null }>) => void;
+  setAuth: (tokens: { accessToken: string; refreshToken?: string }, user: { id: number; username: string; email?: string; type: UserType; avatarUrl?: string | null }) => void;
+  updateUser: (partial: Partial<{ id: number; username: string; email?: string; type: UserType; avatarUrl?: string | null }>) => void;
   logout: () => void;
 }
 
