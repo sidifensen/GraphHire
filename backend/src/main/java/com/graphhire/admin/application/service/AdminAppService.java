@@ -438,10 +438,10 @@ public class AdminAppService {
 
         companyRepository.save(company);
 
-        Long userId = company.getId();
+        Long userId = company.getUserId();
         String title = cmd.isApproved() ? "企业认证通过" : "企业认证拒绝";
         String content = adminDomainService.buildAuthNotificationText(company, cmd.isApproved(), cmd.getReason());
-        Notification notification = new Notification(userId, NotificationType.SYSTEM_NOTIFICATION, title, content);
+        Notification notification = new Notification(userId, NotificationType.COMPANY_AUTH_RESULT, title, content);
         notificationRepository.save(notification);
     }
 

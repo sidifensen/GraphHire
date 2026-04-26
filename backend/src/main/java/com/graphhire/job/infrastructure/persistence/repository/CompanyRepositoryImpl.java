@@ -160,7 +160,7 @@ public class CompanyRepositoryImpl implements CompanyRepository {
         return switch (status) {
             case PENDING_VERIFY -> 0;
             case VERIFIED -> 1;
-            case LOCKED, DISABLED -> 2;  // 被拒绝映射为DISABLED，因为枚举中没有REJECTED
+            case REJECTED, LOCKED, DISABLED -> 2;
             default -> 0;
         };
     }
@@ -171,7 +171,7 @@ public class CompanyRepositoryImpl implements CompanyRepository {
         return switch (dbStatus) {
             case 0 -> AuthStatus.PENDING_VERIFY;
             case 1 -> AuthStatus.VERIFIED;
-            case 2 -> AuthStatus.DISABLED;  // 被拒绝映射为DISABLED，因为枚举中没有REJECTED
+            case 2 -> AuthStatus.REJECTED;
             default -> AuthStatus.PENDING_VERIFY;
         };
     }

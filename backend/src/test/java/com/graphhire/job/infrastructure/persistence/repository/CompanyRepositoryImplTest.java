@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.lang.reflect.Method;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -123,6 +124,21 @@ class CompanyRepositoryImplTest {
             // Then
             assertEquals(2, result.size());
             assertEquals(AuthStatus.PENDING_VERIFY, result.get(0).getAuthStatus());
+        }
+
+        @Test
+        @DisplayName("Should map rejected status query and result correctly")
+        void findByAuthStatus_WhenRejected_MapsToRejected() {
+            // Given
+            List<CompanyPO> pos = List.of(createCompanyPO(9L, "Rejected Company", "91110000R", 2));
+            when(companyMapper.selectList(any())).thenReturn(pos);
+
+            // When
+            List<Company> result = companyRepository.findByAuthStatus(AuthStatus.REJECTED);
+
+            // Then
+            assertEquals(1, result.size());
+            assertEquals(AuthStatus.REJECTED, result.get(0).getAuthStatus());
         }
 
         @Test
@@ -246,6 +262,15 @@ class CompanyRepositoryImplTest {
             // Then
             assertEquals(0L, result);
         }
+    }
+
+    @Test
+    @DisplayName("Should map REJECTED auth status to DB value 2")
+    void toDbStatus_WhenRejected_ReturnsTwo() throws Exception {
+        Method method = CompanyRepositoryImpl.class.getDeclaredMethod("toDbStatus", AuthStatus.class);
+        method.setAccessible(true);
+        Integer dbStatus = (Integer) method.invoke(companyRepository, AuthStatus.REJECTED);
+        assertEquals(2, dbStatus);
     }
 
     private CompanyPO createCompanyPO(Long id, String companyName, String unifiedSocialCreditCode, Integer authStatus) {

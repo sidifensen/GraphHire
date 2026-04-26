@@ -212,6 +212,7 @@ class AdminAppServiceTest {
         void authCompanyApproveSuccess() {
             Company company = new Company();
             company.setId(1L);
+            company.setUserId(99L);
             company.setName("A");
             company.setAuthStatus(AuthStatus.PENDING_VERIFY);
             when(companyRepository.findById(1L)).thenReturn(Optional.of(company));
@@ -220,7 +221,12 @@ class AdminAppServiceTest {
             adminAppService.authCompany(1L, new AuthCompanyCmd(1L, true, null));
 
             verify(companyRepository).save(any(Company.class));
-            verify(notificationRepository).save(any(Notification.class));
+            ArgumentCaptor<Notification> notificationCaptor = ArgumentCaptor.forClass(Notification.class);
+            verify(notificationRepository).save(notificationCaptor.capture());
+            Notification saved = notificationCaptor.getValue();
+            assertEquals(99L, saved.getUserId());
+            assertEquals(NotificationType.COMPANY_AUTH_RESULT, saved.getType());
+            assertEquals("企业认证通过", saved.getTitle());
         }
 
         @Test
