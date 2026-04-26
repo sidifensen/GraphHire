@@ -21,6 +21,8 @@ import java.time.LocalDateTime;
 public class Company extends BaseAggregateRoot {
     /** 企业ID（主键） */
     private Long id;
+    /** 企业创建者用户ID */
+    private Long userId;
     /** 企业名称 */
     private String name;
     /** 统一社会信用代码 */
@@ -94,6 +96,14 @@ public class Company extends BaseAggregateRoot {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public String getName() {

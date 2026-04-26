@@ -499,6 +499,8 @@ class AuthAppServiceTest {
             }
 
             verify(companyRepository).save(argThat(company ->
+                Long.valueOf(201L).equals(company.getUserId())
+                    &&
                 "New Co".equals(company.getName())
                     && "91110000000000003X".equals(company.getUnifiedSocialCreditCode())
                     && AuthStatus.PENDING_VERIFY == company.getAuthStatus()

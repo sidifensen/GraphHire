@@ -206,6 +206,7 @@ public class AuthAppService {
         Optional<Company> existingCompany = companyRepository.findByName(cmd.getCompanyName());
         Company company = existingCompany.orElseGet(() -> {
             Company created = new Company();
+            created.setUserId(user.getId());
             created.setName(cmd.getCompanyName());
             created.setUnifiedSocialCreditCode(cmd.getUnifiedSocialCreditCode());
             created.setAuthStatus(AuthStatus.PENDING_VERIFY);
