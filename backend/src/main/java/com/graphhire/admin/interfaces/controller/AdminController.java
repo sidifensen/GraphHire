@@ -33,6 +33,12 @@ public class AdminController {
         return Result.success(adminAppService.getDashboardStats());
     }
 
+    @GetMapping("/dashboard/trend")
+    public Result<java.util.List<DashboardStatsResponse.TrendPoint>> getDashboardTrend(
+            @RequestParam(defaultValue = "DAY") String dimension) {
+        return Result.success(adminAppService.getDashboardTrend(dimension));
+    }
+
     @GetMapping("/statistics")
     public Result<DashboardStatsResponse> getStatistics() {
         return Result.success(adminAppService.getDashboardStats());

@@ -9,6 +9,7 @@ import {
   AlertTriangle,
   CheckCircle,
   Info,
+  Flame,
   Handshake,
   Network,
   TrendingUp,
@@ -283,7 +284,10 @@ export default function AdminDashboardPage() {
                   <div key={index}>
                   <div className="mb-2 flex justify-between text-sm">
                     <span className="font-semibold text-slate-700 dark:text-slate-300">{skill.name}</span>
-                    <span className={cn('font-mono', colorStyle.text)}>{skill.count} 次</span>
+                    <span className={cn('inline-flex items-center gap-1 text-sm font-semibold tabular-nums', colorStyle.text)}>
+                      <Flame size={14} />
+                      {skill.count}
+                    </span>
                   </div>
                   <div className="h-2 w-full rounded-full bg-slate-100 dark:bg-slate-800">
                     <div className={cn('h-2 rounded-full transition-all duration-1000', colorStyle.bar)} style={{ width: `${skill.heat}%` }} />

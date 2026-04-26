@@ -90,7 +90,8 @@ export default function EnterpriseHeader() {
       </div>
       <div className="flex items-center gap-4">
         <div className="relative" ref={dropdownRef}>
-          <span className="mr-2 text-sm text-[#394851]">{accountEmail}</span>
+          <div className="flex items-center gap-2">
+            <span className="max-w-[320px] truncate whitespace-nowrap text-sm text-[#394851]">{accountEmail}</span>
           <button
             aria-label="账户菜单"
             onClick={() => setShowDropdown(!showDropdown)}
@@ -107,6 +108,7 @@ export default function EnterpriseHeader() {
               />
             )}
           </button>
+          </div>
           {showDropdown && (
             <div className="absolute right-0 top-full mt-2 w-48 bg-surface-container-lowest rounded-xl shadow-lg border border-surface-container-high overflow-hidden z-50">
               <div className="px-4 py-3 border-b border-surface-container-high">

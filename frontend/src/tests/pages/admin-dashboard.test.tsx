@@ -13,6 +13,7 @@ vi.mock('@/context/ThemeContext', () => ({
 vi.mock('@/lib/api/admin', () => ({
   adminApi: {
     getDashboardStats: vi.fn(),
+    getDashboardTrend: vi.fn(),
   },
 }));
 
@@ -44,14 +45,17 @@ describe('AdminDashboardPage', () => {
       dailyActiveUsers: 8,
       updatedAt: '2026-04-26 12:00:00',
     });
+    vi.mocked(adminApi.getDashboardTrend).mockResolvedValue([]);
 
     render(<AdminDashboardPage />);
 
     expect(await screen.findByText('概览数据')).toBeInTheDocument();
     expect(screen.getByText('待办与预警')).toBeInTheDocument();
     expect(screen.getByText('最近系统动态')).toBeInTheDocument();
+    expect(screen.getByText('平台活跃趋势')).toBeInTheDocument();
     expect(screen.getByText('11')).toBeInTheDocument();
     expect(screen.getByText('6')).toBeInTheDocument();
     expect(adminApi.getDashboardStats).toHaveBeenCalledTimes(1);
+    expect(adminApi.getDashboardTrend).toHaveBeenCalledWith('DAY');
   });
 });

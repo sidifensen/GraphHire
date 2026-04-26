@@ -61,7 +61,7 @@ export default function AdminTopbar({ isCollapsed, setIsCollapsed }: AdminTopbar
         <div className="group flex cursor-pointer items-center gap-3 pl-2">
           <div className="hidden text-right sm:block">
             <p className="leading-none text-on-surface transition-colors group-hover:text-primary">{user?.type === 'ADMIN' ? '管理员' : user?.username || '管理员'}</p>
-            <p className="mt-1 text-[10px] uppercase tracking-tighter text-outline">Super Admin</p>
+            <p className="mt-1 text-[10px] tracking-tight text-outline">{user?.email || user?.username || 'admin@graphhire.com'}</p>
           </div>
           <div className="relative" ref={dropdownRef}>
             <button

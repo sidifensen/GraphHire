@@ -43,8 +43,8 @@ describe('AdminLoginPage', () => {
 
     render(<DevAdminLoginPage />);
 
-    expect(screen.getByLabelText('账号')).toHaveValue('admin');
-    expect(screen.getByLabelText('密码')).toHaveValue('123456');
+    expect(screen.getByLabelText('账号')).toHaveValue('admin@graphhire.com');
+    expect(screen.getByLabelText('密码')).toHaveValue('password123');
   });
 
   it('展示重构后的登录页核心文案', () => {

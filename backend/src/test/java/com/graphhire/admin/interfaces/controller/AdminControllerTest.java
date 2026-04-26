@@ -79,6 +79,19 @@ class AdminControllerTest {
             assertEquals(3, result.getData().getTotalCompanies());
             assertEquals(95.0, result.getData().getTaskSuccessRate());
         }
+
+        @Test
+        @DisplayName("按维度返回趋势数据")
+        void dashboardTrendSuccess() {
+            DashboardStatsResponse.TrendPoint point = new DashboardStatsResponse.TrendPoint("2026-04", 12, 3);
+            when(adminAppService.getDashboardTrend("MONTH")).thenReturn(List.of(point));
+
+            var result = adminController.getDashboardTrend("MONTH");
+
+            assertEquals(200, result.getCode());
+            assertEquals(1, result.getData().size());
+            assertEquals("2026-04", result.getData().get(0).getDate());
+        }
     }
 
     @Nested

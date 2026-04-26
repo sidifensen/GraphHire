@@ -9,8 +9,8 @@ import { adminAuthStore } from '@/lib/stores/auth-store';
 
 const isDev = process.env.NODE_ENV === 'development';
 const DEV_ADMIN_CREDENTIALS = {
-  username: 'admin',
-  password: '123456',
+  username: 'admin@graphhire.com',
+  password: 'password123',
 };
 
 export default function AdminLoginPage() {
