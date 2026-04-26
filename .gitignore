@@ -138,3 +138,4 @@ jacoco/
 /.tmp-logs/
 /.tmp-chrome-profile/
 /.spectrai-logs/
+/.npm-cache/
