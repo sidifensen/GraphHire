@@ -62,11 +62,11 @@ export function AdminSidebar({ isCollapsed = false }: { isCollapsed?: boolean })
             >
               <div
                 className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors duration-200 font-medium text-sm",
+                  "flex h-12 items-center gap-3 px-4 rounded-lg transition-colors duration-200 font-medium text-sm",
                   isActive
                     ? "text-blue-600 font-bold"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800",
-                  isCollapsed && "px-0 justify-center h-12"
+                  isCollapsed && "px-0 justify-center"
                 )}
               >
                 {isActive && (
