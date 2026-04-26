@@ -131,17 +131,9 @@ describe('EnterpriseHeader', () => {
     expect(employeesLink.getAttribute('href')).toBe('/enterprise/employees');
   });
 
-  it('renders notifications navigation link', () => {
+  it('does not render notifications navigation link', () => {
     render(<EnterpriseHeader />);
-    const notificationsLink = screen.getByRole('link', { name: /通知中心/ });
-    expect(notificationsLink).toBeDefined();
-    expect(notificationsLink.getAttribute('href')).toBe('/enterprise/notifications');
-  });
-
-  it('renders notification bell icon', () => {
-    render(<EnterpriseHeader />);
-    const notificationIcons = document.querySelectorAll('.material-symbols-outlined');
-    expect(notificationIcons.length).toBeGreaterThan(0);
+    expect(screen.queryByRole('link', { name: /通知中心/ })).toBeNull();
   });
 
   it('renders account icon button', () => {
@@ -167,6 +159,6 @@ describe('EnterpriseHeader', () => {
   it('has correct navigation links structure', () => {
     render(<EnterpriseHeader />);
     const allLinks = screen.getAllByRole('link');
-    expect(allLinks.length).toBeGreaterThanOrEqual(5);
+    expect(allLinks.length).toBeGreaterThanOrEqual(4);
   });
 });

@@ -19,7 +19,6 @@ export default function EnterpriseHeader() {
     if (pathname.includes('/jobs')) return 'jobs';
     if (pathname.includes('/recommendations')) return 'recommendations';
     if (pathname.includes('/employees')) return 'employees';
-    if (pathname.includes('/notifications')) return 'notifications';
     return 'dashboard';
   };
 
@@ -59,7 +58,6 @@ export default function EnterpriseHeader() {
             { key: 'jobs', label: '职位管理', href: '/enterprise/jobs' },
             { key: 'recommendations', label: '候选人推荐', href: '/enterprise/recommendations' },
             { key: 'employees', label: '员工管理', href: '/enterprise/employees' },
-            { key: 'notifications', label: '通知中心', href: '/enterprise/notifications' },
           ].map((item) => {
             const isActive = activeNav === item.key;
             return (
@@ -83,10 +81,6 @@ export default function EnterpriseHeader() {
         </nav>
       </div>
       <div className="flex items-center gap-4">
-        <Link href="/enterprise/notifications" className="text-[#003DA6] hover:bg-blue-50 transition-colors p-2 rounded-full flex items-center justify-center relative">
-          <span className="material-symbols-outlined">notifications</span>
-          <span className="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
-        </Link>
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setShowDropdown(!showDropdown)}
