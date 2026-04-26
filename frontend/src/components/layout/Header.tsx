@@ -20,6 +20,7 @@ export default function Header() {
   const shouldReduceMotion = useReducedMotion();
   const isAuthenticated = userAuthStore((state) => state.isAuthenticated);
   const user = userAuthStore((state) => state.user);
+  const showNotificationBadge = isAuthenticated;
   const [showDropdown, setShowDropdown] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
   const avatarSrc = user?.avatarUrl ?? null;
@@ -79,8 +80,9 @@ export default function Header() {
         <div className="flex items-center gap-6">
           {isAuthenticated ? (
             <>
-              <button className="hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-all duration-300 p-2 rounded-full active:scale-95 opacity-80 transition-transform">
-                <span className="material-symbols-outlined">chat_bubble</span>
+              <button onClick={() => router.push('/notifications')} className="hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-all duration-300 p-2 rounded-full active:scale-95 opacity-80 transition-transform relative">
+                <span className="material-symbols-outlined">notifications</span>
+                {showNotificationBadge && <span className="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>}
               </button>
               <div className="relative flex items-center gap-4">
               <button
