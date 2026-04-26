@@ -74,6 +74,13 @@ public class MatchAppService {
     @Transactional
     public void triggerMatchForResume(Long resumeId) {
         clearMatchCacheForResume(resumeId);
+        List<Job> publishedJobs = jobRepository.findAll().stream()
+            .filter(job -> job.getStatus() == JobStatus.PUBLISHED)
+            .toList();
+        for (Job job : publishedJobs) {
+            MatchRecord record = matchDomainService.calculateMatch(resumeId, job.getId());
+            matchRecordRepository.save(record);
+        }
     }
 
     /**
@@ -87,6 +94,11 @@ public class MatchAppService {
     @Transactional
     public void triggerMatchForJob(Long jobId) {
         clearMatchCacheForJob(jobId);
+        List<Resume> parsedResumes = resumeRepository.findByParseStatus(ParseStatus.SUCCESS);
+        for (Resume resume : parsedResumes) {
+            MatchRecord record = matchDomainService.calculateMatch(resume.getId(), jobId);
+            matchRecordRepository.save(record);
+        }
     }
 
     @Transactional

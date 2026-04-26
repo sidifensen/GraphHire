@@ -34,8 +34,10 @@ import com.graphhire.match.domain.repository.MatchRecordRepository;
 import com.graphhire.match.interfaces.dto.response.MatchDetailResponse;
 import com.graphhire.skill.infrastructure.graph.SkillGraphClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -75,6 +77,9 @@ public class CompanyController {
 
     @Autowired
     private ApplicationAppService applicationAppService;
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     @GetMapping("/info")
     public Result<Company> getCompanyInfo() {
@@ -261,7 +266,18 @@ public class CompanyController {
         Long companyId = currentCompanyId();
         Job job = jobAppService.getJobById(jobId);
         ensureJobOwnership(job, companyId);
-        matchAppService.triggerMatchForJob(jobId);
+
+        String lockKey = "match:job:trigger:" + jobId;
+        Boolean locked = stringRedisTemplate.opsForValue().setIfAbsent(lockKey, "1", Duration.ofMinutes(5));
+        if (!Boolean.TRUE.equals(locked)) {
+            return Result.success();
+        }
+
+        try {
+            matchAppService.triggerMatchForJob(jobId);
+        } finally {
+            stringRedisTemplate.delete(lockKey);
+        }
         return Result.success();
     }
 

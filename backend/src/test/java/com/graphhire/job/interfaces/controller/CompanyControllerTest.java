@@ -34,9 +34,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -80,6 +83,12 @@ class CompanyControllerTest {
     @Mock
     private ApplicationAppService applicationAppService;
 
+    @Mock
+    private StringRedisTemplate stringRedisTemplate;
+
+    @Mock
+    private ValueOperations<String, String> valueOperations;
+
     @InjectMocks
     private CompanyController companyController;
 
@@ -88,6 +97,7 @@ class CompanyControllerTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(companyController).build();
+        lenient().when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
     }
 
     @Nested
@@ -938,12 +948,39 @@ class CompanyControllerTest {
                 job.setId(jobId);
                 job.setCompanyId(companyId);
                 when(jobAppService.getJobById(jobId)).thenReturn(job);
+                when(valueOperations.setIfAbsent(eq("match:job:trigger:" + jobId), eq("1"), any(Duration.class))).thenReturn(true);
 
                 var result = companyController.triggerMatchForJob(jobId);
 
                 assertNotNull(result);
                 assertEquals(200, result.getCode());
                 verify(matchAppService).triggerMatchForJob(jobId);
+                verify(stringRedisTemplate).delete("match:job:trigger:" + jobId);
+            }
+        }
+
+        @Test
+        @DisplayName("同一岗位重复触发时应忽略")
+        void triggerMatchForJob_WhenLocked_ShouldIgnore() {
+            try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+                Long userId = 1L;
+                Long companyId = 10L;
+                Long jobId = 101L;
+
+                stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(userId);
+                when(companyAppService.getCompanyIdByUserId(userId)).thenReturn(companyId);
+
+                Job job = new Job();
+                job.setId(jobId);
+                job.setCompanyId(companyId);
+                when(jobAppService.getJobById(jobId)).thenReturn(job);
+                when(valueOperations.setIfAbsent(eq("match:job:trigger:" + jobId), eq("1"), any(Duration.class))).thenReturn(false);
+
+                var result = companyController.triggerMatchForJob(jobId);
+
+                assertNotNull(result);
+                assertEquals(200, result.getCode());
+                verify(matchAppService, never()).triggerMatchForJob(jobId);
             }
         }
     }
