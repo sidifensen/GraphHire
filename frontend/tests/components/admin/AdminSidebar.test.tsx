@@ -38,12 +38,14 @@ describe('AdminSidebar', () => {
 
   it('展开和折叠状态下品牌区高度保持一致', () => {
     const { unmount } = render(<AdminSidebar isCollapsed={false} />);
-    const expandedBrandContainer = screen.getByText('GraphHire').parentElement;
-    expect(expandedBrandContainer).toHaveClass('h-10');
+    const expandedBrandLogo = screen.getByAltText('GraphHire logo');
+    expect(expandedBrandLogo).toHaveClass('h-8');
+    expect(expandedBrandLogo).toHaveClass('w-8');
     unmount();
 
     render(<AdminSidebar isCollapsed={true} />);
-    const collapsedBrandContainer = screen.getByTitle('仪表盘').closest('aside')?.querySelector('.h-10.w-10');
-    expect(collapsedBrandContainer).toBeInTheDocument();
+    const collapsedBrandLogo = screen.getByAltText('GraphHire logo');
+    expect(collapsedBrandLogo).toHaveClass('h-8');
+    expect(collapsedBrandLogo).toHaveClass('w-8');
   });
 });

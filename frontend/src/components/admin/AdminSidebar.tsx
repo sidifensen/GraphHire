@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, ShieldCheck, Users, Tags, Activity, Network } from 'lucide-react';
+import { LayoutDashboard, ShieldCheck, Users, Tags, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -35,8 +35,13 @@ export function AdminSidebar({ isCollapsed = false }: { isCollapsed?: boolean })
               exit={{ opacity: 0, x: -10 }}
               className="flex h-10 items-center gap-3 overflow-hidden whitespace-nowrap"
             >
-              <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white shrink-0">
-                <Network size={20} />
+              <div className="w-8 h-8 shrink-0">
+                <img
+                  src="/favicon.svg"
+                  alt="GraphHire logo"
+                  data-testid="admin-brand-logo"
+                  className="w-8 h-8 object-contain"
+                />
               </div>
               <h1 className="text-xl font-bold text-blue-600 font-display">GraphHire</h1>
             </motion.div>
@@ -46,9 +51,14 @@ export function AdminSidebar({ isCollapsed = false }: { isCollapsed?: boolean })
                initial={{ opacity: 0, scale: 0.8 }}
                animate={{ opacity: 1, scale: 1 }}
                exit={{ opacity: 0, scale: 0.8 }}
-               className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white shrink-0"
+               className="w-8 h-8 shrink-0"
              >
-               <Network size={24} />
+               <img
+                 src="/favicon.svg"
+                 alt="GraphHire logo"
+                 data-testid="admin-brand-logo"
+                 className="w-8 h-8 object-contain"
+               />
              </motion.div>
           )}
         </AnimatePresence>
