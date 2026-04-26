@@ -15,6 +15,10 @@ function formatDetailSalary(job?: EnterpriseJobDetail | null) {
   return `${Math.round(job.salaryRange.min / 1000)}k-${Math.round(job.salaryRange.max / 1000)}k`;
 }
 
+function hasText(value?: string | null) {
+  return Boolean(value && value.trim());
+}
+
 export default function EnterpriseJobDetailPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
@@ -128,26 +132,34 @@ export default function EnterpriseJobDetailPage() {
               <span className="px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface text-xs font-medium">{formatJobStatus(job.status)}</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div>
-                <div className="text-on-surface-variant">部门</div>
-                <div className="font-medium text-on-surface">{job.department || '未填写'}</div>
-              </div>
-              <div>
-                <div className="text-on-surface-variant">城市</div>
-                <div className="font-medium text-on-surface">{job.location?.city || '未填写'}</div>
-              </div>
-              <div>
-                <div className="text-on-surface-variant">招聘人数</div>
-                <div className="font-medium text-on-surface">{job.headcount ?? '未填写'}</div>
-              </div>
+              {hasText(job.department) ? (
+                <div>
+                  <div className="text-on-surface-variant">部门</div>
+                  <div className="font-medium text-on-surface">{job.department}</div>
+                </div>
+              ) : null}
+              {hasText(job.location?.city) ? (
+                <div>
+                  <div className="text-on-surface-variant">城市</div>
+                  <div className="font-medium text-on-surface">{job.location?.city}</div>
+                </div>
+              ) : null}
+              {job.headcount != null ? (
+                <div>
+                  <div className="text-on-surface-variant">招聘人数</div>
+                  <div className="font-medium text-on-surface">{job.headcount}</div>
+                </div>
+              ) : null}
               <div>
                 <div className="text-on-surface-variant">薪资范围</div>
                 <div className="font-medium text-primary">{formatDetailSalary(job)}</div>
               </div>
-              <div>
-                <div className="text-on-surface-variant">发布时间</div>
-                <div className="font-medium text-on-surface">{job.publishedAt || '未发布'}</div>
-              </div>
+              {hasText(job.publishedAt) ? (
+                <div>
+                  <div className="text-on-surface-variant">发布时间</div>
+                  <div className="font-medium text-on-surface">{job.publishedAt}</div>
+                </div>
+              ) : null}
             </div>
           </div>
 
