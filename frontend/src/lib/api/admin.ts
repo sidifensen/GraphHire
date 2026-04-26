@@ -20,6 +20,40 @@ export interface DashboardTrendPoint {
   activeUsers: number;
   newData: number;
 }
+export type DashboardTrendDimension = 'DAY' | 'WEEK' | 'MONTH';
+
+export interface AdminActiveOverview {
+  activeUserCount: number;
+  taskSuccessRate: number;
+  matchCount: number;
+}
+
+export interface AdminTodoItem {
+  type: string;
+  title: string;
+  description: string;
+  actionText: string;
+  actionPath: string;
+  level: 'LOW' | 'MEDIUM' | 'HIGH' | string;
+  count: number;
+  updatedAt: string;
+}
+
+export interface AdminHotSkillItem {
+  name: string;
+  heat: number;
+  count: number;
+}
+
+export interface AdminSystemActivityItem {
+  type: string;
+  actor?: string;
+  action: string;
+  target?: string;
+  detail?: string;
+  createdAt: string;
+  level: 'INFO' | 'MEDIUM' | 'HIGH' | string;
+}
 
 export interface AdminDashboardStats {
   totalUsers: number;
@@ -44,6 +78,10 @@ export interface AdminDashboardStats {
   pendingSkillSuggestions: number;
   updatedAt: string;
   trend: DashboardTrendPoint[];
+  activeOverview?: AdminActiveOverview;
+  todos?: AdminTodoItem[];
+  hotSkills?: AdminHotSkillItem[];
+  systemActivities?: AdminSystemActivityItem[];
 }
 
 // ============ Company Auth ============
@@ -203,6 +241,11 @@ export const adminApi = {
 
   getDashboardStats: async (): Promise<AdminDashboardStats> => {
     const response = await apiClient.get('/admin/dashboard/stats');
+    return response.data;
+  },
+
+  getDashboardTrend: async (dimension: DashboardTrendDimension): Promise<DashboardTrendPoint[]> => {
+    const response = await apiClient.get('/admin/dashboard/trend', { params: { dimension } });
     return response.data;
   },
 

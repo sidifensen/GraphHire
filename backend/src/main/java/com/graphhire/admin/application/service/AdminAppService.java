@@ -19,6 +19,8 @@ import com.graphhire.auth.domain.model.User;
 import com.graphhire.auth.domain.repository.UserRepository;
 import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.repository.PersonInfoRepository;
+import com.graphhire.resume.domain.model.Resume;
+import com.graphhire.resume.domain.repository.ResumeRepository;
 import com.graphhire.auth.domain.vo.AuthStatus;
 import com.graphhire.common.vo.PageResult;
 import com.graphhire.job.application.service.CompanyAppService;
@@ -38,14 +40,21 @@ import com.graphhire.skill.domain.model.SkillTag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONUtil;
+import cn.hutool.json.JSONObject;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.TemporalAdjusters;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import com.graphhire.resume.domain.vo.ParseStatus;
 
 /**
  * 管理员应用服务
@@ -85,6 +94,9 @@ public class AdminAppService {
 
     @Autowired
     private PersonInfoRepository personInfoRepository;
+
+    @Autowired
+    private ResumeRepository resumeRepository;
 
     @Autowired
     private CompanyAppService companyAppService;
@@ -152,9 +164,14 @@ public class AdminAppService {
         response.setMatchGrowthRate(calcGrowthRate(currentMonthMatches, previousMonthMatches));
         response.setMatchConversionRate(totalResumes == 0 ? 0D : Math.min(100D, matchCount * 100.0 / totalResumes));
         response.setWeeklyNewCompanies(weeklyNewCompanies);
-        response.setPendingSkillSuggestions(0L);
+        List<SkillTag> allSkillTags = skillTagAppService.getAllSkillTags();
+        response.setPendingSkillSuggestions(Math.max(0, allSkillTags.size() - 5));
         response.setUpdatedAt(formatDateTime(now));
-        response.setTrend(new ArrayList<>());
+        response.setTrend(getDashboardTrend("DAY"));
+        response.setActiveOverview(buildActiveOverview(dailyActiveUsers, response.getTaskSuccessRate(), matchCount));
+        response.setTodos(buildTodoItems(failedTaskCount, pendingCompanyAudit, allSkillTags.size(), now));
+        response.setHotSkills(buildHotSkills());
+        response.setSystemActivities(buildSystemActivities(tasks, allSkillTags));
         return response;
     }
 
@@ -164,6 +181,244 @@ public class AdminAppService {
         }
         return ((double) (current - previous) / previous) * 100.0;
     }
+
+    public List<DashboardStatsResponse.TrendPoint> getDashboardTrend(String dimension) {
+        String normalized = dimension == null ? "DAY" : dimension.trim().toUpperCase();
+        return switch (normalized) {
+            case "WEEK" -> buildRecentWeeksTrend(12);
+            case "MONTH" -> buildRecentMonthsTrend(12);
+            default -> buildRecentDaysTrend(30);
+        };
+    }
+
+    private List<DashboardStatsResponse.TrendPoint> buildRecentDaysTrend(int days) {
+        List<DashboardStatsResponse.TrendPoint> trend = new ArrayList<>();
+        LocalDate today = LocalDate.now();
+        for (int i = days - 1; i >= 0; i--) {
+            LocalDate date = today.minusDays(i);
+            LocalDateTime start = date.atStartOfDay();
+            LocalDateTime end = start.plusDays(1);
+            DashboardStatsResponse.TrendPoint point = new DashboardStatsResponse.TrendPoint();
+            point.setDate(date.toString());
+            point.setActiveUsers(adminRepository.countPersonsLastLoginBetween(start, end));
+            point.setNewData(adminRepository.countMatchRecordsCreatedBetween(start, end));
+            trend.add(point);
+        }
+        return trend;
+    }
+
+    private List<DashboardStatsResponse.TrendPoint> buildRecentWeeksTrend(int weeks) {
+        List<DashboardStatsResponse.TrendPoint> trend = new ArrayList<>();
+        LocalDate now = LocalDate.now();
+        LocalDate currentWeekStart = now.with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY));
+        for (int i = weeks - 1; i >= 0; i--) {
+            LocalDate weekStart = currentWeekStart.minusWeeks(i);
+            LocalDateTime start = weekStart.atStartOfDay();
+            LocalDateTime end = start.plusWeeks(1);
+            DashboardStatsResponse.TrendPoint point = new DashboardStatsResponse.TrendPoint();
+            point.setDate(weekStart + " ~ " + weekStart.plusDays(6));
+            point.setActiveUsers(adminRepository.countPersonsLastLoginBetween(start, end));
+            point.setNewData(adminRepository.countMatchRecordsCreatedBetween(start, end));
+            trend.add(point);
+        }
+        return trend;
+    }
+
+    private List<DashboardStatsResponse.TrendPoint> buildRecentMonthsTrend(int months) {
+        List<DashboardStatsResponse.TrendPoint> trend = new ArrayList<>();
+        LocalDate currentMonth = LocalDate.now().withDayOfMonth(1);
+        for (int i = months - 1; i >= 0; i--) {
+            LocalDate monthStart = currentMonth.minusMonths(i);
+            LocalDateTime start = monthStart.atStartOfDay();
+            LocalDateTime end = monthStart.plusMonths(1).atStartOfDay();
+            DashboardStatsResponse.TrendPoint point = new DashboardStatsResponse.TrendPoint();
+            point.setDate(monthStart.format(DateTimeFormatter.ofPattern("yyyy-MM")));
+            point.setActiveUsers(adminRepository.countPersonsLastLoginBetween(start, end));
+            point.setNewData(adminRepository.countMatchRecordsCreatedBetween(start, end));
+            trend.add(point);
+        }
+        return trend;
+    }
+
+    private DashboardStatsResponse.ActiveOverview buildActiveOverview(long dailyActiveUsers, double taskSuccessRate, long matchCount) {
+        DashboardStatsResponse.ActiveOverview overview = new DashboardStatsResponse.ActiveOverview();
+        overview.setActiveUserCount(dailyActiveUsers);
+        overview.setTaskSuccessRate(taskSuccessRate);
+        overview.setMatchCount(matchCount);
+        return overview;
+    }
+
+    private List<DashboardStatsResponse.TodoItem> buildTodoItems(long failedTaskCount, long pendingCompanyAudit, int skillCount, LocalDateTime now) {
+        List<DashboardStatsResponse.TodoItem> todos = new ArrayList<>();
+
+        DashboardStatsResponse.TodoItem failedTaskTodo = new DashboardStatsResponse.TodoItem();
+        failedTaskTodo.setType("FAILED_TASK");
+        failedTaskTodo.setTitle("图谱构建任务失败预警");
+        failedTaskTodo.setDescription("失败任务 " + failedTaskCount + " 个，请优先排查失败日志。");
+        failedTaskTodo.setActionText("查看日志");
+        failedTaskTodo.setActionPath("/admin/task-monitor?status=FAILED");
+        failedTaskTodo.setLevel(failedTaskCount > 0 ? "HIGH" : "LOW");
+        failedTaskTodo.setCount(failedTaskCount);
+        failedTaskTodo.setUpdatedAt(formatDateTime(now));
+        todos.add(failedTaskTodo);
+
+        DashboardStatsResponse.TodoItem pendingCompanyTodo = new DashboardStatsResponse.TodoItem();
+        pendingCompanyTodo.setType("PENDING_COMPANY_AUDIT");
+        pendingCompanyTodo.setTitle("待审核企业入驻");
+        pendingCompanyTodo.setDescription("当前待审核企业 " + pendingCompanyAudit + " 家。");
+        pendingCompanyTodo.setActionText("立即审核");
+        pendingCompanyTodo.setActionPath("/admin/enterprise-review");
+        pendingCompanyTodo.setLevel(pendingCompanyAudit > 10 ? "HIGH" : pendingCompanyAudit > 0 ? "MEDIUM" : "LOW");
+        pendingCompanyTodo.setCount(pendingCompanyAudit);
+        pendingCompanyTodo.setUpdatedAt(formatDateTime(now));
+        todos.add(pendingCompanyTodo);
+
+        DashboardStatsResponse.TodoItem skillTodo = new DashboardStatsResponse.TodoItem();
+        skillTodo.setType("SKILL_GOVERNANCE");
+        skillTodo.setTitle("技能标签治理提醒");
+        skillTodo.setDescription("当前技能标签 " + skillCount + " 个，请定期处理同义词与命名规范。");
+        skillTodo.setActionText("去处理");
+        skillTodo.setActionPath("/admin/skill-tags");
+        skillTodo.setLevel(skillCount > 0 ? "MEDIUM" : "LOW");
+        skillTodo.setCount(skillCount);
+        skillTodo.setUpdatedAt(formatDateTime(now));
+        todos.add(skillTodo);
+
+        return todos;
+    }
+
+    private List<DashboardStatsResponse.HotSkillItem> buildHotSkills() {
+        Map<String, Integer> skillCountMap = new HashMap<>();
+        List<Resume> parsedResumes = resumeRepository.findByParseStatus(ParseStatus.SUCCESS);
+        for (Resume resume : parsedResumes) {
+            if (!Boolean.TRUE.equals(resume.getIsDefault())) {
+                continue;
+            }
+            for (String skill : extractSkillsFromParseResult(resume.getParseResult())) {
+                String normalized = skill == null ? null : skill.trim();
+                if (normalized == null || normalized.isEmpty()) {
+                    continue;
+                }
+                skillCountMap.merge(normalized, 1, Integer::sum);
+            }
+        }
+        List<Map.Entry<String, Integer>> sortedSkills = new ArrayList<>(skillCountMap.entrySet());
+        sortedSkills.sort(Map.Entry.<String, Integer>comparingByValue().reversed());
+        int maxUsage = sortedSkills.isEmpty() ? 0 : sortedSkills.get(0).getValue();
+        List<DashboardStatsResponse.HotSkillItem> hotSkills = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : sortedSkills.stream().limit(5).toList()) {
+            DashboardStatsResponse.HotSkillItem item = new DashboardStatsResponse.HotSkillItem();
+            item.setName(entry.getKey());
+            item.setCount(entry.getValue());
+            item.setHeat(maxUsage <= 0 ? 0 : (int) Math.round((entry.getValue() * 100.0) / maxUsage));
+            hotSkills.add(item);
+        }
+        return hotSkills;
+    }
+
+    private List<String> extractSkillsFromParseResult(String parseResult) {
+        if (parseResult == null || parseResult.isBlank()) {
+            return List.of();
+        }
+        try {
+            JSONObject root = JSONUtil.parseObj(parseResult);
+            JSONArray skillsArray = root.getJSONArray("skills");
+            if (skillsArray == null) {
+                skillsArray = root.getJSONArray("Skills");
+            }
+            if (skillsArray == null) {
+                JSONObject nested = root.getJSONObject("parse_result");
+                if (nested != null) {
+                    skillsArray = nested.getJSONArray("skills");
+                    if (skillsArray == null) {
+                        skillsArray = nested.getJSONArray("Skills");
+                    }
+                }
+            }
+            if (skillsArray == null) {
+                return List.of();
+            }
+            return skillsArray.stream()
+                .map(value -> value == null ? null : value.toString())
+                .filter(value -> value != null && !value.isBlank())
+                .toList();
+        } catch (Exception ignored) {
+            return List.of();
+        }
+    }
+
+    private List<DashboardStatsResponse.SystemActivityItem> buildSystemActivities(List<ParseTask> tasks, List<SkillTag> allSkillTags) {
+        List<TimedActivity> candidates = new ArrayList<>();
+
+        for (ParseTask task : tasks) {
+            LocalDateTime taskTime = task.getUpdatedAt() != null ? task.getUpdatedAt() :
+                task.getCompletedAt() != null ? task.getCompletedAt() : task.getCreatedAt();
+            if (taskTime == null || task.getStatus() == null) {
+                continue;
+            }
+            DashboardStatsResponse.SystemActivityItem item = new DashboardStatsResponse.SystemActivityItem();
+            item.setType("TASK");
+            item.setActor("System");
+            item.setAction(task.getStatus() == ParseTask.TaskStatus.FAILED ? "解析任务失败" : "解析任务状态更新");
+            item.setTarget("#" + (task.getId() == null ? "-" : task.getId()));
+            item.setDetail(task.getStatus() == ParseTask.TaskStatus.FAILED ? safeText(task.getErrorMessage(), "请查看日志") : "状态：" + mapTaskStatus(task.getStatus()));
+            item.setCreatedAt(formatDateTime(taskTime));
+            item.setLevel(task.getStatus() == ParseTask.TaskStatus.FAILED ? "HIGH" : "INFO");
+            candidates.add(new TimedActivity(taskTime, item));
+        }
+
+        Map<String, LocalDateTime> skillActivityTime = new HashMap<>();
+        for (SkillTag skillTag : allSkillTags) {
+            LocalDateTime updateTime = skillTag.getUpdateTime() != null ? skillTag.getUpdateTime() : skillTag.getCreateTime();
+            if (updateTime == null || skillTag.getName() == null) {
+                continue;
+            }
+            skillActivityTime.merge(skillTag.getName(), updateTime, (oldTime, newTime) -> oldTime.isAfter(newTime) ? oldTime : newTime);
+        }
+        for (Map.Entry<String, LocalDateTime> entry : skillActivityTime.entrySet()) {
+            DashboardStatsResponse.SystemActivityItem item = new DashboardStatsResponse.SystemActivityItem();
+            item.setType("SKILL");
+            item.setActor("Admin");
+            item.setAction("更新技能标签");
+            item.setTarget(entry.getKey());
+            item.setDetail("技能标签库发生变更。");
+            item.setCreatedAt(formatDateTime(entry.getValue()));
+            item.setLevel("INFO");
+            candidates.add(new TimedActivity(entry.getValue(), item));
+        }
+
+        for (Company company : loadCompaniesByStatus(null)) {
+            LocalDateTime eventTime = company.getUpdatedAt() != null ? company.getUpdatedAt() : company.getCreateTime();
+            if (eventTime == null) {
+                continue;
+            }
+            DashboardStatsResponse.SystemActivityItem item = new DashboardStatsResponse.SystemActivityItem();
+            item.setType("COMPANY_AUTH");
+            item.setActor("Admin");
+            item.setAction("企业认证状态变更");
+            item.setTarget(company.getName());
+            item.setDetail("状态：" + mapCompanyStatus(company.getAuthStatus()));
+            item.setCreatedAt(formatDateTime(eventTime));
+            item.setLevel(AuthStatus.REJECTED.equals(company.getAuthStatus()) ? "HIGH" : "INFO");
+            candidates.add(new TimedActivity(eventTime, item));
+        }
+
+        candidates.sort(Comparator.comparing(TimedActivity::time).reversed());
+        return candidates.stream()
+            .limit(8)
+            .map(TimedActivity::item)
+            .toList();
+    }
+
+    private int safeUsageCount(Integer usageCount) {
+        return usageCount == null ? 0 : usageCount;
+    }
+
+    private String safeText(String text, String fallback) {
+        return (text == null || text.isBlank()) ? fallback : text;
+    }
+
+    private record TimedActivity(LocalDateTime time, DashboardStatsResponse.SystemActivityItem item) {}
 
     @Transactional
     public void authCompany(Long companyId, AuthCompanyCmd cmd) {

@@ -32,6 +32,10 @@ public class DashboardStatsResponse {
     private long weeklyNewCompanies;
     private long pendingSkillSuggestions;
     private String updatedAt;
+    private ActiveOverview activeOverview;
+    private List<TodoItem> todos = new ArrayList<>();
+    private List<HotSkillItem> hotSkills = new ArrayList<>();
+    private List<SystemActivityItem> systemActivities = new ArrayList<>();
 
     private List<TrendPoint> trend = new ArrayList<>();
 
@@ -234,6 +238,38 @@ public class DashboardStatsResponse {
         this.updatedAt = updatedAt;
     }
 
+    public ActiveOverview getActiveOverview() {
+        return activeOverview;
+    }
+
+    public void setActiveOverview(ActiveOverview activeOverview) {
+        this.activeOverview = activeOverview;
+    }
+
+    public List<TodoItem> getTodos() {
+        return todos;
+    }
+
+    public void setTodos(List<TodoItem> todos) {
+        this.todos = todos;
+    }
+
+    public List<HotSkillItem> getHotSkills() {
+        return hotSkills;
+    }
+
+    public void setHotSkills(List<HotSkillItem> hotSkills) {
+        this.hotSkills = hotSkills;
+    }
+
+    public List<SystemActivityItem> getSystemActivities() {
+        return systemActivities;
+    }
+
+    public void setSystemActivities(List<SystemActivityItem> systemActivities) {
+        this.systemActivities = systemActivities;
+    }
+
     public List<TrendPoint> getTrend() {
         return trend;
     }
@@ -278,6 +314,207 @@ public class DashboardStatsResponse {
 
         public void setNewData(long newData) {
             this.newData = newData;
+        }
+    }
+
+    public static class ActiveOverview {
+        private long activeUserCount;
+        private double taskSuccessRate;
+        private long matchCount;
+
+        public long getActiveUserCount() {
+            return activeUserCount;
+        }
+
+        public void setActiveUserCount(long activeUserCount) {
+            this.activeUserCount = activeUserCount;
+        }
+
+        public double getTaskSuccessRate() {
+            return taskSuccessRate;
+        }
+
+        public void setTaskSuccessRate(double taskSuccessRate) {
+            this.taskSuccessRate = taskSuccessRate;
+        }
+
+        public long getMatchCount() {
+            return matchCount;
+        }
+
+        public void setMatchCount(long matchCount) {
+            this.matchCount = matchCount;
+        }
+    }
+
+    public static class TodoItem {
+        private String type;
+        private String title;
+        private String description;
+        private String actionText;
+        private String actionPath;
+        private String level;
+        private long count;
+        private String updatedAt;
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        public String getActionText() {
+            return actionText;
+        }
+
+        public void setActionText(String actionText) {
+            this.actionText = actionText;
+        }
+
+        public String getActionPath() {
+            return actionPath;
+        }
+
+        public void setActionPath(String actionPath) {
+            this.actionPath = actionPath;
+        }
+
+        public String getLevel() {
+            return level;
+        }
+
+        public void setLevel(String level) {
+            this.level = level;
+        }
+
+        public long getCount() {
+            return count;
+        }
+
+        public void setCount(long count) {
+            this.count = count;
+        }
+
+        public String getUpdatedAt() {
+            return updatedAt;
+        }
+
+        public void setUpdatedAt(String updatedAt) {
+            this.updatedAt = updatedAt;
+        }
+    }
+
+    public static class HotSkillItem {
+        private String name;
+        private int heat;
+        private int count;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public int getHeat() {
+            return heat;
+        }
+
+        public void setHeat(int heat) {
+            this.heat = heat;
+        }
+
+        public int getCount() {
+            return count;
+        }
+
+        public void setCount(int count) {
+            this.count = count;
+        }
+    }
+
+    public static class SystemActivityItem {
+        private String type;
+        private String actor;
+        private String action;
+        private String target;
+        private String detail;
+        private String createdAt;
+        private String level;
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public String getActor() {
+            return actor;
+        }
+
+        public void setActor(String actor) {
+            this.actor = actor;
+        }
+
+        public String getAction() {
+            return action;
+        }
+
+        public void setAction(String action) {
+            this.action = action;
+        }
+
+        public String getTarget() {
+            return target;
+        }
+
+        public void setTarget(String target) {
+            this.target = target;
+        }
+
+        public String getDetail() {
+            return detail;
+        }
+
+        public void setDetail(String detail) {
+            this.detail = detail;
+        }
+
+        public String getCreatedAt() {
+            return createdAt;
+        }
+
+        public void setCreatedAt(String createdAt) {
+            this.createdAt = createdAt;
+        }
+
+        public String getLevel() {
+            return level;
+        }
+
+        public void setLevel(String level) {
+            this.level = level;
         }
     }
 }

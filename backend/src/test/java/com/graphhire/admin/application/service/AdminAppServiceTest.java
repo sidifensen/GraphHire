@@ -23,8 +23,11 @@ import com.graphhire.notification.domain.vo.NotificationType;
 import com.graphhire.resume.application.service.ResumeAppService;
 import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.model.ParseTask;
+import com.graphhire.resume.domain.model.Resume;
 import com.graphhire.resume.domain.repository.PersonInfoRepository;
 import com.graphhire.resume.domain.repository.ParseTaskRepository;
+import com.graphhire.resume.domain.repository.ResumeRepository;
+import com.graphhire.resume.domain.vo.ParseStatus;
 import com.graphhire.skill.application.service.SkillTagAppService;
 import com.graphhire.skill.domain.model.SkillTag;
 import org.junit.jupiter.api.DisplayName;
@@ -68,6 +71,8 @@ class AdminAppServiceTest {
     @Mock
     private PersonInfoRepository personInfoRepository;
     @Mock
+    private ResumeRepository resumeRepository;
+    @Mock
     private CompanyAppService companyAppService;
 
     @InjectMocks
@@ -91,15 +96,30 @@ class AdminAppServiceTest {
             when(adminRepository.countMatchRecordsCreatedBetween(any(), any())).thenReturn(12L, 6L);
             when(adminRepository.countPersonsLastLoginBetween(any(), any())).thenReturn(5L);
             when(companyRepository.countByAuthStatus(AuthStatus.PENDING_VERIFY)).thenReturn(2L);
+            when(skillTagAppService.getAllSkillTags()).thenReturn(List.of(buildSkill("Java", 20), buildSkill("Python", 10)));
+            when(resumeRepository.findByParseStatus(ParseStatus.SUCCESS)).thenReturn(List.of(
+                buildDefaultResumeWithSkills(List.of("Java", "Python", "MySQL")),
+                buildDefaultResumeWithSkills(List.of("Java", "Redis")),
+                buildNonDefaultResumeWithSkills(List.of("Go"))
+            ));
+            when(companyRepository.findByAuthStatus(AuthStatus.PENDING_VERIFY)).thenReturn(List.of(buildCompany(1L, "待审企业", AuthStatus.PENDING_VERIFY, LocalDateTime.now().minusHours(2))));
+            when(companyRepository.findByAuthStatus(AuthStatus.VERIFIED)).thenReturn(List.of(buildCompany(2L, "已审企业", AuthStatus.VERIFIED, LocalDateTime.now().minusHours(1))));
+            when(companyRepository.findByAuthStatus(AuthStatus.REJECTED)).thenReturn(List.of());
 
             ParseTask pending = new ParseTask();
             pending.setStatus(ParseTask.TaskStatus.PENDING);
+            pending.setCreatedAt(LocalDateTime.now().minusHours(3));
             ParseTask running = new ParseTask();
             running.setStatus(ParseTask.TaskStatus.RUNNING);
+            running.setCreatedAt(LocalDateTime.now().minusHours(2));
             ParseTask success = new ParseTask();
             success.setStatus(ParseTask.TaskStatus.SUCCESS);
+            success.setCreatedAt(LocalDateTime.now().minusHours(1));
+            success.setCompletedAt(LocalDateTime.now().minusMinutes(50));
             ParseTask failed = new ParseTask();
             failed.setStatus(ParseTask.TaskStatus.FAILED);
+            failed.setCreatedAt(LocalDateTime.now().minusMinutes(40));
+            failed.setErrorMessage("timeout");
             when(parseTaskRepository.findAll()).thenReturn(List.of(pending, running, success, failed));
 
             DashboardStatsResponse response = adminAppService.getDashboardStats();
@@ -121,7 +141,67 @@ class AdminAppServiceTest {
             assertEquals(5L, response.getDailyActiveUsers());
             assertNotNull(response.getUpdatedAt());
             assertNotNull(response.getTrend());
+            assertFalse(response.getTrend().isEmpty());
+            assertNotNull(response.getActiveOverview());
+            assertEquals(3, response.getTodos().size());
+            assertFalse(response.getHotSkills().isEmpty());
+            assertEquals("Java", response.getHotSkills().get(0).getName());
+            assertEquals(100, response.getHotSkills().get(0).getHeat());
+            assertFalse(response.getSystemActivities().isEmpty());
         }
+
+        @Test
+        @DisplayName("趋势支持日周月维度切换")
+        void getDashboardTrendByDimension() {
+            when(adminRepository.countPersonsLastLoginBetween(any(), any())).thenReturn(1L);
+            when(adminRepository.countMatchRecordsCreatedBetween(any(), any())).thenReturn(2L);
+
+            List<DashboardStatsResponse.TrendPoint> dayTrend = adminAppService.getDashboardTrend("DAY");
+            List<DashboardStatsResponse.TrendPoint> weekTrend = adminAppService.getDashboardTrend("WEEK");
+            List<DashboardStatsResponse.TrendPoint> monthTrend = adminAppService.getDashboardTrend("MONTH");
+
+            assertEquals(30, dayTrend.size());
+            assertEquals(12, weekTrend.size());
+            assertEquals(12, monthTrend.size());
+        }
+    }
+
+    private SkillTag buildSkill(String name, int usageCount) {
+        SkillTag skillTag = new SkillTag(name);
+        skillTag.setUsageCount(usageCount);
+        skillTag.setCreateTime(LocalDateTime.now().minusDays(1));
+        skillTag.setUpdateTime(LocalDateTime.now().minusHours(1));
+        return skillTag;
+    }
+
+    private Company buildCompany(Long id, String name, AuthStatus status, LocalDateTime updateTime) {
+        Company company = new Company();
+        company.setId(id);
+        company.setName(name);
+        company.setAuthStatus(status);
+        company.setCreateTime(updateTime.minusDays(1));
+        company.setUpdatedAt(updateTime);
+        return company;
+    }
+
+    private Resume buildDefaultResumeWithSkills(List<String> skills) {
+        Resume resume = new Resume();
+        resume.setIsDefault(true);
+        resume.setStatus(ParseStatus.SUCCESS);
+        resume.setParseResult("{\"skills\":" + toJsonArray(skills) + "}");
+        return resume;
+    }
+
+    private Resume buildNonDefaultResumeWithSkills(List<String> skills) {
+        Resume resume = new Resume();
+        resume.setIsDefault(false);
+        resume.setStatus(ParseStatus.SUCCESS);
+        resume.setParseResult("{\"skills\":" + toJsonArray(skills) + "}");
+        return resume;
+    }
+
+    private String toJsonArray(List<String> values) {
+        return values.stream().map(v -> "\"" + v + "\"").collect(java.util.stream.Collectors.joining(",", "[", "]"));
     }
 
     @Nested
