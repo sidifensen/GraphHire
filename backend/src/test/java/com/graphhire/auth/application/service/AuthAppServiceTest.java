@@ -88,7 +88,7 @@ class AuthAppServiceTest {
                 eq(15L),
                 eq(TimeUnit.MINUTES)
             );
-            verify(mailService).sendVerifyCodeMail(
+            verify(mailService, timeout(500)).sendVerifyCodeMail(
                 eq(email),
                 eq("【GraphHire】您的验证码"),
                 argThat(content -> content.contains("验证码是：") && content.contains("15分钟内有效"))
@@ -113,12 +113,12 @@ class AuthAppServiceTest {
                 eq(15L),
                 eq(TimeUnit.MINUTES)
             );
-            verify(mailService).sendVerifyCodeMail(eq(email), anyString(), anyString());
+            verify(mailService, timeout(500)).sendVerifyCodeMail(eq(email), anyString(), anyString());
         }
 
         @Test
-        @DisplayName("发送验证码失败 - 邮件发送异常时返回中文错误")
-        void sendVerifyCode_MailSendFailed_ShouldThrowBusinessException() {
+        @DisplayName("发送验证码失败 - 邮件发送异常时不应阻塞主流程")
+        void sendVerifyCode_MailSendFailed_ShouldNotThrowBusinessException() {
             // Given
             setupRedisMock();
             String email = "test@example.com";
@@ -127,14 +127,34 @@ class AuthAppServiceTest {
                 .sendVerifyCodeMail(eq(email), anyString(), anyString());
 
             // When
-            Exceptions.BusinessException ex = assertThrows(
-                Exceptions.BusinessException.class,
-                () -> authAppService.sendVerifyCode(email, type)
-            );
+            assertDoesNotThrow(() -> authAppService.sendVerifyCode(email, type));
 
             // Then
-            assertEquals("验证码发送失败，请检查邮箱地址或稍后重试", ex.getMessage());
-            verify(redisTemplate).delete("email_code:" + email + ":" + type);
+            verify(valueOperations, timeout(500)).set(
+                eq("email_code:" + email + ":" + type),
+                anyString(),
+                eq(15L),
+                eq(TimeUnit.MINUTES)
+            );
+        }
+
+        @Test
+        @DisplayName("发送验证码重复请求 - 冷却期内应直接返回成功")
+        void sendVerifyCode_DuringCooldown_ShouldReturnSilently() {
+            // Given
+            setupRedisMock();
+            String email = "test@example.com";
+            String type = "register";
+            when(valueOperations.setIfAbsent(anyString(), anyString(), anyLong(), any(TimeUnit.class)))
+                .thenReturn(true)
+                .thenReturn(false);
+
+            // When
+            assertDoesNotThrow(() -> authAppService.sendVerifyCode(email, type));
+            assertDoesNotThrow(() -> authAppService.sendVerifyCode(email, type));
+
+            // Then
+            verify(mailService, timeout(500).times(1)).sendVerifyCodeMail(eq(email), anyString(), anyString());
         }
     }
 

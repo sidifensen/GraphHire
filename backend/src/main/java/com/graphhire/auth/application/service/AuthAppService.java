@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.mail.MailException;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -297,7 +298,10 @@ public class AuthAppService {
         if (!"register".equals(type) && !"forgot_password".equals(type) && !"default".equals(type)) {
             throw com.graphhire.common.vo.Exceptions.BusinessException.of("验证码类型不支持");
         }
-        enforceVerifyCodeThrottle(username, type);
+        if (!enforceVerifyCodeThrottle(username, type)) {
+            log.info("发送验证码重复请求，冷却期内直接返回成功: to={}, type={}", maskEmail(username), type);
+            return;
+        }
 
         // 步骤1：生成6位随机验证码
         String code = RandomUtil.randomNumbers(6);
@@ -309,15 +313,16 @@ public class AuthAppService {
         // 步骤3：发送邮件
         String subject = "【GraphHire】您的验证码";
         String content = "您的验证码是：" + code + "，15分钟内有效，请勿泄露给他人。";
-        try {
-            mailService.sendVerifyCodeMail(username, subject, content);
-        } catch (MailException e) {
-            redisTemplate.delete(key);
-            log.warn("发送验证码失败: to={}, type={}, reason={}", maskEmail(username), type, e.getMessage());
-            throw com.graphhire.common.vo.Exceptions.BusinessException.of("验证码发送失败，请检查邮箱地址或稍后重试");
-        }
-
-        log.info("发送验证码成功: to={}, type={}", maskEmail(username), type);
+        CompletableFuture.runAsync(() -> {
+            try {
+                mailService.sendVerifyCodeMail(username, subject, content);
+                log.info("发送验证码成功: to={}, type={}", maskEmail(username), type);
+            } catch (MailException e) {
+                redisTemplate.delete(key);
+                rollbackVerifyCodeThrottle(username, type);
+                log.warn("发送验证码失败: to={}, type={}, reason={}", maskEmail(username), type, e.getMessage());
+            }
+        });
     }
 
     /**
@@ -504,11 +509,11 @@ public class AuthAppService {
         return userId != null ? Long.parseLong(userId) : null;
     }
 
-    private void enforceVerifyCodeThrottle(String username, String type) {
+    private boolean enforceVerifyCodeThrottle(String username, String type) {
         String cooldownKey = "auth:verify:cooldown:" + username + ":" + type;
         Boolean firstRequest = redisTemplate.opsForValue().setIfAbsent(cooldownKey, "1", 60, TimeUnit.SECONDS);
         if (Boolean.FALSE.equals(firstRequest)) {
-            throw com.graphhire.common.vo.Exceptions.BusinessException.of("请求过于频繁，请稍后再试");
+            return false;
         }
 
         String hourLimitKey = "auth:verify:hourly:" + username + ":" + type;
@@ -518,6 +523,18 @@ public class AuthAppService {
         }
         if (count != null && count > MAX_VERIFY_CODE_SEND_PER_HOUR) {
             throw com.graphhire.common.vo.Exceptions.BusinessException.of("验证码发送过于频繁，请1小时后再试");
+        }
+        return true;
+    }
+
+    private void rollbackVerifyCodeThrottle(String username, String type) {
+        String cooldownKey = "auth:verify:cooldown:" + username + ":" + type;
+        String hourLimitKey = "auth:verify:hourly:" + username + ":" + type;
+
+        redisTemplate.delete(cooldownKey);
+        Long count = redisTemplate.opsForValue().decrement(hourLimitKey);
+        if (count != null && count <= 0) {
+            redisTemplate.delete(hourLimitKey);
         }
     }
 
