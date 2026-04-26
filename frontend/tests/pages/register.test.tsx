@@ -94,4 +94,20 @@ describe('RegisterPage', () => {
     });
     expect(mockPush).not.toHaveBeenCalled();
   });
+
+  it('shows chinese timeout error when send verify code times out', async () => {
+    const user = userEvent.setup();
+    mockSendVerifyCode.mockRejectedValueOnce({
+      code: 'ECONNABORTED',
+      message: 'timeout of 30000ms exceeded',
+    });
+
+    render(<RegisterPage />);
+    await user.type(screen.getByPlaceholderText('请输入邮箱地址'), 'corp@example.com');
+    await user.click(screen.getByRole('button', { name: '获取验证码' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('请求超时，请稍后重试')).toBeInTheDocument();
+    });
+  });
 });

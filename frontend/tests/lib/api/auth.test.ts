@@ -123,6 +123,7 @@ describe('authApi', () => {
 
       expect(mockPost).toHaveBeenCalledWith('/auth/send-verify-code', null, {
         params: { email, type: 'register' },
+        timeout: 60000,
       });
     });
   });

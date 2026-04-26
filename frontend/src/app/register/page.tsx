@@ -29,12 +29,21 @@ export default function RegisterPage() {
   const extractErrorMessage = (err: unknown, fallback: string) => {
     if (err && typeof err === 'object') {
       const maybeResponse = err as {
+        code?: string;
+        message?: string;
         response?: {
           data?: {
             message?: string;
           };
         };
       };
+      const rawMessage = maybeResponse.message;
+      if (
+        maybeResponse.code === 'ECONNABORTED' ||
+        (typeof rawMessage === 'string' && rawMessage.toLowerCase().includes('timeout'))
+      ) {
+        return '请求超时，请稍后重试';
+      }
       const message = maybeResponse.response?.data?.message;
       if (typeof message === 'string' && message.trim()) {
         return message;

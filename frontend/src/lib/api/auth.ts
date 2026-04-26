@@ -61,6 +61,7 @@ export const authApi = {
   sendVerifyCode: async (email: string, type: string = 'register'): Promise<void> => {
     await apiClient.post('/auth/send-verify-code', null, {
       params: { email, type },
+      timeout: 60000,
     });
   },
 

@@ -82,6 +82,14 @@ function getResponseSuccessInterceptor() {
   return successHandler;
 }
 
+function getResponseErrorInterceptor() {
+  const { errorHandler } = getResponseHandlers();
+  if (!errorHandler) {
+    throw new Error('response error interceptor not initialized');
+  }
+  return errorHandler;
+}
+
 describe('apiClient', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -137,5 +145,18 @@ describe('apiClient', () => {
     ).rejects.toBeDefined();
 
     expect(mockAdminLogout).toHaveBeenCalledTimes(1);
+  });
+
+  it('should map timeout error to chinese message', async () => {
+    const onError = getResponseErrorInterceptor();
+
+    await expect(
+      onError({
+        code: 'ECONNABORTED',
+        message: 'timeout of 30000ms exceeded',
+      })
+    ).rejects.toMatchObject({
+      message: '请求超时，请稍后重试',
+    });
   });
 });

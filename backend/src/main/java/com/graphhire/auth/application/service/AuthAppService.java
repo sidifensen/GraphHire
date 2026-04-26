@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.mail.MailException;
 
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -308,7 +309,13 @@ public class AuthAppService {
         // 步骤3：发送邮件
         String subject = "【GraphHire】您的验证码";
         String content = "您的验证码是：" + code + "，15分钟内有效，请勿泄露给他人。";
-        mailService.sendVerifyCodeMail(username, subject, content);
+        try {
+            mailService.sendVerifyCodeMail(username, subject, content);
+        } catch (MailException e) {
+            redisTemplate.delete(key);
+            log.warn("发送验证码失败: to={}, type={}, reason={}", maskEmail(username), type, e.getMessage());
+            throw com.graphhire.common.vo.Exceptions.BusinessException.of("验证码发送失败，请检查邮箱地址或稍后重试");
+        }
 
         log.info("发送验证码成功: to={}, type={}", maskEmail(username), type);
     }

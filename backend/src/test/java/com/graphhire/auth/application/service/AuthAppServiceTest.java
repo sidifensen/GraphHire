@@ -22,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.mail.MailSendException;
 
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -113,6 +114,27 @@ class AuthAppServiceTest {
                 eq(TimeUnit.MINUTES)
             );
             verify(mailService).sendVerifyCodeMail(eq(email), anyString(), anyString());
+        }
+
+        @Test
+        @DisplayName("发送验证码失败 - 邮件发送异常时返回中文错误")
+        void sendVerifyCode_MailSendFailed_ShouldThrowBusinessException() {
+            // Given
+            setupRedisMock();
+            String email = "test@example.com";
+            String type = "register";
+            doThrow(new MailSendException("smtp timeout")).when(mailService)
+                .sendVerifyCodeMail(eq(email), anyString(), anyString());
+
+            // When
+            Exceptions.BusinessException ex = assertThrows(
+                Exceptions.BusinessException.class,
+                () -> authAppService.sendVerifyCode(email, type)
+            );
+
+            // Then
+            assertEquals("验证码发送失败，请检查邮箱地址或稍后重试", ex.getMessage());
+            verify(redisTemplate).delete("email_code:" + email + ":" + type);
         }
     }
 

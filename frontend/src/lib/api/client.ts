@@ -95,6 +95,12 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       handleUnauthorized();
     }
+    const isTimeout =
+      error?.code === 'ECONNABORTED' ||
+      (typeof error?.message === 'string' && error.message.toLowerCase().includes('timeout'));
+    if (isTimeout) {
+      return Promise.reject(new Error('请求超时，请稍后重试'));
+    }
     return Promise.reject(error);
   }
 );
