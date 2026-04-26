@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { Bell, HelpCircle, Settings, Moon, Sun, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Moon, Sun, ChevronRight, ChevronLeft } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { useState, useRef, useEffect } from 'react';
 import { adminAuthStore } from '@/lib/stores/auth-store';
@@ -54,16 +54,6 @@ export default function AdminTopbar({ isCollapsed, setIsCollapsed }: AdminTopbar
           className="rounded-full p-2 text-outline transition-all hover:bg-surface hover:text-primary dark:hover:bg-slate-800"
         >
           {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-        </button>
-        <button className="relative rounded-full p-2 text-outline transition-all hover:bg-surface hover:text-primary dark:hover:bg-slate-800">
-          <Bell size={20} />
-          <span className="absolute right-2 top-2 h-2 w-2 rounded-full border-2 border-white bg-red-500 dark:border-slate-800" />
-        </button>
-        <button className="rounded-full p-2 text-outline transition-all hover:bg-surface hover:text-primary dark:hover:bg-slate-800">
-          <HelpCircle size={20} />
-        </button>
-        <button className="rounded-full p-2 text-outline transition-all hover:bg-surface hover:text-primary dark:hover:bg-slate-800">
-          <Settings size={20} />
         </button>
 
         <div className="mx-2 h-6 w-px bg-outline-variant" />
