@@ -65,6 +65,7 @@ export interface EnterpriseRecommendation {
   score?: {
     total?: number;
     skillScore?: number;
+    requirementScore?: number;
     expScore?: number;
     cityScore?: number;
     eduScore?: number;

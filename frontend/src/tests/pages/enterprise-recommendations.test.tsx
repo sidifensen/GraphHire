@@ -23,7 +23,7 @@ describe('RecommendationsPage', () => {
         {
           resumeId: 100,
           jobId: 1,
-          score: { total: 92, skillScore: 95, expScore: 88, eduScore: 80, cityScore: 70, salScore: 85 },
+          score: { total: 92, skillScore: 95, requirementScore: 88, cityScore: 70, salScore: 85 },
           matchReason: 'React 架构经验与岗位高度契合',
           resume: { id: 100, userName: '林晓静', fileName: 'lin.pdf' },
           job: { id: 1, title: '高级前端工程师' },
@@ -33,7 +33,7 @@ describe('RecommendationsPage', () => {
         {
           resumeId: 200,
           jobId: 2,
-          score: { total: 85, skillScore: 82, expScore: 84, eduScore: 90, cityScore: 60, salScore: 70 },
+          score: { total: 85, skillScore: 82, requirementScore: 84, cityScore: 60, salScore: 70 },
           matchReason: 'NLP 项目经验丰富',
           resume: { id: 200, userName: '张伟', fileName: 'zhang.pdf' },
           job: { id: 2, title: 'AI 算法工程师' },
@@ -47,6 +47,11 @@ describe('RecommendationsPage', () => {
     expect(await screen.findByText('林晓静')).toBeInTheDocument();
     expect(screen.getByText('高级前端工程师')).toBeInTheDocument();
     expect(screen.getByText('92')).toBeInTheDocument();
+    expect(screen.getByText('综合推荐度 92%')).toBeInTheDocument();
+    expect(screen.getByText('技能匹配 95%')).toBeInTheDocument();
+    expect(screen.getByText('岗位要求匹配 88%')).toBeInTheDocument();
+    expect(screen.queryByText(/经验匹配/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/学历匹配/)).not.toBeInTheDocument();
   });
 
   test('支持切换职位与本地搜索', async () => {

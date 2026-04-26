@@ -224,6 +224,7 @@ function RecommendationsContent() {
               <div className="flex-1 overflow-y-auto flex flex-col gap-4 pr-2">
                 {filteredRecommendations.map((item) => {
                   const score = recommendationScore(item);
+                  const requirementScore = Math.round(item.score?.requirementScore ?? item.score?.expScore ?? 0);
                   const expanded = expandedResumeId === item.resumeId;
                   return (
                     <div key={`${item.jobId}-${item.resumeId}`} className="bg-surface-container-lowest rounded-xl p-6 flex flex-col gap-4 ambient-shadow relative overflow-hidden group">
@@ -236,9 +237,9 @@ function RecommendationsContent() {
 
                         <div className="flex-1 flex flex-col justify-center gap-4 border-l border-surface-container-high pl-6 min-w-0">
                           <div className="flex flex-wrap gap-2">
+                            <span className="px-3 py-1 bg-surface-variant text-on-surface-variant text-xs rounded-full whitespace-nowrap">综合推荐度 {score}%</span>
                             <span className="px-3 py-1 bg-surface-variant text-on-surface-variant text-xs rounded-full whitespace-nowrap">技能匹配 {Math.round(item.score?.skillScore ?? 0)}%</span>
-                            <span className="px-3 py-1 bg-surface-variant text-on-surface-variant text-xs rounded-full whitespace-nowrap">经验匹配 {Math.round(item.score?.expScore ?? 0)}%</span>
-                            <span className="px-3 py-1 bg-surface-variant text-on-surface-variant text-xs rounded-full whitespace-nowrap">学历匹配 {Math.round(item.score?.eduScore ?? 0)}%</span>
+                            <span className="px-3 py-1 bg-surface-variant text-on-surface-variant text-xs rounded-full whitespace-nowrap">岗位要求匹配 {requirementScore}%</span>
                           </div>
                           <div className="rounded-lg bg-surface-container-low p-4 text-sm text-on-surface-variant leading-6">
                             {item.matchReason || '后端暂未返回匹配理由，当前仅展示真实匹配分数。'}
