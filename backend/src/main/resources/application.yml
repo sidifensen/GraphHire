@@ -60,8 +60,8 @@ spring:
           writetimeout: ${MAIL_WRITE_TIMEOUT_MS:8000}
           auth: true
           starttls:
-            enable: true
-            required: true
+            enable: false
+            required: false
           ssl:
             enable: true
 

@@ -2,6 +2,8 @@ package com.graphhire.config;
 
 import com.graphhire.common.vo.Result;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpMethod;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -15,5 +17,16 @@ class GlobalExceptionHandlerTest {
 
         assertEquals(500, result.getCode());
         assertEquals("服务器内部错误", result.getMessage());
+    }
+
+    @Test
+    void handleNoResourceFound_ShouldReturn404() {
+        GlobalExceptionHandler handler = new GlobalExceptionHandler();
+        NoResourceFoundException exception = new NoResourceFoundException(HttpMethod.GET, "/admin/dashboard/trend");
+
+        Result<Void> result = handler.handleNoResourceFound(exception);
+
+        assertEquals(404, result.getCode());
+        assertEquals("请求资源不存在", result.getMessage());
     }
 }
