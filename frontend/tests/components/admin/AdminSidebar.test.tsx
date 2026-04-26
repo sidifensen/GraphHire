@@ -2,7 +2,7 @@
 import '@testing-library/jest-dom';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import AdminSidebar from '@/components/admin/AdminSidebar';
+import { AdminSidebar } from '@/components/admin/AdminSidebar';
 
 const usePathname = vi.fn(() => '/admin/dashboard');
 
@@ -34,5 +34,16 @@ describe('AdminSidebar', () => {
   it('折叠时不展示文字标签', () => {
     render(<AdminSidebar isCollapsed={true} />);
     expect(screen.queryByText('仪表盘')).not.toBeInTheDocument();
+  });
+
+  it('展开和折叠状态下品牌区高度保持一致', () => {
+    const { unmount } = render(<AdminSidebar isCollapsed={false} />);
+    const expandedBrandContainer = screen.getByText('GraphHire').parentElement;
+    expect(expandedBrandContainer).toHaveClass('h-10');
+    unmount();
+
+    render(<AdminSidebar isCollapsed={true} />);
+    const collapsedBrandContainer = screen.getByTitle('仪表盘').closest('aside')?.querySelector('.h-10.w-10');
+    expect(collapsedBrandContainer).toBeInTheDocument();
   });
 });

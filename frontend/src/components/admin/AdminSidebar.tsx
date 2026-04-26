@@ -8,10 +8,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const navItems = [
   { icon: LayoutDashboard, label: '仪表盘', path: '/admin/dashboard' },
-  { icon: ShieldCheck, label: '企业审核', path: '/admin/company/audit' },
+  { icon: ShieldCheck, label: '企业审核', path: '/admin/enterprise-review' },
   { icon: Users, label: '用户管理', path: '/admin/users' },
-  { icon: Tags, label: '标签管理', path: '/admin/skills' },
-  { icon: Activity, label: '任务监控', path: '/admin/tasks' },
+  { icon: Tags, label: '标签管理', path: '/admin/skill-tags' },
+  { icon: Activity, label: '任务监控', path: '/admin/task-monitor' },
 ];
 
 export function AdminSidebar({ isCollapsed = false }: { isCollapsed?: boolean }) {
@@ -33,7 +33,7 @@ export function AdminSidebar({ isCollapsed = false }: { isCollapsed?: boolean })
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -10 }}
-              className="flex items-center gap-3 overflow-hidden whitespace-nowrap"
+              className="flex h-10 items-center gap-3 overflow-hidden whitespace-nowrap"
             >
               <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white shrink-0">
                 <Network size={20} />
