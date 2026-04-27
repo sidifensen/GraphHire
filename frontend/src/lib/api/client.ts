@@ -14,9 +14,15 @@ const apiClient = axios.create({
 
 function getAccessToken() {
   const domain = getCurrentDomain();
-  const stateToken = getAuthStoreByDomain(domain).getState().accessToken;
-  if (stateToken) {
-    return stateToken;
+  const domainOrder: AuthDomain[] = [domain, 'enterprise', 'user', 'admin'].filter(
+    (value, index, array) => array.indexOf(value) === index,
+  ) as AuthDomain[];
+
+  for (const currentDomain of domainOrder) {
+    const stateToken = getAuthStoreByDomain(currentDomain).getState().accessToken;
+    if (stateToken) {
+      return stateToken;
+    }
   }
 
   if (typeof window === 'undefined') {
@@ -24,13 +30,19 @@ function getAccessToken() {
   }
 
   try {
-    const storageKey = getStorageKeyByDomain(domain);
-    const persisted = window.localStorage.getItem(storageKey);
-    if (!persisted) {
-      return null;
+    for (const currentDomain of domainOrder) {
+      const storageKey = getStorageKeyByDomain(currentDomain);
+      const persisted = window.localStorage.getItem(storageKey);
+      if (!persisted) {
+        continue;
+      }
+      const parsed = JSON.parse(persisted) as { state?: { accessToken?: string | null } };
+      const token = parsed.state?.accessToken ?? null;
+      if (token) {
+        return token;
+      }
     }
-    const parsed = JSON.parse(persisted) as { state?: { accessToken?: string | null } };
-    return parsed.state?.accessToken ?? null;
+    return null;
   } catch {
     return null;
   }

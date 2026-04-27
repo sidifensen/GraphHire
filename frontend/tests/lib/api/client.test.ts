@@ -13,16 +13,28 @@ const {
   mockAdminLogout,
   setResponseHandlers,
   getResponseHandlers,
+  setRequestHandler,
+  getRequestHandler,
+  setDomainToken,
+  getDomainToken,
 } = vi.hoisted(() => {
+  let requestHandler: ((config: any) => any) | undefined;
   let successHandler: ((response: any) => any) | undefined;
   let errorHandler: ((error: any) => any) | undefined;
+  const domainTokens: Record<'user' | 'enterprise' | 'admin', string | null> = {
+    user: null,
+    enterprise: null,
+    admin: null,
+  };
 
   return {
     mockGet: vi.fn(),
     mockPost: vi.fn(),
     mockPut: vi.fn(),
     mockDelete: vi.fn(),
-    mockRequestUse: vi.fn(),
+    mockRequestUse: vi.fn((onRequest: (config: any) => any) => {
+      requestHandler = onRequest;
+    }),
     mockResponseUse: vi.fn((onSuccess: (response: any) => any, onError: (error: any) => any) => {
       successHandler = onSuccess;
       errorHandler = onError;
@@ -35,6 +47,14 @@ const {
       errorHandler = onError;
     },
     getResponseHandlers: () => ({ successHandler, errorHandler }),
+    setRequestHandler: (onRequest?: (config: any) => any) => {
+      requestHandler = onRequest;
+    },
+    getRequestHandler: () => requestHandler,
+    setDomainToken: (domain: 'user' | 'enterprise' | 'admin', token: string | null) => {
+      domainTokens[domain] = token;
+    },
+    getDomainToken: (domain: 'user' | 'enterprise' | 'admin') => domainTokens[domain],
   };
 });
 
@@ -56,9 +76,9 @@ vi.mock('axios', () => ({
 
 vi.mock('@/lib/stores/auth-store', () => {
   const storeByDomain = {
-    user: { getState: () => ({ accessToken: null, logout: mockUserLogout }) },
-    enterprise: { getState: () => ({ accessToken: null, logout: mockEnterpriseLogout }) },
-    admin: { getState: () => ({ accessToken: null, logout: mockAdminLogout }) },
+    user: { getState: () => ({ accessToken: getDomainToken('user'), logout: mockUserLogout }) },
+    enterprise: { getState: () => ({ accessToken: getDomainToken('enterprise'), logout: mockEnterpriseLogout }) },
+    admin: { getState: () => ({ accessToken: getDomainToken('admin'), logout: mockAdminLogout }) },
   } as const;
 
   return {
@@ -94,7 +114,25 @@ describe('apiClient', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     setResponseHandlers(getResponseHandlers().successHandler, getResponseHandlers().errorHandler);
+    setRequestHandler(getRequestHandler());
+    setDomainToken('user', null);
+    setDomainToken('enterprise', null);
+    setDomainToken('admin', null);
     window.history.pushState({}, '', '/');
+  });
+
+  it('uses enterprise token on login page when user token is empty', () => {
+    setDomainToken('enterprise', 'enterprise-token');
+
+    const requestHandler = getRequestHandler();
+    if (!requestHandler) {
+      throw new Error('request interceptor not initialized');
+    }
+
+    window.history.pushState({}, '', '/login');
+    const config = requestHandler({ headers: {} });
+
+    expect(config.headers.satoken).toBe('enterprise-token');
   });
 
   it('should be defined', () => {
