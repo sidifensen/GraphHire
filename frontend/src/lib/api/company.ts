@@ -25,19 +25,6 @@ export interface Company {
   createdAt?: string;
 }
 
-export interface JobGraph {
-  nodes: Array<{
-    id: string;
-    type: string;
-    name: string;
-  }>;
-  edges: Array<{
-    source: string;
-    target: string;
-    type: string;
-  }>;
-}
-
 export const companyApi = {
   getInfo: async (): Promise<Company> => {
     const response = await apiClient.get<Company>('/company/info');
@@ -74,11 +61,6 @@ export const companyApi = {
 
   updateJobStatus: async (jobId: number, publish: boolean): Promise<void> => {
     await apiClient.put(`/company/job/${jobId}/status`, { publish });
-  },
-
-  getJobGraph: async (jobId: number): Promise<JobGraph> => {
-    const response = await apiClient.get<JobGraph>(`/company/job/${jobId}/graph`);
-    return response.data;
   },
 
   getRecommendedResumes: async (params?: { jobId?: number }): Promise<EnterpriseRecommendation[]> => {

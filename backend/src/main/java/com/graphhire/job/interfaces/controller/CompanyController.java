@@ -32,7 +32,6 @@ import com.graphhire.job.interfaces.dto.response.CompanyStaffStatsResponse;
 import com.graphhire.match.application.service.MatchAppService;
 import com.graphhire.match.domain.repository.MatchRecordRepository;
 import com.graphhire.match.interfaces.dto.response.MatchDetailResponse;
-import com.graphhire.skill.infrastructure.graph.SkillGraphClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -72,9 +71,6 @@ public class CompanyController {
 
     @Autowired
     private MatchRecordRepository matchRecordRepository;
-
-    @Autowired
-    private SkillGraphClient skillGraphClient;
 
     @Autowired
     private ApplicationAppService applicationAppService;
@@ -233,15 +229,6 @@ public class CompanyController {
         ensureJobOwnership(job, companyId);
         jobAppService.deleteJob(id);
         return Result.success();
-    }
-
-    @GetMapping("/job/{id}/graph")
-    public Result<Map<String, Object>> getJobGraph(@PathVariable Long id) {
-        Long companyId = currentCompanyId();
-        Job job = jobAppService.getJobById(id);
-        ensureJobOwnership(job, companyId);
-        Map<String, Object> graph = skillGraphClient.getJobSkillGraph(id);
-        return Result.success(graph);
     }
 
     @GetMapping("/match/{resumeId}")
