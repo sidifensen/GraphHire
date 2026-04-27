@@ -1,6 +1,6 @@
 ﻿import type { ReactNode } from "react";
-import "@/mobile/styles.css";
+import "@/mobile-enterprise/theme.css";
 
 export default function MobileEnterpriseLayout({ children }: { children: ReactNode }) {
-  return <div className="mobile-ui">{children}</div>;
+  return <div className="enterprise-mobile-ui">{children}</div>;
 }
