@@ -54,6 +54,7 @@ public class ResumeParseMQConsumer implements RocketMQListener<String> {
 
     @Override
     public void onMessage(String message) {
+        long totalStartNanos = System.nanoTime();
         // 消息格式："resumeId,parseTaskId"
         String[] parts = message.split(",");
         Long resumeId = Long.parseLong(parts[0]);
@@ -61,6 +62,7 @@ public class ResumeParseMQConsumer implements RocketMQListener<String> {
         log.info("开始处理简历解析任务: resumeId={}, parseTaskId={}", resumeId, parseTaskId);
 
         // 步骤1：将parse_task状态更新为RUNNING(1)
+        long initStartNanos = System.nanoTime();
         ParseTask task = parseTaskRepository.findById(parseTaskId)
             .orElseThrow(() -> new RuntimeException("Parse task not found: " + parseTaskId));
         task.setStatus(ParseTask.TaskStatus.RUNNING);
@@ -72,12 +74,16 @@ public class ResumeParseMQConsumer implements RocketMQListener<String> {
             .orElseThrow(() -> new RuntimeException("Resume not found: " + resumeId));
         resume.setStatus(ParseStatus.PARSING);
         resumeRepository.save(resume);
+        log.info("简历解析任务初始化完成: resumeId={}, parseTaskId={}, costMs={}",
+            resumeId, parseTaskId, elapsedMs(initStartNanos));
 
         try {
+            long extractStartNanos = System.nanoTime();
             log.info("开始提取文档文本, filePath={}", resume.getFilePath());
             // 步骤3：从RustFS读取文件并用Tika提取文本
             String text = documentParser.extractText(resume.getFilePath());
-            log.info("文档文本提取完成, textLength={}", text != null ? text.length() : 0);
+            log.info("文档文本提取完成, textLength={}, costMs={}",
+                text != null ? text.length() : 0, elapsedMs(extractStartNanos));
 
             // 步骤3.1：空文本保护
             if (StrUtil.isBlank(text)) {
@@ -85,11 +91,13 @@ public class ResumeParseMQConsumer implements RocketMQListener<String> {
             }
 
             // 步骤4：调用DeepSeek提取结构化信息
+            long aiStartNanos = System.nanoTime();
             log.info("开始调用DeepSeek解析简历");
             Map<String, Object> parseResult = deepSeekClient.parseResume(text);
-            log.info("DeepSeek解析完成");
+            log.info("DeepSeek解析完成, costMs={}", elapsedMs(aiStartNanos));
 
             // 步骤5：用解析结果更新resume
+            long persistStartNanos = System.nanoTime();
             resume.setParseResult(parseResult != null ? JSON.toJSONString(parseResult) : "{}");
             resume.setStatus(ParseStatus.SUCCESS);
             resume.setConfidence(BigDecimal.valueOf(0.85));
@@ -111,6 +119,10 @@ public class ResumeParseMQConsumer implements RocketMQListener<String> {
 
             // 步骤8：发布简历解析完成事件（仅传resumeId），触发技能图谱构建
             rocketMQTemplate.convertAndSend(TOPIC_RESUME_PARSED, String.valueOf(resumeId));
+            log.info("简历解析结果落库并通知完成: resumeId={}, parseTaskId={}, costMs={}",
+                resumeId, parseTaskId, elapsedMs(persistStartNanos));
+            log.info("简历解析任务完成: resumeId={}, parseTaskId={}, totalCostMs={}",
+                resumeId, parseTaskId, elapsedMs(totalStartNanos));
 
         } catch (Exception e) {
             // 步骤9：失败时：将parse_status更新为FAILED(3)，保存错误信息
@@ -122,6 +134,12 @@ public class ResumeParseMQConsumer implements RocketMQListener<String> {
             task.setErrorMessage(e.getMessage());
             task.setCompletedAt(LocalDateTime.now());
             parseTaskRepository.save(task);
+            log.error("简历解析任务失败: resumeId={}, parseTaskId={}, totalCostMs={}, reason={}",
+                resumeId, parseTaskId, elapsedMs(totalStartNanos), e.getMessage());
         }
+    }
+
+    private static long elapsedMs(long startNanos) {
+        return (System.nanoTime() - startNanos) / 1_000_000;
     }
 }

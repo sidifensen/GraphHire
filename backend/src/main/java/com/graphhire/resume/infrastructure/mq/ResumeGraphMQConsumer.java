@@ -30,15 +30,25 @@ public class ResumeGraphMQConsumer implements RocketMQListener<String> {
 
     @Override
     public void onMessage(String message) {
+        long totalStartNanos = System.nanoTime();
         try {
             Long resumeId = Long.parseLong(message.trim());
+            long queryStartNanos = System.nanoTime();
             Resume resume = resumeRepository.findById(resumeId)
                 .orElseThrow(() -> new RuntimeException("Resume not found: " + resumeId));
+            log.info("图谱构建前置查询完成: resumeId={}, costMs={}", resumeId, elapsedMs(queryStartNanos));
+
+            long buildStartNanos = System.nanoTime();
             graphBuildService.buildGraphForResume(resume);
-            log.info("简历{}图谱构建成功", resumeId);
+            log.info("简历{}图谱构建成功, buildCostMs={}, totalCostMs={}",
+                resumeId, elapsedMs(buildStartNanos), elapsedMs(totalStartNanos));
         } catch (Exception e) {
-            log.error("简历{}图谱构建失败: {}", message, e.getMessage());
+            log.error("简历{}图谱构建失败: {}, totalCostMs={}", message, e.getMessage(), elapsedMs(totalStartNanos));
             // 不重新抛出异常，以免影响主MQ流程
         }
+    }
+
+    private static long elapsedMs(long startNanos) {
+        return (System.nanoTime() - startNanos) / 1_000_000;
     }
 }
