@@ -134,11 +134,11 @@ public class DeepSeekClient {
             String.format(generateMatchReasonUserPrompt, resumeId, jobId)
         );
         if (StrUtil.isBlank(content)) {
-            log.warn("DeepSeek generateMatchReason降级：AI内容为空");
+            log.warn("AI生成匹配结果说明降级：返回内容为空，resumeId={}, jobId={}", resumeId, jobId);
             return DEFAULT_MATCH_REASON;
         }
 
-        log.info("DeepSeek 生成匹配结果说明成功：使用AI结果，resumeId={}, jobId={}", resumeId, jobId);
+        log.info("AI生成匹配结果说明成功：使用AI结果，resumeId={}, jobId={}", resumeId, jobId);
         return content.trim();
     }
 
@@ -163,17 +163,17 @@ public class DeepSeekClient {
         );
 
         if (StrUtil.isBlank(content)) {
-            log.warn("DeepSeek calculateMatch降级：响应内容为空");
+            log.warn("AI计算人岗匹配分数降级：响应内容为空");
             return fallbackCalculateMatch(userInfo, jobInfo);
         }
 
         Map<String, Object> result = parseDeepSeekResponse(content);
         if (result == null || result.isEmpty()) {
-            log.warn("DeepSeek calculateMatch降级：无法解析AI返回的JSON内容");
+            log.warn("AI计算人岗匹配分数降级：无法解析AI返回的JSON内容");
             return fallbackCalculateMatch(userInfo, jobInfo);
         }
 
-        log.info("DeepSeek calculateMatch成功：使用AI评分结果");
+        log.info("AI计算人岗匹配分数成功：使用AI评分结果");
         return result;
     }
 
@@ -316,7 +316,7 @@ public class DeepSeekClient {
             result.put("overall_score", jsonObj.getDouble("overall_score", calculateOverallScore(result)));
             return result;
         } catch (Exception e) {
-            log.warn("DeepSeek calculateMatch解析失败: {}", safeMessage(e));
+            log.warn("AI计算人岗匹配分数解析失败: {}", safeMessage(e));
             return null;
         }
     }
@@ -352,17 +352,17 @@ public class DeepSeekClient {
             String.format(parseResumeUserPrompt, text)
         );
         if (StrUtil.isBlank(content)) {
-            log.warn("DeepSeek parseResume降级：响应内容为空");
+            log.warn("AI解析简历降级：响应内容为空");
             return getMockParseResult(text);
         }
 
         Map<String, Object> result = parseResumeContent(content);
         if (result == null || result.isEmpty()) {
-            log.warn("DeepSeek parseResume降级：无法构建结构化结果");
+            log.warn("AI解析简历降级：无法构建结构化结果");
             return getMockParseResult(text);
         }
 
-        log.info("DeepSeek parseResume成功：使用AI解析结果");
+        log.info("AI解析简历成功：使用AI解析结果");
         return result;
     }
 
@@ -382,7 +382,7 @@ public class DeepSeekClient {
             result.put("summary", resumeJson.getStr("summary", ""));
             return result;
         } catch (Exception e) {
-            log.warn("DeepSeek parseResume JSON解析失败，改用文本提取降级方案: {}", safeMessage(e));
+            log.warn("AI解析简历JSON解析失败，改用文本提取降级方案: {}", safeMessage(e));
             Map<String, Object> result = new HashMap<>();
             result.put("raw_response", content);
             result.put("name", extractNameFromText(content));
@@ -455,17 +455,17 @@ public class DeepSeekClient {
             String.format(parseJobUserPrompt, jobTitle, text)
         );
         if (StrUtil.isBlank(content)) {
-            log.warn("DeepSeek parseJob降级：响应内容为空");
+            log.warn("AI解析职位降级：响应内容为空");
             return getMockJobParseResult(text, jobTitle);
         }
 
         Map<String, Object> result = parseJobJsonResponse(content);
         if (result == null || result.isEmpty()) {
-            log.warn("DeepSeek parseJob降级：无法解析AI返回的JSON内容");
+            log.warn("AI解析职位降级：无法解析AI返回的JSON内容");
             return getMockJobParseResult(text, jobTitle);
         }
 
-        log.info("DeepSeek parseJob成功：使用AI解析结果");
+        log.info("AI解析职位成功：使用AI解析结果");
         return result;
     }
 
@@ -490,7 +490,7 @@ public class DeepSeekClient {
             }
             return result;
         } catch (Exception e) {
-            log.warn("DeepSeek parseJob JSON解析失败: {}", safeMessage(e));
+            log.warn("AI解析职位JSON解析失败: {}", safeMessage(e));
             return null;
         }
     }
@@ -514,7 +514,7 @@ public class DeepSeekClient {
     private boolean isAiAvailable(String operation) {
         boolean available = enabled && StrUtil.isNotBlank(apiKey);
         if (!available) {
-            log.info("DeepSeek {}降级：AI未启用或API Key缺失", operation);
+            log.info("AI{}降级：AI未启用或API Key缺失", getOperationLabel(operation));
         }
         return available;
     }
@@ -542,7 +542,8 @@ public class DeepSeekClient {
                 int status = response.getStatus();
                 String responseBody = response.body();
                 if (status < 200 || status >= 300) {
-                    log.warn("DeepSeek {} 请求第{}/{}次失败：HTTP状态码={}，响应摘要={}", operation, attempt, attempts, status, summarize(responseBody));
+                    log.warn("AI{}请求第{}/{}次失败：HTTP状态码={}，响应摘要={}",
+                        getOperationLabel(operation), attempt, attempts, status, summarize(responseBody));
                     if (attempt < attempts) {
                         ThreadUtil.safeSleep(retryBackoffMs * attempt);
                         continue;
@@ -550,18 +551,18 @@ public class DeepSeekClient {
                     return null;
                 }
                 if (StrUtil.isBlank(responseBody)) {
-                    log.warn("DeepSeek {}降级：响应体为空", operation);
+                    log.warn("AI{}降级：响应体为空", getOperationLabel(operation));
                     return null;
                 }
 
                 String content = extractMessageContent(responseBody, operation);
                 if (StrUtil.isBlank(content)) {
-                    log.warn("DeepSeek {}降级：内容为空", operation);
+                    log.warn("AI{}降级：内容为空", getOperationLabel(operation));
                     return null;
                 }
                 return content;
             } catch (Exception e) {
-                log.warn("DeepSeek {} 请求第{}/{}次失败: {}", operation, attempt, attempts, safeMessage(e));
+                log.warn("AI{}请求第{}/{}次失败: {}", getOperationLabel(operation), attempt, attempts, safeMessage(e));
                 if (attempt < attempts) {
                     ThreadUtil.safeSleep(retryBackoffMs * attempt);
                     continue;
@@ -577,19 +578,29 @@ public class DeepSeekClient {
             JSONObject jsonObj = JSONUtil.parseObj(responseBody);
             JSONArray choices = jsonObj.getJSONArray("choices");
             if (choices == null || choices.isEmpty()) {
-                log.warn("DeepSeek {}降级：响应中缺少choices字段", operation);
+                log.warn("AI{}降级：响应中缺少choices字段", getOperationLabel(operation));
                 return null;
             }
             JSONObject message = choices.getJSONObject(0).getJSONObject("message");
             if (message == null) {
-                log.warn("DeepSeek {}降级：第一个choice中缺少message字段", operation);
+                log.warn("AI{}降级：第一个choice中缺少message字段", getOperationLabel(operation));
                 return null;
             }
             return message.getStr("content");
         } catch (Exception e) {
-            log.warn("DeepSeek {}降级：响应解析失败: {}", operation, safeMessage(e));
+            log.warn("AI{}降级：响应解析失败: {}", getOperationLabel(operation), safeMessage(e));
             return null;
         }
+    }
+
+    private String getOperationLabel(String operation) {
+        return switch (operation) {
+            case "generateMatchReason" -> "生成匹配结果说明";
+            case "calculateMatch" -> "计算人岗匹配分数";
+            case "parseResume" -> "解析简历";
+            case "parseJob" -> "解析职位";
+            default -> "处理请求";
+        };
     }
 
     private String cleanJsonContent(String content) {
