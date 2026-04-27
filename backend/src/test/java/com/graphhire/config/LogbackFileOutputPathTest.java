@@ -20,7 +20,7 @@ class LogbackFileOutputPathTest {
     @Test
     void shouldWriteLogFileIntoBackendLogsDirectory() throws InterruptedException {
         FileUtil.mkdir(LOG_DIR);
-        long sizeBefore = FileUtil.exist(LOG_FILE) ? LOG_FILE.length() : -1L;
+        String marker = "log-output-check:" + System.nanoTime();
 
         LoggingSystem loggingSystem = LoggingSystem.get(getClass().getClassLoader());
         loggingSystem.beforeInitialize();
@@ -28,7 +28,7 @@ class LogbackFileOutputPathTest {
                 "classpath:logback-spring.xml", null);
 
         Logger logger = LoggerFactory.getLogger(LogbackFileOutputPathTest.class);
-        logger.info("log-output-check:{}", System.nanoTime());
+        logger.info(marker);
         waitFor(Duration.ofSeconds(2));
 
         Assertions.assertTrue(
@@ -36,8 +36,8 @@ class LogbackFileOutputPathTest {
                 "Expected log file at backend/logs/graphhire-backend.log"
         );
         Assertions.assertTrue(
-                LOG_FILE.length() > sizeBefore,
-                "Expected log file size to grow after writing test log"
+                FileUtil.readUtf8String(LOG_FILE).contains(marker),
+                "Expected test marker to be written into backend/logs/graphhire-backend.log"
         );
     }
 
