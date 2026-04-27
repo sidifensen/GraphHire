@@ -17,7 +17,7 @@ export function middleware(request: NextRequest) {
 
   const rewriteUrl = request.nextUrl.clone();
   const mappedPathname = mapEnterprisePathToMobile(pathname);
-  rewriteUrl.pathname = "/_mobile";
+  rewriteUrl.pathname = "/mobile-enterprise-internal";
 
   const response = NextResponse.rewrite(rewriteUrl);
   response.headers.set("x-graphhire-mobile-rewrite", "1");
@@ -28,3 +28,4 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: ["/((?!_next/static|_next/image|.*\\..*).*)"],
 };
+

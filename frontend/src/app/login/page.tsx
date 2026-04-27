@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -40,8 +40,6 @@ const PsychologyIcon = () => (
   </svg>
 );
 
-const isDev = process.env.NODE_ENV === 'development';
-
 const DEV_ACCOUNTS = {
   jobseeker: { username: '13800138001@phone.com', password: 'password123' },
   recruiter: { username: 'hr@techchina.com', password: 'password123' },
@@ -52,8 +50,8 @@ export default function LoginPage() {
   const shouldReduceMotion = useReducedMotion();
   const [showPassword, setShowPassword] = useState(false);
   const [activeRole, setActiveRole] = useState<'jobseeker' | 'recruiter'>('jobseeker');
-  const [username, setUsername] = useState(isDev ? DEV_ACCOUNTS.jobseeker.username : '');
-  const [password, setPassword] = useState(isDev ? DEV_ACCOUNTS.jobseeker.password : '');
+  const [username, setUsername] = useState(DEV_ACCOUNTS.jobseeker.username);
+  const [password, setPassword] = useState(DEV_ACCOUNTS.jobseeker.password);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [reviewPending, setReviewPending] = useState(false);
@@ -68,10 +66,8 @@ export default function LoginPage() {
 
   const handleRoleSwitch = (role: 'jobseeker' | 'recruiter') => {
     setActiveRole(role);
-    if (isDev) {
-      setUsername(DEV_ACCOUNTS[role].username);
-      setPassword(DEV_ACCOUNTS[role].password);
-    }
+    setUsername(DEV_ACCOUNTS[role].username);
+    setPassword(DEV_ACCOUNTS[role].password);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -290,3 +286,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

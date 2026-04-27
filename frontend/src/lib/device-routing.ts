@@ -5,7 +5,7 @@ const EXCLUDED_PREFIXES = [
   "/api",
   "/_next",
   "/admin",
-  "/_mobile",
+  "/mobile-enterprise-internal",
   "/mobile-internal",
   "/favicon",
   "/sitemap",
@@ -75,3 +75,4 @@ export function mapEnterprisePathToMobile(pathname: string): string {
 export function shouldRewriteToMobile(pathname: string, userAgent: string): boolean {
   return shouldRewriteEnterpriseToMobile(pathname, userAgent);
 }
+
