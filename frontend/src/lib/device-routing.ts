@@ -5,7 +5,7 @@ const EXCLUDED_PREFIXES = [
   "/api",
   "/_next",
   "/admin",
-  "/mobile-enterprise-internal",
+  "/_mobile",
   "/mobile-internal",
   "/favicon",
   "/sitemap",
@@ -14,10 +14,6 @@ const EXCLUDED_PREFIXES = [
 
 export function isMobileUserAgent(userAgent: string): boolean {
   return MOBILE_UA_REGEX.test(userAgent);
-}
-
-export function isMobileClientHint(secChUaMobile: string | null | undefined): boolean {
-  return secChUaMobile?.trim() === "?1";
 }
 
 export function shouldBypassMobileRewrite(pathname: string): boolean {
@@ -31,7 +27,6 @@ export function isEnterprisePath(pathname: string): boolean {
 export function shouldRewriteEnterpriseToMobile(
   pathname: string,
   userAgent: string,
-  secChUaMobile?: string | null,
 ): boolean {
   if (shouldBypassMobileRewrite(pathname)) {
     return false;
@@ -41,7 +36,7 @@ export function shouldRewriteEnterpriseToMobile(
     return false;
   }
 
-  return isMobileUserAgent(userAgent) || isMobileClientHint(secChUaMobile);
+  return isMobileUserAgent(userAgent);
 }
 
 export function mapEnterprisePathToMobile(pathname: string): string {
@@ -78,6 +73,5 @@ export function mapEnterprisePathToMobile(pathname: string): string {
 }
 
 export function shouldRewriteToMobile(pathname: string, userAgent: string): boolean {
-  return shouldRewriteEnterpriseToMobile(pathname, userAgent, null);
+  return shouldRewriteEnterpriseToMobile(pathname, userAgent);
 }
-

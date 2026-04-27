@@ -8,9 +8,8 @@ import {
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const userAgent = request.headers.get("user-agent") ?? "";
-  const secChUaMobile = request.headers.get("sec-ch-ua-mobile");
 
-  if (!shouldRewriteEnterpriseToMobile(pathname, userAgent, secChUaMobile)) {
+  if (!shouldRewriteEnterpriseToMobile(pathname, userAgent)) {
     const response = NextResponse.next();
     response.headers.set("x-graphhire-mobile-rewrite", "0");
     return response;
@@ -18,7 +17,7 @@ export function middleware(request: NextRequest) {
 
   const rewriteUrl = request.nextUrl.clone();
   const mappedPathname = mapEnterprisePathToMobile(pathname);
-  rewriteUrl.pathname = "/mobile-enterprise-internal";
+  rewriteUrl.pathname = "/_mobile";
 
   const response = NextResponse.rewrite(rewriteUrl);
   response.headers.set("x-graphhire-mobile-rewrite", "1");
@@ -29,4 +28,3 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: ["/((?!_next/static|_next/image|.*\\..*).*)"],
 };
-

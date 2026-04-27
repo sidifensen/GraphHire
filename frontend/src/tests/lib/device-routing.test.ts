@@ -20,7 +20,7 @@ describe("device-routing", () => {
 
   it("bypasses excluded prefixes", () => {
     expect(shouldBypassMobileRewrite("/admin/dashboard")).toBe(true);
-    expect(shouldBypassMobileRewrite("/mobile-enterprise-internal/jobs")).toBe(true);
+    expect(shouldBypassMobileRewrite("/_mobile/jobs")).toBe(true);
     expect(shouldBypassMobileRewrite("/api/health")).toBe(true);
     expect(shouldBypassMobileRewrite("/enterprise/jobs")).toBe(false);
   });
@@ -37,4 +37,3 @@ describe("device-routing", () => {
     expect(shouldRewriteToMobile("/admin/users", mobileUa)).toBe(false);
   });
 });
-
