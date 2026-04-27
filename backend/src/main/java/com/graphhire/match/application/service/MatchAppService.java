@@ -15,6 +15,8 @@ import com.graphhire.notification.domain.vo.NotificationType;
 import com.graphhire.resume.domain.model.Resume;
 import com.graphhire.resume.domain.repository.ResumeRepository;
 import com.graphhire.resume.domain.vo.ParseStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +29,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class MatchAppService {
+
+    private static final Logger log = LoggerFactory.getLogger(MatchAppService.class);
 
     @Autowired
     private MatchRecordRepository matchRecordRepository;
@@ -93,12 +97,35 @@ public class MatchAppService {
      */
     @Transactional
     public void triggerMatchForJob(Long jobId) {
+        long totalStartNanos = System.nanoTime();
+        log.info("企业一键匹配开始：jobId={}", jobId);
+
+        long clearCacheStartNanos = System.nanoTime();
         clearMatchCacheForJob(jobId);
+        long clearCacheCostMs = elapsedMs(clearCacheStartNanos);
+
+        long queryResumeStartNanos = System.nanoTime();
         List<Resume> parsedResumes = resumeRepository.findByParseStatus(ParseStatus.SUCCESS);
+        long queryResumeCostMs = elapsedMs(queryResumeStartNanos);
+
+        int totalResumes = parsedResumes.size();
+        int successCount = 0;
+        long matchLoopStartNanos = System.nanoTime();
         for (Resume resume : parsedResumes) {
             MatchRecord record = matchDomainService.calculateMatch(resume.getId(), jobId);
             matchRecordRepository.save(record);
+            successCount++;
         }
+        long matchLoopCostMs = elapsedMs(matchLoopStartNanos);
+
+        log.info(
+            "企业一键匹配完成：jobId={}, 简历总数={}, 成功数={}, 清理缓存耗时={}ms, 查询简历耗时={}ms, 匹配入库耗时={}ms, 总耗时={}ms",
+            jobId, totalResumes, successCount, clearCacheCostMs, queryResumeCostMs, matchLoopCostMs, elapsedMs(totalStartNanos)
+        );
+    }
+
+    private static long elapsedMs(long startNanos) {
+        return (System.nanoTime() - startNanos) / 1_000_000;
     }
 
     @Transactional
