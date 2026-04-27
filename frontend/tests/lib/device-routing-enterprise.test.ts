@@ -9,6 +9,16 @@ describe("enterprise mobile rewrite routing", () => {
     expect(shouldRewriteEnterpriseToMobile("/enterprise/jobs", "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X)")).toBe(true);
   });
 
+  it("rewrites enterprise path for mobile client hint even with desktop UA", () => {
+    expect(
+      shouldRewriteEnterpriseToMobile(
+        "/enterprise/jobs",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        "?1",
+      ),
+    ).toBe(true);
+  });
+
   it("does not rewrite for desktop UA", () => {
     expect(shouldRewriteEnterpriseToMobile("/enterprise/jobs", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)")).toBe(false);
   });

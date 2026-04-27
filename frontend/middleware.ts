@@ -8,8 +8,9 @@ import {
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const userAgent = request.headers.get("user-agent") ?? "";
+  const secChUaMobile = request.headers.get("sec-ch-ua-mobile");
 
-  if (!shouldRewriteEnterpriseToMobile(pathname, userAgent)) {
+  if (!shouldRewriteEnterpriseToMobile(pathname, userAgent, secChUaMobile)) {
     const response = NextResponse.next();
     response.headers.set("x-graphhire-mobile-rewrite", "0");
     return response;

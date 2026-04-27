@@ -16,6 +16,10 @@ export function isMobileUserAgent(userAgent: string): boolean {
   return MOBILE_UA_REGEX.test(userAgent);
 }
 
+export function isMobileClientHint(secChUaMobile: string | null | undefined): boolean {
+  return secChUaMobile?.trim() === "?1";
+}
+
 export function shouldBypassMobileRewrite(pathname: string): boolean {
   return EXCLUDED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }
@@ -27,6 +31,7 @@ export function isEnterprisePath(pathname: string): boolean {
 export function shouldRewriteEnterpriseToMobile(
   pathname: string,
   userAgent: string,
+  secChUaMobile?: string | null,
 ): boolean {
   if (shouldBypassMobileRewrite(pathname)) {
     return false;
@@ -36,7 +41,7 @@ export function shouldRewriteEnterpriseToMobile(
     return false;
   }
 
-  return isMobileUserAgent(userAgent);
+  return isMobileUserAgent(userAgent) || isMobileClientHint(secChUaMobile);
 }
 
 export function mapEnterprisePathToMobile(pathname: string): string {
@@ -73,6 +78,6 @@ export function mapEnterprisePathToMobile(pathname: string): string {
 }
 
 export function shouldRewriteToMobile(pathname: string, userAgent: string): boolean {
-  return shouldRewriteEnterpriseToMobile(pathname, userAgent);
+  return shouldRewriteEnterpriseToMobile(pathname, userAgent, null);
 }
 
