@@ -1,7 +1,7 @@
 const MOBILE_UA_REGEX =
   /Android|iPhone|iPad|iPod|Mobile|Windows Phone|BlackBerry|Opera Mini/i;
 
-const MOBILE_INTERNAL_PREFIX = "/mobile-internal";
+const MOBILE_INTERNAL_PREFIX = "/mobile-user";
 
 const EXCLUDED_PREFIXES = [
   "/api",

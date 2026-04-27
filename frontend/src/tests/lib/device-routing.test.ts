@@ -42,7 +42,7 @@ describe("device-routing", () => {
 
   it("bypasses excluded prefixes", () => {
     expect(shouldBypassMobileRewrite("/admin/dashboard")).toBe(true);
-    expect(shouldBypassMobileRewrite("/mobile-internal/jobs")).toBe(true);
+    expect(shouldBypassMobileRewrite("/mobile-user/jobs")).toBe(true);
     expect(shouldBypassMobileRewrite("/api/health")).toBe(true);
     expect(shouldBypassMobileRewrite("/jobs")).toBe(false);
   });
@@ -72,23 +72,23 @@ describe("device-routing", () => {
   });
 
   it("maps user routes into hidden mobile internal routes", () => {
-    expect(mapUserPathToMobileInternalPath("/")).toBe("/mobile-internal");
-    expect(mapUserPathToMobileInternalPath("/jobs/12")).toBe("/mobile-internal/jobs/12");
-    expect(mapUserPathToMobileInternalPath("/resume/manage")).toBe("/mobile-internal/resume");
-    expect(mapUserPathToMobileInternalPath("/skill-graph")).toBe("/mobile-internal/graph");
+    expect(mapUserPathToMobileInternalPath("/")).toBe("/mobile-user");
+    expect(mapUserPathToMobileInternalPath("/jobs/12")).toBe("/mobile-user/jobs/12");
+    expect(mapUserPathToMobileInternalPath("/resume/manage")).toBe("/mobile-user/resume");
+    expect(mapUserPathToMobileInternalPath("/skill-graph")).toBe("/mobile-user/graph");
   });
 
   it("maps internal mobile routes back to public user routes", () => {
-    expect(mapMobilePathToUserPath("/mobile-internal")).toBe("/");
-    expect(mapMobilePathToUserPath("/mobile-internal/jobs/12")).toBe("/jobs/12");
-    expect(mapMobilePathToUserPath("/mobile-internal/companies/9")).toBe("/companies/9");
-    expect(mapMobilePathToUserPath("/mobile-internal/resume")).toBe("/resume/manage");
-    expect(mapMobilePathToUserPath("/mobile-internal/graph")).toBe("/skill-graph");
+    expect(mapMobilePathToUserPath("/mobile-user")).toBe("/");
+    expect(mapMobilePathToUserPath("/mobile-user/jobs/12")).toBe("/jobs/12");
+    expect(mapMobilePathToUserPath("/mobile-user/companies/9")).toBe("/companies/9");
+    expect(mapMobilePathToUserPath("/mobile-user/resume")).toBe("/resume/manage");
+    expect(mapMobilePathToUserPath("/mobile-user/graph")).toBe("/skill-graph");
   });
 
   it("recognizes internal mobile implementation paths", () => {
-    expect(isMobileInternalPath("/mobile-internal")).toBe(true);
-    expect(isMobileInternalPath("/mobile-internal/jobs")).toBe(true);
+    expect(isMobileInternalPath("/mobile-user")).toBe(true);
+    expect(isMobileInternalPath("/mobile-user/jobs")).toBe(true);
     expect(isMobileInternalPath("/jobs")).toBe(false);
   });
 });
