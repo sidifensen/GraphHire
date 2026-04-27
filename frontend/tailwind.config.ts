@@ -6,6 +6,7 @@ const config: Config = {
     './src/app/**/*.{js,ts,jsx,tsx}',
     './src/components/**/*.{js,ts,jsx,tsx}',
     './src/lib/**/*.{js,ts,jsx,tsx}',
+    './src/mobile/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
     extend: {
@@ -18,6 +19,11 @@ const config: Config = {
         'on-secondary-fixed-variant': 'var(--color-on-secondary-fixed-variant)',
         tertiary: 'var(--color-tertiary)',
         'tertiary-fixed': 'var(--color-tertiary-fixed)',
+        'surface-background': 'var(--color-surface-background)',
+        'surface-low': 'var(--color-surface-low)',
+        'surface-mid': 'var(--color-surface-mid)',
+        'surface-high': 'var(--color-surface-high)',
+        'surface-highest': 'var(--color-surface-highest)',
         error: 'var(--color-error)',
         surface: 'var(--color-surface)',
         'surface-container-lowest': 'var(--color-surface-container-lowest)',
@@ -68,6 +74,9 @@ const config: Config = {
         xl: '0.75rem',
         '2xl': '1rem',
         full: '9999px',
+      },
+      spacing: {
+        'margin-mobile': '1.25rem',
       },
     },
   },
