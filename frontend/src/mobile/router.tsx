@@ -7,6 +7,7 @@ import {
   useRouter,
 } from "next/navigation";
 import type { ComponentProps, ReactNode } from "react";
+import { mapMobilePathToUserPath } from "@/lib/device-routing";
 
 type LinkProps = Omit<ComponentProps<typeof Link>, "href"> & {
   to: string;
@@ -19,6 +20,10 @@ type NavLinkProps = {
   children: ReactNode | ((state: { isActive: boolean }) => ReactNode);
 };
 
+function toPublicUserPath(pathname: string): string {
+  return mapMobilePathToUserPath(pathname);
+}
+
 export function useNavigate() {
   const router = useRouter();
 
@@ -30,13 +35,13 @@ export function useNavigate() {
       return;
     }
 
-    router.push(to);
+    router.push(toPublicUserPath(to));
   };
 }
 
 export function useLocation() {
   const pathname = usePathname();
-  return { pathname };
+  return { pathname: toPublicUserPath(pathname) };
 }
 
 export function useParams() {
@@ -45,20 +50,21 @@ export function useParams() {
 
 export function LinkRouter({ to, children, ...rest }: LinkProps) {
   return (
-    <Link href={to} {...rest}>
+    <Link href={toPublicUserPath(to)} {...rest}>
       {children}
     </Link>
   );
 }
 
 export function NavLink({ to, className, children }: NavLinkProps) {
-  const pathname = usePathname();
-  const isActive = pathname === to;
+  const pathname = toPublicUserPath(usePathname());
+  const targetPathname = toPublicUserPath(to);
+  const isActive = pathname === targetPathname;
   const resolvedClassName =
     typeof className === "function" ? className({ isActive }) : className;
 
   return (
-    <Link href={to} className={resolvedClassName}>
+    <Link href={targetPathname} className={resolvedClassName}>
       {typeof children === "function" ? children({ isActive }) : children}
     </Link>
   );
