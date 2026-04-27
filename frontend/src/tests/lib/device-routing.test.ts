@@ -1,4 +1,4 @@
-import {
+﻿import {
   isMobileUserAgent,
   shouldBypassMobileRewrite,
   shouldRewriteToMobile,
@@ -20,19 +20,20 @@ describe("device-routing", () => {
 
   it("bypasses excluded prefixes", () => {
     expect(shouldBypassMobileRewrite("/admin/dashboard")).toBe(true);
-    expect(shouldBypassMobileRewrite("/enterprise/jobs")).toBe(true);
+    expect(shouldBypassMobileRewrite("/_mobile/jobs")).toBe(true);
     expect(shouldBypassMobileRewrite("/api/health")).toBe(true);
-    expect(shouldBypassMobileRewrite("/jobs")).toBe(false);
+    expect(shouldBypassMobileRewrite("/enterprise/jobs")).toBe(false);
   });
 
-  it("rewrites only mobile requests on user routes", () => {
+  it("rewrites only mobile requests on enterprise routes", () => {
     const mobileUa =
       "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/121.0 Mobile";
     const desktopUa =
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4) AppleWebKit/537.36 Chrome/124.0";
 
-    expect(shouldRewriteToMobile("/jobs", mobileUa)).toBe(true);
-    expect(shouldRewriteToMobile("/jobs", desktopUa)).toBe(false);
+    expect(shouldRewriteToMobile("/enterprise/jobs", mobileUa)).toBe(true);
+    expect(shouldRewriteToMobile("/enterprise/jobs", desktopUa)).toBe(false);
+    expect(shouldRewriteToMobile("/jobs", mobileUa)).toBe(false);
     expect(shouldRewriteToMobile("/admin/users", mobileUa)).toBe(false);
   });
 });
