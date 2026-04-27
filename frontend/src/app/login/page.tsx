@@ -7,6 +7,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { authApi } from '@/lib/api/auth';
 import { enterpriseAuthStore, userAuthStore } from '@/lib/stores/auth-store';
 import type { LoginRequest } from '@/lib/types';
+import { resolveLoginRoleDecision } from '@/lib/auth/login-role';
 
 // Material Symbols SVG icons
 const PersonIcon = () => (
@@ -81,19 +82,23 @@ export default function LoginPage() {
     try {
       const data: LoginRequest = { username, password };
       const response = await authApi.login(data);
-      const nextUser = { id: response.userId, username, type: response.userType };
-      const nextTokens = { accessToken: response.accessToken, refreshToken: response.refreshToken };
-      if (activeRole === 'recruiter') {
-        enterpriseAuthStore.getState().setAuth(nextTokens, nextUser);
-      } else {
-        userAuthStore.getState().setAuth(nextTokens, nextUser);
+      const decision = resolveLoginRoleDecision(activeRole, response.userType);
+      if (!decision.allowed || !decision.authDomain || !decision.redirectPath) {
+        setError(decision.errorMessage ?? '账号角色与当前登录入口不匹配');
+        return;
       }
 
-      if (activeRole === 'recruiter') {
-        router.push('/enterprise/dashboard');
+      const nextUser = { id: response.userId, username, type: response.userType };
+      const nextTokens = { accessToken: response.accessToken, refreshToken: response.refreshToken };
+      if (decision.authDomain === 'enterprise') {
+        enterpriseAuthStore.getState().setAuth(nextTokens, nextUser);
+      } else if (decision.authDomain === 'user') {
+        userAuthStore.getState().setAuth(nextTokens, nextUser);
       } else {
-        router.push('/');
+        setError('当前账号请使用管理员登录入口');
+        return;
       }
+      router.push(decision.redirectPath);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : '登录失败，请检查用户名和密码';
       setError(message);
