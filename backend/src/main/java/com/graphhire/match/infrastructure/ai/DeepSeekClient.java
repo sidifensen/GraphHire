@@ -520,6 +520,7 @@ public class DeepSeekClient {
     }
 
     private String invokeChatCompletion(String operation, String systemPrompt, String userPrompt) {
+        long totalStartNanos = System.nanoTime();
         String endpoint = StrUtil.removeSuffix(baseUrl, "/") + CHAT_COMPLETIONS_PATH;
         Map<String, Object> requestBody = Map.of(
             "model", "deepseek-chat",
@@ -531,6 +532,7 @@ public class DeepSeekClient {
 
         int attempts = Math.max(maxRetryAttempts, 1);
         for (int attempt = 1; attempt <= attempts; attempt++) {
+            long attemptStartNanos = System.nanoTime();
             try {
                 HttpResponse response = HttpRequest.post(endpoint)
                     .header("Content-Type", "application/json")
@@ -542,8 +544,9 @@ public class DeepSeekClient {
                 int status = response.getStatus();
                 String responseBody = response.body();
                 if (status < 200 || status >= 300) {
-                    log.warn("AI{}请求第{}/{}次失败：HTTP状态码={}，响应摘要={}",
-                        getOperationLabel(operation), attempt, attempts, status, summarize(responseBody));
+                    log.warn("AI{}请求第{}/{}次失败：HTTP状态码={}，单次耗时={}ms，总耗时={}ms，响应摘要={}",
+                        getOperationLabel(operation), attempt, attempts, status,
+                        elapsedMs(attemptStartNanos), elapsedMs(totalStartNanos), summarize(responseBody));
                     if (attempt < attempts) {
                         ThreadUtil.safeSleep(retryBackoffMs * attempt);
                         continue;
@@ -551,18 +554,24 @@ public class DeepSeekClient {
                     return null;
                 }
                 if (StrUtil.isBlank(responseBody)) {
-                    log.warn("AI{}降级：响应体为空", getOperationLabel(operation));
+                    log.warn("AI{}降级：响应体为空，单次耗时={}ms，总耗时={}ms",
+                        getOperationLabel(operation), elapsedMs(attemptStartNanos), elapsedMs(totalStartNanos));
                     return null;
                 }
 
                 String content = extractMessageContent(responseBody, operation);
                 if (StrUtil.isBlank(content)) {
-                    log.warn("AI{}降级：内容为空", getOperationLabel(operation));
+                    log.warn("AI{}降级：内容为空，单次耗时={}ms，总耗时={}ms",
+                        getOperationLabel(operation), elapsedMs(attemptStartNanos), elapsedMs(totalStartNanos));
                     return null;
                 }
+                log.info("AI{}请求成功：第{}/{}次，单次耗时={}ms，总耗时={}ms",
+                    getOperationLabel(operation), attempt, attempts, elapsedMs(attemptStartNanos), elapsedMs(totalStartNanos));
                 return content;
             } catch (Exception e) {
-                log.warn("AI{}请求第{}/{}次失败: {}", getOperationLabel(operation), attempt, attempts, safeMessage(e));
+                log.warn("AI{}请求第{}/{}次失败: {}，单次耗时={}ms，总耗时={}ms",
+                    getOperationLabel(operation), attempt, attempts, safeMessage(e),
+                    elapsedMs(attemptStartNanos), elapsedMs(totalStartNanos));
                 if (attempt < attempts) {
                     ThreadUtil.safeSleep(retryBackoffMs * attempt);
                     continue;
@@ -621,5 +630,9 @@ public class DeepSeekClient {
 
     private String safeMessage(Exception e) {
         return StrUtil.blankToDefault(e.getMessage(), e.getClass().getSimpleName());
+    }
+
+    private long elapsedMs(long startNanos) {
+        return (System.nanoTime() - startNanos) / 1_000_000;
     }
 }
