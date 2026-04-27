@@ -57,12 +57,12 @@ public class MatchAppService {
      */
     @Transactional
     public MatchRecord triggerMatch(TriggerMatchCmd cmd) {
-        // 步骤1：优先复用已有匹配记录（作为缓存）
+        // 步骤1：优先复用已有匹配记录（作为已存在数据）
         List<MatchRecord> cachedRecords = matchRecordRepository.findByResumeIdAndJobId(cmd.getResumeId(), cmd.getJobId());
         if (!cachedRecords.isEmpty()) {
             return cachedRecords.get(0);
         }
-        // 步骤2：缓存未命中时计算并持久化
+        // 步骤2：无已存在数据时计算并持久化
         MatchRecord matchRecord = matchDomainService.calculateMatch(cmd.getResumeId(), cmd.getJobId());
         return matchRecordRepository.save(matchRecord);
     }
@@ -77,7 +77,7 @@ public class MatchAppService {
      */
     @Transactional
     public void triggerMatchForResume(Long resumeId) {
-        clearMatchCacheForResume(resumeId);
+        clearOldMatchDataForResume(resumeId);
         List<Job> publishedJobs = jobRepository.findAll().stream()
             .filter(job -> job.getStatus() == JobStatus.PUBLISHED)
             .toList();
@@ -100,9 +100,9 @@ public class MatchAppService {
         long totalStartNanos = System.nanoTime();
         log.info("企业一键匹配开始：jobId={}", jobId);
 
-        long clearCacheStartNanos = System.nanoTime();
-        clearMatchCacheForJob(jobId);
-        long clearCacheCostMs = elapsedMs(clearCacheStartNanos);
+        long clearOldDataStartNanos = System.nanoTime();
+        clearOldMatchDataForJob(jobId);
+        long clearOldDataCostMs = elapsedMs(clearOldDataStartNanos);
 
         long queryResumeStartNanos = System.nanoTime();
         List<Resume> parsedResumes = resumeRepository.findByParseStatus(ParseStatus.SUCCESS);
@@ -119,8 +119,8 @@ public class MatchAppService {
         long matchLoopCostMs = elapsedMs(matchLoopStartNanos);
 
         log.info(
-            "企业一键匹配完成：jobId={}, 简历总数={}, 成功数={}, 清理缓存耗时={}ms, 查询简历耗时={}ms, 匹配入库耗时={}ms, 总耗时={}ms",
-            jobId, totalResumes, successCount, clearCacheCostMs, queryResumeCostMs, matchLoopCostMs, elapsedMs(totalStartNanos)
+            "企业一键匹配完成：jobId={}, 简历总数={}, 成功数={}, 清除旧数据耗时={}ms, 查询简历耗时={}ms, 匹配入库耗时={}ms, 总耗时={}ms",
+            jobId, totalResumes, successCount, clearOldDataCostMs, queryResumeCostMs, matchLoopCostMs, elapsedMs(totalStartNanos)
         );
     }
 
@@ -129,12 +129,12 @@ public class MatchAppService {
     }
 
     @Transactional
-    public void clearMatchCacheForResume(Long resumeId) {
+    public void clearOldMatchDataForResume(Long resumeId) {
         matchRecordRepository.deleteByResumeId(resumeId);
     }
 
     @Transactional
-    public void clearMatchCacheForJob(Long jobId) {
+    public void clearOldMatchDataForJob(Long jobId) {
         matchRecordRepository.deleteByJobId(jobId);
     }
 

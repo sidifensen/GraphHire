@@ -217,9 +217,9 @@ public class ResumeAppService {
         resume.setIsDefault(true);
         resumeRepository.save(resume);
         if (previousDefaultResumeId != null) {
-            matchAppService.clearMatchCacheForResume(previousDefaultResumeId);
+            matchAppService.clearOldMatchDataForResume(previousDefaultResumeId);
         }
-        matchAppService.clearMatchCacheForResume(resume.getId());
+            matchAppService.clearOldMatchDataForResume(resume.getId());
         graphBuildService.buildGraphForResume(resume);
         if (syncPersonInfo) {
             syncPersonInfoFromResume(userId, resume.getParseResult());
