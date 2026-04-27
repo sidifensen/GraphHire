@@ -138,7 +138,7 @@ public class DeepSeekClient {
             return DEFAULT_MATCH_REASON;
         }
 
-        log.info("DeepSeek generateMatchReason成功：使用AI生成的匹配原因");
+        log.info("DeepSeek 生成匹配结果说明成功：使用AI结果，resumeId={}, jobId={}", resumeId, jobId);
         return content.trim();
     }
 
