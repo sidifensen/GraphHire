@@ -5,9 +5,10 @@ import {
   getStorageKeyByDomain,
   type AuthDomain,
 } from '@/lib/stores/auth-store';
+import { getApiBaseUrl } from '@/lib/api/base-url';
 
 const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:7777',
+  baseURL: getApiBaseUrl(process.env.NEXT_PUBLIC_API_BASE_URL),
   timeout: 30000,
   headers: { 'Content-Type': 'application/json' },
 });

@@ -1,5 +1,6 @@
-﻿import {
+import {
   isMobileUserAgent,
+  mapEnterprisePathToMobile,
   shouldBypassMobileRewrite,
   shouldRewriteToMobile,
 } from "@/lib/device-routing";
@@ -20,7 +21,7 @@ describe("device-routing", () => {
 
   it("bypasses excluded prefixes", () => {
     expect(shouldBypassMobileRewrite("/admin/dashboard")).toBe(true);
-    expect(shouldBypassMobileRewrite("/_mobile/jobs")).toBe(true);
+    expect(shouldBypassMobileRewrite("/mobile-internal/jobs")).toBe(true);
     expect(shouldBypassMobileRewrite("/api/health")).toBe(true);
     expect(shouldBypassMobileRewrite("/enterprise/jobs")).toBe(false);
   });
@@ -35,5 +36,12 @@ describe("device-routing", () => {
     expect(shouldRewriteToMobile("/enterprise/jobs", desktopUa)).toBe(false);
     expect(shouldRewriteToMobile("/jobs", mobileUa)).toBe(false);
     expect(shouldRewriteToMobile("/admin/users", mobileUa)).toBe(false);
+  });
+
+  it("maps enterprise paths into mobile-internal paths", () => {
+    expect(mapEnterprisePathToMobile("/enterprise")).toBe("/");
+    expect(mapEnterprisePathToMobile("/enterprise/jobs")).toBe("/jobs");
+    expect(mapEnterprisePathToMobile("/enterprise/jobs/new")).toBe("/jobs");
+    expect(mapEnterprisePathToMobile("/enterprise/jobs/12")).toBe("/jobs/12");
   });
 });

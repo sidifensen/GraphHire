@@ -1,7 +1,8 @@
 import apiClient from './client';
 import type { Job } from './public';
+import { getApiBaseUrl } from './base-url';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:7777';
+const API_BASE_URL = getApiBaseUrl(process.env.NEXT_PUBLIC_API_BASE_URL);
 
 function toAbsoluteAvatarUrl(url?: string | null): string | null {
   if (!url) {

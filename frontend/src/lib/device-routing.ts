@@ -5,7 +5,6 @@ const EXCLUDED_PREFIXES = [
   "/api",
   "/_next",
   "/admin",
-  "/_mobile",
   "/mobile-internal",
   "/favicon",
   "/sitemap",
@@ -49,7 +48,7 @@ export function mapEnterprisePathToMobile(pathname: string): string {
   }
 
   if (pathname === "/enterprise/jobs/new") {
-    return "/jobs/create";
+    return "/jobs";
   }
 
   if (pathname.startsWith("/enterprise/jobs/")) {
