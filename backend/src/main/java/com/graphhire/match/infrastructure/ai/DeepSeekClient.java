@@ -128,17 +128,19 @@ public class DeepSeekClient {
             return DEFAULT_MATCH_REASON;
         }
 
-        String content = invokeChatCompletion(
+        ChatCompletionResult result = invokeChatCompletionWithMetrics(
             "generateMatchReason",
             generateMatchReasonSystemPrompt,
             String.format(generateMatchReasonUserPrompt, resumeId, jobId)
         );
+        String content = result.content();
         if (StrUtil.isBlank(content)) {
-            log.warn("AI生成匹配结果说明降级：返回内容为空，resumeId={}, jobId={}", resumeId, jobId);
+            log.warn("AI生成匹配结果降级：返回内容为空，resumeId={}, jobId={}", resumeId, jobId);
             return DEFAULT_MATCH_REASON;
         }
 
-        log.info("AI生成匹配结果说明成功：使用AI结果，resumeId={}, jobId={}", resumeId, jobId);
+        log.info("AI生成匹配结果成功：使用AI结果，resumeId={}, jobId={}, 请求次数={}, 单次耗时={}ms, 总耗时={}ms",
+            resumeId, jobId, result.attemptCount(), result.lastAttemptCostMs(), result.totalCostMs());
         return content.trim();
     }
 
@@ -520,6 +522,11 @@ public class DeepSeekClient {
     }
 
     private String invokeChatCompletion(String operation, String systemPrompt, String userPrompt) {
+        ChatCompletionResult result = invokeChatCompletionWithMetrics(operation, systemPrompt, userPrompt);
+        return result.content();
+    }
+
+    private ChatCompletionResult invokeChatCompletionWithMetrics(String operation, String systemPrompt, String userPrompt) {
         long totalStartNanos = System.nanoTime();
         String endpoint = StrUtil.removeSuffix(baseUrl, "/") + CHAT_COMPLETIONS_PATH;
         Map<String, Object> requestBody = Map.of(
@@ -551,23 +558,21 @@ public class DeepSeekClient {
                         ThreadUtil.safeSleep(retryBackoffMs * attempt);
                         continue;
                     }
-                    return null;
+                    return new ChatCompletionResult(null, attempt, elapsedMs(attemptStartNanos), elapsedMs(totalStartNanos));
                 }
                 if (StrUtil.isBlank(responseBody)) {
                     log.warn("AI{}降级：响应体为空，单次耗时={}ms，总耗时={}ms",
                         getOperationLabel(operation), elapsedMs(attemptStartNanos), elapsedMs(totalStartNanos));
-                    return null;
+                    return new ChatCompletionResult(null, attempt, elapsedMs(attemptStartNanos), elapsedMs(totalStartNanos));
                 }
 
                 String content = extractMessageContent(responseBody, operation);
                 if (StrUtil.isBlank(content)) {
                     log.warn("AI{}降级：内容为空，单次耗时={}ms，总耗时={}ms",
                         getOperationLabel(operation), elapsedMs(attemptStartNanos), elapsedMs(totalStartNanos));
-                    return null;
+                    return new ChatCompletionResult(null, attempt, elapsedMs(attemptStartNanos), elapsedMs(totalStartNanos));
                 }
-                log.info("AI{}请求成功：第{}/{}次，单次耗时={}ms，总耗时={}ms",
-                    getOperationLabel(operation), attempt, attempts, elapsedMs(attemptStartNanos), elapsedMs(totalStartNanos));
-                return content;
+                return new ChatCompletionResult(content, attempt, elapsedMs(attemptStartNanos), elapsedMs(totalStartNanos));
             } catch (Exception e) {
                 log.warn("AI{}请求第{}/{}次失败: {}，单次耗时={}ms，总耗时={}ms",
                     getOperationLabel(operation), attempt, attempts, safeMessage(e),
@@ -576,10 +581,10 @@ public class DeepSeekClient {
                     ThreadUtil.safeSleep(retryBackoffMs * attempt);
                     continue;
                 }
-                return null;
+                return new ChatCompletionResult(null, attempt, elapsedMs(attemptStartNanos), elapsedMs(totalStartNanos));
             }
         }
-        return null;
+        return new ChatCompletionResult(null, attempts, elapsedMs(totalStartNanos), elapsedMs(totalStartNanos));
     }
 
     private String extractMessageContent(String responseBody, String operation) {
@@ -604,7 +609,7 @@ public class DeepSeekClient {
 
     private String getOperationLabel(String operation) {
         return switch (operation) {
-            case "generateMatchReason" -> "生成匹配结果说明";
+            case "generateMatchReason" -> "生成匹配结果";
             case "calculateMatch" -> "计算人岗匹配分数";
             case "parseResume" -> "解析简历";
             case "parseJob" -> "解析职位";
@@ -634,5 +639,8 @@ public class DeepSeekClient {
 
     private long elapsedMs(long startNanos) {
         return (System.nanoTime() - startNanos) / 1_000_000;
+    }
+
+    private record ChatCompletionResult(String content, int attemptCount, long lastAttemptCostMs, long totalCostMs) {
     }
 }
