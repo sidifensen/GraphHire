@@ -32,7 +32,7 @@ describe("MobileEnterpriseShell", () => {
 
   it("shows bottom navigation on the mobile enterprise home route", () => {
     usePathnameMock.mockReturnValue("/mobile-enterprise");
-    render(
+    const { container } = render(
       <MobileEnterpriseShell>
         <div>content</div>
       </MobileEnterpriseShell>,
@@ -42,6 +42,9 @@ describe("MobileEnterpriseShell", () => {
     expect(screen.getByText("职位")).toBeInTheDocument();
     expect(screen.getByText("推荐")).toBeInTheDocument();
     expect(screen.getByText("团队")).toBeInTheDocument();
+    const nav = container.querySelector("nav");
+    expect(nav?.className).toContain("max-w-[375px]");
+    expect(nav?.className).toContain("mx-auto");
   });
 
   it("hides bottom navigation on enterprise create route", () => {
