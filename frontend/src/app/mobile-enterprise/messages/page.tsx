@@ -38,7 +38,7 @@ export default function Messages() {
       <TopNav title="消息中心" showBack />
 
       {/* Actions & Insights Area (Glassmorphic pattern) */}
-      <div className="w-full px-4 pt-stack-gap-md pb-stack-gap-xs z-30 bg-surface backdrop-blur-md sticky top-16 border-b border-surface-variant">
+      <div className="w-full max-w-[375px] md:max-w-2xl mx-auto px-container-margin pt-stack-gap-md pb-stack-gap-xs z-30 bg-surface/80 backdrop-blur-md sticky top-16 border-b border-surface-variant">
         <div className="flex justify-between items-center mb-stack-gap-sm">
           <div className="flex items-center gap-2">
             {unreadCount > 0 && <div className="w-2 h-2 rounded-full bg-primary"></div>}
@@ -74,7 +74,7 @@ export default function Messages() {
       </div>
 
       {/* Notification List */}
-      <main className="w-full px-4 flex-1 py-stack-gap-md flex flex-col gap-stack-gap-sm overflow-y-auto pb-safe">
+      <main className="w-full max-w-[375px] md:max-w-2xl mx-auto flex-1 px-container-margin py-stack-gap-md flex flex-col gap-stack-gap-sm overflow-y-auto pb-safe">
         {filteredNotifs.map(notif => (
           <div 
             key={notif.id}

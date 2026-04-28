@@ -27,7 +27,7 @@ export default function Jobs() {
       <TopNav title="职位管理" userAvatar />
       <div className="flex-1 overflow-y-auto flex flex-col pb-24 md:pb-8">
         {/* Search Bar */}
-        <div className="px-4 pt-stack-gap-md pb-stack-gap-xs sticky top-0 bg-background z-10 md:max-w-2xl md:mx-auto md:w-full">
+        <div className="px-container-margin pt-stack-gap-md pb-stack-gap-xs sticky top-0 bg-background z-10 md:max-w-2xl md:mx-auto md:w-full">
           <div className="bg-surface-container-lowest border border-outline-variant rounded-lg flex items-center px-3 py-2.5 shadow-[0_2px_8px_rgba(0,0,0,0.02)] focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
             <span className="material-symbols-outlined text-on-surface-variant mr-2">search</span>
             <input
@@ -41,7 +41,7 @@ export default function Jobs() {
         </div>
 
         {/* Tabs/Filters */}
-        <div className="px-4 border-b border-surface-variant sticky top-[72px] bg-background z-10 md:max-w-2xl md:mx-auto md:w-full">
+        <div className="px-container-margin border-b border-surface-variant sticky top-[72px] bg-background z-10 md:max-w-2xl md:mx-auto md:w-full">
           <div className="flex gap-6 overflow-x-auto no-scrollbar pt-2">
             {TABS.map((tab) => (
               <button
@@ -61,7 +61,7 @@ export default function Jobs() {
         </div>
 
         {/* Job Cards List */}
-        <div className="px-4 py-stack-gap-md flex flex-col gap-stack-gap-md md:max-w-2xl md:mx-auto md:w-full">
+        <div className="p-container-margin flex flex-col gap-stack-gap-md md:max-w-2xl md:mx-auto md:w-full">
           {filteredJobs.map((job) => (
             <article
               key={job.id}
@@ -105,7 +105,7 @@ export default function Jobs() {
                 </div>
                 <div className={cn("flex-1 rounded-lg p-2 flex flex-col items-center justify-center", job.status === '已关闭' ? "bg-surface-container-low" : "bg-secondary-container")}>
                   <span className={cn("font-label-md text-label-md mb-0.5", job.status === '已关闭' ? "text-on-surface-variant" : "text-on-secondary-container")}>高匹配数</span>
-                <span className={cn("font-headline-sm text-headline-sm", job.status === '已关闭' ? "text-on-surface-variant" : "text-on-primary-fixed-variant")}>
+                  <span className={cn("font-headline-sm text-headline-sm", job.status === '已关闭' ? "text-on-surface-variant" : "text-primary-fixed-variant")}>
                     {job.highMatch || 12}
                   </span>
                 </div>

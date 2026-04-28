@@ -45,7 +45,7 @@ describe("MobileEnterpriseShell", () => {
     const nav = container.querySelector("nav");
     expect(nav?.className).toContain("left-0");
     expect(nav?.className).toContain("right-0");
-    expect(nav?.className).not.toContain("max-w-[375px]");
+    expect(nav?.className).toContain("max-w-[375px]");
   });
 
   it("hides bottom navigation on enterprise create route", () => {
@@ -62,7 +62,7 @@ describe("MobileEnterpriseShell", () => {
     expect(screen.queryByText("团队")).toBeNull();
   });
 
-  it("uses a full-width mobile shell without the centered 375px frame", () => {
+  it("uses a centered 375px shell like the original mobile design", () => {
     usePathnameMock.mockReturnValue("/mobile-enterprise");
     const { container } = render(
       <MobileEnterpriseShell>
@@ -73,8 +73,8 @@ describe("MobileEnterpriseShell", () => {
     const shellRoot = container.firstElementChild;
     const shellBody = shellRoot?.firstElementChild;
 
-    expect(shellRoot?.className).not.toContain("bg-surface-dim");
-    expect(shellBody?.className).not.toContain("max-w-[375px]");
+    expect(shellRoot?.className).toContain("bg-surface-dim");
+    expect(shellBody?.className).toContain("max-w-[375px]");
     expect(shellBody?.className).toContain("w-full");
   });
 });

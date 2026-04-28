@@ -30,14 +30,14 @@ describe("Mobile enterprise Dashboard page", () => {
     usePathnameMock.mockReturnValue("/mobile-enterprise");
   });
 
-  it("uses a full-width main container without mobile gutter helpers", () => {
+  it("uses the original centered 375 container with container spacing", () => {
     const { container } = render(<Dashboard />);
     const main = container.querySelector("main");
 
     expect(main).not.toBeNull();
     expect(main?.className).toContain("w-full");
-    expect(main?.className).not.toContain("max-w-[375px]");
-    expect(main?.className).not.toContain("mx-auto");
-    expect(main?.className).not.toContain("px-container-margin");
+    expect(main?.className).toContain("max-w-[375px]");
+    expect(main?.className).toContain("mx-auto");
+    expect(main?.className).toContain("px-container-margin");
   });
 });

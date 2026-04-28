@@ -13,7 +13,7 @@ export default function JobEdit() {
     <div className="flex flex-col h-full bg-background relative pb-[80px]">
       <TopNav title="编辑职位" showBack />
       
-      <main className="w-full px-4 flex-1 overflow-y-auto py-stack-gap-md space-y-stack-gap-md pb-[100px]">
+      <main className="w-full max-w-[375px] md:max-w-2xl mx-auto flex-1 overflow-y-auto px-container-margin py-stack-gap-md space-y-stack-gap-md pb-[100px]">
         {/* Basic Information Card */}
         <div className="bg-surface-container-lowest rounded-xl border border-surface-variant p-inline-padding-md shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-stack-gap-md">
           <h2 className="font-label-md text-label-md text-primary tracking-wider uppercase">基本信息</h2>
@@ -127,7 +127,7 @@ export default function JobEdit() {
       </main>
 
       {/* Fixed Bottom Action Area */}
-      <div className="absolute bottom-0 w-full left-0 right-0 bg-surface-container-lowest border-t border-surface-variant p-4 pb-safe z-30 shadow-[0_-4px_16px_rgba(0,0,0,0.04)]">
+      <div className="absolute bottom-0 w-full max-w-[375px] md:max-w-2xl mx-auto left-0 right-0 bg-surface-container-lowest border-t border-surface-variant p-4 pb-safe z-30 shadow-[0_-4px_16px_rgba(0,0,0,0.04)]">
         <button 
           onClick={() => navigate(-1)}
           className="w-full h-12 bg-primary text-on-primary rounded-lg font-headline-sm text-headline-sm flex items-center justify-center shadow-sm active:scale-[0.98] transition-transform">

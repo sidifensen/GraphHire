@@ -30,7 +30,7 @@ describe("Mobile enterprise Team page", () => {
     usePathnameMock.mockReturnValue("/mobile-enterprise/team");
   });
 
-  it("uses a full-width content column and floating action area", () => {
+  it("uses the original centered content container and button frame", () => {
     const { container } = render(<Team />);
 
     const main = container.querySelector("main");
@@ -38,14 +38,13 @@ describe("Mobile enterprise Team page", () => {
     const buttonContainer = button.parentElement;
 
     expect(main).not.toBeNull();
-    expect(main?.className).not.toContain("max-w-[375px]");
-    expect(main?.className).not.toContain("mx-auto");
+    expect(main?.className).toContain("max-w-[375px]");
+    expect(main?.className).toContain("mx-auto");
     expect(main?.className).toContain("w-full");
 
     expect(buttonContainer).not.toBeNull();
     expect(buttonContainer?.className).toContain("left-0");
     expect(buttonContainer?.className).toContain("right-0");
-    expect(buttonContainer?.className).toContain("w-full");
-    expect(buttonContainer?.className).not.toContain("max-w-[375px]");
+    expect(buttonContainer?.className).toContain("px-container-margin");
   });
 });

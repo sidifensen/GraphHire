@@ -4,6 +4,7 @@ import { TopNav } from "../_components/TopNav";
 import { mockCandidates } from "../_data/mockData";
 import { useState } from "react";
 import { cn } from "../_lib/utils";
+import Link from "next/link";
 
 export default function Recommendations() {
   const [refreshing, setRefreshing] = useState(false);
@@ -17,7 +18,7 @@ export default function Recommendations() {
     <div className="flex flex-col h-full bg-surface pb-[80px]">
       <TopNav title="智能推荐" />
       
-      <main className="w-full px-4 flex-1 overflow-y-auto pt-stack-gap-md flex flex-col gap-stack-gap-md pb-8">
+      <main className="w-full max-w-[375px] md:max-w-2xl mx-auto flex-1 overflow-y-auto px-container-margin pt-stack-gap-md flex flex-col gap-stack-gap-md pb-8">
         {/* Job Selector & Search Cluster */}
         <section className="flex flex-col gap-stack-gap-sm">
           {/* Job Dropdown */}
@@ -116,7 +117,7 @@ export default function Recommendations() {
                  {/* Skill Chips */}
                  <div className="flex flex-wrap gap-2">
                    {candidate.skills?.map(skill => (
-                     <span key={skill} className={cn("font-label-md text-label-md px-2 py-1 rounded-md border", skill.includes('+') ? "bg-surface-container-high text-on-surface-variant border-outline-variant" : "bg-secondary-fixed text-on-secondary-fixed-variant border-secondary-fixed")}>
+                     <span key={skill} className={cn("font-label-md text-label-md px-2 py-1 rounded-md border", skill.includes('+') ? "bg-surface-container-high text-on-surface-variant border-outline-variant" : "bg-secondary-fixed/50 text-secondary-fixed-dim-variant border-secondary-fixed")}>
                        {skill}
                      </span>
                    ))}
@@ -136,9 +137,9 @@ export default function Recommendations() {
 
                  {/* Actions */}
                  <div className="flex gap-3 mt-2">
-                   <button className="flex-1 h-10 border border-outline-variant text-on-surface rounded-lg font-label-md text-label-md hover:bg-surface-container-high active:scale-95 transition-all flex items-center justify-center">
+                   <Link href={`/mobile-enterprise/candidate/${candidate.id}`} className="flex-1 h-10 border border-outline-variant text-on-surface rounded-lg font-label-md text-label-md hover:bg-surface-container-high active:scale-95 transition-all flex items-center justify-center">
                      详情
-                   </button>
+                   </Link>
                    <button className={cn("flex-1 h-10 rounded-lg font-label-md text-label-md shadow-sm active:scale-95 transition-all", idx === 0 ? "bg-primary text-on-primary" : "bg-primary-fixed text-primary")}>
                      邀请面试
                    </button>

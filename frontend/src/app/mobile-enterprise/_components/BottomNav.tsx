@@ -23,7 +23,7 @@ export function BottomNav() {
   }
 
   return (
-    <nav className="bg-white/90 dark:bg-slate-950/90 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 shadow-[0_-2px_8px_rgba(0,0,0,0.04)] fixed bottom-0 left-0 right-0 h-16 z-50 flex justify-around items-center px-4 pb-safe md:hidden">
+    <nav className="bg-white/90 dark:bg-slate-950/90 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 shadow-[0_-2px_8px_rgba(0,0,0,0.04)] fixed bottom-0 left-0 right-0 h-16 z-50 flex justify-around items-center px-4 pb-safe max-w-[375px] mx-auto md:hidden">
       {NAV_ITEMS.map((item) => {
         const isActive = currentPath === item.path || (item.path !== '/' && currentPath.startsWith(item.path));
         

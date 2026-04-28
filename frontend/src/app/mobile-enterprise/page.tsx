@@ -16,7 +16,7 @@ export default function Dashboard() {
   return (
     <>
       <TopNav title="GraphHire" userAvatar />
-      <main className="w-full px-4 py-stack-gap-md flex flex-col gap-stack-gap-lg overflow-y-auto pb-32">
+      <main className="w-full max-w-[375px] mx-auto md:max-w-none px-container-margin py-stack-gap-md flex flex-col gap-stack-gap-lg overflow-y-auto pb-32">
         {/* Core Metrics Bento Grid */}
         <section className="grid grid-cols-2 gap-stack-gap-sm">
           <div className="bg-gradient-to-br from-primary-fixed to-surface-container-lowest p-inline-padding-md rounded-xl border border-surface-variant shadow-[0_2px_8px_rgba(0,0,0,0.04)] col-span-2 flex justify-between items-center bg-surface-container-lowest transition-transform active:scale-[0.98]">
@@ -28,7 +28,7 @@ export default function Dashboard() {
                 <p className="font-headline-lg text-headline-lg text-on-primary-fixed">24</p>
               )}
             </div>
-            <div className="w-10 h-10 rounded-full bg-primary-fixed-dim flex items-center justify-center text-primary">
+              <div className="w-10 h-10 rounded-full bg-primary-fixed-dim/50 flex items-center justify-center text-primary">
               <span className="material-symbols-outlined">inbox</span>
             </div>
           </div>
@@ -61,19 +61,19 @@ export default function Dashboard() {
           <h2 className="font-headline-sm text-headline-sm text-on-surface mb-stack-gap-md">快捷操作</h2>
           <div className="grid grid-cols-3 gap-stack-gap-sm">
             <Link to="/jobs/create" className="bg-surface-container-lowest border border-surface-variant rounded-lg p-inline-padding-sm flex flex-col items-center gap-2 shadow-[0_2px_8px_rgba(0,0,0,0.04)] active:shadow-[0_4px_12px_rgba(0,102,255,0.1)] active:scale-95 transition-all">
-              <div className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-primary-fixed-variant">
+              <div className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-primary-fixed-variant">
                 <span className="material-symbols-outlined">add_circle</span>
               </div>
               <span className="font-label-md text-label-md text-on-surface">发布职位</span>
             </Link>
             <Link to="/recommendations" className="bg-surface-container-lowest border border-surface-variant rounded-lg p-inline-padding-sm flex flex-col items-center gap-2 shadow-[0_2px_8px_rgba(0,0,0,0.04)] active:shadow-[0_4px_12px_rgba(0,102,255,0.1)] active:scale-95 transition-all">
-              <div className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-primary-fixed-variant">
+              <div className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-primary-fixed-variant">
                 <span className="material-symbols-outlined">auto_awesome</span>
               </div>
               <span className="font-label-md text-label-md text-on-surface">智能推荐</span>
             </Link>
             <Link to="/team" className="bg-surface-container-lowest border border-surface-variant rounded-lg p-inline-padding-sm flex flex-col items-center gap-2 shadow-[0_2px_8px_rgba(0,0,0,0.04)] active:shadow-[0_4px_12px_rgba(0,102,255,0.1)] active:scale-95 transition-all">
-              <div className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-primary-fixed-variant">
+              <div className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-primary-fixed-variant">
                 <span className="material-symbols-outlined">groups</span>
               </div>
               <span className="font-label-md text-label-md text-on-surface">员工管理</span>

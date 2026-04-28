@@ -10,7 +10,7 @@ export default function JobCreate() {
     <div className="flex flex-col h-full bg-surface-container-highest relative pb-[80px]">
       <TopNav title="发布职位" showBack />
       
-      <main className="w-full bg-background flex-1 flex flex-col shadow-lg overflow-y-auto px-4 py-stack-gap-md pb-32 gap-stack-gap-lg">
+      <main className="w-full max-w-[375px] md:max-w-2xl mx-auto bg-background flex-1 flex flex-col shadow-lg overflow-y-auto px-container-margin py-stack-gap-md pb-32 gap-stack-gap-lg">
         {/* Instructions / Context */}
         <div className="flex flex-col gap-stack-gap-xs">
           <h2 className="font-headline-md text-headline-md text-on-background">职位详情</h2>
@@ -84,7 +84,7 @@ export default function JobCreate() {
       </main>
 
       {/* Bottom Fixed Action Area */}
-      <div className="absolute bottom-0 left-0 right-0 bg-surface backdrop-blur-sm border-t border-surface-variant px-4 py-4 pb-safe shadow-[0_-4px_16px_rgba(0,0,0,0.02)] z-20">
+      <div className="absolute bottom-0 left-0 right-0 bg-surfce/95 backdrop-blur-sm border-t border-surface-variant px-container-margin py-4 pb-safe shadow-[0_-4px_16px_rgba(0,0,0,0.02)] max-w-[375px] md:max-w-2xl mx-auto z-20">
         <button 
           onClick={() => navigate('/jobs')}
           className="w-full h-[48px] bg-primary text-on-primary font-label-md text-label-md rounded-DEFAULT flex items-center justify-center shadow-sm active:scale-[0.98] active:shadow-md transition-all">

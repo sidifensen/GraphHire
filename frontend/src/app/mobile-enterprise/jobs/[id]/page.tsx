@@ -12,7 +12,7 @@ export default function JobDetail() {
     <div className="flex flex-col h-full bg-background relative pb-[80px]">
       <TopNav title="职位详情" showBack />
       
-      <main className="w-full px-4 py-stack-gap-md flex-1 flex flex-col gap-stack-gap-md overflow-y-auto pb-8">
+      <main className="w-full max-w-[375px] md:max-w-2xl mx-auto px-container-margin py-stack-gap-md flex-1 flex flex-col gap-stack-gap-md overflow-y-auto pb-8">
         {/* Header Card */}
         <div className="bg-surface-container-lowest rounded-xl border border-surface-variant p-inline-padding-md shadow-[0_2px_8px_rgba(0,0,0,0.04)] flex flex-col gap-stack-gap-sm">
           <div className="flex justify-between items-start">
@@ -87,7 +87,7 @@ export default function JobDetail() {
       </main>
 
       {/* Bottom Fixed Actions */}
-      <div className="fixed bottom-0 left-0 right-0 w-full bg-surface-container-lowest border-t border-surface-variant p-4 shadow-[0_-4px_16px_rgba(0,0,0,0.05)] z-50 flex gap-4 items-center justify-center pb-safe">
+      <div className="fixed bottom-0 left-0 right-0 w-full bg-surface-container-lowest border-t border-surface-variant p-4 shadow-[0_-4px_16px_rgba(0,0,0,0.05)] z-50 flex gap-4 items-center justify-center max-w-[375px] md:max-w-2xl mx-auto pb-safe">
         <Link to={`/jobs/${job.id}/edit`} className="flex-1 h-12 rounded-lg border border-outline text-on-surface font-label-md text-label-md font-semibold bg-surface-container-lowest hover:bg-surface-container-low flex justify-center items-center transition-colors active:scale-[0.98]">
             修改职位
         </Link>

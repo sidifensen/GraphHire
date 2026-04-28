@@ -38,10 +38,10 @@ export default function Team() {
   const filtered = EMPLOYEES.filter(emp => emp.name.includes(search) || emp.title.includes(search));
 
   return (
-    <div className="bg-surface text-on-surface antialiased pb-[140px] md:pb-8 flex flex-col h-full overflow-x-hidden">
+    <div className="bg-surface text-on-surface antialiased pb-[140px] md:pb-8 flex flex-col h-full">
       <TopNav title="团队管理" userAvatar />
       
-      <main className="w-full px-4 py-stack-gap-md flex flex-col gap-stack-gap-lg flex-1 overflow-y-auto overflow-x-hidden">
+      <main className="max-w-[375px] mx-auto md:max-w-2xl px-container-margin py-stack-gap-md flex flex-col gap-stack-gap-lg flex-1 overflow-y-auto w-full">
         {/* Mobile Title */}
         <h1 className="text-headline-lg font-headline-lg text-on-surface md:hidden">团队管理</h1>
 
@@ -106,9 +106,9 @@ export default function Team() {
 
         {/* Employee List Section */}
         <section className="flex flex-col gap-stack-gap-sm pb-8">
-          <div className="flex flex-wrap justify-between items-center gap-3 mb-2">
+          <div className="flex justify-between items-center mb-2">
             <h2 className="text-headline-sm font-headline-sm text-on-surface">员工列表</h2>
-            <div className="relative w-full sm:w-40">
+            <div className="relative w-40">
               <span className="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
               <input 
                 className="w-full h-8 pl-8 pr-2 rounded border border-outline-variant bg-surface-container-lowest text-label-md font-label-md focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-outline" 
@@ -168,7 +168,7 @@ export default function Team() {
       </main>
 
       {/* Bottom Fixed Add Button (Mobile) */}
-      <div className="fixed bottom-[80px] left-0 right-0 w-full px-4 md:hidden z-30">
+      <div className="fixed bottom-[80px] left-0 right-0 px-container-margin md:hidden z-30">
         <button className="w-full h-12 bg-primary text-on-primary rounded-lg shadow-[0_4px_12px_rgba(0,102,255,0.2)] flex items-center justify-center text-body-lg font-body-lg font-semibold active:opacity-80 transition-opacity">
           <span className="material-symbols-outlined mr-2" style={{ fontVariationSettings: "'FILL' 1" }}>add</span> 添加新成员
         </button>
