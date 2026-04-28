@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import { BottomNav } from "@/mobile-user-page/components/BottomNav";
+import { BottomNav } from "./BottomNav";
 import { mapMobilePathToUserPath } from "@/lib/device-routing";
 
 const HIDE_BOTTOM_NAV_PATHS = ["/login", "/register"];

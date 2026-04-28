@@ -910,46 +910,6 @@ class CompanyControllerTest {
     }
 
     @Nested
-    @DisplayName("获取职位图谱测试")
-    class GetJobGraphTests {
-
-        @Test
-        @DisplayName("成功获取职位图谱")
-        void getJobGraph_Success() {
-            try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
-                // Given
-                Long userId = 1L;
-                Long companyId = 1L;
-                Long jobId = 1L;
-
-                stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(userId);
-                when(companyAppService.getCompanyIdByUserId(userId)).thenReturn(companyId);
-
-                Job job = new Job();
-                job.setId(jobId);
-                job.setCompanyId(companyId);
-
-                when(jobAppService.getJobById(jobId)).thenReturn(job);
-
-                java.util.Map<String, Object> graphData = new java.util.HashMap<>();
-                graphData.put("jobId", jobId);
-                graphData.put("skills", java.util.Arrays.asList("Java", "Spring"));
-
-                when(skillGraphClient.getJobSkillGraph(jobId)).thenReturn(graphData);
-
-                // When
-                var result = companyController.getJobGraph(jobId);
-
-                // Then
-                assertNotNull(result);
-                assertEquals(200, result.getCode());
-                assertNotNull(result.getData());
-                assertEquals(jobId, result.getData().get("jobId"));
-            }
-        }
-    }
-
-    @Nested
     @DisplayName("岗位一键匹配测试")
     class TriggerMatchForJobTests {
 

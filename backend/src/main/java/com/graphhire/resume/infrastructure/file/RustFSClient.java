@@ -39,7 +39,7 @@ public class RustFSClient {
     private S3Client s3Client;
 
     /** RustFS endpoint */
-    @Value("${rustfs.endpoint}")
+    @Value("${rustfs.endpoint:http://localhost:9000}")
     private String endpoint;
 
     /** RustFS access key */

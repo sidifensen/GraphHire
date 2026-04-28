@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { NavLink } from '@/mobile-user-page/router';
+import { NavLink } from "../_lib/router";
 import { Home, Briefcase, Building2, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 

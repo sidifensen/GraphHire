@@ -116,8 +116,8 @@ class ResumeAppServiceTest {
         resumeAppService.setDefaultResume(30L, 9L, false);
 
         verify(graphBuildService).buildGraphForResume(resume);
-        verify(matchAppService).clearMatchCacheForResume(31L);
-        verify(matchAppService).clearMatchCacheForResume(30L);
+        verify(matchAppService).clearOldMatchDataForResume(31L);
+        verify(matchAppService).clearOldMatchDataForResume(30L);
         verify(mqProducer).sendResumeDefaultChangedMessage(30L);
         verifyNoInteractions(personInfoRepository);
     }

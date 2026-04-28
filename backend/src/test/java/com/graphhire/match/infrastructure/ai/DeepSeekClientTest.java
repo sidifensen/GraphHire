@@ -74,8 +74,8 @@ class DeepSeekClientTest {
         Map<String, Object> result = client.calculateMatch(sampleUserInfo(), sampleJobInfo());
 
         assertThat(result.get("match_reasons").toString()).contains("Skills match");
-        assertThat(output.getOut()).contains("status=500");
-        assertThat(output.getOut()).contains("fallback");
+        assertThat(output.getOut()).contains("HTTP状态码=500");
+        assertThat(output.getOut()).contains("降级");
     }
 
     @Test
@@ -129,8 +129,8 @@ class DeepSeekClientTest {
         Map<String, Object> result = client.parseResume("Alice 简历");
 
         assertThat(result.get("name")).isEqualTo("Extracted Name");
-        assertThat(output.getOut()).contains("empty content");
-        assertThat(output.getOut()).contains("fallback");
+        assertThat(output.getOut()).contains("内容为空");
+        assertThat(output.getOut()).contains("降级");
     }
 
     @Test

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import UserLayout from '@/components/UserLayout';
+import UserLayout from '@/components/layout/UserLayout';
 
 const mockPush = vi.fn();
 let mockPathname = '/jobs';

@@ -1,15 +1,19 @@
 package com.graphhire.resume.application.service;
 
+import com.graphhire.resume.config.AbilityAssessmentProperties;
 import com.graphhire.resume.interfaces.dto.AbilityAssessmentResponse;
 import com.graphhire.skill.infrastructure.graph.SkillGraphClient;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,6 +28,44 @@ class PersonAbilityAssessmentServiceTest {
 
     @InjectMocks
     private PersonAbilityAssessmentService personAbilityAssessmentService;
+
+    @BeforeEach
+    void setUpProperties() {
+        AbilityAssessmentProperties properties = new AbilityAssessmentProperties();
+        properties.setCategoryKeys(List.of("language", "framework", "database", "middleware", "frontend", "engineering"));
+
+        Map<String, List<String>> categoryKeywords = new LinkedHashMap<>();
+        categoryKeywords.put("language", List.of("java", "python", "go", "javascript", "typescript", "kotlin", "jvm"));
+        categoryKeywords.put("framework", List.of("spring", "spring boot", "spring cloud", "mvc", "react", "vue", "mybatis", "drools"));
+        categoryKeywords.put("database", List.of("mysql", "postgresql", "redis", "elasticsearch", "sql", "nosql"));
+        categoryKeywords.put("middleware", List.of("rabbitmq", "kafka", "nacos", "gateway", "seata", "feign"));
+        categoryKeywords.put("frontend", List.of("html", "css", "javascript", "typescript", "react", "vue", "element"));
+        categoryKeywords.put("engineering", List.of("docker", "kubernetes", "ci", "cd", "aop", "线程池", "并发", "微服务"));
+        properties.setCategoryKeywords(categoryKeywords);
+
+        Map<String, List<String>> domainKeywords = new LinkedHashMap<>();
+        domainKeywords.put("java-backend", List.of("java", "jvm", "spring", "spring boot", "mybatis"));
+        domainKeywords.put("distributed", List.of("spring cloud", "gateway", "nacos", "seata", "mq", "rabbitmq"));
+        domainKeywords.put("frontend", List.of("javascript", "typescript", "react", "vue", "html", "css"));
+        domainKeywords.put("storage", List.of("mysql", "redis", "elasticsearch"));
+        properties.setDomainKeywords(domainKeywords);
+
+        properties.setFreshnessKeywords(List.of("spring cloud", "kubernetes", "docker", "react", "vue", "typescript", "elasticsearch", "gateway", "nacos"));
+        properties.setRarityKeywords(Map.of(
+            "kubernetes", 20,
+            "seata", 20,
+            "rabbitmq", 15,
+            "elasticsearch", 15,
+            "gateway", 15,
+            "spring cloud", 15,
+            "nacos", 15,
+            "drools", 20,
+            "aop", 10,
+            "mvcc", 15
+        ));
+
+        ReflectionTestUtils.setField(personAbilityAssessmentService, "abilityAssessmentProperties", properties);
+    }
 
     @Test
     @DisplayName("无技能时返回全零低等级")

@@ -45,6 +45,8 @@ class PersonControllerIT extends BaseControllerIT {
                           @Autowired PasswordEncoder passwordEncoder,
                           @Autowired JdbcTemplate jdbcTemplate) throws Exception {
         ensureTokensInitialized(authService, userRepository, passwordEncoder, jdbcTemplate, mockMvc, objectMapper);
+        jdbcTemplate.update("DELETE FROM person_info WHERE user_id = ?", personUserId);
+        jdbcTemplate.execute("SELECT setval('person_info_id_seq', COALESCE((SELECT MAX(id) FROM person_info), 1))");
     }
 
     @BeforeEach
@@ -63,7 +65,7 @@ class PersonControllerIT extends BaseControllerIT {
     @Test
     @DisplayName("02 - 更新个人信息")
     void updatePersonInfo_Success() throws Exception {
-        String json = "{\"realName\":\"TestUser\",\"gender\":\"MALE\",\"age\":25,\"phone\":\"13800138000\"," +
+        String json = "{\"realName\":\"TestUser\",\"gender\":1,\"age\":25,\"phone\":\"13800138000\"," +
             "\"education\":\"BACHELOR\",\"city\":\"Beijing\",\"targetCity\":\"Shanghai\",\"expectedSalary\":30000}";
 
         mockMvc.perform(put("/person/info")

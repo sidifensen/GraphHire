@@ -2,15 +2,15 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import UserRouteLayout from '@/app/(user)/layout';
 
-vi.mock('@/components/Header', () => ({
+vi.mock('@/components/layout/Header', () => ({
   default: () => <div data-testid="header-shell">GraphHire 图谱智聘</div>,
 }));
 
-vi.mock('@/components/Footer', () => ({
+vi.mock('@/components/layout/Footer', () => ({
   default: () => <div data-testid="footer-shell">© 2026 GraphHire 图谱智聘</div>,
 }));
 
-vi.mock('@/components/Sidebar', () => ({
+vi.mock('@/components/user/UserSidebar', () => ({
   default: () => <aside data-testid="sidebar-shell">智聘空间</aside>,
 }));
 

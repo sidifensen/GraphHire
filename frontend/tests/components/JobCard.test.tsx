@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import JobCard from '@/components/JobCard';
+import JobCard from '@/components/user/JobCard';
 import { HomeJobCard } from '@/lib/types/home';
 
 const mockJob: HomeJobCard = {

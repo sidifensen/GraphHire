@@ -1,17 +1,17 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import UserLayoutClient from '@/app/(user)/UserLayoutClient';
-import UserLayout from '@/components/UserLayout';
+import UserLayout from '@/components/layout/UserLayout';
 
-vi.mock('@/components/Header', () => ({
+vi.mock('@/components/layout/Header', () => ({
   default: () => <div data-testid="header-shell">GraphHire 图谱智聘</div>,
 }));
 
-vi.mock('@/components/Footer', () => ({
+vi.mock('@/components/layout/Footer', () => ({
   default: () => <div data-testid="footer-shell">© 2026 GraphHire 图谱智聘. 认知导视 AI 招聘系统</div>,
 }));
 
-vi.mock('@/components/Sidebar', () => ({
+vi.mock('@/components/user/UserSidebar', () => ({
   default: () => <aside data-testid="sidebar">智聘空间</aside>,
 }));
 
@@ -19,6 +19,13 @@ vi.mock('@/components/Sidebar', () => ({
 const mockPathname = vi.fn();
 vi.mock('next/navigation', () => ({
   usePathname: () => mockPathname(),
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    refresh: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+  }),
 }));
 
 describe('user layout shell composition', () => {

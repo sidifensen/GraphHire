@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { useNavigate } from '@/mobile-user-page/router';
+import { useNavigate } from "../_lib/router";
 import { ArrowLeft, Share2 } from 'lucide-react';
 
 interface TopNavProps {

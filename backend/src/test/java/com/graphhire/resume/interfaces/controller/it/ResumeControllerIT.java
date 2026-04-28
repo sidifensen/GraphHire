@@ -99,6 +99,10 @@ class ResumeControllerIT extends BaseControllerIT {
     @DisplayName("04 - 设置默认简历")
     void setDefaultResume_Success() throws Exception {
         assertNotNull(uploadedResumeId);
+        jdbcTemplate.update(
+            "UPDATE resume SET parse_status = 2, is_default = 0, update_time = NOW() WHERE id = ?",
+            uploadedResumeId
+        );
 
         mockMvc.perform(put("/resume/{id}/default", uploadedResumeId)
                 .headers(personHeaders))

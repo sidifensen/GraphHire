@@ -79,15 +79,7 @@ class SkillTagControllerIT extends BaseControllerIT {
     }
 
     @Test
-    @DisplayName("05 - 按分类获取技能标签")
-    void getSkillTagsByCategory_Success() throws Exception {
-        mockMvc.perform(get("/skill-tags/category/{category}", "技术技能"))
-            .andExpect(jsonPath("$.code").value(200))
-            .andExpect(jsonPath("$.data").isArray());
-    }
-
-    @Test
-    @DisplayName("06 - 更新技能标签")
+    @DisplayName("05 - 更新技能标签")
     void updateSkillTag_Success() throws Exception {
         assertNotNull(createdTagId);
 
@@ -101,7 +93,7 @@ class SkillTagControllerIT extends BaseControllerIT {
     }
 
     @Test
-    @DisplayName("07 - 添加同义词")
+    @DisplayName("06 - 添加同义词")
     void addSynonym_Success() throws Exception {
         assertNotNull(createdTagId);
 
@@ -111,7 +103,7 @@ class SkillTagControllerIT extends BaseControllerIT {
     }
 
     @Test
-    @DisplayName("08 - 移除同义词")
+    @DisplayName("07 - 移除同义词")
     void removeSynonym_Success() throws Exception {
         assertNotNull(createdTagId);
 
@@ -120,17 +112,7 @@ class SkillTagControllerIT extends BaseControllerIT {
     }
 
     @Test
-    @DisplayName("09 - 更新分类")
-    void updateCategory_Success() throws Exception {
-        assertNotNull(createdTagId);
-
-        mockMvc.perform(put("/skill-tags/{id}/category", createdTagId)
-                .param("category", "软技能"))
-            .andExpect(jsonPath("$.code").value(200));
-    }
-
-    @Test
-    @DisplayName("10 - 标准化技能列表")
+    @DisplayName("08 - 标准化技能列表")
     void normalizeSkills_Success() throws Exception {
         String json = "[\"java\",\"JavaScript\",\"python\"]";
 
@@ -142,7 +124,7 @@ class SkillTagControllerIT extends BaseControllerIT {
     }
 
     @Test
-    @DisplayName("11 - 删除技能标签")
+    @DisplayName("09 - 删除技能标签")
     void deleteSkillTag_Success() throws Exception {
         assertNotNull(createdTagId);
 

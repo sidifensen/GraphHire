@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
-import Header from '@/components/Header';
+import Header from '@/components/layout/Header';
 
 // Use vi.hoisted to define mock before hoisting
 const { mockState, createMockStore } = vi.hoisted(() => {

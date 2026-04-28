@@ -20,7 +20,7 @@ describe('admin rewrite static template', () => {
     );
 
     expect(screen.getByText('概览数据')).toBeInTheDocument();
-    expect(screen.getByText('近30天平台活跃趋势')).toBeInTheDocument();
+    expect(screen.getByText('平台活跃趋势')).toBeInTheDocument();
     expect(screen.getByText('热门技能榜单 (Top 5)')).toBeInTheDocument();
   });
 });

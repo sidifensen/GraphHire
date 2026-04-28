@@ -6,21 +6,28 @@ const usePathnameMock = vi.fn();
 
 vi.mock('next/navigation', () => ({
   usePathname: () => usePathnameMock(),
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    refresh: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+  }),
 }));
 
-vi.mock('@/components/Header', () => ({
+vi.mock('@/components/layout/Header', () => ({
   default: () => <div data-testid="header">Header</div>,
 }));
 
-vi.mock('@/components/Footer', () => ({
+vi.mock('@/components/layout/Footer', () => ({
   default: () => <div data-testid="footer">Footer</div>,
 }));
 
-vi.mock('@/components/Sidebar', () => ({
+vi.mock('@/components/user/UserSidebar', () => ({
   default: () => <div data-testid="sidebar">Sidebar</div>,
 }));
 
-vi.mock('@/components/RouteTransition', () => ({
+vi.mock('@/components/layout/RouteTransition', () => ({
   default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 

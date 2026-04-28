@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import "@/mobile-user-page/styles.css";
-import MobileShell from "@/mobile-user-page/MobileShell";
+import "./_styles/mobile-user.css";
+import MobileShell from "./_components/MobileShell";
 
 export default function MobileLayout({ children }: { children: ReactNode }) {
   return <MobileShell>{children}</MobileShell>;

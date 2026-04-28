@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import Sidebar from '@/components/Sidebar';
+import Sidebar from '@/components/user/UserSidebar';
 
 const authStoreMock = vi.fn((selector: (state: any) => unknown) =>
   selector({
