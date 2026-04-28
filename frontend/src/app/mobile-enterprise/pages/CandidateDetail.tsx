@@ -15,7 +15,7 @@ export default function CandidateDetail() {
 
       <main className="w-full flex-1 pb-24 overflow-y-auto">
         {/* Header Profile Card */}
-        <div className="bg-surface-container-lowest m-container-margin rounded-xl border border-surface-variant shadow-[0_2px_8px_rgba(0,0,0,0.04)] p-inline-padding-md flex flex-col gap-stack-gap-md relative">
+        <div className="bg-surface-container-lowest my-4 rounded-xl border border-surface-variant shadow-[0_2px_8px_rgba(0,0,0,0.04)] p-inline-padding-md flex flex-col gap-stack-gap-md relative">
           <div className="absolute top-4 right-4 bg-primary-container text-on-primary font-label-sm text-label-sm px-2 py-1 rounded-DEFAULT">
              匹配度 {candidate.matchScore || candidate.skillMatch || 90}%
           </div>
@@ -42,7 +42,7 @@ export default function CandidateDetail() {
         </div>
 
         {/* Matching Analysis Bento Box */}
-        <div className="px-container-margin mb-container-margin">
+        <div className="mb-container-margin">
           <h3 className="font-headline-sm text-headline-sm text-on-surface mb-stack-gap-sm">匹配分析</h3>
           <div className="grid grid-cols-2 gap-stack-gap-sm">
             {/* Skill Match Card */}
@@ -72,7 +72,7 @@ export default function CandidateDetail() {
 
         {/* Skills Section */}
         {candidate.coreSkills && (
-          <div className="px-container-margin mb-container-margin">
+        <div className="mb-container-margin">
             <h3 className="font-headline-sm text-headline-sm text-on-surface mb-stack-gap-sm">核心技能</h3>
             <div className="bg-surface-container-lowest border border-surface-variant rounded-xl p-inline-padding-md shadow-[0_2px_8px_rgba(0,0,0,0.04)] flex flex-wrap gap-2">
               {candidate.coreSkills.map(skill => (
@@ -86,7 +86,7 @@ export default function CandidateDetail() {
 
         {/* Work History Section */}
         {candidate.workHistory && (
-          <div className="px-container-margin mb-container-margin">
+        <div className="mb-container-margin">
             <h3 className="font-headline-sm text-headline-sm text-on-surface mb-stack-gap-sm">工作经历</h3>
             <div className="relative border-l border-surface-variant ml-4 space-y-6">
               {candidate.workHistory.map((job, idx) => (

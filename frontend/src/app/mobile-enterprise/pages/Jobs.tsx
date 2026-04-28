@@ -27,7 +27,7 @@ export default function Jobs() {
       <TopNav title="职位管理" userAvatar />
       <div className="flex-1 overflow-y-auto flex flex-col pb-24 md:pb-8">
         {/* Search Bar */}
-        <div className="px-container-margin pt-stack-gap-md pb-stack-gap-xs sticky top-0 bg-background z-10 md:max-w-2xl md:mx-auto md:w-full">
+        <div className="pt-stack-gap-md pb-stack-gap-xs sticky top-0 bg-background z-10 md:max-w-2xl md:mx-auto md:w-full">
           <div className="bg-surface-container-lowest border border-outline-variant rounded-lg flex items-center px-3 py-2.5 shadow-[0_2px_8px_rgba(0,0,0,0.02)] focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
             <span className="material-symbols-outlined text-on-surface-variant mr-2">search</span>
             <input
@@ -41,7 +41,7 @@ export default function Jobs() {
         </div>
 
         {/* Tabs/Filters */}
-        <div className="px-container-margin border-b border-surface-variant sticky top-[72px] bg-background z-10 md:max-w-2xl md:mx-auto md:w-full">
+        <div className="border-b border-surface-variant sticky top-[72px] bg-background z-10 md:max-w-2xl md:mx-auto md:w-full">
           <div className="flex gap-6 overflow-x-auto no-scrollbar pt-2">
             {TABS.map((tab) => (
               <button
@@ -61,7 +61,7 @@ export default function Jobs() {
         </div>
 
         {/* Job Cards List */}
-        <div className="p-container-margin flex flex-col gap-stack-gap-md md:max-w-2xl md:mx-auto md:w-full">
+        <div className="py-stack-gap-md flex flex-col gap-stack-gap-md md:max-w-2xl md:mx-auto md:w-full">
           {filteredJobs.map((job) => (
             <article
               key={job.id}

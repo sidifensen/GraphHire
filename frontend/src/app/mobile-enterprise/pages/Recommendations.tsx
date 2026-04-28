@@ -17,7 +17,7 @@ export default function Recommendations() {
     <div className="flex flex-col h-full bg-surface pb-[80px]">
       <TopNav title="智能推荐" />
       
-      <main className="w-full flex-1 overflow-y-auto px-container-margin pt-stack-gap-md flex flex-col gap-stack-gap-md pb-8">
+      <main className="w-full flex-1 overflow-y-auto pt-stack-gap-md flex flex-col gap-stack-gap-md pb-8">
         {/* Job Selector & Search Cluster */}
         <section className="flex flex-col gap-stack-gap-sm">
           {/* Job Dropdown */}

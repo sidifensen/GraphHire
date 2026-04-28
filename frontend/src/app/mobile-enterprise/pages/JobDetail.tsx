@@ -12,7 +12,7 @@ export default function JobDetail() {
     <div className="flex flex-col h-full bg-background relative pb-[80px]">
       <TopNav title="职位详情" showBack />
       
-      <main className="w-full px-container-margin py-stack-gap-md flex-1 flex flex-col gap-stack-gap-md overflow-y-auto pb-8">
+      <main className="w-full py-stack-gap-md flex-1 flex flex-col gap-stack-gap-md overflow-y-auto pb-8">
         {/* Header Card */}
         <div className="bg-surface-container-lowest rounded-xl border border-surface-variant p-inline-padding-md shadow-[0_2px_8px_rgba(0,0,0,0.04)] flex flex-col gap-stack-gap-sm">
           <div className="flex justify-between items-start">

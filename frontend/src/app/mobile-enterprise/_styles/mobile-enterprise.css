@@ -125,7 +125,8 @@
 }
 
 .m-container-margin {
-  margin: 16px;
+  margin-top: 16px;
+  margin-bottom: 16px;
 }
 
 .mb-container-margin {
@@ -141,7 +142,8 @@
 }
 
 .p-container-margin {
-  padding: 16px;
+  padding-top: 16px;
+  padding-bottom: 16px;
 }
 
 .p-inline-padding-sm {
@@ -153,8 +155,8 @@
 }
 
 .px-container-margin {
-  padding-left: 16px;
-  padding-right: 16px;
+  padding-left: 0;
+  padding-right: 0;
 }
 
 .px-inline-padding-sm {

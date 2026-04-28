@@ -13,7 +13,7 @@ export default function JobEdit() {
     <div className="flex flex-col h-full bg-background relative pb-[80px]">
       <TopNav title="编辑职位" showBack />
       
-      <main className="w-full flex-1 overflow-y-auto px-container-margin py-stack-gap-md space-y-stack-gap-md pb-[100px]">
+      <main className="w-full flex-1 overflow-y-auto py-stack-gap-md space-y-stack-gap-md pb-[100px]">
         {/* Basic Information Card */}
         <div className="bg-surface-container-lowest rounded-xl border border-surface-variant p-inline-padding-md shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-stack-gap-md">
           <h2 className="font-label-md text-label-md text-primary tracking-wider uppercase">基本信息</h2>
