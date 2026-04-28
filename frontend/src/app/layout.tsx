@@ -29,12 +29,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-CN">
-      <head>
-        <link
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-          rel="stylesheet"
-        />
-      </head>
       <body className={`${manrope.variable} ${inter.variable} bg-background text-on-background min-h-screen flex flex-col antialiased selection:bg-primary-fixed selection:text-on-primary-fixed font-body`}>
         {children}
       </body>
