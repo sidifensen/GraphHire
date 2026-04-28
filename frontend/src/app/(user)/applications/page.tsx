@@ -8,6 +8,7 @@ const PAGE_SIZE = 10;
 
 type FilterStatus = 'ALL' | Application['status'];
 
+// 顶部筛选标签，和后端状态枚举保持一致，便于前端直接过滤。
 const FILTERS: Array<{ key: FilterStatus; label: string }> = [
   { key: 'ALL', label: '全部' },
   { key: 'PENDING', label: '待处理' },
@@ -18,6 +19,7 @@ const FILTERS: Array<{ key: FilterStatus; label: string }> = [
   { key: 'WITHDRAWN', label: '已撤回' },
 ];
 
+// 将状态码映射为中文文案，避免在 JSX 中散落判断逻辑。
 function getStatusText(status: Application['status']) {
   switch (status) {
     case 'PENDING':
@@ -37,6 +39,7 @@ function getStatusText(status: Application['status']) {
   }
 }
 
+// 统一处理投递时间展示；异常时间值回退为 "-" 防止页面报错。
 function formatAppliedTime(value: string) {
   const timestamp = Date.parse(value);
   if (Number.isNaN(timestamp)) {
@@ -45,6 +48,7 @@ function formatAppliedTime(value: string) {
   return new Date(timestamp).toLocaleString('zh-CN', { hour12: false });
 }
 
+// 兼容数组和分页对象两种返回结构，保证页面渲染始终拿到数组。
 function normalizeList(data: unknown): Application[] {
   if (Array.isArray(data)) {
     return data as Application[];
@@ -64,6 +68,7 @@ export default function ApplicationsPage() {
   const [error, setError] = useState('');
 
   const loadApplications = async () => {
+    // 未登录时直接清空列表，避免触发无效请求。
     if (!user?.id) {
       setLoading(false);
       setList([]);
@@ -83,6 +88,7 @@ export default function ApplicationsPage() {
   };
 
   useEffect(() => {
+    // 用户身份切换后重新加载数据，保持列表与当前账号一致。
     void loadApplications();
   }, [user?.id]);
 
@@ -97,6 +103,7 @@ export default function ApplicationsPage() {
   const currentPage = Math.min(page, totalPages);
 
   const currentList = useMemo(() => {
+    // 前端分页：按当前页截取展示数据。
     const start = (currentPage - 1) * PAGE_SIZE;
     return filteredList.slice(start, start + PAGE_SIZE);
   }, [currentPage, filteredList]);
