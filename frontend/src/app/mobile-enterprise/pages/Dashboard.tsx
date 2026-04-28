@@ -16,7 +16,7 @@ export default function Dashboard() {
   return (
     <>
       <TopNav title="GraphHire" userAvatar />
-      <main className="w-full max-w-[375px] mx-auto md:max-w-none px-container-margin py-stack-gap-md flex flex-col gap-stack-gap-lg overflow-y-auto pb-32">
+      <main className="w-full px-container-margin py-stack-gap-md flex flex-col gap-stack-gap-lg overflow-y-auto pb-32">
         {/* Core Metrics Bento Grid */}
         <section className="grid grid-cols-2 gap-stack-gap-sm">
           <div className="bg-gradient-to-br from-primary-fixed to-surface-container-lowest p-inline-padding-md rounded-xl border border-surface-variant shadow-[0_2px_8px_rgba(0,0,0,0.04)] col-span-2 flex justify-between items-center bg-surface-container-lowest transition-transform active:scale-[0.98]">

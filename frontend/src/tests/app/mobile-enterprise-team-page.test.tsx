@@ -30,16 +30,22 @@ describe("Mobile enterprise Team page", () => {
     usePathnameMock.mockReturnValue("/mobile-enterprise/team");
   });
 
-  it("keeps the floating add button constrained to the mobile shell width", () => {
-    render(<Team />);
+  it("uses a full-width content column and floating action area", () => {
+    const { container } = render(<Team />);
 
+    const main = container.querySelector("main");
     const button = screen.getByRole("button", { name: /添加新成员/ });
-    const container = button.parentElement;
+    const buttonContainer = button.parentElement;
 
-    expect(container).not.toBeNull();
-    expect(container?.className).toContain("left-1/2");
-    expect(container?.className).toContain("-translate-x-1/2");
-    expect(container?.className).toContain("w-full");
-    expect(container?.className).toContain("max-w-[375px]");
+    expect(main).not.toBeNull();
+    expect(main?.className).not.toContain("max-w-[375px]");
+    expect(main?.className).not.toContain("mx-auto");
+    expect(main?.className).toContain("w-full");
+
+    expect(buttonContainer).not.toBeNull();
+    expect(buttonContainer?.className).toContain("left-0");
+    expect(buttonContainer?.className).toContain("right-0");
+    expect(buttonContainer?.className).toContain("w-full");
+    expect(buttonContainer?.className).not.toContain("max-w-[375px]");
   });
 });

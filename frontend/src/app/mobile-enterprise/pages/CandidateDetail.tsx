@@ -13,7 +13,7 @@ export default function CandidateDetail() {
     <div className="bg-background font-body-md antialiased min-h-screen flex flex-col items-center">
       <TopNav title="简历详情" showBack />
 
-      <main className="w-full max-w-[375px] md:max-w-2xl flex-1 pb-24 overflow-y-auto">
+      <main className="w-full flex-1 pb-24 overflow-y-auto">
         {/* Header Profile Card */}
         <div className="bg-surface-container-lowest m-container-margin rounded-xl border border-surface-variant shadow-[0_2px_8px_rgba(0,0,0,0.04)] p-inline-padding-md flex flex-col gap-stack-gap-md relative">
           <div className="absolute top-4 right-4 bg-primary-container text-on-primary font-label-sm text-label-sm px-2 py-1 rounded-DEFAULT">
@@ -114,8 +114,8 @@ export default function CandidateDetail() {
       </main>
 
       {/* Bottom Fixed Action Area */}
-      <div className="fixed bottom-0 w-full max-w-[375px] md:max-w-none bg-surface-container-lowest border-t border-surface-variant px-4 py-4 z-50 pb-safe shadow-[0_-4px_16px_rgba(0,0,0,0.05)]">
-        <div className="flex gap-3 md:max-w-2xl md:mx-auto">
+      <div className="fixed bottom-0 left-0 right-0 w-full bg-surface-container-lowest border-t border-surface-variant px-4 py-4 z-50 pb-safe shadow-[0_-4px_16px_rgba(0,0,0,0.05)]">
+        <div className="flex gap-3">
           <button className="flex-1 bg-surface-container-high text-on-surface font-body-lg text-body-lg h-12 rounded-lg flex items-center justify-center font-medium hover:bg-surface-variant transition-colors active:scale-95 duration-150">
             暂不考虑
           </button>

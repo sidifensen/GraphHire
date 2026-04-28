@@ -28,7 +28,7 @@ export function TopNav({ title, showBack, rightAction, userAvatar, onBack }: Top
   };
 
   return (
-    <header className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between h-16 px-4 w-full z-40 sticky top-0 max-w-[375px] mx-auto md:max-w-none md:px-container-margin">
+    <header className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between h-16 px-4 w-full z-40 sticky top-0 md:px-container-margin">
       {/* Left Area (Mobile Back or Desktop Avatar) */}
       <div className="flex items-center gap-3 w-10 md:w-auto">
         {showBack ? (

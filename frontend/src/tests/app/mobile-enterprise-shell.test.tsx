@@ -57,6 +57,22 @@ describe("MobileEnterpriseShell", () => {
     expect(screen.queryByText("推荐")).toBeNull();
     expect(screen.queryByText("团队")).toBeNull();
   });
+
+  it("uses a full-width mobile shell without the centered 375px frame", () => {
+    usePathnameMock.mockReturnValue("/mobile-enterprise");
+    const { container } = render(
+      <MobileEnterpriseShell>
+        <div>content</div>
+      </MobileEnterpriseShell>,
+    );
+
+    const shellRoot = container.firstElementChild;
+    const shellBody = shellRoot?.firstElementChild;
+
+    expect(shellRoot?.className).not.toContain("bg-surface-dim");
+    expect(shellBody?.className).not.toContain("max-w-[375px]");
+    expect(shellBody?.className).toContain("w-full");
+  });
 });
 
 describe("mobile enterprise router adapter", () => {

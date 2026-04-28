@@ -42,8 +42,8 @@ export default function MobileEnterpriseShell({
   }, [internalPathname, prevPath]);
 
   return (
-    <div className="mobile-enterprise-ui bg-surface-dim min-h-screen flex justify-center overflow-x-hidden">
-      <div className="w-full max-w-[375px] md:max-w-none bg-background min-h-screen relative shadow-2xl overflow-x-hidden flex flex-col font-body-md text-body-md text-on-surface mx-auto">
+    <div className="mobile-enterprise-ui bg-background min-h-screen overflow-x-hidden">
+      <div className="w-full bg-background min-h-screen relative overflow-x-hidden flex flex-col font-body-md text-body-md text-on-surface">
         <AnimatePresence initial={false} mode="wait" custom={direction}>
           <motion.div
             key={internalPathname}

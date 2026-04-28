@@ -41,7 +41,7 @@ export default function Team() {
     <div className="bg-surface text-on-surface antialiased pb-[140px] md:pb-8 flex flex-col h-full overflow-x-hidden">
       <TopNav title="团队管理" userAvatar />
       
-      <main className="max-w-[375px] mx-auto md:max-w-2xl px-container-margin py-stack-gap-md flex flex-col gap-stack-gap-lg flex-1 overflow-y-auto overflow-x-hidden w-full">
+      <main className="w-full px-container-margin py-stack-gap-md flex flex-col gap-stack-gap-lg flex-1 overflow-y-auto overflow-x-hidden">
         {/* Mobile Title */}
         <h1 className="text-headline-lg font-headline-lg text-on-surface md:hidden">团队管理</h1>
 
@@ -168,7 +168,7 @@ export default function Team() {
       </main>
 
       {/* Bottom Fixed Add Button (Mobile) */}
-      <div className="fixed bottom-[80px] left-1/2 -translate-x-1/2 w-full max-w-[375px] px-container-margin md:hidden z-30">
+      <div className="fixed bottom-[80px] left-0 right-0 w-full px-container-margin md:hidden z-30">
         <button className="w-full h-12 bg-primary text-on-primary rounded-lg shadow-[0_4px_12px_rgba(0,102,255,0.2)] flex items-center justify-center text-body-lg font-body-lg font-semibold active:opacity-80 transition-opacity">
           <span className="material-symbols-outlined mr-2" style={{ fontVariationSettings: "'FILL' 1" }}>add</span> 添加新成员
         </button>
