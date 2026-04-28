@@ -1,6 +1,8 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import {
+  isEnterprisePath,
+  mapEnterprisePathToMobileInternalPath,
   mapUserPathToMobileInternalPath,
   shouldRewriteToMobile,
 } from "@/lib/device-routing";
@@ -17,7 +19,9 @@ export function middleware(request: NextRequest) {
   }
 
   const rewriteUrl = request.nextUrl.clone();
-  const mappedPathname = mapUserPathToMobileInternalPath(pathname);
+  const mappedPathname = isEnterprisePath(pathname)
+    ? mapEnterprisePathToMobileInternalPath(pathname)
+    : mapUserPathToMobileInternalPath(pathname);
   rewriteUrl.pathname = mappedPathname;
 
   const response = NextResponse.rewrite(rewriteUrl);
