@@ -6,7 +6,7 @@
         "/c",
         "npx",
         "-y",
-        "enhanced-postgres-mcp-server",
+        "@modelcontextprotocol/server-postgres",
         "postgresql://postgres:postgres@localhost:5432/graphhire"
       ]
     },
