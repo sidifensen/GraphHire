@@ -2,8 +2,8 @@
 
 import { ReactNode } from "react";
 import { Link, useNavigate, useLocation } from "../_lib/router";
-import { NAV_ITEMS } from "../constants";
-import { cn } from "../lib/utils";
+import { NAV_ITEMS } from "../_data/constants";
+import { cn } from "../_lib/utils";
 import { mapEnterprisePathToMobilePath } from "@/lib/device-routing";
 
 interface TopNavProps {

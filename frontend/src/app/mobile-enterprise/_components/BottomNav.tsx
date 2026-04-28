@@ -1,8 +1,8 @@
 "use client";
 
 import { Link, useLocation } from "../_lib/router";
-import { cn } from "../lib/utils";
-import { NAV_ITEMS } from "../constants";
+import { cn } from "../_lib/utils";
+import { NAV_ITEMS } from "../_data/constants";
 import { mapEnterprisePathToMobilePath } from "@/lib/device-routing";
 
 export function BottomNav() {

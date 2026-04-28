@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import Team from "@/app/mobile-enterprise/pages/Team";
+import Team from "@/app/mobile-enterprise/team/page";
 
 const usePathnameMock = vi.fn();
 

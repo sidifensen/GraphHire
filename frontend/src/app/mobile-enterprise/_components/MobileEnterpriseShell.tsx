@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { BottomNav } from "../components/BottomNav";
+import { BottomNav } from "./BottomNav";
 
 const INTERNAL_PREFIX = "/mobile-enterprise";
 

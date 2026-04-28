@@ -1,6 +1,6 @@
 import { render } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import Dashboard from "@/app/mobile-enterprise/pages/Dashboard";
+import Dashboard from "@/app/mobile-enterprise/page";
 
 const usePathnameMock = vi.fn();
 
