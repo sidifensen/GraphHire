@@ -7,11 +7,15 @@ arrow_back
 arrow_back_ios_new
 arrow_forward
 arrow_right_alt
+assignment_turned_in
 auto_awesome
 autorenew
+badge
+bar_chart
 block
 bolt
 business
+calendar_today
 campaign
 check
 check_circle
@@ -19,6 +23,7 @@ chevron_right
 close
 cloud_upload
 code_blocks
+dashboard
 delete
 description
 domain
@@ -63,7 +68,12 @@ school
 search
 search_insights
 send
+settings
 shield_person
+star
+task_alt
+thumb_up
+timeline
 tips_and_updates
 tune
 upload_file

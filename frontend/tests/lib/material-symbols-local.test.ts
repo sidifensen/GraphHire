@@ -25,11 +25,22 @@ describe('material symbols local hosting', () => {
   it('tracks the local font asset and icon list in the repository', () => {
     const fontFile = path.join(frontendRoot, 'public/fonts/material-symbols-outlined-subset.woff2');
     const iconListFile = path.join(frontendRoot, 'public/fonts/material-symbols-outlined-icons.txt');
+    const iconListContent = fs.readFileSync(iconListFile, 'utf8');
 
     expect(fs.existsSync(fontFile)).toBe(true);
     expect(fs.existsSync(iconListFile)).toBe(true);
-    expect(fs.readFileSync(iconListFile, 'utf8')).toContain('verified');
-    expect(fs.readFileSync(iconListFile, 'utf8')).toContain('autorenew');
+    expect(iconListContent).toContain('verified');
+    expect(iconListContent).toContain('autorenew');
+    expect(iconListContent).toContain('dashboard');
+    expect(iconListContent).toContain('thumb_up');
+    expect(iconListContent).toContain('star');
+    expect(iconListContent).toContain('bar_chart');
+    expect(iconListContent).toContain('badge');
+    expect(iconListContent).toContain('assignment_turned_in');
+    expect(iconListContent).toContain('settings');
+    expect(iconListContent).toContain('calendar_today');
+    expect(iconListContent).toContain('task_alt');
+    expect(iconListContent).toContain('timeline');
   });
 
   it('documents the local material symbols rule in frontend AGENTS', () => {
