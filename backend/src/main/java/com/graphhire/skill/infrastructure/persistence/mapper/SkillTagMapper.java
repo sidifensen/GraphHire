@@ -17,8 +17,27 @@ public interface SkillTagMapper extends BaseMapper<SkillTagPO> {
     @Select("SELECT id, name, synonyms::text AS synonyms, create_time, update_time FROM skill_tag WHERE id = #{id}")
     SkillTagPO selectByIdWithSynonyms(@Param("id") Long id);
 
-    @Select("SELECT id, name, synonyms::text AS synonyms, create_time, update_time FROM skill_tag WHERE name = #{name}")
-    SkillTagPO selectByNameWithSynonyms(@Param("name") String name);
+    @Select("SELECT id, name, synonyms::text AS synonyms, create_time, update_time FROM skill_tag WHERE LOWER(name) = LOWER(#{name})")
+    SkillTagPO selectByNameCaseInsensitive(@Param("name") String name);
+
+    @Select({
+        "<script>",
+        "SELECT id, name, synonyms::text AS synonyms, create_time, update_time FROM skill_tag WHERE LOWER(name) IN",
+        "<foreach collection='names' item='name' open='(' separator=',' close=')'>",
+        "LOWER(#{name})",
+        "</foreach>",
+        "</script>"
+    })
+    List<SkillTagPO> selectByNamesCaseInsensitive(@Param("names") List<String> names);
+
+    @Select({
+        "SELECT id, name, synonyms::text AS synonyms, create_time, update_time FROM skill_tag",
+        "WHERE LOWER(name) = LOWER(#{synonym})",
+        "UNION",
+        "SELECT id, name, synonyms::text AS synonyms, create_time, update_time FROM skill_tag, jsonb_array_elements_text(synonyms) AS syn",
+        "WHERE LOWER(syn) = LOWER(#{synonym})"
+    })
+    SkillTagPO selectBySynonymCaseInsensitive(@Param("synonym") String synonym);
 
     @Select("SELECT id, name, synonyms::text AS synonyms, create_time, update_time FROM skill_tag")
     List<SkillTagPO> selectAllWithSynonyms();

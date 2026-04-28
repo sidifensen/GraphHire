@@ -46,21 +46,21 @@ public class SkillTagRepositoryImpl implements SkillTagRepository {
     }
 
     /**
-     * 根据名称查询技能标签
+     * 根据名称查询技能标签（大小写不敏感）
      */
     @Override
     public Optional<SkillTag> findByName(String name) {
-        SkillTagPO po = skillTagMapper.selectByNameWithSynonyms(name);
+        SkillTagPO po = skillTagMapper.selectByNameCaseInsensitive(name);
         return Optional.ofNullable(po).map(this::toDomain);
     }
 
     /**
-     * 根据同义词查询技能标签
+     * 根据同义词查询技能标签（大小写不敏感）
      */
     @Override
     public Optional<SkillTag> findBySynonym(String synonym) {
-        // 当前schema的skill_tag表没有synonyms列，返回空
-        return Optional.empty();
+        SkillTagPO po = skillTagMapper.selectBySynonymCaseInsensitive(synonym);
+        return Optional.ofNullable(po).map(this::toDomain);
     }
 
     /**
@@ -97,14 +97,14 @@ public class SkillTagRepositoryImpl implements SkillTagRepository {
     }
 
     /**
-     * 批量根据名称查询技能标签
+     * 批量根据名称查询技能标签（大小写不敏感）
      */
     @Override
     public List<SkillTag> findByNames(List<String> names) {
         if (names == null || names.isEmpty()) {
             return List.of();
         }
-        List<SkillTagPO> pos = skillTagMapper.selectByNamesWithSynonyms(names);
+        List<SkillTagPO> pos = skillTagMapper.selectByNamesCaseInsensitive(names);
         return pos.stream().map(this::toDomain).toList();
     }
 
