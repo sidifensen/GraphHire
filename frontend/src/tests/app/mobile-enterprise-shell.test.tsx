@@ -43,8 +43,9 @@ describe("MobileEnterpriseShell", () => {
     expect(screen.getByText("推荐")).toBeInTheDocument();
     expect(screen.getByText("团队")).toBeInTheDocument();
     const nav = container.querySelector("nav");
-    expect(nav?.className).toContain("max-w-[375px]");
-    expect(nav?.className).toContain("mx-auto");
+    expect(nav?.className).toContain("left-0");
+    expect(nav?.className).toContain("right-0");
+    expect(nav?.className).not.toContain("max-w-[375px]");
   });
 
   it("hides bottom navigation on enterprise create route", () => {
