@@ -58,7 +58,7 @@ export function AdminSidebar({ isCollapsed = false }: { isCollapsed?: boolean })
             <Link
               key={item.path}
               href={item.path}
-              className="group relative block"
+              className="relative block"
               title={isCollapsed ? item.label : ""}
             >
               <div
@@ -66,7 +66,7 @@ export function AdminSidebar({ isCollapsed = false }: { isCollapsed?: boolean })
                   "flex h-12 items-center gap-3 px-4 rounded-lg transition-colors duration-200 font-medium text-sm",
                   isActive
                     ? "text-blue-600 font-bold"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800",
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800/80",
                   isCollapsed && "px-0 justify-center"
                 )}
               >
@@ -105,10 +105,6 @@ export function AdminSidebar({ isCollapsed = false }: { isCollapsed?: boolean })
                   >
                     {item.label}
                   </motion.span>
-                )}
-
-                {!isActive && (
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-slate-50 dark:bg-slate-800 rounded-lg -z-20 transition-opacity duration-200" />
                 )}
               </div>
             </Link>

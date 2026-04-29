@@ -48,4 +48,15 @@ describe('AdminSidebar', () => {
     expect(collapsedBrandLogo).toHaveClass('h-8');
     expect(collapsedBrandLogo).toHaveClass('w-8');
   });
+
+  it('为暗色主题下未激活菜单项提供高对比 hover 文本与背景', () => {
+    render(<AdminSidebar isCollapsed={false} />);
+
+    const enterpriseReviewLink = screen.getByRole('link', { name: '企业审核' });
+    const enterpriseReviewItem = enterpriseReviewLink.firstElementChild as HTMLElement;
+
+    expect(enterpriseReviewItem).toHaveClass('dark:text-slate-400');
+    expect(enterpriseReviewItem).toHaveClass('dark:hover:text-slate-100');
+    expect(enterpriseReviewItem).toHaveClass('dark:hover:bg-slate-800/80');
+  });
 });
