@@ -1,6 +1,17 @@
 ﻿'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import {
+  ArrowLeft,
+  BriefcaseBusiness,
+  Building2,
+  CalendarDays,
+  FileText,
+  GraduationCap,
+  ListChecks,
+  MapPin,
+  Sparkles,
+} from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { authStore } from '@/lib/stores/auth-store';
 import { publicApi, type Job } from '@/lib/api/public';
@@ -213,7 +224,7 @@ export default function JobDetailPage() {
             onClick={handleBack}
             className="w-fit inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors"
           >
-            <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+            <ArrowLeft size={18} aria-hidden="true" />
             返回
           </button>
 
@@ -227,16 +238,16 @@ export default function JobDetailPage() {
 
                   <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-tertiary mb-6">
                     <span className="flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[18px]">business</span>
+                      <Building2 size={18} aria-hidden="true" />
                       {job.companyName}
                     </span>
                     <span className="flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[18px]">location_on</span>
+                      <MapPin size={18} aria-hidden="true" />
                       {job.city}{job.district ? ` · ${job.district}` : ''}
                     </span>
                     {publishTime && (
                       <span className="flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[18px]">calendar_today</span>
+                        <CalendarDays size={18} aria-hidden="true" />
                         发布于 {publishTime}
                       </span>
                     )}
@@ -246,14 +257,14 @@ export default function JobDetailPage() {
                     <span className="text-2xl font-bold text-primary">{formatSalary(job)}</span>
                     <span className="w-px h-6 bg-outline-variant" />
                     <span className="flex items-center gap-1 text-on-surface-variant">
-                      <span className="material-symbols-outlined text-[18px]">work_history</span>
+                      <BriefcaseBusiness size={18} aria-hidden="true" />
                       {formatJobType(job.jobType)}
                     </span>
                     {job.experience && (
                       <>
                         <span className="w-px h-6 bg-outline-variant" />
                         <span className="flex items-center gap-1 text-on-surface-variant">
-                          <span className="material-symbols-outlined text-[18px]">timeline</span>
+                          <CalendarDays size={18} aria-hidden="true" />
                           {job.experience}
                         </span>
                       </>
@@ -262,7 +273,7 @@ export default function JobDetailPage() {
                       <>
                         <span className="w-px h-6 bg-outline-variant" />
                         <span className="flex items-center gap-1 text-on-surface-variant">
-                          <span className="material-symbols-outlined text-[18px]">school</span>
+                          <GraduationCap size={18} aria-hidden="true" />
                           {job.education}
                         </span>
                       </>
@@ -274,7 +285,7 @@ export default function JobDetailPage() {
               {job.description && (
                 <section className="bg-surface-container-lowest rounded-xl p-8 border border-outline-variant/15">
                   <h2 className="text-xl font-headline font-bold mb-4 flex items-center gap-2 text-on-surface">
-                    <span className="material-symbols-outlined text-primary-container" style={{ fontVariationSettings: "'FILL' 1" }}>description</span>
+                    <FileText size={22} className="text-primary-container" aria-hidden="true" />
                     职位描述
                   </h2>
                   <div className="text-on-surface-variant leading-relaxed whitespace-pre-wrap">
@@ -285,7 +296,7 @@ export default function JobDetailPage() {
 
               <section className="bg-surface-container-lowest rounded-xl p-8 border border-outline-variant/15">
                 <h2 className="text-xl font-headline font-bold mb-4 flex items-center gap-2 text-on-surface">
-                  <span className="material-symbols-outlined text-primary-container" style={{ fontVariationSettings: "'FILL' 1" }}>task_alt</span>
+                  <ListChecks size={22} className="text-primary-container" aria-hidden="true" />
                   职位要求
                 </h2>
                 {job.requiredSkills && job.requiredSkills.length > 0 ? (
@@ -304,7 +315,7 @@ export default function JobDetailPage() {
 
             <aside className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/20 sticky top-24">
               <h2 className="text-lg font-headline font-bold text-on-surface mb-2 flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary">auto_awesome</span>
+                <Sparkles size={20} className="text-primary" aria-hidden="true" />
                 AI 智能匹配
               </h2>
               <p className="text-sm text-on-surface-variant mb-5">

@@ -65,6 +65,8 @@ describe('User Job Detail Inline Match', () => {
       salaryMin: 15000,
       salaryMax: 25000,
       salaryUnit: '月',
+      experience: '3-5年',
+      education: '本科',
       requiredSkills: ['Java', 'Spring Boot', 'MySQL'],
       description: '负责核心服务开发',
     });
@@ -109,6 +111,15 @@ describe('User Job Detail Inline Match', () => {
     await screen.findByText('技能匹配：95%');
     await screen.findByText('岗位要求匹配：82%');
     expect(screen.getByRole('button', { name: '立即投递' })).toBeDefined();
+  });
+
+  it('岗位详情图标不应退化为 ligature 英文文本', async () => {
+    render(<JobDetailPage />);
+
+    await screen.findByText('职位要求');
+    await screen.findByText('3-5年');
+    expect(screen.queryByText('timeline')).not.toBeInTheDocument();
+    expect(screen.queryByText('task_alt')).not.toBeInTheDocument();
   });
 
   it('匹配成功后点击立即投递会自动使用默认简历', async () => {
