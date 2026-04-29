@@ -42,6 +42,7 @@ class CompanyControllerIT extends BaseControllerIT {
     private JdbcTemplate jdbcTemplate;
 
     private static Long createdJobId;
+    private Long graphCompanyId;
 
     @BeforeAll
     static void beforeAll(@Autowired MockMvc mockMvc, @Autowired ObjectMapper objectMapper,
@@ -55,9 +56,10 @@ class CompanyControllerIT extends BaseControllerIT {
     @BeforeEach
     void setUp() throws Exception {
         setupHeaders();
-        companyHeaders = loginHeaders(TEST_COMPANY_USERNAME, TEST_COMPANY_PASSWORD);
         // 避免测试间状态污染：提交认证材料后会变为待审核，影响后续职位发布相关用例
         jdbcTemplate.update("UPDATE company SET auth_status = 1 WHERE user_id = ?", companyUserId);
+        companyHeaders = loginHeaders(TEST_COMPANY_USERNAME, TEST_COMPANY_PASSWORD);
+        graphCompanyId = jdbcTemplate.queryForObject("SELECT id FROM company WHERE user_id = ?", Long.class, companyUserId);
     }
 
     @Test
@@ -199,13 +201,17 @@ class CompanyControllerIT extends BaseControllerIT {
     }
 
     @Test
-    @DisplayName("12 - 获取职位图谱")
-    void getJobGraph_Success() throws Exception {
-        assertNotNull(createdJobId);
+    @DisplayName("12 - 获取企业图谱")
+    void getCompanyGraph_Success() throws Exception {
+        ensureCompanyGraphJobExists();
 
-        mockMvc.perform(get("/company/job/{id}/graph", createdJobId)
+        mockMvc.perform(get("/company/graph")
                 .headers(companyHeaders))
-            .andExpect(jsonPath("$.code").value(200));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value(200))
+            .andExpect(jsonPath("$.data.companyId").value(graphCompanyId))
+            .andExpect(jsonPath("$.data.nodes").isArray())
+            .andExpect(jsonPath("$.data.edges").isArray());
     }
 
     @Test
@@ -341,6 +347,16 @@ class CompanyControllerIT extends BaseControllerIT {
             .andExpect(jsonPath("$.data.newPassword").isString());
     }
 
+    @Test
+    @DisplayName("23 - 传入其他 companyId 时拒绝访问企业图谱")
+    void getCompanyGraph_WithOtherCompanyId_Forbidden() throws Exception {
+        mockMvc.perform(get("/company/graph")
+                .headers(companyHeaders)
+                .param("companyId", String.valueOf(graphCompanyId + 9999)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value(403));
+    }
+
     private HttpHeaders loginHeaders(String username, String password) throws Exception {
         String json = String.format("{\"username\":\"%s\",\"password\":\"%s\"}", username, password);
         MvcResult result = mockMvc.perform(post("/auth/login")
@@ -381,6 +397,31 @@ class CompanyControllerIT extends BaseControllerIT {
             "SELECT cs.id FROM company_staff cs JOIN sys_user su ON su.id = cs.user_id WHERE su.username = ?",
             Long.class,
             username
+        );
+    }
+
+    private void ensureCompanyGraphJobExists() {
+        Integer count = jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM job WHERE company_id = ? AND title = ? AND deleted = 0",
+            Integer.class,
+            graphCompanyId,
+            "企业图谱测试岗位"
+        );
+        if (count != null && count > 0) {
+            return;
+        }
+
+        jdbcTemplate.update(
+            "INSERT INTO job (company_id, title, city, salary_min, salary_max, salary_unit, skills, status, description, create_time, update_time, deleted) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ARRAY['Java','Spring Boot']::varchar[], ?, ?, NOW(), NOW(), 0)",
+            graphCompanyId,
+            "企业图谱测试岗位",
+            "北京",
+            20000,
+            35000,
+            "MONTH",
+            1,
+            "企业图谱测试职位"
         );
     }
 }

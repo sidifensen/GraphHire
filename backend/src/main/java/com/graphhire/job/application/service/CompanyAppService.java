@@ -6,6 +6,8 @@ import com.graphhire.job.domain.repository.CompanyRepository;
 import com.graphhire.job.domain.repository.CompanyStaffRepository;
 import com.graphhire.auth.domain.vo.AuthStatus;
 import com.graphhire.common.vo.Exceptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +16,8 @@ import java.util.List;
 
 @Service
 public class CompanyAppService {
+
+    private static final Logger log = LoggerFactory.getLogger(CompanyAppService.class);
 
     @Autowired
     private CompanyRepository companyRepository;
@@ -50,7 +54,8 @@ public class CompanyAppService {
         company.setAuthStatus(AuthStatus.PENDING_VERIFY);
 
         // 步骤3：保存公司信息到数据库
-        return companyRepository.save(company);
+        log.info("创建企业: name={}, unifiedSocialCreditCode={}", name, unifiedSocialCreditCode);
+        return saveCompany(company, "创建企业完成");
     }
 
     /**
@@ -64,14 +69,13 @@ public class CompanyAppService {
     @Transactional
     public Company approveCompany(Long companyId) {
         // 步骤1：根据公司ID查询公司信息
-        Company company = companyRepository.findById(companyId)
-                .orElseThrow(() -> new IllegalArgumentException("企业不存在"));
+        Company company = requireCompany(companyId);
 
         // 步骤2：调用公司领域模型审批方法更新状态
         company.approve();
 
         // 步骤3：保存更新后的公司信息
-        return companyRepository.save(company);
+        return saveCompany(company, "企业审核通过");
     }
 
     /**
@@ -85,14 +89,13 @@ public class CompanyAppService {
     @Transactional
     public Company rejectCompany(Long companyId) {
         // 步骤1：根据公司ID查询公司信息
-        Company company = companyRepository.findById(companyId)
-                .orElseThrow(() -> new IllegalArgumentException("企业不存在"));
+        Company company = requireCompany(companyId);
 
         // 步骤2：调用公司领域模型拒绝方法更新状态
         company.reject();
 
         // 步骤3：保存更新后的公司信息
-        return companyRepository.save(company);
+        return saveCompany(company, "企业审核拒绝");
     }
 
     /**
@@ -108,14 +111,14 @@ public class CompanyAppService {
                                      String contactPhone, String contactEmail,
                                      String description, String website) {
         // 步骤1：根据公司ID查询公司信息
-        Company company = companyRepository.findById(companyId)
-                .orElseThrow(() -> new IllegalArgumentException("企业不存在"));
+        Company company = requireCompany(companyId);
 
         // 步骤2：调用公司领域模型更新方法修改信息
         company.updateInfo(name, contactName, contactPhone, contactEmail, description, website);
 
         // 步骤3：保存更新后的公司信息
-        return companyRepository.save(company);
+        log.info("更新企业信息: companyId={}, name={}", companyId, name);
+        return saveCompany(company, "更新企业信息完成");
     }
 
     /**
@@ -128,9 +131,7 @@ public class CompanyAppService {
      */
     public Company getCompanyById(Long companyId) {
         // 步骤1：根据公司ID查询公司信息
-        return companyRepository.findById(companyId)
-                // 步骤2：若公司不存在则抛出异常
-                .orElseThrow(() -> new IllegalArgumentException("企业不存在"));
+        return requireCompany(companyId);
         // 步骤3：返回公司信息
     }
 
@@ -192,9 +193,10 @@ public class CompanyAppService {
         Long companyId = getCompanyIdByUserId(userId);
 
         // 步骤2：根据公司ID查询公司完整信息
-        return companyRepository.findById(companyId)
-                // 步骤3：若公司不存在则抛出异常
+        Company company = companyRepository.findById(companyId)
                 .orElseThrow(() -> Exceptions.BusinessException.of("企业不存在"));
+        log.info("根据用户查询企业: userId={}, companyId={}", userId, companyId);
+        return company;
         // 步骤4：返回公司信息
     }
 
@@ -219,14 +221,26 @@ public class CompanyAppService {
         company.setAuthStatus(AuthStatus.PENDING_VERIFY);
 
         // 步骤4：保存更新后的公司信息
-        return companyRepository.save(company);
+        log.info("提交企业认证材料: userId={}, companyId={}", userId, company.getId());
+        return saveCompany(company, "提交企业认证材料完成");
     }
 
     @Transactional
     public Company updateCompanyAvatarPath(Long companyId, String avatarPath) {
-        Company company = companyRepository.findById(companyId)
-                .orElseThrow(() -> new IllegalArgumentException("企业不存在"));
+        Company company = requireCompany(companyId);
         company.setAvatarPath(avatarPath);
-        return companyRepository.save(company);
+        log.info("更新企业头像路径: companyId={}, avatarPath={}", companyId, avatarPath);
+        return saveCompany(company, "更新企业头像完成");
+    }
+
+    private Company requireCompany(Long companyId) {
+        return companyRepository.findById(companyId)
+                .orElseThrow(() -> new IllegalArgumentException("企业不存在"));
+    }
+
+    private Company saveCompany(Company company, String action) {
+        Company savedCompany = companyRepository.save(company);
+        log.info("{}: companyId={}, authStatus={}", action, savedCompany.getId(), savedCompany.getAuthStatus());
+        return savedCompany;
     }
 }

@@ -10,6 +10,8 @@ import com.graphhire.job.infrastructure.mq.JobMQProducer;
 import com.graphhire.skill.domain.repository.SkillTagRepository;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +22,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class JobAppService {
+
+    private static final Logger log = LoggerFactory.getLogger(JobAppService.class);
 
     @Autowired
     private JobRepository jobRepository;
@@ -57,6 +61,7 @@ public class JobAppService {
                          Location location, SalaryRange salaryRange,
                          List<String> skills,
                          String description) {
+        List<String> normalizedSkills = validateAndNormalizeSkills(skills);
         // 步骤1：构建职位领域模型并填充基础信息
         Job job = new Job();
         job.setCompanyId(companyId);
@@ -65,14 +70,15 @@ public class JobAppService {
         job.setHeadcount(headcount);
         job.setLocation(location);
         job.setSalaryRange(salaryRange);
-        job.setSkills(validateAndNormalizeSkills(skills));
+        job.setSkills(normalizedSkills);
         job.setDescription(description);
 
         // 步骤2：设置职位初始状态为草稿（DRAFT）
         job.setStatus(JobStatus.DRAFT);
 
         // 步骤3：保存职位信息到数据库
-        return jobRepository.save(job);
+        log.info("创建职位: companyId={}, title={}, skillCount={}", companyId, title, normalizedSkills.size());
+        return saveJob(job, "创建职位完成");
     }
 
     /**
@@ -90,17 +96,18 @@ public class JobAppService {
     @Transactional
     public Job updateJobInfo(Long jobId, PublishJobCmd cmd) {
         // 步骤1：根据职位ID查询职位领域模型
-        Job job = jobRepository.findById(jobId)
-                .orElseThrow(() -> new IllegalArgumentException("职位不存在"));
+        Job job = requireJob(jobId);
+        List<String> normalizedSkills = validateAndNormalizeSkills(cmd.getSkills());
 
         // 步骤2：调用领域模型更新方法修改信息
         job.updateInfo(cmd.getTitle(), cmd.getDepartment(), cmd.getHeadcount(),
                 cmd.getLocation(), cmd.getSalaryRange(),
-                validateAndNormalizeSkills(cmd.getSkills()),
+                normalizedSkills,
                 cmd.getDescription());
 
         // 步骤3：保存更新后的职位信息
-        return jobRepository.save(job);
+        log.info("更新职位: jobId={}, title={}, skillCount={}", jobId, cmd.getTitle(), normalizedSkills.size());
+        return saveJob(job, "更新职位完成");
     }
 
     /**
@@ -115,10 +122,10 @@ public class JobAppService {
     @Transactional
     public void deleteJob(Long jobId) {
         // 步骤1：根据职位ID查询确认职位存在
-        Job job = jobRepository.findById(jobId)
-                .orElseThrow(() -> new IllegalArgumentException("职位不存在"));
+        Job job = requireJob(jobId);
 
         // 步骤2：执行职位删除操作
+        log.info("删除职位: jobId={}, companyId={}", jobId, job.getCompanyId());
         jobRepository.delete(job);
     }
 
@@ -144,14 +151,14 @@ public class JobAppService {
     @Transactional
     public Job publishJob(Long jobId, PublishJobCmd cmd) {
         // 步骤1：根据职位ID查询职位领域模型
-        Job job = jobRepository.findById(jobId)
-                .orElseThrow(() -> new IllegalArgumentException("职位不存在"));
+        Job job = requireJob(jobId);
 
         // 步骤2：根据更新指令修改职位信息（如有）
         if (cmd != null) {
+            List<String> normalizedSkills = validateAndNormalizeSkills(cmd.getSkills());
             job.updateInfo(cmd.getTitle(), cmd.getDepartment(), cmd.getHeadcount(),
                     cmd.getLocation(), cmd.getSalaryRange(),
-                    validateAndNormalizeSkills(cmd.getSkills()),
+                    normalizedSkills,
                     cmd.getDescription());
         }
 
@@ -160,12 +167,13 @@ public class JobAppService {
 
         // 步骤4：保存发布时间并持久化
         job.setPublishedAt(LocalDateTime.now());
-        Job savedJob = jobRepository.save(job);
+        Job savedJob = saveJob(job, "发布职位完成");
 
         // 步骤5：发送职位发布事件消息
         if (jobMQProducer != null) {
             jobMQProducer.sendJobPublishedEvent(savedJob);
         }
+        log.info("发布职位: jobId={}, companyId={}", savedJob.getId(), savedJob.getCompanyId());
 
         return savedJob;
     }
@@ -184,14 +192,14 @@ public class JobAppService {
     @Transactional
     public Job closeJob(Long jobId) {
         // 步骤1：根据职位ID查询职位领域模型
-        Job job = jobRepository.findById(jobId)
-                .orElseThrow(() -> new IllegalArgumentException("职位不存在"));
+        Job job = requireJob(jobId);
 
         // 步骤2：变更职位状态为已关闭
         job.close();
 
         // 步骤3：保存更新后的职位状态
-        return jobRepository.save(job);
+        log.info("关闭职位: jobId={}, companyId={}", jobId, job.getCompanyId());
+        return saveJob(job, "关闭职位完成");
     }
 
     /**
@@ -209,14 +217,17 @@ public class JobAppService {
     @Transactional
     public Job updateSalary(Long jobId, SalaryRange newSalaryRange) {
         // 步骤1：根据职位ID查询职位领域模型
-        Job job = jobRepository.findById(jobId)
-                .orElseThrow(() -> new IllegalArgumentException("职位不存在"));
+        Job job = requireJob(jobId);
 
         // 步骤2：调用领域模型方法更新薪资范围
         job.updateSalary(newSalaryRange);
 
         // 步骤3：保存更新后的职位信息
-        return jobRepository.save(job);
+        log.info("更新职位薪资: jobId={}, salaryMin={}, salaryMax={}",
+                jobId,
+                newSalaryRange == null ? null : newSalaryRange.getMin(),
+                newSalaryRange == null ? null : newSalaryRange.getMax());
+        return saveJob(job, "更新职位薪资完成");
     }
 
     // =====================================================
@@ -234,8 +245,7 @@ public class JobAppService {
      */
     public Job getJobById(Long jobId) {
         // 步骤1：根据职位ID查询职位领域模型
-        return jobRepository.findById(jobId)
-                .orElseThrow(() -> new IllegalArgumentException("职位不存在"));
+        return requireJob(jobId);
     }
 
     /**
@@ -288,5 +298,16 @@ public class JobAppService {
             throw new IllegalArgumentException("存在未在技能标签库中的技能: " + String.join(", ", invalid));
         }
         return normalized;
+    }
+
+    private Job requireJob(Long jobId) {
+        return jobRepository.findById(jobId)
+                .orElseThrow(() -> new IllegalArgumentException("职位不存在"));
+    }
+
+    private Job saveJob(Job job, String action) {
+        Job savedJob = jobRepository.save(job);
+        log.info("{}: jobId={}, status={}", action, savedJob.getId(), savedJob.getStatus());
+        return savedJob;
     }
 }

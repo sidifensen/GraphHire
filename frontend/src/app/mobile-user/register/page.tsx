@@ -23,7 +23,7 @@ export default function Register() {
   const [verifyCodeCooldown, setVerifyCodeCooldown] = useState(0);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
-  const verifyCodeTimerRef = useRef<ReturnType<typeof window.setInterval> | null>(null);
+  const verifyCodeTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     return () => {

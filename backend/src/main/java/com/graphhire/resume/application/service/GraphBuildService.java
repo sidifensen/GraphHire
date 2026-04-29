@@ -48,6 +48,7 @@ public class GraphBuildService {
         }
 
         try {
+            log.info("开始构建简历图谱: resumeId={}, userId={}", resume.getId(), resume.getUserId());
             // 从解析结果提取技能列表
             List<String> skills = extractSkillsFromParseResult(resume.getParseResult());
             if (skills != null && !skills.isEmpty()) {
@@ -75,6 +76,7 @@ public class GraphBuildService {
         }
 
         try {
+            log.info("开始构建职位图谱: jobId={}, companyId={}", job.getId(), job.getCompanyId());
             List<String> requiredSkills = job.getRequiredSkills();
             List<String> preferredSkills = job.getPreferredSkills();
 

@@ -15,6 +15,7 @@ import com.graphhire.common.vo.Exceptions;
 import com.graphhire.common.vo.Result;
 import com.graphhire.job.application.command.PublishJobCmd;
 import com.graphhire.job.application.service.CompanyAppService;
+import com.graphhire.job.application.service.CompanyGraphAppService;
 import com.graphhire.job.application.service.JobAppService;
 import com.graphhire.job.domain.model.Company;
 import com.graphhire.job.domain.model.CompanyStaff;
@@ -29,6 +30,7 @@ import com.graphhire.job.interfaces.dto.request.StatusChangeRequest;
 import com.graphhire.job.interfaces.dto.response.CompanyAvatarUrlResolver;
 import com.graphhire.job.interfaces.dto.response.CompanyDashboardJobItemResponse;
 import com.graphhire.job.interfaces.dto.response.CompanyDashboardResponse;
+import com.graphhire.job.interfaces.dto.response.CompanyGraphResponse;
 import com.graphhire.job.interfaces.dto.response.CompanyJobListItemResponse;
 import com.graphhire.job.interfaces.dto.response.CompanyProfileResponse;
 import com.graphhire.job.interfaces.dto.response.CompanyStaffListItemResponse;
@@ -61,6 +63,9 @@ public class CompanyController {
 
     @Autowired
     private JobAppService jobAppService;
+
+    @Autowired
+    private CompanyGraphAppService companyGraphAppService;
 
     @Autowired
     private MatchAppService matchAppService;
@@ -166,6 +171,12 @@ public class CompanyController {
                 .map(this::toDashboardJobItem)
                 .toList());
         return Result.success(response);
+    }
+
+    @GetMapping("/graph")
+    public Result<CompanyGraphResponse> getCompanyGraph(@RequestParam(required = false) Long companyId) {
+        Long currentCompanyId = currentCompanyId();
+        return Result.success(companyGraphAppService.getCompanyGraph(currentCompanyId, companyId));
     }
 
     @PostMapping("/job")
