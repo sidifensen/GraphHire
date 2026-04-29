@@ -13,8 +13,8 @@
 - 企业头像上传到 RustFS 的 `resumes` bucket 下的 `avatar/` 目录。
 - 所有后续新上传到 RustFS 的文件对象名统一使用 Hutool 雪花算法生成的唯一 ID，并保留原扩展名。
 - 数据库存储稳定的对象标识，不存前端最终展示 URL。
-- 后端在返回企业资料与公开公司列表时，拼好可直接访问的完整头像 URL 给前端。
-- 公开头像资源由浏览器直连 RustFS 公网地址，不再由 Java 代理二进制。
+- 后端在返回企业资料与公开公司列表时，生成可直接访问的预签名头像 URL 给前端。
+- 公开头像资源由浏览器直连 RustFS 预签名地址，不再由 Java 代理二进制。
 
 ## 范围
 
@@ -23,7 +23,7 @@
   - RustFS 上传 key 生成策略统一改造。
   - 增加企业头像上传接口。
   - 扩展企业资料接口与公开公司接口，返回 `avatarUrl`。
-  - 增加 RustFS 公网访问基地址配置。
+  - 增加 RustFS 预签名 URL 生成能力。
 - 数据库：
   - 在 `backend/src/main/resources/db/migration/` 新增迁移脚本。
   - 在 `backend/src/main/resources/db/schema.sql` 同步补齐字段定义。
@@ -39,24 +39,24 @@
 2. `PublicCompanyCardResponse` 当前只返回文本信息，用户端公司列表无法展示头像。
 3. `RustFSClient.upload` 当前 key 规则为 `时间戳 + "_" + fileName`，不满足统一雪花 ID 命名要求。
 4. 现有用户头像读取方式由 Java 服务下载并回传图片二进制，对公开头像场景来说不是最优链路。
-5. `application.yml` 当前只有 RustFS endpoint/ak/sk/bucket 配置，没有独立的公网访问基地址配置，无法稳定拼装直连 URL。
+5. 当前实现如果只返回静态直链，会依赖 RustFS bucket 必须匿名可读；在本机环境中该直链验证为 `403`，无法稳定作为浏览器展示地址。
 
 ## 方案对比
 
-### 方案 A：数据库存对象路径，后端返回直连 URL，前端直连 RustFS
+### 方案 A：数据库存对象路径，后端返回预签名直链，前端直连 RustFS
 
 - 数据库保存 `avatar/<random>.<ext>` 这类稳定路径。
-- 后端返回业务 DTO 时，基于配置项拼装完整访问 URL。
-- 浏览器直接请求 RustFS 或其前置静态域名。
+- 后端返回业务 DTO 时，基于对象 key 生成预签名 GET URL。
+- 浏览器直接请求 RustFS 预签名地址。
 
 优点：
 - 符合公开头像场景的主流方案。
 - Java 服务不承担图片二进制代理带宽。
-- 数据库存储与访问域名解耦，后续替换域名/CDN/签名策略时改动面小。
+- 数据库存储与访问方式解耦，后续切 CDN 或调整签名策略时改动面小。
+- 不要求 bucket 匿名可读，本地与生产环境都可直接工作。
 
 缺点：
-- 需要补充公网访问基地址配置。
-- 如果未来切换私有桶与签名 URL，需在返回 DTO 处统一组装访问地址。
+- URL 带有效期，需要前端通过业务接口刷新最新地址。
 
 ### 方案 B：数据库存对象路径，后端代理图片二进制
 
@@ -73,7 +73,7 @@
 
 ### 结论
 
-采用方案 A。数据库保留稳定对象路径，后端返回可直接访问的完整 URL，浏览器直连 RustFS。
+采用方案 A。数据库保留稳定对象路径，后端返回可直接访问的预签名 URL，浏览器直连 RustFS。
 
 ## 设计方案
 
@@ -109,22 +109,16 @@
 - 业务方负责传入最终 key，例如 `avatar/1987654321098767360.png`。
 - 这样后续简历、执照、头像等所有新上传场景都可以复用同一雪花 ID 命名规则，而不会叠加旧的时间戳前缀。
 
-### 3) RustFS 公网访问 URL 组装
+### 3) RustFS 预签名 URL 组装
 
-- 新增配置项，例如：
-  - `rustfs.public-base-url`
-- 本地开发可配置为类似：
-  - `http://localhost:9000`
-- 当 bucket 采用 path-style 公开访问时，最终访问 URL 规则为：
-  - `<public-base-url>/<bucket>/<key>`
-  - 例如 `http://localhost:9000/resumes/avatar/AbC123....png`
-
-后端新增统一的 URL 组装方法：
+后端新增统一的 URL 组装方法，基于 `S3Presigner` 生成 GET 预签名地址：
 
 - 输入：数据库中的 `avatarPath`
 - 输出：完整 `avatarUrl`
 - 若 `avatarPath` 为空，则返回 `null`
-- 若配置缺失，则抛出明确异常或在启动检查中告警，避免返回不可用 URL
+- 纯 key 使用默认 bucket `resumes`
+- `s3://bucket/key` 路径会先解析 bucket 与 key，再生成签名 URL
+- URL 通过 path-style 访问 RustFS，并附带签名参数用于浏览器直连访问
 
 ### 4) 企业头像上传接口
 
@@ -140,7 +134,7 @@
 - 生成 `avatar/<snowflakeId>.<ext>` 形式的 key。
 - 调用 `RustFSClient.upload(bytes, key)` 上传。
 - 将 `Company.avatarPath` 更新为该 key。
-- 返回当前企业头像完整访问 URL。
+- 返回当前企业头像预签名访问 URL。
 
 关于旧头像：
 
@@ -173,7 +167,7 @@
 规则：
 
 - 不向前端暴露内部 `avatarPath`
-- `avatarUrl` 由后端基于 `avatarPath` 和 `rustfs.public-base-url` 组装
+- `avatarUrl` 由后端基于 `avatarPath` 生成预签名 URL
 
 ### 6) 公开公司列表与详情接口扩展
 
@@ -205,8 +199,8 @@
 原因：
 
 - key 更稳定，最不依赖当前访问域名。
-- bucket 与访问域名由配置统一控制。
-- 如果后续切换 CDN、代理域名或签名 URL，只需调整组装逻辑。
+- bucket 与访问方式由后端统一控制。
+- 如果后续切换 CDN、代理域名或签名参数策略，只需调整组装逻辑。
 - 雪花 ID 具备全局唯一和时间有序特性，便于排障和对象追踪。
 
 如果项目后续需要兼容旧值，可在 URL 组装器中兼容：
@@ -234,7 +228,7 @@
 - 上传文件超出限制：返回明确错误“文件大小不能超过2MB”
 - 企业不存在或当前用户未绑定企业：返回业务异常
 - RustFS 上传失败：返回“上传企业头像失败”
-- `rustfs.public-base-url` 缺失：返回配置错误或启动告警，避免 silent failure
+- 预签名生成失败：返回配置错误或对象签名失败异常，避免 silent failure
 - 公开公司接口无头像时：`avatarUrl = null`，不视为错误
 
 ## 测试策略
@@ -243,9 +237,11 @@
 
 - `CompanyControllerTest`
   - 上传企业头像时校验类型、大小、上传调用与持久化更新
-  - `GET /company/info` 返回 `avatarUrl` 而不是内部路径
+- `GET /company/info` 返回 `avatarUrl` 而不是内部路径
 - `CompanyRepositoryImplTest`
   - `avatarPath` 在 Domain/PO 双向映射中不丢失
+- `CompanyAvatarUrlResolverTest`
+  - 纯 key 与 `s3://bucket/key` 都能生成带签名参数的访问 URL
 - `RustFSClient` 相关测试
   - 上传时不再追加时间戳前缀
   - 传入雪花 ID key 可原样成为对象 key
@@ -270,5 +266,5 @@
 - 新上传对象 key 使用 Hutool 雪花 ID，不再使用时间戳加原文件名
 - `GET /company/info` 返回 `avatarUrl`
 - `GET /public/companies` 与 `GET /public/companies/{id}` 返回 `avatarUrl`
-- 返回给前端的是完整可访问 URL，前端无需通过 Java 二进制代理读取头像
+- 返回给前端的是完整可访问的预签名 URL，前端无需通过 Java 二进制代理读取头像
 - 历史对象不迁移，但后续新上传全部遵循新命名策略

@@ -21,9 +21,11 @@ import com.graphhire.job.domain.vo.SalaryRange;
 import com.graphhire.job.interfaces.dto.request.CreateStaffRequest;
 import com.graphhire.job.interfaces.dto.request.SalaryUpdateRequest;
 import com.graphhire.job.interfaces.dto.request.StatusChangeRequest;
+import com.graphhire.job.interfaces.dto.response.CompanyAvatarUrlResolver;
 import com.graphhire.match.application.service.MatchAppService;
 import com.graphhire.match.domain.repository.MatchRecordRepository;
 import com.graphhire.match.interfaces.dto.response.MatchDetailResponse;
+import com.graphhire.resume.infrastructure.file.RustFSClient;
 import com.graphhire.skill.infrastructure.graph.SkillGraphClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -34,11 +36,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
@@ -83,6 +87,12 @@ class CompanyControllerTest {
 
     @Mock
     private ApplicationAppService applicationAppService;
+
+    @Mock
+    private RustFSClient rustFSClient;
+
+    @Mock
+    private CompanyAvatarUrlResolver companyAvatarUrlResolver;
 
     @Mock
     private StringRedisTemplate stringRedisTemplate;
@@ -366,7 +376,7 @@ class CompanyControllerTest {
     class GetCompanyInfoTests {
 
         @Test
-        @DisplayName("成功获取当前用户企业信息")
+        @DisplayName("成功获取当前用户企业信息并返回头像地址")
         void getCompanyInfo_Success() {
             try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
                 // Given
@@ -378,8 +388,11 @@ class CompanyControllerTest {
                 Company company = new Company();
                 company.setId(companyId);
                 company.setName("Test Company");
+                company.setAvatarPath("avatar/1987654321098767360.png");
 
                 when(companyAppService.getCompanyByUserId(userId)).thenReturn(company);
+                when(companyAvatarUrlResolver.resolve("avatar/1987654321098767360.png"))
+                        .thenReturn("http://localhost:9000/resumes/avatar/1987654321098767360.png");
 
                 // When
                 var result = companyController.getCompanyInfo();
@@ -387,7 +400,9 @@ class CompanyControllerTest {
                 // Then
                 assertNotNull(result);
                 assertEquals(200, result.getCode());
-                assertEquals(company, result.getData());
+                assertEquals(companyId, result.getData().id());
+                assertEquals("Test Company", result.getData().name());
+                assertEquals("http://localhost:9000/resumes/avatar/1987654321098767360.png", result.getData().avatarUrl());
                 verify(companyAppService).getCompanyByUserId(userId);
             }
         }
@@ -408,6 +423,75 @@ class CompanyControllerTest {
 
                 assertThrows(Exception.class, () -> companyController.getCompanyInfo());
                 verify(companyAppService, never()).getCompanyByUserId(anyLong());
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("企业头像上传测试")
+    class UploadAvatarTests {
+
+        @Test
+        @DisplayName("上传企业头像成功")
+        void uploadAvatar_Success() {
+            try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+                Long userId = 1L;
+                Long companyId = 10L;
+                stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(userId);
+                when(companyAppService.getCompanyIdByUserId(userId)).thenReturn(companyId);
+                when(rustFSClient.upload(any(byte[].class), anyString())).thenReturn("s3://resumes/avatar/1987654321098767360.png");
+                when(companyAvatarUrlResolver.resolve(matches("avatar/\\d+\\.png")))
+                        .thenReturn("http://localhost:9000/resumes/avatar/1987654321098767360.png");
+
+                MockMultipartFile file = new MockMultipartFile(
+                        "file",
+                        "logo.png",
+                        "image/png",
+                        "avatar".getBytes(StandardCharsets.UTF_8)
+                );
+
+                var result = companyController.uploadAvatar(file);
+
+                assertEquals(200, result.getCode());
+                assertEquals("http://localhost:9000/resumes/avatar/1987654321098767360.png", result.getData());
+                verify(rustFSClient).upload(any(byte[].class), matches("avatar/\\d+\\.png"));
+                verify(companyAppService).updateCompanyAvatarPath(eq(companyId), matches("avatar/\\d+\\.png"));
+            }
+        }
+
+        @Test
+        @DisplayName("上传非图片企业头像失败")
+        void uploadAvatar_WhenNotImage_ShouldThrow() {
+            try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+                stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(1L);
+
+                MockMultipartFile file = new MockMultipartFile(
+                        "file",
+                        "logo.txt",
+                        "text/plain",
+                        "avatar".getBytes(StandardCharsets.UTF_8)
+                );
+
+                assertThrows(RuntimeException.class, () -> companyController.uploadAvatar(file));
+                verify(rustFSClient, never()).upload(any(byte[].class), anyString());
+            }
+        }
+
+        @Test
+        @DisplayName("上传超限企业头像失败")
+        void uploadAvatar_WhenTooLarge_ShouldThrow() {
+            try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+                stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(1L);
+
+                MockMultipartFile file = new MockMultipartFile(
+                        "file",
+                        "logo.png",
+                        "image/png",
+                        new byte[(2 * 1024 * 1024) + 1]
+                );
+
+                assertThrows(RuntimeException.class, () -> companyController.uploadAvatar(file));
+                verify(rustFSClient, never()).upload(any(byte[].class), anyString());
             }
         }
     }

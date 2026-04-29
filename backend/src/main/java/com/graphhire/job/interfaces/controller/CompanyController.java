@@ -1,6 +1,8 @@
 package com.graphhire.job.interfaces.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.io.file.FileNameUtil;
+import cn.hutool.core.util.IdUtil;
 import com.graphhire.application.application.service.ApplicationAppService;
 import com.graphhire.application.domain.repository.ApplicationRepository;
 import com.graphhire.auth.domain.model.User;
@@ -24,18 +26,23 @@ import com.graphhire.job.domain.vo.SalaryRange;
 import com.graphhire.job.interfaces.dto.request.CreateStaffRequest;
 import com.graphhire.job.interfaces.dto.request.SalaryUpdateRequest;
 import com.graphhire.job.interfaces.dto.request.StatusChangeRequest;
+import com.graphhire.job.interfaces.dto.response.CompanyAvatarUrlResolver;
 import com.graphhire.job.interfaces.dto.response.CompanyDashboardJobItemResponse;
 import com.graphhire.job.interfaces.dto.response.CompanyDashboardResponse;
 import com.graphhire.job.interfaces.dto.response.CompanyJobListItemResponse;
+import com.graphhire.job.interfaces.dto.response.CompanyProfileResponse;
 import com.graphhire.job.interfaces.dto.response.CompanyStaffListItemResponse;
 import com.graphhire.job.interfaces.dto.response.CompanyStaffStatsResponse;
 import com.graphhire.match.application.service.MatchAppService;
 import com.graphhire.match.domain.repository.MatchRecordRepository;
 import com.graphhire.match.interfaces.dto.response.MatchDetailResponse;
+import com.graphhire.resume.infrastructure.file.RustFSClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -47,6 +54,7 @@ import java.time.LocalDateTime;
 @RestController
 @RequestMapping("/company")
 public class CompanyController {
+    private static final long MAX_AVATAR_SIZE = 2 * 1024 * 1024;
 
     @Autowired
     private CompanyAppService companyAppService;
@@ -76,14 +84,20 @@ public class CompanyController {
     private ApplicationAppService applicationAppService;
 
     @Autowired
+    private RustFSClient rustFSClient;
+
+    @Autowired
+    private CompanyAvatarUrlResolver companyAvatarUrlResolver;
+
+    @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
     @GetMapping("/info")
-    public Result<Company> getCompanyInfo() {
+    public Result<CompanyProfileResponse> getCompanyInfo() {
         Long userId = StpUtil.getLoginIdAsLong();
         ensureCompanyMemberActiveIfPresent(userId);
         Company company = companyAppService.getCompanyByUserId(userId);
-        return Result.success(company);
+        return Result.success(toCompanyProfileResponse(company));
     }
 
     @PutMapping("/info")
@@ -104,6 +118,32 @@ public class CompanyController {
         Long userId = StpUtil.getLoginIdAsLong();
         companyAppService.submitAuthMaterials(userId, licenseUrl);
         return Result.success();
+    }
+
+    @PostMapping("/avatar")
+    public Result<String> uploadAvatar(@RequestParam("file") MultipartFile file) {
+        if (file.getSize() > MAX_AVATAR_SIZE) {
+            throw new RuntimeException("文件大小不能超过2MB");
+        }
+        String contentType = file.getContentType() == null ? "" : file.getContentType();
+        if (!contentType.startsWith("image/")) {
+            throw new RuntimeException("只能上传图片文件");
+        }
+
+        Long companyId = currentCompanyId();
+        String ext = FileNameUtil.extName(file.getOriginalFilename());
+        if (ext == null || ext.isBlank()) {
+            ext = "jpg";
+        }
+        String avatarPath = "avatar/" + IdUtil.getSnowflakeNextIdStr() + "." + ext;
+
+        try {
+            rustFSClient.upload(file.getBytes(), avatarPath);
+            companyAppService.updateCompanyAvatarPath(companyId, avatarPath);
+            return Result.success(companyAvatarUrlResolver.resolve(avatarPath));
+        } catch (IOException e) {
+            throw new RuntimeException("上传企业头像失败: " + e.getMessage(), e);
+        }
     }
 
     @GetMapping("/dashboard")
@@ -534,6 +574,26 @@ public class CompanyController {
 
     private boolean containsIgnoreCase(String source, String keyword) {
         return source != null && source.toLowerCase().contains(keyword.toLowerCase());
+    }
+
+    private CompanyProfileResponse toCompanyProfileResponse(Company company) {
+        return new CompanyProfileResponse(
+                company.getId(),
+                company.getUserId(),
+                company.getName(),
+                company.getUnifiedSocialCreditCode(),
+                company.getAuthStatus() == null ? null : company.getAuthStatus().name(),
+                company.getLicenseUrl(),
+                company.getContactName(),
+                company.getContactPhone(),
+                company.getContactEmail(),
+                company.getDescription(),
+                company.getWebsite(),
+                company.getIndustry(),
+                company.getScale(),
+                company.getAddress(),
+                companyAvatarUrlResolver.resolve(company.getAvatarPath())
+        );
     }
 
     private CompanyDashboardJobItemResponse toDashboardJobItem(Job job) {

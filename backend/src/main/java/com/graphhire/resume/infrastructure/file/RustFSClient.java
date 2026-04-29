@@ -62,7 +62,7 @@ public class RustFSClient {
      * 上传文件到S3存储（直接S3 PUT，避免预签名URL的签名兼容性问题）
      */
     public String upload(byte[] bytes, String fileName) {
-        String key = System.currentTimeMillis() + "_" + fileName;
+        String key = fileName;
 
         try {
             ensureBucketExists();

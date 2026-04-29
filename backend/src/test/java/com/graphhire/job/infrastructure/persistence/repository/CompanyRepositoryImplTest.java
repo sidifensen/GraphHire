@@ -8,6 +8,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -42,6 +43,7 @@ class CompanyRepositoryImplTest {
             // Given
             Long id = 1L;
             CompanyPO po = createCompanyPO(id, "Test Company", "91110000XXXXXXXX", 1);
+            po.setAvatarPath("avatar/1987654321098767360.png");
             when(companyMapper.selectById(id)).thenReturn(po);
 
             // When
@@ -52,6 +54,7 @@ class CompanyRepositoryImplTest {
             assertEquals(id, result.get().getId());
             assertEquals("Test Company", result.get().getName());
             assertEquals("91110000XXXXXXXX", result.get().getUnifiedSocialCreditCode());
+            assertEquals("avatar/1987654321098767360.png", result.get().getAvatarPath());
         }
 
         @Test
@@ -167,6 +170,7 @@ class CompanyRepositoryImplTest {
             company.setName("New Company");
             company.setUnifiedSocialCreditCode("91110000XXXXXXXX");
             company.setAuthStatus(AuthStatus.PENDING_VERIFY);
+            company.setAvatarPath("avatar/1987654321098767361.jpg");
 
             doAnswer(invocation -> {
                 CompanyPO po = invocation.getArgument(0);
@@ -179,7 +183,9 @@ class CompanyRepositoryImplTest {
 
             // Then
             assertNotNull(result.getId());
-            verify(companyMapper).insert(any(CompanyPO.class));
+            ArgumentCaptor<CompanyPO> captor = ArgumentCaptor.forClass(CompanyPO.class);
+            verify(companyMapper).insert(captor.capture());
+            assertEquals("avatar/1987654321098767361.jpg", captor.getValue().getAvatarPath());
         }
 
         @Test
@@ -191,13 +197,16 @@ class CompanyRepositoryImplTest {
             company.setName("Updated Company");
             company.setUnifiedSocialCreditCode("91110000XXXXXXXX");
             company.setAuthStatus(AuthStatus.VERIFIED);
+            company.setAvatarPath("avatar/1987654321098767362.webp");
 
             // When
             Company result = companyRepository.save(company);
 
             // Then
             assertEquals(1L, result.getId());
-            verify(companyMapper).updateById(any(CompanyPO.class));
+            ArgumentCaptor<CompanyPO> captor = ArgumentCaptor.forClass(CompanyPO.class);
+            verify(companyMapper).updateById(captor.capture());
+            assertEquals("avatar/1987654321098767362.webp", captor.getValue().getAvatarPath());
         }
     }
 

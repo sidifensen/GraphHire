@@ -8,6 +8,7 @@ import com.graphhire.job.domain.model.Job;
 import com.graphhire.job.domain.repository.CompanyRepository;
 import com.graphhire.job.domain.repository.JobRepository;
 import com.graphhire.job.domain.vo.JobStatus;
+import com.graphhire.job.interfaces.dto.response.CompanyAvatarUrlResolver;
 import com.graphhire.publicapi.interfaces.dto.response.PublicCompanyCardResponse;
 import com.graphhire.publicapi.interfaces.dto.response.PublicHomeResponse;
 import com.graphhire.publicapi.interfaces.dto.response.PublicJobCardResponse;
@@ -31,6 +32,9 @@ public class PublicHomeController {
 
     @Autowired
     private CompanyAppService companyAppService;
+
+    @Autowired
+    private CompanyAvatarUrlResolver companyAvatarUrlResolver;
 
     @GetMapping
     public Result<PublicHomeResponse> getHomeOverview() {
@@ -93,6 +97,14 @@ public class PublicHomeController {
         String summary = jobCount > 0
                 ? "已认证企业，当前开放 " + jobCount + " 个职位"
                 : "已认证企业，当前暂无开放职位";
-        return new PublicCompanyCardResponse(company.getId(), company.getName(), city, jobCount, summary, company.getAuthStatus().name());
+        return new PublicCompanyCardResponse(
+                company.getId(),
+                company.getName(),
+                city,
+                jobCount,
+                summary,
+                company.getAuthStatus().name(),
+                companyAvatarUrlResolver.resolve(company.getAvatarPath())
+        );
     }
 }

@@ -5,6 +5,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -23,6 +27,7 @@ class PublicCompanyControllerIT extends BaseControllerIT {
     void searchCompanies_returnsPublicCompanyCards() throws Exception {
         Long companyUserId = createUser("public_company_it_company@graphhire.com");
         Long companyId = createCompany(companyUserId, "PUBLIC_COMPANY_IT_矩阵云");
+        jdbcTemplate.update("UPDATE company SET avatar_path = ? WHERE id = ?", "avatar/1987654321098767360.png", companyId);
         createJob(companyId, "PUBLIC_COMPANY_IT_全栈工程师", "深圳", 22000, 35000, 1);
         createJob(companyId, "PUBLIC_COMPANY_IT_算法工程师", "深圳", 32000, 45000, 1);
 
@@ -33,7 +38,39 @@ class PublicCompanyControllerIT extends BaseControllerIT {
             .andExpect(jsonPath("$.data.records[0].name").value("PUBLIC_COMPANY_IT_矩阵云"))
             .andExpect(jsonPath("$.data.records[0].jobCount").value(2))
             .andExpect(jsonPath("$.data.records[0].city").value("深圳"))
-            .andExpect(jsonPath("$.data.records[0].summary").exists());
+            .andExpect(jsonPath("$.data.records[0].summary").exists())
+            .andExpect(jsonPath("$.data.records[0].avatarUrl").value(allOf(
+                startsWith("http://localhost:9000/resumes/avatar/1987654321098767360.png"),
+                containsString("X-Amz-Algorithm=AWS4-HMAC-SHA256")
+            )));
+    }
+
+    @Test
+    @DisplayName("公开企业详情返回头像地址")
+    void getCompany_returnsAvatarUrl() throws Exception {
+        Long companyUserId = createUser("public_company_it_detail@graphhire.com");
+        Long companyId = createCompany(companyUserId, "PUBLIC_COMPANY_IT_详情企业");
+        jdbcTemplate.update("UPDATE company SET avatar_path = ? WHERE id = ?", "avatar/1987654321098767361.jpg", companyId);
+
+        mockMvc.perform(get("/public/companies/{id}", companyId))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value(200))
+            .andExpect(jsonPath("$.data.name").value("PUBLIC_COMPANY_IT_详情企业"))
+            .andExpect(jsonPath("$.data.avatarUrl").value(allOf(
+                startsWith("http://localhost:9000/resumes/avatar/1987654321098767361.jpg"),
+                containsString("X-Amz-Algorithm=AWS4-HMAC-SHA256")
+            )));
+    }
+
+    @Test
+    @DisplayName("公开企业列表在无头像时返回 null")
+    void searchCompanies_withoutAvatar_returnsNullAvatarUrl() throws Exception {
+        Long companyUserId = createUser("public_company_it_no_avatar@graphhire.com");
+        createCompany(companyUserId, "PUBLIC_COMPANY_IT_无头像企业");
+
+        mockMvc.perform(get("/public/companies").param("keyword", "PUBLIC_COMPANY_IT_无头像企业"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.records[0].avatarUrl").value(nullValue()));
     }
 
     private Long createUser(String username) {

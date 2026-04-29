@@ -39,6 +39,9 @@ public class CompanyPO {
     private String contact;
     /** 联系电话 */
     private String phone;
+    /** 企业头像对象路径 */
+    @TableField("avatar_path")
+    private String avatarPath;
     /** 认证拒绝原因 */
     @TableField(exist = false)
     private String authReason;
@@ -138,6 +141,14 @@ public class CompanyPO {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getAvatarPath() {
+        return avatarPath;
+    }
+
+    public void setAvatarPath(String avatarPath) {
+        this.avatarPath = avatarPath;
     }
 
     public String getAuthReason() {

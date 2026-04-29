@@ -8,6 +8,7 @@ import com.graphhire.job.domain.model.Company;
 import com.graphhire.job.domain.model.Job;
 import com.graphhire.job.domain.repository.JobRepository;
 import com.graphhire.job.domain.vo.JobStatus;
+import com.graphhire.job.interfaces.dto.response.CompanyAvatarUrlResolver;
 import com.graphhire.publicapi.interfaces.dto.response.PublicCompanyCardResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +26,9 @@ public class PublicCompanyController {
 
     @Autowired
     private JobRepository jobRepository;
+
+    @Autowired
+    private CompanyAvatarUrlResolver companyAvatarUrlResolver;
 
     @GetMapping
     public Result<PageResult<PublicCompanyCardResponse>> searchCompanies(
@@ -80,7 +84,8 @@ public class PublicCompanyController {
                 city,
                 jobCount,
                 summary,
-                company.getAuthStatus().name()
+                company.getAuthStatus().name(),
+                companyAvatarUrlResolver.resolve(company.getAvatarPath())
         );
     }
 

@@ -4,9 +4,9 @@
 
 **Goal:** 为企业资料增加头像存储与返回能力，落地 `company.avatar_path`、RustFS `resumes/avatar/` 上传、Hutool 雪花对象名，以及面向前端的完整 `avatarUrl` 返回。
 
-**Architecture:** 后端以 `company.avatar_path` 保存稳定对象 key，上传时使用 Hutool 雪花算法生成 `avatar/<snowflakeId>.<ext>`，由 `RustFSClient` 原样写入 RustFS。企业资料与公开公司接口通过新增 URL 组装逻辑返回完整 `avatarUrl`，浏览器后续直接访问 RustFS 公网地址，不再依赖 Java 二进制代理。
+**Architecture:** 后端以 `company.avatar_path` 保存稳定对象 key，上传时使用 Hutool 雪花算法生成 `avatar/<snowflakeId>.<ext>`，由 `RustFSClient` 原样写入 RustFS。企业资料与公开公司接口通过 `S3Presigner` 生成 `avatarUrl` 预签名直链，浏览器直接访问 RustFS，不再依赖 Java 二进制代理。
 
-**Tech Stack:** Spring Boot, MyBatis-Plus, PostgreSQL, Hutool, AWS S3 SDK, JUnit 5, Mockito, MockMvc
+**Tech Stack:** Spring Boot, MyBatis-Plus, PostgreSQL, Hutool, AWS S3 SDK / S3Presigner, JUnit 5, Mockito, MockMvc
 
 ---
 
@@ -67,9 +67,9 @@
 - Modify: `backend/src/main/resources/application.yml`
 - Modify: `backend/src/main/java/com/graphhire/config/RustFSConfig.java`
 
-- [ ] Step 1: 新增 URL 组装测试，覆盖 `avatar/<id>.png` 转完整 URL、空路径返回 `null`、兼容 `s3://bucket/key` 解析三种行为
+- [ ] Step 1: 新增 URL 组装测试，覆盖 `avatar/<id>.png` 生成预签名 URL、空路径返回 `null`、兼容 `s3://bucket/key` 解析三种行为
 - [ ] Step 2: 运行 `mvn -Dtest=CompanyAvatarUrlResolverTest test` 确认失败
-- [ ] Step 3: 新建 URL 组装组件，加入 `rustfs.public-base-url` 配置，并让公司资料与公开公司接口统一复用它
+- [ ] Step 3: 新建 URL 组装组件，接入 `S3Presigner` 并让公司资料与公开公司接口统一复用它
 - [ ] Step 4: 重新运行 `mvn -Dtest=CompanyAvatarUrlResolverTest test` 确认通过
 
 ### Task 6: 落地数据库 schema 与 migration

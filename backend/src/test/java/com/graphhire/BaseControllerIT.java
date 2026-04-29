@@ -75,6 +75,7 @@ public abstract class BaseControllerIT {
 
     @BeforeEach
     protected void setupExternalMocks() {
+        ensureCompanyAvatarPathColumn(jdbcTemplate);
         Mockito.lenient().when(rustFSClient.upload(any(byte[].class), anyString()))
             .thenAnswer(invocation -> "s3://resumes/mock/" + invocation.getArgument(1, String.class));
         Mockito.lenient().when(rustFSClient.download(anyString()))
@@ -178,6 +179,10 @@ public abstract class BaseControllerIT {
     private static void ensureCompanyStaffStatusColumn(JdbcTemplate jdbc) {
         jdbc.execute("ALTER TABLE company_staff ADD COLUMN IF NOT EXISTS status VARCHAR(20)");
         jdbc.execute("UPDATE company_staff SET status = 'ACTIVE' WHERE status IS NULL");
+    }
+
+    private static void ensureCompanyAvatarPathColumn(JdbcTemplate jdbc) {
+        jdbc.execute("ALTER TABLE company ADD COLUMN IF NOT EXISTS avatar_path VARCHAR(500)");
     }
 
     private static String doHttpLogin(MockMvc mockMvc, ObjectMapper objectMapper,

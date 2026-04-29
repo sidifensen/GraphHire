@@ -8,7 +8,9 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.http.apache.ApacheHttpClient;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
 import java.net.URI;
 import java.time.Duration;
@@ -44,6 +46,22 @@ public class RustFSConfig {
             .overrideConfiguration(ClientOverrideConfiguration.builder()
                 .apiCallTimeout(Duration.ofSeconds(5))
                 .apiCallAttemptTimeout(Duration.ofSeconds(5))
+                .build())
+            .build();
+    }
+
+    @Bean
+    public S3Presigner s3Presigner() {
+        String ak = (accessKey == null || accessKey.isBlank()) ? "rustfsadmin" : accessKey;
+        String sk = (secretKey == null || secretKey.isBlank()) ? "rustfsadmin" : secretKey;
+
+        return S3Presigner.builder()
+            .endpointOverride(URI.create(endpoint))
+            .region(Region.of(region))
+            .credentialsProvider(StaticCredentialsProvider.create(
+                AwsBasicCredentials.create(ak, sk)))
+            .serviceConfiguration(S3Configuration.builder()
+                .pathStyleAccessEnabled(true)
                 .build())
             .build();
     }

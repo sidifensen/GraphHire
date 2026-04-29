@@ -41,6 +41,8 @@ public class Company extends BaseAggregateRoot {
     private String description;
     /** 企业官网URL */
     private String website;
+    /** 企业头像对象路径 */
+    private String avatarPath;
     /** 所属行业 */
     private String industry;
     /** 企业规模 */
@@ -176,6 +178,14 @@ public class Company extends BaseAggregateRoot {
 
     public void setWebsite(String website) {
         this.website = website;
+    }
+
+    public String getAvatarPath() {
+        return avatarPath;
+    }
+
+    public void setAvatarPath(String avatarPath) {
+        this.avatarPath = avatarPath;
     }
 
     public String getIndustry() {

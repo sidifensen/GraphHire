@@ -221,4 +221,12 @@ public class CompanyAppService {
         // 步骤4：保存更新后的公司信息
         return companyRepository.save(company);
     }
+
+    @Transactional
+    public Company updateCompanyAvatarPath(Long companyId, String avatarPath) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new IllegalArgumentException("企业不存在"));
+        company.setAvatarPath(avatarPath);
+        return companyRepository.save(company);
+    }
 }

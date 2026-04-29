@@ -6,6 +6,7 @@ public record PublicCompanyCardResponse(
     String city,
     Integer jobCount,
     String summary,
-    String authStatus
+    String authStatus,
+    String avatarUrl
 ) {
 }
