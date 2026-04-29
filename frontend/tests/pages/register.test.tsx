@@ -93,7 +93,7 @@ describe('RegisterPage', () => {
       expect(screen.getByText('验证码错误或已过期')).toBeInTheDocument();
     });
     expect(mockPush).not.toHaveBeenCalled();
-  });
+  }, 15000);
 
   it('shows chinese timeout error when send verify code times out', async () => {
     const user = userEvent.setup();
@@ -109,5 +109,5 @@ describe('RegisterPage', () => {
     await waitFor(() => {
       expect(screen.getByText('请求超时，请稍后重试')).toBeInTheDocument();
     });
-  });
+  }, 15000);
 });

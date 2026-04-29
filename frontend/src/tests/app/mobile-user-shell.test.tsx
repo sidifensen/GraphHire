@@ -22,7 +22,7 @@ describe("MobileShell", () => {
 
   it("shows bottom navigation on the mobile home route", () => {
     usePathnameMock.mockReturnValue("/mobile-user");
-    render(
+    const { container } = render(
       <MobileShell>
         <div>content</div>
       </MobileShell>,
@@ -32,6 +32,11 @@ describe("MobileShell", () => {
     expect(screen.getByText("职位")).toBeInTheDocument();
     expect(screen.getByText("公司")).toBeInTheDocument();
     expect(screen.getByText("我的")).toBeInTheDocument();
+
+    const shellRoot = container.firstElementChild;
+    expect(shellRoot).not.toBeNull();
+    expect(shellRoot).toHaveClass("mobile-ui");
+    expect(shellRoot).toHaveClass("min-h-screen");
   });
 
   it("hides bottom navigation on the mobile login route", () => {

@@ -28,7 +28,13 @@ export default function Dashboard() {
                 <p className="font-headline-lg text-headline-lg text-on-primary-fixed">24</p>
               )}
             </div>
-              <div className="w-10 h-10 rounded-full bg-primary-fixed-dim/50 flex items-center justify-center text-primary">
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center text-primary"
+                style={{
+                  backgroundColor:
+                    "color-mix(in srgb, var(--color-primary-fixed-dim) 50%, transparent)",
+                }}
+              >
               <span className="material-symbols-outlined">inbox</span>
             </div>
           </div>
