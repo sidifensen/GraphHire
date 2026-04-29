@@ -15,7 +15,7 @@ export default function ResumeManagement() {
         {MOCK_RESUMES.map((resume) => (
           <div 
             key={resume.id}
-            className={`bg-white rounded-2xl shadow-sm border border-surface-mid p-5 flex flex-col gap-4 relative overflow-hidden transition-all hover:shadow-md ${
+          className={`bg-surface-lowest rounded-2xl shadow-sm border border-surface-mid p-5 flex flex-col gap-4 relative overflow-hidden transition-all hover:shadow-md ${
               resume.isDefault ? 'border-l-4 border-l-primary' : 'border-l-4 border-l-outline-variant'
             }`}
           >
@@ -74,7 +74,7 @@ export default function ResumeManagement() {
         ))}
       </main>
 
-      <div className="fixed bottom-0 left-0 w-full p-5 bg-white border-t border-surface-mid z-50 shadow-lg pb-safe">
+      <div className="fixed bottom-0 left-0 w-full p-5 bg-surface-lowest border-t border-surface-mid z-50 shadow-lg pb-safe">
         <button className="w-full bg-primary text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-95 transition-all">
           <CloudUpload size={20} />
           上传新简历

@@ -13,7 +13,7 @@ export default function ApplicationRecords() {
     <div className="flex flex-col min-h-screen">
       <TopNav title="投递记录" />
       
-      <nav className="bg-white sticky top-16 z-40 flex overflow-x-auto px-5 gap-8 pt-4 hide-scrollbar border-b border-surface-mid">
+      <nav className="bg-surface-lowest sticky top-16 z-40 flex overflow-x-auto px-5 gap-8 pt-4 hide-scrollbar border-b border-surface-mid">
         {tabs.map((tab) => (
           <button
             key={tab}
@@ -31,7 +31,7 @@ export default function ApplicationRecords() {
         {MOCK_APPLICATIONS.map((app) => (
           <article 
             key={app.id} 
-            className={`bg-white rounded-2xl p-5 shadow-sm border-l-4 cursor-pointer hover:bg-surface-low transition-colors group ${
+            className={`bg-surface-lowest rounded-2xl p-5 shadow-sm border-l-4 cursor-pointer hover:bg-surface-low transition-colors group ${
               app.status === 'interview' ? 'border-primary' : app.status === 'viewed' ? 'border-secondary-container' : 'border-surface-mid'
             }`}
           >
@@ -64,7 +64,7 @@ export default function ApplicationRecords() {
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
     interview: 'bg-primary/10 text-primary',
-    viewed: 'bg-secondary-container/50 text-on-secondary-container',
+  viewed: 'bg-secondary-container/50 text-on-secondary-container',
     pending: 'bg-surface-mid text-on-surface-variant',
     unsuitable: 'bg-surface-high opacity-60 text-outline',
   };

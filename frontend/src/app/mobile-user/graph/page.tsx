@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { TopNav } from "../_components/TopNav";
-import { RefreshCw, User, Code, Layout, Database, Group, Zap, TrendingUp, Award } from 'lucide-react';
+import { RefreshCw, User, Code, Database, Users, Zap, TrendingUp, Award } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function KnowledgeGraph() {
@@ -12,8 +12,8 @@ export default function KnowledgeGraph() {
 
       <main className="flex-1 p-5 flex flex-col gap-6 pb-28">
         {/* Graph Canvas */}
-        <section className="bg-white rounded-3xl shadow-sm border border-surface-mid h-[400px] relative flex items-center justify-center overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/5 via-white to-white"></div>
+        <section className="bg-surface-lowest rounded-3xl shadow-sm border border-surface-mid h-[400px] relative flex items-center justify-center overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/5 via-surface-lowest to-surface-lowest"></div>
           
           {/* Connecting Lines */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20">
@@ -37,14 +37,14 @@ export default function KnowledgeGraph() {
 
           <Node icon={Code} label="前端工程" top="15%" left="50%" delay={0.1} color="bg-secondary-container" />
           <Node icon={Zap} label="性能优化" top="40%" left="15%" delay={0.2} color="bg-primary/10 text-primary" />
-          <Node icon={Group} label="团队协作" top="80%" left="20%" delay={0.3} color="bg-surface-mid" />
+          <Node icon={Users} label="团队协作" top="80%" left="20%" delay={0.3} color="bg-surface-mid" />
           <Node icon={Database} label="数据处理" top="80%" right="20%" delay={0.4} color="bg-surface-mid" />
           <Node icon={TrendingUp} label="架构设计" top="40%" right="15%" delay={0.5} color="bg-tertiary/10 text-tertiary" />
         </section>
 
         {/* Stats Bento */}
         <section className="grid grid-cols-2 gap-4">
-          <div className="bg-white rounded-[24px] p-5 shadow-sm border border-surface-mid flex flex-col gap-2">
+          <div className="bg-surface-lowest rounded-[24px] p-5 shadow-sm border border-surface-mid flex flex-col gap-2">
             <div className="flex items-center gap-2 text-primary">
               <Award size={18} />
               <span className="text-xs font-bold text-on-surface-variant uppercase">综合评分</span>
@@ -69,7 +69,7 @@ export default function KnowledgeGraph() {
             </div>
           </div>
 
-          <div className="bg-white rounded-[24px] p-5 shadow-sm border border-surface-mid flex flex-col gap-2">
+          <div className="bg-surface-lowest rounded-[24px] p-5 shadow-sm border border-surface-mid flex flex-col gap-2">
             <div className="flex items-center gap-2 text-tertiary">
                <span className="material-symbols-outlined text-[18px]">hub</span>
               <span className="text-xs font-bold text-on-surface-variant uppercase">技能节点</span>
@@ -87,7 +87,7 @@ export default function KnowledgeGraph() {
         </section>
       </main>
 
-      <div className="fixed bottom-0 left-0 w-full px-5 py-4 bg-white/90 backdrop-blur-md border-t border-surface-mid pb-safe z-40">
+      <div className="fixed bottom-0 left-0 w-full px-5 py-4 bg-surface-lowest/90 backdrop-blur-md border-t border-surface-mid pb-safe z-40">
         <button className="w-full h-14 rounded-2xl border-2 border-surface-mid text-on-surface font-bold flex justify-center items-center gap-2 hover:bg-surface-low transition-colors">
           <RefreshCw size={20} />
           重置视图

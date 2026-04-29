@@ -15,7 +15,7 @@ export function TopNav({ title, showBack = true, showShare = false, rightAction 
   const navigate = useNavigate();
 
   return (
-    <header className="sticky top-0 z-50 h-16 bg-white/90 backdrop-blur-md border-b border-surface-mid flex items-center justify-between px-5 shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
+    <header className="sticky top-0 z-50 h-16 bg-surface-lowest/90 backdrop-blur-md border-b border-surface-mid flex items-center justify-between px-5 shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
       <div className="flex items-center gap-2">
         {showBack && (
           <button 

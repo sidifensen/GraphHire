@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Search, Bell, Share2, Building2 } from 'lucide-react';
+import { Search, Bell } from 'lucide-react';
 import { Link } from "../_lib/router";
 import { motion } from 'framer-motion';
 import { MOCK_COMPANIES } from "../_data/mockData";
@@ -17,20 +17,20 @@ export default function CompanyList() {
     c.industry.toLowerCase().includes(search.toLowerCase())
   );
 
-  const hotCompanies = MOCK_COMPANIES.slice(1, 3);
-  const allCompanies = MOCK_COMPANIES.slice(0, 5);
+  const hotCompanies = filteredCompanies.slice(1, 3);
+  const allCompanies = filteredCompanies.slice(0, 5);
 
   return (
     <div className="flex flex-col min-h-screen pb-24">
       {/* Top App Bar */}
-      <header className="bg-white sticky top-0 z-50 flex items-center justify-between px-5 h-16 border-b border-surface-mid shadow-sm">
+      <header className="bg-surface-lowest sticky top-0 z-50 flex items-center justify-between px-5 h-16 border-b border-surface-mid shadow-sm">
         <button className="text-primary p-2 -ml-2 hover:bg-primary/10 rounded-full transition-colors">
           <Search size={24} />
         </button>
         <div className="text-xl font-black text-primary tracking-tighter">GraphHire</div>
         <Link to="/notifications" className="text-primary p-2 -mr-2 hover:bg-primary/10 rounded-full transition-colors relative">
           <Bell size={24} />
-          <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+          <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-surface-lowest"></span>
         </Link>
       </header>
 
@@ -42,7 +42,7 @@ export default function CompanyList() {
             <input 
               type="text" 
               placeholder="搜索公司、行业或关键词"
-              className="w-full h-11 pl-10 pr-4 bg-white border border-surface-mid rounded-xl text-body-md focus:border-primary outline-none transition-all shadow-sm"
+              className="w-full h-11 pl-10 pr-4 bg-surface-lowest border border-surface-mid rounded-xl text-body-md focus:border-primary outline-none transition-all shadow-sm"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -54,7 +54,7 @@ export default function CompanyList() {
           <div className="flex gap-2 whitespace-nowrap">
             <button className="bg-primary text-white font-bold text-xs px-4 py-2 rounded-full border border-transparent">全部行业</button>
             {['互联网/AI', '金融科技', '新能源', '生物医疗'].map(cat => (
-              <button key={cat} className="bg-white text-on-surface border border-surface-mid font-bold text-xs px-4 py-2 rounded-full hover:bg-surface-low transition-colors">
+              <button key={cat} className="bg-surface-lowest text-on-surface border border-surface-mid font-bold text-xs px-4 py-2 rounded-full hover:bg-surface-low transition-colors">
                 {cat}
               </button>
             ))}
@@ -72,7 +72,7 @@ export default function CompanyList() {
                 <Link 
                   key={company.id}
                   to={`/companies/${company.id}`}
-                  className="bg-white rounded-2xl p-4 shadow-sm border border-surface-mid flex flex-col items-center text-center relative overflow-hidden group hover:border-primary/50 transition-colors"
+                  className="bg-surface-lowest rounded-2xl p-4 shadow-sm border border-surface-mid flex flex-col items-center text-center relative overflow-hidden group hover:border-primary/50 transition-colors"
                 >
                   <div className="absolute top-0 left-0 w-full h-1 bg-primary opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   <img src={company.logo} className="w-12 h-12 rounded-lg object-contain mb-2 border border-surface-low" alt={company.name} />
@@ -98,9 +98,9 @@ export default function CompanyList() {
                 <Link 
                   key={company.id}
                   to={`/companies/${company.id}`}
-                  className="bg-white rounded-2xl p-4 shadow-sm border border-surface-mid flex gap-4 items-start active:bg-surface-low transition-all"
+                  className="bg-surface-lowest rounded-2xl p-4 shadow-sm border border-surface-mid flex gap-4 items-start active:bg-surface-low transition-all"
                 >
-                  <img src={company.logo} className="w-14 h-14 rounded-lg object-contain bg-white border border-surface-low p-1 mt-1" alt={company.name} />
+                  <img src={company.logo} className="w-14 h-14 rounded-lg object-contain bg-surface-lowest border border-surface-low p-1 mt-1" alt={company.name} />
                   <div className="flex flex-col flex-1 min-w-0">
                     <div className="flex justify-between items-center mb-1">
                       <h3 className="font-bold text-on-surface truncate pr-2">{company.name}</h3>

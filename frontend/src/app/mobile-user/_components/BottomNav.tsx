@@ -14,7 +14,7 @@ export function BottomNav() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md h-20 bg-white/95 backdrop-blur-md border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,82,255,0.05)] flex justify-around items-center px-4 pb-safe z-50 rounded-t-2xl">
+    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md h-20 bg-surface-lowest/95 backdrop-blur-md border-t border-outline-variant/30 shadow-[0_-4px_20px_rgba(0,82,255,0.05)] flex justify-around items-center px-4 pb-safe z-50 rounded-t-2xl">
       {navItems.map((item) => (
         <NavLink
           key={item.path}

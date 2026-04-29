@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Mail, Lock, ArrowRight } from "lucide-react";
-import { Link, useNavigate } from "../_lib/router";
 import { motion } from "framer-motion";
+import { Link, useNavigate } from "../_lib/router";
 import { authApi } from "@/lib/api/auth";
 import { enterpriseAuthStore, userAuthStore } from "@/lib/stores/auth-store";
 import type { LoginRequest } from "@/lib/types";
@@ -38,7 +38,7 @@ export default function Login() {
     setError("");
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -74,20 +74,20 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden font-sans text-on-surface antialiased bg-[#fbf8ff]">
-      <div className="absolute inset-0 z-0 pointer-events-none opacity-50 bg-[radial-gradient(#c3c5d9_1px,transparent_1px)] [background-size:40px_40px]" />
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden font-sans text-on-surface antialiased bg-surface-background">
+      <div className="absolute inset-0 z-0 pointer-events-none opacity-50 bg-[radial-gradient(var(--color-outline-variant)_1px,transparent_1px)] [background-size:40px_40px]" />
       <div className="absolute -top-[20%] -right-[10%] w-[60%] h-[60%] rounded-full bg-primary/10 blur-[100px] z-0 pointer-events-none" />
-      <div className="absolute -bottom-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-secondary-container/10 blur-[100px] z-0 pointer-events-none" />
+      <div className="absolute -bottom-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-secondary/10 blur-[100px] z-0 pointer-events-none" />
 
       <main className="relative z-10 w-full max-w-[440px] px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white/70 backdrop-blur-xl border border-white/50 rounded-[24px] p-8 shadow-[0px_16px_40px_rgba(0,62,199,0.08)] relative group"
+          className="bg-surface-lowest/70 backdrop-blur-xl border border-outline-variant/30 rounded-[24px] p-8 shadow-[0px_16px_40px_rgba(0,62,199,0.08)] relative group"
         >
           <div className="absolute inset-0 rounded-[24px] border-[1.5px] border-transparent group-hover:border-primary/20 transition-colors duration-500 pointer-events-none" />
 
-          <div className="text-center mb-6">
+          <div className="text-center mb-8">
             <h1 className="text-3xl font-black text-primary tracking-tighter mb-2">GraphHire</h1>
             <p className="text-sm text-on-surface-variant">智慧连接，触达顶尖人才</p>
           </div>
@@ -103,7 +103,7 @@ export default function Login() {
             </div>
           )}
 
-          <div className="flex mb-6 border-b border-surface-variant/50 relative">
+          <div className="flex mb-8 border-b border-surface-variant/50 relative">
             <button
               type="button"
               onClick={() => handleRoleSwitch("jobseeker")}
@@ -118,6 +118,7 @@ export default function Login() {
             <button
               type="button"
               onClick={() => handleRoleSwitch("recruiter")}
+              aria-label="招聘者"
               className={`flex-1 pb-3 text-center font-bold text-lg transition-all ${
                 role === "recruiter"
                   ? "text-primary border-b-2 border-primary"
@@ -139,7 +140,7 @@ export default function Login() {
                 </div>
                 <input
                   id="mobile-login-username"
-                  className="block w-full pl-12 pr-4 py-3.5 bg-white border border-outline-variant rounded-xl text-sm text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-200"
+                  className="block w-full pl-12 pr-4 py-3.5 bg-surface-lowest border border-outline-variant rounded-xl text-sm text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-200"
                   placeholder="请输入用户名/邮箱"
                   type="text"
                   value={username}
@@ -159,7 +160,7 @@ export default function Login() {
                 </div>
                 <input
                   id="mobile-login-password"
-                  className="block w-full pl-12 pr-4 py-3.5 bg-white border border-outline-variant rounded-xl text-sm text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-200"
+                  className="block w-full pl-12 pr-4 py-3.5 bg-surface-lowest border border-outline-variant rounded-xl text-sm text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-200"
                   placeholder="请输入密码"
                   type="password"
                   value={password}
@@ -178,10 +179,11 @@ export default function Login() {
             <div className="pt-2">
               <button
                 className="w-full py-3.5 bg-primary text-white rounded-xl font-bold text-lg shadow-[0px_4px_12px_rgba(0,62,199,0.3)] hover:shadow-[0px_6px_16px_rgba(0,62,199,0.4)] hover:-translate-y-[1px] hover:bg-primary/90 transition-all duration-200 relative overflow-hidden group flex justify-center items-center gap-2 disabled:opacity-60"
+                aria-label="登录"
                 type="submit"
                 disabled={loading}
               >
-                <span>{loading ? "登录中..." : "登录"}</span>
+                <span>{loading ? "登录中..." : "立即登录"}</span>
                 {!loading && <ArrowRight size={20} />}
                 <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
               </button>

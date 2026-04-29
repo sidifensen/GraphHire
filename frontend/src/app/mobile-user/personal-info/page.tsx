@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { TopNav } from "../_components/TopNav";
 import { Camera, MapPin, ChevronDown } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 export default function PersonalInfo() {
   const [formData, setFormData] = useState({
@@ -24,7 +23,7 @@ export default function PersonalInfo() {
       <TopNav title="个人资料" />
 
       <main className="pt-6 px-5 pb-32 flex flex-col gap-6 max-w-md mx-auto">
-        <section className="bg-white rounded-[24px] shadow-sm p-6 flex flex-col gap-6">
+        <section className="bg-surface-lowest rounded-[24px] shadow-sm p-6 flex flex-col gap-6">
           <h2 className="text-lg font-black text-on-surface border-b border-surface-low pb-3">基本信息</h2>
           
           <div className="flex items-center gap-5">
@@ -58,7 +57,7 @@ export default function PersonalInfo() {
           </div>
         </section>
 
-        <section className="bg-white rounded-[24px] shadow-sm p-6 flex flex-col gap-6">
+        <section className="bg-surface-lowest rounded-[24px] shadow-sm p-6 flex flex-col gap-6">
           <h2 className="text-lg font-black text-on-surface border-b border-surface-low pb-3">求职意向</h2>
           <div className="space-y-4">
             <Input label="期望岗位" value={formData.jobIntent} />
@@ -70,7 +69,7 @@ export default function PersonalInfo() {
         </section>
       </main>
 
-      <div className="fixed bottom-0 left-0 w-full bg-white border-t border-surface-mid px-5 py-4 pb-safe z-40 shadow-lg">
+      <div className="fixed bottom-0 left-0 w-full bg-surface-lowest border-t border-surface-mid px-5 py-4 pb-safe z-40 shadow-lg">
         <button className="w-full h-14 bg-primary text-white font-bold rounded-2xl shadow-lg shadow-primary/20 active:scale-[0.98] transition-all">
           保存修改
         </button>

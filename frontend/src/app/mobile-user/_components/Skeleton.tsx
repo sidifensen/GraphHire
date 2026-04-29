@@ -14,7 +14,7 @@ export function Skeleton({ className }: { className?: string }) {
 
 export function JobCardSkeleton() {
   return (
-    <div className="bg-white rounded-xl p-md shadow-sm border border-surface-mid animate-pulse">
+    <div className="bg-surface-lowest rounded-xl p-md shadow-sm border border-surface-mid animate-pulse">
       <div className="flex justify-between items-start mb-sm">
         <Skeleton className="h-6 w-1/2" />
         <Skeleton className="h-6 w-1/4" />

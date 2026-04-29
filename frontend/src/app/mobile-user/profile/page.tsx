@@ -1,11 +1,14 @@
 "use client";
 
 import React from 'react';
-import { Edit2, MessageSquare, Briefcase, Heart, ChevronRight, User, FileText, Send, Network, Settings } from 'lucide-react';
+import { Edit2, ChevronRight, User, FileText, Send, Network, Settings, Moon, Sun } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from "../_lib/router";
+import { useTheme } from '@/app/mobile-user/_context/ThemeContext';
 
 export default function Profile() {
+  const { theme, toggleTheme } = useTheme();
+
   const menuItems = [
     { name: '个人资料', icon: User, path: '/personal-info' },
     { name: '简历管理', icon: FileText, path: '/resume' },
@@ -17,7 +20,7 @@ export default function Profile() {
   return (
     <div className="flex flex-col min-h-screen bg-surface-background p-5">
       {/* Profile Card */}
-      <section className="bg-white rounded-3xl p-6 shadow-[0_4px_20px_rgba(0,82,255,0.05)] mb-6 relative overflow-hidden pt-8">
+      <section className="bg-surface-lowest rounded-3xl p-6 shadow-[0_4px_20px_rgba(0,82,255,0.05)] mb-6 relative overflow-hidden pt-8">
         <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -mr-8 -mt-8"></div>
         
         <div className="flex items-start gap-5 relative z-10">
@@ -61,8 +64,30 @@ export default function Profile() {
         </div>
       </section>
 
+      {/* Theme Toggle */}
+      <section className="bg-surface-lowest rounded-3xl p-5 shadow-[0_4px_20px_rgba(0,82,255,0.05)] mb-6 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 rounded-full flex items-center justify-center bg-primary/10 text-primary">
+            {theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
+          </div>
+          <span className="text-body-lg font-bold text-on-surface">夜间模式</span>
+        </div>
+        <button
+          onClick={toggleTheme}
+          aria-label="切换夜间模式"
+          className={`w-14 h-8 rounded-full transition-all duration-300 relative flex items-center px-1 ${
+            theme === 'dark' ? 'bg-primary' : 'bg-surface-mid'
+          }`}
+        >
+          <motion.div
+            animate={{ x: theme === 'dark' ? 24 : 0 }}
+            className="w-6 h-6 bg-white rounded-full shadow-sm"
+          />
+        </button>
+      </section>
+
       {/* Menu List */}
-      <section className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,82,255,0.05)] overflow-hidden">
+      <section className="bg-surface-lowest rounded-3xl shadow-[0_4px_20px_rgba(0,82,255,0.05)] overflow-hidden">
         <div className="flex flex-col">
           {menuItems.map((item, idx) => (
             <React.Fragment key={item.name}>
@@ -86,7 +111,7 @@ export default function Profile() {
             className="flex items-center justify-between p-5 hover:bg-surface-low transition-colors text-red-500"
           >
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center bg-red-50 text-red-500">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center bg-red-50 dark:bg-red-900/20 text-red-500">
                 <Settings size={20} />
               </div>
               <span className="text-body-lg font-bold">退出登录</span>

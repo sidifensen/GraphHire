@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Search, ChevronDown, Zap, CheckCircle, SlidersHorizontal } from 'lucide-react';
+import { Search, ChevronDown, Zap, CheckCircle } from 'lucide-react';
 import { Link } from "../_lib/router";
 import { motion } from 'framer-motion';
 import { MOCK_JOBS } from "../_data/mockData";
@@ -20,7 +20,7 @@ export default function JobList() {
   return (
     <div className="flex flex-col min-h-screen pb-24">
       {/* Search Header */}
-      <header className="fixed top-0 w-full max-w-md z-50 bg-white border-b border-surface-mid px-5 py-3 flex flex-col gap-3 shadow-sm">
+      <header className="fixed top-0 w-full max-w-md z-50 bg-surface-lowest border-b border-surface-mid px-5 py-3 flex flex-col gap-3 shadow-sm">
         <div className="flex items-center gap-3">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-outline" size={18} />
@@ -72,7 +72,7 @@ export default function JobList() {
             >
               <Link 
                 to={`/jobs/${job.id}`}
-                className="block bg-white rounded-2xl p-5 shadow-[0_4px_20px_rgba(0,82,255,0.05)] border-l-4 border-primary hover:shadow-lg transition-all"
+                className="block bg-surface-lowest rounded-2xl p-5 shadow-[0_4px_20px_rgba(0,82,255,0.05)] border-l-4 border-primary hover:shadow-lg transition-all"
               >
                 <div className="flex justify-between items-start mb-2">
                   <div>

@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Share2, BarChart3, Users, Database, Target, Megaphone } from 'lucide-react';
+import { Share2, BarChart3, Users, Database, Target } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from "./_lib/router";
 
@@ -9,13 +9,13 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Mobile Top Header */}
-      <header className="md:hidden flex justify-center items-center h-16 px-5 w-full bg-white/90 backdrop-blur-md sticky top-0 z-40 border-b border-gray-100 shadow-[0_4px_20px_rgba(0,82,255,0.05)]">
+      <header className="md:hidden flex justify-center items-center h-16 px-5 w-full bg-surface-lowest/90 backdrop-blur-md sticky top-0 z-40 border-b border-gray-100 shadow-[0_4px_20px_rgba(0,82,255,0.05)]">
         <span className="text-xl font-black text-primary tracking-tighter">GraphHire</span>
       </header>
 
       <main className="w-full">
         {/* 1. Hero Section */}
-        <section className="relative w-full min-h-[600px] flex flex-col justify-center items-start px-5 md:px-xl overflow-hidden bg-white h-auto py-24">
+        <section className="relative w-full min-h-[600px] flex flex-col justify-center items-start px-5 md:px-xl overflow-hidden bg-surface-lowest h-auto py-24">
           {/* Background Decoration */}
           <div className="absolute inset-0 z-0">
             <div className="absolute top-0 right-0 w-[150%] h-[150%] bg-gradient-to-bl from-primary/10 to-transparent rounded-full blur-3xl opacity-60 translate-x-1/4 -translate-y-1/4"></div>
@@ -119,7 +119,7 @@ export default function Home() {
         </section>
 
         {/* 3. Core Matrix */}
-        <section className="py-20 px-5 bg-white relative overflow-hidden">
+        <section className="py-20 px-5 bg-surface-lowest relative overflow-hidden">
           <div className="absolute top-20 left-10 w-96 h-96 bg-primary/5 rounded-full blur-[100px] opacity-70"></div>
           <div className="max-w-6xl mx-auto relative z-10 px-margin-mobile">
             <div className="text-center mb-16">

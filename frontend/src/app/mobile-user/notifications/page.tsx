@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { TopNav } from "../_components/TopNav";
-import { CheckCircle, Bell, FileText, Briefcase, Eye, Megaphone, XCircle, Clock, Check, CheckCheck } from 'lucide-react';
+import { Bell, FileText, Briefcase, Eye, Megaphone, XCircle, CheckCheck } from 'lucide-react';
 import { MOCK_NOTIFICATIONS } from "../_data/mockData";
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -43,7 +43,7 @@ export default function Notifications() {
               className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold border transition-all ${
                 activeTab === tab 
                   ? 'bg-primary-container text-white border-transparent shadow-md' 
-                  : 'bg-white text-on-surface border-surface-mid hover:bg-surface-low'
+                  : 'bg-surface-lowest text-on-surface border-surface-mid hover:bg-surface-low'
               }`}
             >
               {tab}
@@ -59,7 +59,7 @@ export default function Notifications() {
                 layout
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                className={`bg-white rounded-2xl p-4 shadow-sm relative flex gap-4 cursor-pointer hover:bg-surface-low transition-colors ${!notif.isRead ? '' : 'opacity-70'}`}
+                className={`bg-surface-lowest rounded-2xl p-4 shadow-sm relative flex gap-4 cursor-pointer hover:bg-surface-low transition-colors ${!notif.isRead ? '' : 'opacity-70'}`}
                 onClick={() => markRead(notif.id)}
               >
                 {!notif.isRead && (
