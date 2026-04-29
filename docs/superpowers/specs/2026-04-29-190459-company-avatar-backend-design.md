@@ -11,7 +11,7 @@
 
 - 为 `company` 表增加头像字段，并通过 SQL migration 与本地数据库变更保持一致。
 - 企业头像上传到 RustFS 的 `resumes` bucket 下的 `avatar/` 目录。
-- 所有后续新上传到 RustFS 的文件对象名统一使用“很长的随机字母数字串 + 原扩展名”。
+- 所有后续新上传到 RustFS 的文件对象名统一使用 Hutool 雪花算法生成的唯一 ID，并保留原扩展名。
 - 数据库存储稳定的对象标识，不存前端最终展示 URL。
 - 后端在返回企业资料与公开公司列表时，拼好可直接访问的完整头像 URL 给前端。
 - 公开头像资源由浏览器直连 RustFS 公网地址，不再由 Java 代理二进制。
@@ -37,7 +37,7 @@
 
 1. `company` 表当前无头像列，企业无法维护独立头像资源。
 2. `PublicCompanyCardResponse` 当前只返回文本信息，用户端公司列表无法展示头像。
-3. `RustFSClient.upload` 当前 key 规则为 `时间戳 + "_" + fileName`，不满足统一长随机命名要求。
+3. `RustFSClient.upload` 当前 key 规则为 `时间戳 + "_" + fileName`，不满足统一雪花 ID 命名要求。
 4. 现有用户头像读取方式由 Java 服务下载并回传图片二进制，对公开头像场景来说不是最优链路。
 5. `application.yml` 当前只有 RustFS endpoint/ak/sk/bucket 配置，没有独立的公网访问基地址配置，无法稳定拼装直连 URL。
 
@@ -94,20 +94,20 @@
 ### 2) RustFS 对象名与目录策略
 
 - 所有后续新上传对象统一使用：
-  - `<folder>/<longRandom>.<ext>`
+  - `<folder>/<snowflakeId>.<ext>`
 - 企业头像目录固定为：
-  - `avatar/<longRandom>.<ext>`
+  - `avatar/<snowflakeId>.<ext>`
 - 由于 bucket 固定为 `resumes`，最终对象落点为：
-  - `s3://resumes/avatar/<longRandom>.<ext>`
-- 长随机串使用 Hutool 生成：
-  - 例如 `RandomUtil.randomString(48)` 或更长的字母数字串。
+  - `s3://resumes/avatar/<snowflakeId>.<ext>`
+- 唯一 ID 使用 Hutool 雪花算法生成：
+  - 例如 `IdUtil.getSnowflakeNextIdStr()`
 - 扩展名沿用上传原文件扩展名，空扩展名回退为 `jpg`。
 
 统一收口规则：
 
 - `RustFSClient.upload` 不再强制在 key 前拼接时间戳。
-- 业务方负责传入最终 key，例如 `avatar/AbC123....png`。
-- 这样后续简历、执照、头像等所有新上传场景都可以复用同一随机命名规则，而不会叠加旧的时间戳前缀。
+- 业务方负责传入最终 key，例如 `avatar/1987654321098767360.png`。
+- 这样后续简历、执照、头像等所有新上传场景都可以复用同一雪花 ID 命名规则，而不会叠加旧的时间戳前缀。
 
 ### 3) RustFS 公网访问 URL 组装
 
@@ -137,7 +137,7 @@
 - 仅登录企业用户可调用。
 - 校验文件大小（建议沿用 2MB 上限）。
 - 校验 MIME 类型必须为 `image/*`。
-- 生成 `avatar/<longRandom>.<ext>` 形式的 key。
+- 生成 `avatar/<snowflakeId>.<ext>` 形式的 key。
 - 调用 `RustFSClient.upload(bytes, key)` 上传。
 - 将 `Company.avatarPath` 更新为该 key。
 - 返回当前企业头像完整访问 URL。
@@ -198,7 +198,7 @@
 
 本次数据库推荐只存对象 key：
 
-- `avatar/<longRandom>.<ext>`
+- `avatar/<snowflakeId>.<ext>`
 
 而不是完整 URL，也不是必须存 `s3://resumes/avatar/...`。
 
@@ -207,6 +207,7 @@
 - key 更稳定，最不依赖当前访问域名。
 - bucket 与访问域名由配置统一控制。
 - 如果后续切换 CDN、代理域名或签名 URL，只需调整组装逻辑。
+- 雪花 ID 具备全局唯一和时间有序特性，便于排障和对象追踪。
 
 如果项目后续需要兼容旧值，可在 URL 组装器中兼容：
 
@@ -247,7 +248,7 @@
   - `avatarPath` 在 Domain/PO 双向映射中不丢失
 - `RustFSClient` 相关测试
   - 上传时不再追加时间戳前缀
-  - 传入 key 可原样成为对象 key
+  - 传入雪花 ID key 可原样成为对象 key
 
 ### 后端集成测试
 
@@ -266,7 +267,7 @@
 
 - `company` 表存在 `avatar_path` 字段，且 schema/migration 均已更新
 - 企业用户可上传头像到 `resumes` bucket 下的 `avatar/` 目录
-- 新上传对象 key 使用长随机字母数字串，不再使用时间戳加原文件名
+- 新上传对象 key 使用 Hutool 雪花 ID，不再使用时间戳加原文件名
 - `GET /company/info` 返回 `avatarUrl`
 - `GET /public/companies` 与 `GET /public/companies/{id}` 返回 `avatarUrl`
 - 返回给前端的是完整可访问 URL，前端无需通过 Java 二进制代理读取头像
