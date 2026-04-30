@@ -1,25 +1,84 @@
 'use client';
 
-import { mockJobs } from "@/app/enterprise/_mock/lib/mockData";
 import Link from "next/link";
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/app/enterprise/_mock/lib/utils";
+import { companyApi } from "@/lib/api/company";
+import type { EnterpriseJobListItem } from "@/lib/types/enterprise";
 
 const TABS = ["全部", "已发布", "草稿", "已关闭"];
+
+function getStatusText(status: string): string {
+  if (status === "PUBLISHED") return "招聘中";
+  if (status === "CLOSED") return "已关闭";
+  if (status === "DRAFT") return "草稿";
+  return status || "草稿";
+}
+
+function formatSalary(job: EnterpriseJobListItem): string {
+  if (job.salaryMin == null && job.salaryMax == null) {
+    return "薪资面议";
+  }
+  const unit = job.salaryUnit ? ` ${job.salaryUnit}` : "";
+  if (job.salaryMin != null && job.salaryMax != null) {
+    return `${job.salaryMin}-${job.salaryMax}${unit}`;
+  }
+  if (job.salaryMin != null) {
+    return `${job.salaryMin}+${unit}`;
+  }
+  return `${job.salaryMax}${unit}`;
+}
 
 export default function Jobs() {
   const [activeTab, setActiveTab] = useState("全部");
   const [search, setSearch] = useState("");
+  const [jobs, setJobs] = useState<EnterpriseJobListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadJobs = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const result = await companyApi.getJobList();
+        if (!cancelled) {
+          setJobs(result ?? []);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setJobs([]);
+          setError(err instanceof Error ? err.message : "职位加载失败");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadJobs();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const filteredJobs = useMemo(() => {
-    return mockJobs.filter((job) => {
-      const matchesSearch = job.title.includes(search) || job.department.includes(search);
+    const keyword = search.trim().toLowerCase();
+    return jobs.filter((job) => {
+      const title = (job.title ?? "").toLowerCase();
+      const department = (job.department ?? "").toLowerCase();
+      const matchesSearch =
+        keyword.length === 0 || title.includes(keyword) || department.includes(keyword);
+
       if (activeTab === "全部") return matchesSearch;
-      if (activeTab === "已发布") return matchesSearch && job.status === "招聘中";
-      if (activeTab === "已关闭") return matchesSearch && job.status === "已关闭";
-      return matchesSearch && job.status === "草稿";
+      if (activeTab === "已发布") return matchesSearch && job.status === "PUBLISHED";
+      if (activeTab === "已关闭") return matchesSearch && job.status === "CLOSED";
+      return matchesSearch && job.status === "DRAFT";
     });
-  }, [search, activeTab]);
+  }, [search, activeTab, jobs]);
 
   return (
     <div className="flex flex-col h-full bg-background antialiased">
@@ -101,12 +160,18 @@ export default function Jobs() {
 
         {/* Job Cards Grid */}
         <div className="py-container-margin grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 md:mt-4">
+          {loading && (
+            <div className="text-on-surface-variant font-body-md">职位加载中...</div>
+          )}
+          {error && !loading && (
+            <div className="text-error font-body-md">{error}</div>
+          )}
           {filteredJobs.map((job) => (
             <article
               key={job.id}
               className={cn(
                 "bg-surface-container-lowest border border-surface-variant rounded-xl p-inline-padding-md shadow-[0_2px_8px_rgba(0,0,0,0.04)] flex flex-col gap-4 transition-all hover:shadow-md",
-                job.status === '已关闭' ? "opacity-80" : ""
+                job.status === "CLOSED" ? "opacity-80" : ""
               )}
             >
               <div className="flex justify-between items-start">
@@ -115,20 +180,22 @@ export default function Jobs() {
                       <h2 className="font-headline-sm text-headline-sm text-on-surface cursor-pointer hover:text-primary transition-colors">
                         <Link href={`/enterprise/jobs/${job.id}`}>{job.title}</Link>
                       </h2>
-                      {job.status === '已关闭' ? (
+                      {job.status === "CLOSED" ? (
                           <span className="bg-surface-variant text-on-surface-variant px-1.5 py-0.5 rounded text-[10px] font-medium tracking-wide">已关闭</span>
+                      ) : job.status === "DRAFT" ? (
+                          <span className="bg-secondary-container text-secondary px-1.5 py-0.5 rounded text-[10px] font-medium tracking-wide">草稿</span>
                       ) : (
                           <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded text-[10px] font-medium tracking-wide">招聘中</span>
                       )}
                   </div>
                   <div className="flex items-center gap-2 font-body-md text-body-md text-on-surface-variant">
-                    <span>{job.department}</span>
+                    <span>{job.department || "未分配部门"}</span>
                     <span className="w-1 h-1 rounded-full bg-outline-variant"></span>
-                    <span>{job.location}</span>
+                    <span>{job.city || "地点待定"}</span>
                   </div>
                 </div>
-                <span className={cn("font-headline-sm text-headline-sm", job.status === '已关闭' ? "text-on-surface-variant" : "text-primary")}>
-                  {job.salary}
+                <span className={cn("font-headline-sm text-headline-sm", job.status === "CLOSED" ? "text-on-surface-variant" : "text-primary")}>
+                  {formatSalary(job)}
                 </span>
               </div>
 
@@ -136,20 +203,20 @@ export default function Jobs() {
               <div className="flex gap-3">
                 <div className="flex-1 bg-surface-container-low rounded-lg p-2.5 flex flex-col items-center justify-center border border-white/50 dark:border-white/5">
                   <span className="font-label-md text-label-md text-on-surface-variant mb-1">曝光量</span>
-                  <span className={cn("font-headline-sm text-headline-sm", job.status === '已关闭' ? "text-on-surface-variant" : "text-on-surface")}>
-                    {job.views.toLocaleString()}
+                  <span className={cn("font-headline-sm text-headline-sm", job.status === "CLOSED" ? "text-on-surface-variant" : "text-on-surface")}>
+                    {(job.viewCount ?? 0).toLocaleString()}
                   </span>
                 </div>
                 <div className="flex-1 bg-surface-container-low rounded-lg p-2.5 flex flex-col items-center justify-center border border-white/50 dark:border-white/5">
                   <span className="font-label-md text-label-md text-on-surface-variant mb-1">投递数</span>
-                  <span className={cn("font-headline-sm text-headline-sm", job.status === '已关闭' ? "text-on-surface-variant" : "text-on-surface")}>
-                    {job.candidates}
+                  <span className={cn("font-headline-sm text-headline-sm", job.status === "CLOSED" ? "text-on-surface-variant" : "text-on-surface")}>
+                    {job.applyCount ?? 0}
                   </span>
                 </div>
-                <div className={cn("flex-1 rounded-lg p-2.5 flex flex-col items-center justify-center border border-white/50 dark:border-white/5", job.status === '已关闭' ? "bg-surface-container-low" : "bg-primary/5")}>
-                  <span className={cn("font-label-md text-label-md mb-1", job.status === '已关闭' ? "text-on-surface-variant" : "text-primary")}>高匹配数</span>
+                <div className={cn("flex-1 rounded-lg p-2.5 flex flex-col items-center justify-center border border-white/50 dark:border-white/5", job.status === "CLOSED" ? "bg-surface-container-low" : "bg-primary/5")}>
+                  <span className={cn("font-label-md text-label-md mb-1", job.status === "CLOSED" ? "text-on-surface-variant" : "text-primary")}>高匹配数</span>
                   <span className={cn("font-headline-sm text-headline-sm text-primary")}>
-                    {job.highMatch || 12}
+                    {job.matchCount ?? 0}
                   </span>
                 </div>
               </div>
@@ -161,20 +228,20 @@ export default function Jobs() {
                 <Link href={`/enterprise/jobs/${job.id}`} className="flex-[0.8] h-10 rounded-lg border border-outline-variant font-label-md text-label-md text-on-surface flex items-center justify-center gap-1.5 hover:bg-surface-container-low transition-colors active:scale-95">
                   详情
                 </Link>
-                {job.status !== '已关闭' ? (
+                {job.status === "PUBLISHED" ? (
                   <Link href={`/enterprise/recommendations?jobId=${job.id}`} className="flex-1 h-10 rounded-lg bg-primary font-label-md text-label-md text-on-primary flex items-center justify-center gap-1.5 hover:bg-opacity-90 transition-all shadow-sm hover:shadow active:scale-95">
                     匹配候选人
                   </Link>
                 ) : (
                   <button disabled className="flex-1 h-10 rounded-lg bg-surface-container-high text-on-surface-variant font-label-md text-label-md flex items-center justify-center cursor-not-allowed">
-                    已关闭职位
+                    {getStatusText(job.status)}
                   </button>
                 )}
               </div>
             </article>
           ))}
         </div>
-        {filteredJobs.length === 0 && (
+        {!loading && !error && filteredJobs.length === 0 && (
            <div className="py-20 text-center flex flex-col items-center justify-center text-on-surface-variant">
              <span className="material-symbols-outlined text-[48px] mb-4 opacity-50">search_off</span>
              <p className="text-body-lg">没有找到匹配的职位</p>

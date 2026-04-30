@@ -51,7 +51,7 @@ public class JobPO {
     /** 岗位技能数组 */
     @TableField(value = "skills", typeHandler = StringListArrayTypeHandler.class)
     private List<String> skills;
-    /** 职位状态：0=下架 1=上架 */
+    /** 职位状态：0=草稿/下架 1=上架（发布中） */
     @TableField("status")
     private Integer status;
     /** 职位描述 */

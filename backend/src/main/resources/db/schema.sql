@@ -258,7 +258,7 @@ COMMENT ON COLUMN job.salary_unit IS '薪资单位：月/年';
 COMMENT ON COLUMN job.experience IS '经验要求（如：1-3年、3-5年、不限）';
 COMMENT ON COLUMN job.education IS '学历要求：初中及以下/高中/中专/大专/本科/硕士/博士';
 COMMENT ON COLUMN job.job_type IS '工作类型：1-全职 2-兼职';
-COMMENT ON COLUMN job.status IS '职位状态：0-下架 1-上架';
+COMMENT ON COLUMN job.status IS '职位状态：0-草稿/下架 1-上架（发布中）';
 COMMENT ON COLUMN job.create_time IS '发布时间';
 COMMENT ON COLUMN job.update_time IS '更新时间';
 COMMENT ON COLUMN job.deleted IS '软删除标记：0-未删除 1-已删除';

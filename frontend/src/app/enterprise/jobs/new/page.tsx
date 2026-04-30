@@ -1,9 +1,42 @@
 'use client';
 
+import { companyApi } from "@/lib/api/company";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function JobCreate() {
   const router = useRouter();
+  const [title, setTitle] = useState("");
+  const [city, setCity] = useState("");
+  const [salaryMin, setSalaryMin] = useState("");
+  const [salaryMax, setSalaryMax] = useState("");
+  const [description, setDescription] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  const submit = async () => {
+    if (submitting) return;
+    setSubmitting(true);
+    setError("");
+    try {
+      const jobId = await companyApi.createJob({
+        title: title.trim(),
+        location: { city: city.trim() },
+        salaryRange: {
+          min: Number(salaryMin || "0"),
+          max: Number(salaryMax || "0"),
+          unit: "k/月",
+        },
+        description: description.trim(),
+      });
+      await companyApi.publishJob(jobId);
+      router.push('/enterprise/jobs');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "创建职位失败");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <div className="flex flex-col h-full bg-surface-container-highest relative pb-[80px]">
@@ -19,12 +52,14 @@ export default function JobCreate() {
           {/* 职位名称 */}
           <div className="flex flex-col gap-stack-gap-xs">
             <label className="font-label-md text-label-md text-on-surface-variant">职位名称</label>
-            <input 
-              className="w-full bg-surface-container-lowest border border-outline-variant rounded-DEFAULT px-inline-padding-sm py-3 font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-outline" 
-              placeholder="例如：高级前端工程师" 
-              type="text"
-            />
-          </div>
+              <input 
+                className="w-full bg-surface-container-lowest border border-outline-variant rounded-DEFAULT px-inline-padding-sm py-3 font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-outline" 
+                placeholder="例如：高级前端工程师" 
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
 
           {/* 所在城市 */}
           <div className="flex flex-col gap-stack-gap-xs">
@@ -34,6 +69,8 @@ export default function JobCreate() {
                 className="w-full bg-surface-container-lowest border border-outline-variant rounded-DEFAULT pl-inline-padding-sm pr-10 py-3 font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-outline appearance-none" 
                 placeholder="选择或输入城市" 
                 type="text"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
               />
               <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">location_on</span>
             </div>
@@ -49,6 +86,8 @@ export default function JobCreate() {
                   className="w-full bg-surface-container-lowest border border-outline-variant rounded-DEFAULT pl-8 pr-3 py-3 font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-outline" 
                   placeholder="0" 
                   type="number"
+                  value={salaryMin}
+                  onChange={(e) => setSalaryMin(e.target.value)}
                 />
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 font-body-md text-body-md text-on-surface-variant">¥</span>
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 font-body-md text-body-md text-outline text-[12px]">k</span>
@@ -62,6 +101,8 @@ export default function JobCreate() {
                   className="w-full bg-surface-container-lowest border border-outline-variant rounded-DEFAULT pl-8 pr-3 py-3 font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-outline" 
                   placeholder="0" 
                   type="number"
+                  value={salaryMax}
+                  onChange={(e) => setSalaryMax(e.target.value)}
                 />
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 font-body-md text-body-md text-on-surface-variant">¥</span>
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 font-body-md text-body-md text-outline text-[12px]">k</span>
@@ -76,17 +117,23 @@ export default function JobCreate() {
               className="w-full bg-surface-container-lowest border border-outline-variant rounded-DEFAULT px-inline-padding-sm py-3 font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-outline resize-none" 
               placeholder="详细描述岗位职责、任职要求及加分项..." 
               rows={6}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
             ></textarea>
           </div>
+          {error ? (
+            <div className="text-error text-sm">{error}</div>
+          ) : null}
         </form>
       </main>
 
       {/* Bottom Fixed Action Area */}
       <div className="fixed bottom-0 left-0 right-0 bg-surface/95 backdrop-blur-sm border-t border-surface-variant px-container-margin py-4 pb-safe shadow-[0_-4px_16px_rgba(0,0,0,0.02)] max-w-[375px] md:max-w-3xl mx-auto z-20">
         <button 
-          onClick={() => router.push('/enterprise/jobs')}
+          onClick={submit}
+          disabled={submitting}
           className="w-full h-[48px] bg-primary text-on-primary font-label-md text-[16px] font-medium rounded-DEFAULT flex items-center justify-center shadow-sm hover:opacity-90 active:scale-[0.98] active:shadow-md transition-all">
-          创建并发布
+          {submitting ? "发布中..." : "创建并发布"}
         </button>
       </div>
     </div>
