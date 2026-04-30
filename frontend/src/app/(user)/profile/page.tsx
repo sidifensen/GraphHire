@@ -149,20 +149,6 @@ export default function Profile() {
             </nav>
           </section>
 
-          <section className="rounded-2xl border border-surface-mid bg-surface-lowest p-6">
-            <h3 className="font-black text-sm uppercase text-outline mb-4 tracking-widest">求职意向</h3>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <div className="text-[10px] font-black text-on-surface-variant uppercase tracking-wide mb-1">期望城市</div>
-                <div className="text-sm font-bold text-on-surface">北京、上海、杭州</div>
-              </div>
-              <div>
-                <div className="text-[10px] font-black text-on-surface-variant uppercase tracking-wide mb-1">期望薪资</div>
-                <div className="text-sm font-bold text-on-surface">25k - 45k</div>
-              </div>
-            </div>
-          </section>
-
           <section className="rounded-2xl border border-surface-mid bg-surface-lowest p-5">
             <h3 className="mb-4 text-sm font-black uppercase tracking-widest text-outline">界面偏好</h3>
             <div className="flex items-center gap-4">

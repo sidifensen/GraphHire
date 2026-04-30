@@ -24,5 +24,6 @@ describe('User Profile links', () => {
     expect(mobileMenu).toBeInTheDocument();
     expect(within(desktopMenu).getByRole('link', { name: '简历管理' })).toHaveAttribute('href', '/resume/manage');
     expect(within(desktopMenu).getByRole('link', { name: '我的图谱' })).toHaveAttribute('href', '/skill-graph');
+    expect(screen.queryByText('求职意向')).not.toBeInTheDocument();
   });
 });
