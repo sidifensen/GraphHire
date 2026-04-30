@@ -182,7 +182,7 @@ export default function PersonalInfo() {
         <TopNav title="个人资料" />
       </div>
 
-      <main className="max-w-7xl mx-auto w-full px-5 pb-32 pt-6 md:px-8 md:pt-12">
+      <main className="max-w-7xl mx-auto w-full px-5 pb-16 pt-6 md:px-8 md:pt-12">
         <div className="flex gap-6 lg:gap-8">
           <UserWorkbenchSidebar />
           <div className="flex-1 flex flex-col gap-6 md:gap-8">
@@ -330,21 +330,21 @@ export default function PersonalInfo() {
                 </div>
               </div>
             </section>
+
+            <section className="rounded-2xl border border-surface-mid bg-surface-lowest p-5 md:p-6">
+              <div className="flex items-center justify-center">
+                <button
+                  onClick={handleSave}
+                  disabled={saving || loading}
+                  className="h-14 w-full rounded-2xl bg-primary font-bold text-white shadow-lg shadow-primary/20 transition-all active:scale-[0.98] disabled:opacity-60 md:max-w-[400px]"
+                >
+                  {saving ? '保存中...' : '保存修改'}
+                </button>
+              </div>
+            </section>
           </div>
         </div>
       </main>
-
-      <div className="fixed bottom-0 left-0 w-full min-h-[80px] bg-surface-lowest/90 backdrop-blur-md border-t border-surface-mid pb-safe z-40 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] md:rounded-t-[32px]">
-        <div className="max-w-7xl mx-auto w-full px-5 md:px-8 py-4 md:py-6 flex items-center justify-center">
-          <button
-            onClick={handleSave}
-            disabled={saving || loading}
-            className="w-full md:max-w-[400px] h-14 bg-primary text-white font-bold rounded-2xl shadow-lg shadow-primary/20 active:scale-[0.98] transition-all disabled:opacity-60"
-          >
-            {saving ? '保存中...' : '保存修改'}
-          </button>
-        </div>
-      </div>
     </div>
   );
 }

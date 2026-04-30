@@ -217,7 +217,7 @@ export default function ResumeManageContent() {
         <TopNav title="简历管理" />
       </div>
 
-      <main className="flex-1 px-5 pt-6 pb-32 md:pt-12 md:pb-24 md:px-8 max-w-7xl mx-auto w-full">
+      <main className="flex-1 px-5 pt-6 pb-16 md:pt-12 md:pb-16 md:px-8 max-w-7xl mx-auto w-full">
         <div className="flex gap-6 lg:gap-8">
           <UserWorkbenchSidebar />
           <section className="flex-1">
@@ -320,6 +320,27 @@ export default function ResumeManageContent() {
                 );
               })}
             </div>
+
+            <section className="mt-6 rounded-2xl border border-surface-mid bg-surface-lowest p-5 md:p-6">
+              <div className="flex items-center justify-center">
+                <input
+                  ref={uploadInputRef}
+                  data-testid="resume-upload-input"
+                  type="file"
+                  accept=".pdf,.doc,.docx,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+                  className="hidden"
+                  onChange={handleUpload}
+                />
+                <button
+                  onClick={() => uploadInputRef.current?.click()}
+                  disabled={uploading}
+                  className="flex w-full items-center justify-center gap-3 rounded-2xl bg-primary py-4 font-bold text-white shadow-lg shadow-primary/20 transition-all active:scale-95 hover:bg-primary/90 disabled:opacity-60 md:h-16 md:max-w-[400px] md:rounded-3xl md:text-lg"
+                >
+                  <CloudUpload size={20} className="md:size-6" />
+                  {uploading ? `上传中 ${uploadPercent}%` : '上传新简历文件'}
+                </button>
+              </div>
+            </section>
           </section>
         </div>
       </main>
@@ -359,26 +380,6 @@ export default function ResumeManageContent() {
         </div>
       ) : null}
 
-      <div className="fixed bottom-0 left-0 w-full min-h-[80px] bg-surface-lowest/90 backdrop-blur-md border-t border-surface-mid z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] pb-safe md:rounded-t-[32px]">
-        <div className="max-w-7xl mx-auto w-full p-5 md:p-8 md:px-12 flex flex-col md:flex-row items-center justify-center gap-3">
-          <input
-            ref={uploadInputRef}
-            data-testid="resume-upload-input"
-            type="file"
-            accept=".pdf,.doc,.docx,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
-            className="hidden"
-            onChange={handleUpload}
-          />
-          <button
-            onClick={() => uploadInputRef.current?.click()}
-            disabled={uploading}
-            className="w-full md:max-w-[400px] bg-primary text-white font-bold py-4 md:h-16 md:text-lg rounded-2xl md:rounded-3xl flex items-center justify-center gap-3 shadow-lg shadow-primary/20 active:scale-95 transition-all hover:bg-primary/90 disabled:opacity-60"
-          >
-            <CloudUpload size={20} className="md:size-6" />
-            {uploading ? `上传中 ${uploadPercent}%` : '上传新简历文件'}
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
