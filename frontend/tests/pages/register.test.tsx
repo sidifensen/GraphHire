@@ -45,15 +45,15 @@ describe('RegisterPage', () => {
 
   it('renders role switcher', () => {
     render(<RegisterPage />);
-    expect(screen.getByText('求职者')).toBeDefined();
-    expect(screen.getByText('招聘者')).toBeDefined();
+    expect(screen.getByText('我是求职者')).toBeDefined();
+    expect(screen.getByText('我是招聘者')).toBeDefined();
   });
 
   it('renders form fields', () => {
     render(<RegisterPage />);
     expect(screen.getByText('邮箱')).toBeDefined();
     expect(screen.getByText('验证码')).toBeDefined();
-    expect(screen.getByText('密码')).toBeDefined();
+    expect(screen.getByText('设置密码')).toBeDefined();
     expect(screen.getByText('确认密码')).toBeDefined();
   });
 
@@ -64,12 +64,12 @@ describe('RegisterPage', () => {
 
   it('renders submit button', () => {
     render(<RegisterPage />);
-    expect(screen.getByText('立即注册')).toBeDefined();
+    expect(screen.getByText('创建账号')).toBeDefined();
   });
 
   it('renders login link', () => {
     render(<RegisterPage />);
-    expect(screen.getByText('立即登录')).toBeDefined();
+    expect(screen.getByText('去登录')).toBeDefined();
   });
 
   it('shows backend recruiter register error message', async () => {
@@ -79,15 +79,15 @@ describe('RegisterPage', () => {
     });
 
     render(<RegisterPage />);
-    await user.click(screen.getByRole('button', { name: '招聘者' }));
-    await user.type(screen.getByPlaceholderText('请输入邮箱地址'), 'corp@example.com');
-    await user.type(screen.getByPlaceholderText('6 位验证码'), '123456');
-    await user.type(screen.getByPlaceholderText('设置 8-20 位密码，包含字母和数字'), 'Test12345');
-    await user.type(screen.getByPlaceholderText('请再次输入密码'), 'Test12345');
-    await user.type(screen.getByPlaceholderText('请输入营业执照上的公司全称'), '测试科技有限公司');
-    await user.type(screen.getByPlaceholderText('请输入 18 位信用代码'), '91330100MA27X1X2X3');
+    await user.click(screen.getByRole('tab', { name: '我是招聘者' }));
+    await user.type(screen.getByPlaceholderText('请输入邮箱'), 'corp@example.com');
+    await user.type(screen.getByPlaceholderText('6位验证码'), '123456');
+    await user.type(screen.getByPlaceholderText('至少8位字符'), 'Test12345');
+    await user.type(screen.getByPlaceholderText('再次输入密码'), 'Test12345');
+    await user.type(screen.getByPlaceholderText('请输入企业全称'), '测试科技有限公司');
+    await user.type(screen.getByPlaceholderText('18位验证码或数字'), '91330100MA27X1X2X3');
     await user.click(screen.getByRole('checkbox'));
-    await user.click(screen.getByRole('button', { name: '立即注册' }));
+    await user.click(screen.getByRole('button', { name: '创建账号' }));
 
     await waitFor(() => {
       expect(screen.getByText('验证码错误或已过期')).toBeInTheDocument();
@@ -103,7 +103,7 @@ describe('RegisterPage', () => {
     });
 
     render(<RegisterPage />);
-    await user.type(screen.getByPlaceholderText('请输入邮箱地址'), 'corp@example.com');
+    await user.type(screen.getByPlaceholderText('请输入邮箱'), 'corp@example.com');
     await user.click(screen.getByRole('button', { name: '获取验证码' }));
 
     await waitFor(() => {

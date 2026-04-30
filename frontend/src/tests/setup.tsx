@@ -33,8 +33,21 @@ vi.mock('@/lib/api/auth', () => ({
       accessToken: 'mock-access-token',
       refreshToken: 'mock-refresh-token',
       userId: 1,
-      userType: 'person',
+      userType: 'PERSON',
     }),
+    personRegister: vi.fn().mockResolvedValue({
+      accessToken: 'mock-access-token',
+      refreshToken: 'mock-refresh-token',
+      userId: 1,
+      userType: 'PERSON',
+    }),
+    companyRegister: vi.fn().mockResolvedValue({
+      accessToken: 'mock-enterprise-token',
+      refreshToken: 'mock-enterprise-refresh-token',
+      userId: 2,
+      userType: 'COMPANY',
+    }),
+    sendVerifyCode: vi.fn().mockResolvedValue(undefined),
     getContext: vi.fn().mockResolvedValue({
       userId: 1,
       userType: 'PERSON',

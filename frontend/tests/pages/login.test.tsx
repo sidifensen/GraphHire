@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import LoginPage from '@/app/login/page';
 
@@ -53,14 +53,14 @@ describe('LoginPage', () => {
     });
 
     render(<LoginPage />);
-    const emailInput = screen.getByPlaceholderText('请输入用户名/邮箱');
+    const emailInput = screen.getByPlaceholderText('请输入邮箱');
     const passwordInput = screen.getByPlaceholderText('请输入密码');
 
     await user.clear(emailInput);
     await user.type(emailInput, 'user@example.com');
     await user.clear(passwordInput);
     await user.type(passwordInput, 'Password123');
-    await user.click(screen.getByRole('button', { name: '登录' }));
+    await user.click(screen.getByRole('button', { name: '立即登录' }));
 
     await waitFor(() => {
       expect(mockLogin).toHaveBeenCalledWith({
@@ -88,8 +88,7 @@ describe('LoginPage', () => {
       expect(screen.getByDisplayValue('hr@techchina.com')).toBeInTheDocument();
     });
 
-    const activePanel = screen.getAllByTestId('login-role-panel').at(-1)!;
-    await user.click(within(activePanel).getByRole('button', { name: '登录' }));
+    await user.click(screen.getByRole('button', { name: '立即登录' }));
 
     await waitFor(() => {
       expect(mockLogin).toHaveBeenCalledWith({
@@ -116,8 +115,7 @@ describe('LoginPage', () => {
     await waitFor(() => {
       expect(screen.getByDisplayValue('hr@techchina.com')).toBeInTheDocument();
     });
-    const activePanel = screen.getAllByTestId('login-role-panel').at(-1)!;
-    await user.click(within(activePanel).getByRole('button', { name: '登录' }));
+    await user.click(screen.getByRole('button', { name: '立即登录' }));
 
     await waitFor(() => {
       expect(screen.getByText(/当前账号不是/)).toBeInTheDocument();

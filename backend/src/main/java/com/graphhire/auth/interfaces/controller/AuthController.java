@@ -35,7 +35,7 @@ public class AuthController {
 
     /**
      * 用户登录
-     * @param request 登录请求（username、password）
+     * @param request 登录请求（email、password）
      * @return 登录响应（token、userType）
      */
     @PostMapping("/login")
@@ -65,7 +65,7 @@ public class AuthController {
 
     /**
      * 管理员登录
-     * @param request 登录请求（username、password）
+     * @param request 登录请求（email、password）
      * @return 登录响应（token、userType）
      */
     @PostMapping("/admin/login")
