@@ -68,9 +68,17 @@ describe('User Applications page', () => {
 
     await waitFor(() => expect(getApplicationsMock).toHaveBeenCalledTimes(1));
 
+    expect(screen.getByRole('navigation', { name: '我的页面菜单' })).toBeInTheDocument();
     expect(screen.getByText('高级前端工程师')).toBeInTheDocument();
     expect(screen.getByText('字节跳动')).toBeInTheDocument();
     expect(screen.getByText('数据分析师')).toBeInTheDocument();
+  });
+
+  it('renders desktop row structure markers', async () => {
+    render(<ApplicationsPage />);
+    await waitFor(() => expect(getApplicationsMock).toHaveBeenCalledTimes(1));
+
+    expect(screen.getAllByTestId('application-row').length).toBeGreaterThan(0);
   });
 
   it('filters applications by status tabs', async () => {

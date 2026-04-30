@@ -5,6 +5,7 @@ import { TopNav } from '@/app/(user)/_mock/components/TopNav';
 import { CheckCircle, Clock, Trash2, Eye, CloudUpload, XCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { resumeApi, type Resume } from '@/lib/api/resume';
+import UserWorkbenchSidebar from '@/app/(user)/_components/UserWorkbenchSidebar';
 
 function formatDate(value?: string) {
   if (!value) {
@@ -63,9 +64,30 @@ export default function ResumeManageContent() {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [actionState, setActionState] = useState<ActionState>({});
+  const [previewModal, setPreviewModal] = useState<{
+    fileName: string;
+    url: string;
+  } | null>(null);
   const [uploadPercent, setUploadPercent] = useState<number>(0);
   const [uploading, setUploading] = useState(false);
   const uploadInputRef = useRef<HTMLInputElement | null>(null);
+
+  const closePreviewModal = React.useCallback(() => {
+    setPreviewModal((prev) => {
+      if (prev?.url) {
+        window.URL.revokeObjectURL(prev.url);
+      }
+      return null;
+    });
+  }, []);
+
+  React.useEffect(() => {
+    return () => {
+      if (previewModal?.url) {
+        window.URL.revokeObjectURL(previewModal.url);
+      }
+    };
+  }, [previewModal]);
 
   const loadResumes = React.useCallback(async () => {
     setLoading(true);
@@ -138,15 +160,20 @@ export default function ResumeManageContent() {
     setActionState((prev) => ({ ...prev, deletingId: undefined }));
   };
 
-  const handlePreview = async (resumeId: number) => {
-    setActionState((prev) => ({ ...prev, previewingId: resumeId }));
+  const handlePreview = async (resume: Resume) => {
+    setActionState((prev) => ({ ...prev, previewingId: resume.id }));
     try {
-      const previewData = await resumeApi.preview(resumeId);
+      const previewData = await resumeApi.preview(resume.id);
       const url = window.URL.createObjectURL(previewData.blob);
-      window.open(url, '_blank', 'noopener,noreferrer');
-      setTimeout(() => {
-        window.URL.revokeObjectURL(url);
-      }, 10000);
+      setPreviewModal((prev) => {
+        if (prev?.url) {
+          window.URL.revokeObjectURL(prev.url);
+        }
+        return {
+          fileName: resume.fileName,
+          url,
+        };
+      });
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : '预览失败';
       setError(errorMessage || '预览失败');
@@ -188,110 +215,147 @@ export default function ResumeManageContent() {
     <div className="flex flex-col min-h-screen">
       <TopNav title="简历管理" />
 
-      <main className="flex-1 px-5 pt-6 pb-32 md:pt-12 md:pb-24 max-w-7xl mx-auto w-full">
-        {error ? (
-          <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">{error}</div>
-        ) : null}
-        {message ? (
-          <div className="mb-4 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-semibold text-green-700">{message}</div>
-        ) : null}
+      <main className="flex-1 px-5 pt-6 pb-32 md:pt-12 md:pb-24 md:px-8 max-w-7xl mx-auto w-full">
+        <div className="flex gap-6 lg:gap-8">
+          <UserWorkbenchSidebar />
+          <section className="flex-1">
+            {error ? (
+              <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">{error}</div>
+            ) : null}
+            {message ? (
+              <div className="mb-4 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-semibold text-green-700">{message}</div>
+            ) : null}
 
-        {loading ? (
-          <div className="text-sm text-on-surface-variant">简历加载中...</div>
-        ) : null}
+            {loading ? (
+              <div className="text-sm text-on-surface-variant">简历加载中...</div>
+            ) : null}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
-          {sortedResumes.map((resume) => {
-            const meta = statusMeta(resume.status);
-            const parsing = actionState.parsingId === resume.id;
-            const settingDefault = actionState.settingDefaultId === resume.id;
-            const deleting = actionState.deletingId === resume.id;
-            const previewing = actionState.previewingId === resume.id;
+            <div className="divide-y divide-surface-mid overflow-hidden rounded-2xl border border-surface-mid bg-surface-lowest">
+              {sortedResumes.map((resume) => {
+                const meta = statusMeta(resume.status);
+                const parsing = actionState.parsingId === resume.id;
+                const settingDefault = actionState.settingDefaultId === resume.id;
+                const deleting = actionState.deletingId === resume.id;
+                const previewing = actionState.previewingId === resume.id;
 
-            return (
-              <div
-                key={resume.id}
-                className={`bg-surface-lowest rounded-2xl md:rounded-3xl shadow-sm border border-surface-mid p-5 md:p-8 flex flex-col gap-4 md:gap-6 relative overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1 ${
-                  resume.isDefault ? 'border-l-4 border-l-primary' : 'border-l-4 border-l-outline-variant'
-                }`}
-              >
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="font-bold text-on-surface truncate text-base md:text-lg">{resume.fileName}</h2>
-                    {resume.isDefault ? (
-                      <span className="bg-primary text-white text-[10px] md:text-xs font-bold px-2.5 py-0.5 rounded-full">默认</span>
-                    ) : null}
-                  </div>
-                  <p className="text-xs md:text-sm text-on-surface-variant">{formatDate(resume.createdAt)}</p>
-                </div>
-
-                <div className="flex items-center">
-                  <span className={`text-xs md:text-sm font-bold px-4 py-1.5 rounded-full inline-flex items-center gap-1.5 ${meta.className}`}>
-                    {meta.isParsing || parsing ? (
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 2, repeat: Infinity, ease: 'linear' as const }}
-                      >
-                        <Clock size={16} />
-                      </motion.div>
-                    ) : meta.isFailed ? (
-                      <XCircle size={16} />
-                    ) : (
-                      <CheckCircle size={16} />
-                    )}
-                    {parsing ? '触发解析中...' : meta.text}
-                  </span>
-                </div>
-
-                <hr className="border-surface-mid" />
-
-                <div className="flex flex-wrap justify-between items-center gap-3">
-                  {!resume.isDefault && resume.status === 'COMPLETED' ? (
-                    <button
-                      aria-label={`设为默认-${resume.id}`}
-                      onClick={() => void handleSetDefault(resume.id)}
-                      disabled={settingDefault}
-                      className="text-xs md:text-sm font-bold text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1 disabled:opacity-60"
-                    >
-                      <CheckCircle size={14} className="md:hidden" />
-                      {settingDefault ? '设置中...' : '设为默认'}
-                    </button>
-                  ) : null}
-
-                  <button
-                    aria-label={`重新解析-${resume.id}`}
-                    onClick={() => void handleParse(resume.id)}
-                    disabled={resume.status === 'PROCESSING' || parsing}
-                    className="text-xs md:text-sm font-bold text-outline hover:text-primary transition-colors flex items-center gap-1 disabled:opacity-60"
+                return (
+                  <div
+                    key={resume.id}
+                    data-testid="resume-row"
+                    className={`flex flex-col gap-4 px-4 py-4 md:px-6 lg:grid lg:grid-cols-[2.1fr_1.1fr_1fr] lg:items-center lg:gap-6 ${
+                      resume.isDefault ? 'bg-primary/5' : ''
+                    }`}
                   >
-                    <Clock size={14} />
-                    {parsing ? '解析中...' : '重新解析'}
-                  </button>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h2 className="truncate text-base font-bold text-on-surface md:text-lg">{resume.fileName}</h2>
+                        {resume.isDefault ? (
+                          <span className="rounded-full bg-primary px-2.5 py-0.5 text-[10px] font-bold text-white md:text-xs">默认</span>
+                        ) : null}
+                      </div>
+                      <p className="mt-1 text-xs text-on-surface-variant md:text-sm">{formatDate(resume.createdAt)}</p>
+                    </div>
 
-                  <div className="flex gap-4 ml-auto">
-                    <button
-                      onClick={() => void handleDelete(resume.id)}
-                      disabled={deleting}
-                      className="text-xs md:text-sm font-bold text-on-surface-variant hover:text-error transition-colors flex items-center gap-1 group disabled:opacity-60"
-                    >
-                      <Trash2 size={16} className="group-hover:scale-110 transition-transform" />
-                      <span>{deleting ? '删除中...' : '删除'}</span>
-                    </button>
-                    <button
-                      onClick={() => void handlePreview(resume.id)}
-                      disabled={previewing}
-                      className="text-xs md:text-sm font-bold text-primary flex items-center gap-2 group disabled:opacity-60"
-                    >
-                      <Eye size={16} className="group-hover:scale-110 transition-transform" />
-                      <span>{previewing ? '打开中...' : '预览解析'}</span>
-                    </button>
+                    <div className="flex items-center">
+                      <span className={`inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-bold md:text-sm ${meta.className}`}>
+                        {meta.isParsing || parsing ? (
+                          <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 2, repeat: Infinity, ease: 'linear' as const }}
+                          >
+                            <Clock size={16} />
+                          </motion.div>
+                        ) : meta.isFailed ? (
+                          <XCircle size={16} />
+                        ) : (
+                          <CheckCircle size={16} />
+                        )}
+                        {parsing ? '触发解析中...' : meta.text}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-4 lg:justify-end">
+                      {!resume.isDefault && resume.status === 'COMPLETED' ? (
+                        <button
+                          aria-label={`设为默认-${resume.id}`}
+                          onClick={() => void handleSetDefault(resume.id)}
+                          disabled={settingDefault}
+                          className="flex items-center gap-1 text-xs font-bold text-on-surface-variant transition-colors hover:text-primary disabled:opacity-60 md:text-sm"
+                        >
+                          <CheckCircle size={14} className="md:hidden" />
+                          {settingDefault ? '设置中...' : '设为默认'}
+                        </button>
+                      ) : null}
+
+                      <button
+                        aria-label={`重新解析-${resume.id}`}
+                        onClick={() => void handleParse(resume.id)}
+                        disabled={resume.status === 'PROCESSING' || parsing}
+                        className="flex items-center gap-1 text-xs font-bold text-outline transition-colors hover:text-primary disabled:opacity-60 md:text-sm"
+                      >
+                        <Clock size={14} />
+                        {parsing ? '解析中...' : '重新解析'}
+                      </button>
+
+                      <button
+                        onClick={() => void handleDelete(resume.id)}
+                        disabled={deleting}
+                        className="group flex items-center gap-1 text-xs font-bold text-on-surface-variant transition-colors hover:text-error disabled:opacity-60 md:text-sm"
+                      >
+                        <Trash2 size={16} className="transition-transform group-hover:scale-110" />
+                        <span>{deleting ? '删除中...' : '删除'}</span>
+                      </button>
+                      <button
+                        onClick={() => void handlePreview(resume)}
+                        disabled={previewing}
+                        className="group flex items-center gap-2 text-xs font-bold text-primary disabled:opacity-60 md:text-sm"
+                      >
+                        <Eye size={16} className="transition-transform group-hover:scale-110" />
+                        <span>{previewing ? '打开中...' : '预览解析'}</span>
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </div>
-            );
-          })}
+                );
+              })}
+            </div>
+          </section>
         </div>
       </main>
+
+      {previewModal ? (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center px-4">
+          <button
+            type="button"
+            aria-label="关闭简历预览"
+            className="absolute inset-0 bg-black/45"
+            onClick={closePreviewModal}
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="简历预览弹窗"
+            className="relative w-full max-w-5xl rounded-2xl bg-surface-lowest border border-surface-mid shadow-2xl overflow-hidden"
+          >
+            <div className="flex items-center justify-between px-4 py-3 border-b border-surface-mid">
+              <p className="text-sm md:text-base font-bold text-on-surface truncate pr-3">{previewModal.fileName}</p>
+              <button
+                type="button"
+                className="text-on-surface-variant hover:text-on-surface transition-colors"
+                onClick={closePreviewModal}
+              >
+                关闭
+              </button>
+            </div>
+            <div className="h-[70vh] bg-surface">
+              <iframe
+                title="简历预览内容"
+                src={previewModal.url}
+                className="w-full h-full"
+              />
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <div className="fixed bottom-0 left-0 w-full min-h-[80px] bg-surface-lowest/90 backdrop-blur-md border-t border-surface-mid z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] pb-safe md:rounded-t-[32px]">
         <div className="max-w-7xl mx-auto w-full p-5 md:p-8 md:px-12 flex flex-col md:flex-row items-center justify-center gap-3">

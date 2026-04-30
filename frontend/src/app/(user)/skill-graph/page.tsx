@@ -4,15 +4,18 @@ import React from 'react';
 import { TopNav } from '@/app/(user)/_mock/components/TopNav';
 import { RefreshCw, User, Code, Layout, Database, Group, Zap, TrendingUp, Award } from 'lucide-react';
 import { motion } from 'framer-motion';
+import UserWorkbenchSidebar from '@/app/(user)/_components/UserWorkbenchSidebar';
 
 export default function KnowledgeGraph() {
   return (
     <div className="flex flex-col min-h-screen">
       <TopNav title="我的图谱" />
 
-      <main className="flex-1 p-5 md:py-12 md:px-8 flex flex-col md:grid md:grid-cols-12 gap-6 md:gap-8 pb-28 md:pb-32 max-w-7xl mx-auto w-full">
-        {/* Graph Canvas */}
-        <section className="md:col-span-8 bg-surface-lowest rounded-3xl md:rounded-[40px] shadow-sm border border-surface-mid h-[400px] md:h-[600px] relative flex items-center justify-center overflow-hidden">
+      <main className="mx-auto flex w-full max-w-7xl flex-1 gap-6 p-5 pb-28 md:px-8 md:py-12 md:pb-32 lg:gap-8">
+        <UserWorkbenchSidebar />
+        <div className="flex-1 grid gap-6 md:grid-cols-12 md:gap-8">
+          {/* Graph Canvas */}
+          <section className="md:col-span-8 bg-surface-lowest rounded-2xl border border-surface-mid h-[400px] md:h-[600px] relative flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/10 via-surface-lowest to-surface-lowest"></div>
           
           <div className="absolute top-6 left-8 z-20">
@@ -57,9 +60,9 @@ export default function KnowledgeGraph() {
           </div>
         </section>
 
-        {/* Stats Bento (Right Column on Desktop) */}
-        <section className="md:col-span-4 flex flex-col gap-6">
-          <div className="bg-surface-lowest rounded-[32px] p-6 md:p-8 shadow-sm border border-surface-mid flex flex-col gap-4">
+          {/* Stats Panel (Right Column on Desktop) */}
+          <section className="md:col-span-4 flex flex-col gap-6">
+            <div className="bg-surface-lowest rounded-2xl p-6 md:p-7 border border-surface-mid flex flex-col gap-4">
             <div className="flex items-center gap-3 text-primary">
               <Award size={24} />
               <span className="text-sm font-black text-on-surface uppercase tracking-widest">能力概览</span>
@@ -86,7 +89,7 @@ export default function KnowledgeGraph() {
             </div>
           </div>
 
-          <div className="bg-surface-lowest rounded-[32px] p-6 md:p-8 shadow-sm border border-surface-mid flex flex-col gap-4">
+            <div className="bg-surface-lowest rounded-2xl p-6 md:p-7 border border-surface-mid flex flex-col gap-4">
             <div className="flex items-center gap-3 text-tertiary">
                <div className="w-6 h-6 rounded-lg bg-tertiary/10 flex items-center justify-center">
                   <RefreshCw size={14} className="text-tertiary" />
@@ -111,7 +114,8 @@ export default function KnowledgeGraph() {
               </div>
             </div>
           </div>
-        </section>
+          </section>
+        </div>
       </main>
 
       <div className="fixed bottom-0 left-0 w-full min-h-[80px] bg-surface-lowest/90 backdrop-blur-md border-t border-surface-mid pb-safe z-40 md:rounded-t-[32px]">

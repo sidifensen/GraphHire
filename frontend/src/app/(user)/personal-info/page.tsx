@@ -5,6 +5,7 @@ import { TopNav } from '@/app/(user)/_mock/components/TopNav';
 import { Camera, MapPin, ChevronDown } from 'lucide-react';
 import { personApi, type PersonProfile } from '@/lib/api/person';
 import { userAuthStore } from '@/lib/stores/auth-store';
+import UserWorkbenchSidebar from '@/app/(user)/_components/UserWorkbenchSidebar';
 
 type FormState = {
   realName: string;
@@ -179,22 +180,24 @@ export default function PersonalInfo() {
     <div className="flex flex-col min-h-screen bg-surface-background">
       <TopNav title="个人资料" />
 
-      <main className="pt-6 px-5 pb-32 flex flex-col gap-6 md:gap-8 max-w-7xl mx-auto md:pt-12">
-        {error ? (
-          <div className="rounded-2xl border border-red-200 bg-red-50 text-red-600 px-4 py-3 text-sm font-semibold">{error}</div>
-        ) : null}
-        {message ? (
-          <div className="rounded-2xl border border-green-200 bg-green-50 text-green-700 px-4 py-3 text-sm font-semibold">{message}</div>
-        ) : null}
+      <main className="max-w-7xl mx-auto w-full px-5 pb-32 pt-6 md:px-8 md:pt-12">
+        <div className="flex gap-6 lg:gap-8">
+          <UserWorkbenchSidebar />
+          <div className="flex-1 flex flex-col gap-6 md:gap-8">
+            {error ? (
+              <div className="rounded-2xl border border-red-200 bg-red-50 text-red-600 px-4 py-3 text-sm font-semibold">{error}</div>
+            ) : null}
+            {message ? (
+              <div className="rounded-2xl border border-green-200 bg-green-50 text-green-700 px-4 py-3 text-sm font-semibold">{message}</div>
+            ) : null}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-start">
-          <section className="bg-surface-lowest rounded-[24px] md:rounded-[32px] shadow-sm p-6 md:p-10 flex flex-col gap-6 md:gap-8 border border-transparent md:border-surface-mid">
-            <h2 className="text-lg md:text-2xl font-black text-on-surface border-b border-surface-low pb-4 flex items-center gap-2">
-              <div className="w-1.5 h-6 bg-primary rounded-full"></div>
-              基本信息
-            </h2>
+            <section className="bg-surface-lowest rounded-2xl border border-surface-mid p-6 md:p-8 flex flex-col gap-6">
+              <h2 className="text-lg md:text-2xl font-black text-on-surface border-b border-surface-low pb-4 flex items-center gap-2">
+                <div className="w-1.5 h-6 bg-primary rounded-full"></div>
+                基本信息
+              </h2>
 
-            <div className="flex items-center gap-5 md:gap-8">
+              <div className="flex items-center gap-5 md:gap-8">
               <div className="w-20 h-20 md:w-28 md:h-28 rounded-full bg-surface-low flex items-center justify-center overflow-hidden border-4 border-surface-background shadow-sm relative group">
                 {formData.avatarUrl ? (
                   <img
@@ -229,102 +232,103 @@ export default function PersonalInfo() {
                 </button>
                 <p className="text-[10px] text-outline font-bold text-center">支持 JPG, PNG 格式</p>
               </div>
-            </div>
+              </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-              <div className="md:col-span-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                <div className="md:col-span-2">
+                  <Input
+                    label="姓名"
+                    value={formData.realName}
+                    onChange={(value) => setField('realName', value)}
+                    disabled={loading}
+                  />
+                </div>
+                <Select
+                  label="性别"
+                  options={[
+                    { label: '未设置', value: '' },
+                    { label: '男', value: '1' },
+                    { label: '女', value: '2' },
+                  ]}
+                  value={formData.gender}
+                  onChange={(value) => setField('gender', value)}
+                  disabled={loading}
+                />
                 <Input
-                  label="姓名"
-                  value={formData.realName}
-                  onChange={(value) => setField('realName', value)}
+                  label="年龄"
+                  value={formData.age}
+                  type="number"
+                  onChange={(value) => setField('age', value)}
+                  disabled={loading}
+                />
+                <Input
+                  label="电话"
+                  value={formData.phone}
+                  type="tel"
+                  onChange={(value) => setField('phone', value)}
+                  disabled={loading}
+                />
+                <Input
+                  label="邮箱"
+                  value={formData.email}
+                  type="email"
+                  onChange={(value) => setField('email', value)}
+                  disabled={loading}
+                />
+                <Input
+                  label="所在城市"
+                  value={formData.city}
+                  icon={MapPin}
+                  onChange={(value) => setField('city', value)}
                   disabled={loading}
                 />
               </div>
-              <Select
-                label="性别"
-                options={[
-                  { label: '未设置', value: '' },
-                  { label: '男', value: '1' },
-                  { label: '女', value: '2' },
-                ]}
-                value={formData.gender}
-                onChange={(value) => setField('gender', value)}
-                disabled={loading}
-              />
-              <Input
-                label="年龄"
-                value={formData.age}
-                type="number"
-                onChange={(value) => setField('age', value)}
-                disabled={loading}
-              />
-              <Input
-                label="电话"
-                value={formData.phone}
-                type="tel"
-                onChange={(value) => setField('phone', value)}
-                disabled={loading}
-              />
-              <Input
-                label="邮箱"
-                value={formData.email}
-                type="email"
-                onChange={(value) => setField('email', value)}
-                disabled={loading}
-              />
-              <Input
-                label="所在城市"
-                value={formData.city}
-                icon={MapPin}
-                onChange={(value) => setField('city', value)}
-                disabled={loading}
-              />
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-              <Input
-                label="最高学历"
-                value={formData.education}
-                onChange={(value) => setField('education', value)}
-                disabled={loading}
-              />
-              <Input
-                label="毕业学校"
-                value={formData.school}
-                onChange={(value) => setField('school', value)}
-                disabled={loading}
-              />
-            </div>
-          </section>
-
-          <section className="bg-surface-lowest rounded-[24px] md:rounded-[32px] shadow-sm p-6 md:p-10 flex flex-col gap-6 md:gap-8 border border-transparent md:border-surface-mid">
-            <h2 className="text-lg md:text-2xl font-black text-on-surface border-b border-surface-low pb-4 flex items-center gap-2">
-              <div className="w-1.5 h-6 bg-primary rounded-full"></div>
-              求职意向
-            </h2>
-            <div className="grid grid-cols-1 gap-4 md:gap-6">
-              <Input
-                label="目标城市"
-                value={formData.targetCity}
-                onChange={(value) => setField('targetCity', value)}
-                disabled={loading}
-              />
-              <Input
-                label="期望薪资"
-                value={formData.expectedSalary}
-                type="number"
-                onChange={(value) => setField('expectedSalary', value)}
-                disabled={loading}
-              />
-
-              <div className="mt-8 p-6 rounded-3xl bg-primary/5 border border-primary/10">
-                <h4 className="font-black text-sm text-primary mb-2 uppercase tracking-wider">智能推荐优化</h4>
-                <p className="text-xs text-on-surface-variant leading-relaxed font-medium">
-                  完善资料可提升职位匹配准确度，建议保持个人信息与默认简历一致。
-                </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 border-t border-surface-mid pt-6">
+                <Input
+                  label="最高学历"
+                  value={formData.education}
+                  onChange={(value) => setField('education', value)}
+                  disabled={loading}
+                />
+                <Input
+                  label="毕业学校"
+                  value={formData.school}
+                  onChange={(value) => setField('school', value)}
+                  disabled={loading}
+                />
               </div>
-            </div>
-          </section>
+            </section>
+
+            <section className="bg-surface-lowest rounded-2xl border border-surface-mid p-6 md:p-8 flex flex-col gap-6">
+              <h2 className="text-lg md:text-2xl font-black text-on-surface border-b border-surface-low pb-4 flex items-center gap-2">
+                <div className="w-1.5 h-6 bg-primary rounded-full"></div>
+                求职意向
+              </h2>
+              <div className="grid grid-cols-1 gap-4 md:gap-6">
+                <Input
+                  label="目标城市"
+                  value={formData.targetCity}
+                  onChange={(value) => setField('targetCity', value)}
+                  disabled={loading}
+                />
+                <Input
+                  label="期望薪资"
+                  value={formData.expectedSalary}
+                  type="number"
+                  onChange={(value) => setField('expectedSalary', value)}
+                  disabled={loading}
+                />
+
+                <div className="mt-2 rounded-2xl border border-primary/10 bg-primary/5 p-5">
+                  <h4 className="mb-2 text-sm font-black uppercase tracking-wider text-primary">智能推荐优化</h4>
+                  <p className="text-xs font-medium leading-relaxed text-on-surface-variant">
+                    完善资料可提升职位匹配准确度，建议保持个人信息与默认简历一致。
+                  </p>
+                </div>
+              </div>
+            </section>
+          </div>
         </div>
       </main>
 

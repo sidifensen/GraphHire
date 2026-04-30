@@ -4,6 +4,7 @@ import React, { useMemo, useState } from 'react';
 import { TopNav } from '@/app/(user)/_mock/components/TopNav';
 import { Clock, ChevronRight, Undo2 } from 'lucide-react';
 import { personApi, type Application } from '@/lib/api/person';
+import UserWorkbenchSidebar from '@/app/(user)/_components/UserWorkbenchSidebar';
 
 const tabs = ['全部', '待处理', '已查看', '面试邀请', '不合适'] as const;
 
@@ -118,68 +119,74 @@ export default function ApplicationRecords() {
         </div>
       </nav>
 
-      <main className="p-5 md:py-12 md:px-8 max-w-7xl mx-auto w-full pb-12">
-        {error ? (
-          <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">{error}</div>
-        ) : null}
-        {message ? (
-          <div className="mb-4 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-semibold text-green-700">{message}</div>
-        ) : null}
-        {loading ? <div className="text-sm text-on-surface-variant">投递记录加载中...</div> : null}
+      <main className="max-w-7xl mx-auto w-full p-5 pb-12 md:px-8 md:py-12">
+        <div className="flex gap-6 lg:gap-8">
+          <UserWorkbenchSidebar />
+          <section className="flex-1">
+            {error ? (
+              <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">{error}</div>
+            ) : null}
+            {message ? (
+              <div className="mb-4 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-semibold text-green-700">{message}</div>
+            ) : null}
+            {loading ? <div className="text-sm text-on-surface-variant">投递记录加载中...</div> : null}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
-          {filteredList.map((app) => {
-            const badge = statusBadge(app.status);
-            const pending = app.status === 'PENDING';
-            const isWithdrawing = withdrawingId === app.id;
+            <div className="divide-y divide-surface-mid overflow-hidden rounded-2xl border border-surface-mid bg-surface-lowest">
+              {filteredList.map((app) => {
+                const badge = statusBadge(app.status);
+                const pending = app.status === 'PENDING';
+                const isWithdrawing = withdrawingId === app.id;
 
-            return (
-              <article
-                key={app.id}
-                className="bg-surface-lowest rounded-2xl md:rounded-3xl p-5 md:p-8 shadow-sm border-l-4 cursor-pointer hover:bg-surface-low transition-all group hover:shadow-lg hover:-translate-y-1 border-surface-mid"
-              >
-                <div className="flex justify-between items-start mb-2 md:mb-4">
-                  <h2 className="text-lg md:text-xl font-bold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">
-                    {app.jobTitle ?? `职位#${app.jobId}`}
-                  </h2>
-                  <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold whitespace-nowrap ml-2 ${badge.className}`}>
-                    {badge.text}
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center mb-6 md:mb-8 text-sm md:text-base">
-                  <span className="text-on-surface-variant opacity-80">{app.companyName ?? '企业未知'}</span>
-                  <span className="text-primary font-bold">匹配度 {app.matchScore ?? '-'}%</span>
-                </div>
-
-                <div className="flex justify-between items-center pt-4 border-t border-surface-low gap-3">
-                  <span className="text-[10px] md:text-xs text-outline flex items-center gap-2">
-                    <Clock size={14} className="text-primary/60" />
-                    投递时间: {formatAppliedAt(app.appliedAt)}
-                  </span>
-
-                  {pending ? (
-                    <button
-                      aria-label={`撤回-${app.id}`}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        void handleWithdraw(app.id);
-                      }}
-                      disabled={isWithdrawing}
-                      className="inline-flex items-center gap-1 text-xs font-bold text-on-surface-variant hover:text-error disabled:opacity-60"
-                    >
-                      <Undo2 size={14} />
-                      {isWithdrawing ? '撤回中...' : '撤回'}
-                    </button>
-                  ) : (
-                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center bg-surface-low group-hover:bg-primary group-hover:text-white transition-all">
-                      <ChevronRight size={18} />
+                return (
+                  <article
+                    key={app.id}
+                    data-testid="application-row"
+                    className="group flex flex-col gap-3 px-4 py-4 transition-colors hover:bg-surface-low md:px-6 lg:grid lg:grid-cols-[2fr_1fr_1fr_1fr] lg:items-center lg:gap-4"
+                  >
+                    <div className="min-w-0">
+                      <h2 className="line-clamp-1 text-lg font-bold text-on-surface transition-colors group-hover:text-primary">
+                        {app.jobTitle ?? `职位#${app.jobId}`}
+                      </h2>
+                      <p className="mt-1 text-sm text-on-surface-variant opacity-80">{app.companyName ?? '企业未知'}</p>
                     </div>
-                  )}
-                </div>
-              </article>
-            );
-          })}
+
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-bold text-primary">匹配度 {app.matchScore ?? '-'}%</span>
+                      <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold whitespace-nowrap ${badge.className}`}>
+                        {badge.text}
+                      </span>
+                    </div>
+
+                    <span className="flex items-center gap-2 text-[10px] text-outline md:text-xs">
+                      <Clock size={14} className="text-primary/60" />
+                      投递时间: {formatAppliedAt(app.appliedAt)}
+                    </span>
+
+                    <div className="flex justify-start lg:justify-end">
+                      {pending ? (
+                        <button
+                          aria-label={`撤回-${app.id}`}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            void handleWithdraw(app.id);
+                          }}
+                          disabled={isWithdrawing}
+                          className="inline-flex items-center gap-1 text-xs font-bold text-on-surface-variant hover:text-error disabled:opacity-60"
+                        >
+                          <Undo2 size={14} />
+                          {isWithdrawing ? '撤回中...' : '撤回'}
+                        </button>
+                      ) : (
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-low transition-all group-hover:bg-primary group-hover:text-white md:h-10 md:w-10">
+                          <ChevronRight size={18} />
+                        </div>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
         </div>
       </main>
     </div>

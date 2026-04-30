@@ -87,9 +87,17 @@ describe('User Resume Manage page', () => {
 
     await waitFor(() => expect(getMyResumesMock).toHaveBeenCalledTimes(1));
 
+    expect(screen.getByRole('navigation', { name: '我的页面菜单' })).toBeInTheDocument();
     expect(screen.getByText('默认简历.pdf')).toBeInTheDocument();
     expect(screen.getByText('待设默认简历.pdf')).toBeInTheDocument();
     expect(screen.getByText('解析中简历.pdf')).toBeInTheDocument();
+  });
+
+  it('renders desktop resume row markers', async () => {
+    render(<ResumeManagePage />);
+
+    await waitFor(() => expect(getMyResumesMock).toHaveBeenCalledTimes(1));
+    expect(screen.getAllByTestId('resume-row').length).toBeGreaterThan(0);
   });
 
   it('calls setDefault when clicking set-default', async () => {
@@ -132,5 +140,21 @@ describe('User Resume Manage page', () => {
     expect(formDataArg).toBeInstanceOf(FormData);
     expect(onProgressArg).toEqual(expect.any(Function));
     expect((formDataArg as FormData).get('file')).toBe(file);
+  });
+
+  it('opens inline preview modal instead of new window', async () => {
+    const user = userEvent.setup();
+    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+    render(<ResumeManagePage />);
+
+    await waitFor(() => expect(getMyResumesMock).toHaveBeenCalledTimes(1));
+
+    const previewButtons = screen.getAllByRole('button', { name: '预览解析' });
+    await user.click(previewButtons[0]);
+
+    await waitFor(() => expect(previewMock).toHaveBeenCalledWith(1));
+    expect(openSpy).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: '简历预览弹窗' })).toBeInTheDocument();
+    expect(screen.getByTitle('简历预览内容')).toBeInTheDocument();
   });
 });

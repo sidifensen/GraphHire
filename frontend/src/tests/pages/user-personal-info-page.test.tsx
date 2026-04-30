@@ -50,6 +50,7 @@ describe('User PersonalInfo page', () => {
 
     await waitFor(() => expect(getProfileMock).toHaveBeenCalledTimes(1));
 
+    expect(screen.getByRole('navigation', { name: '我的页面菜单' })).toBeInTheDocument();
     expect(screen.getByLabelText('姓名')).toHaveValue('张伟');
     expect(screen.getByLabelText('电话')).toHaveValue('13800138000');
     expect(screen.getByLabelText('邮箱')).toHaveValue('zhangwei@example.com');

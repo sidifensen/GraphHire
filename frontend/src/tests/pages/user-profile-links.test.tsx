@@ -17,6 +17,7 @@ describe('User Profile links', () => {
       </ThemeProvider>,
     );
 
+    expect(screen.getByRole('navigation', { name: '我的页面菜单' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '简历管理' })).toHaveAttribute('href', '/resume/manage');
     expect(screen.getByRole('link', { name: '我的图谱' })).toHaveAttribute('href', '/skill-graph');
   });
