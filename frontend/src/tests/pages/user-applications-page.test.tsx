@@ -1,4 +1,4 @@
-﻿import { render, screen, waitFor } from '@testing-library/react';
+﻿import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import ApplicationsPage from '@/app/(user)/applications/page';
@@ -87,11 +87,13 @@ describe('User Applications page', () => {
 
     await waitFor(() => expect(getApplicationsMock).toHaveBeenCalledTimes(1));
 
-    await user.click(screen.getByRole('button', { name: '面试邀请' }));
+    const desktopTabs = screen.getByTestId('applications-tabs-desktop');
+    const desktopButtons = within(desktopTabs).getAllByRole('button');
+    await user.click(desktopButtons.find((btn) => btn.textContent === '面试邀请')!);
     expect(screen.getByText('算法工程师')).toBeInTheDocument();
     expect(screen.queryByText('高级前端工程师')).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: '已查看' }));
+    await user.click(desktopButtons.find((btn) => btn.textContent === '已查看')!);
     expect(screen.getByText('数据分析师')).toBeInTheDocument();
     expect(screen.queryByText('算法工程师')).not.toBeInTheDocument();
   });
@@ -107,3 +109,4 @@ describe('User Applications page', () => {
     await waitFor(() => expect(withdrawApplicationMock).toHaveBeenCalledWith(101));
   });
 });
+

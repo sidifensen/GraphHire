@@ -105,8 +105,8 @@ export default function ApplicationRecords() {
         <TopNav title="投递记录" />
       </div>
 
-      <nav className="bg-surface-lowest/90 backdrop-blur-md sticky top-16 md:top-16 z-40 flex overflow-x-auto px-5 md:px-12 gap-8 pt-4 hide-scrollbar border-b border-surface-mid">
-        <div className="max-w-7xl mx-auto w-full flex gap-8">
+      <nav className="bg-surface-lowest/90 backdrop-blur-md sticky top-16 z-40 flex overflow-x-auto px-5 gap-8 pt-4 hide-scrollbar border-b border-surface-mid md:hidden">
+        <div data-testid="applications-tabs-mobile" className="max-w-7xl mx-auto w-full flex gap-8">
           {tabs.map((tab) => (
             <button
               key={tab}
@@ -125,6 +125,22 @@ export default function ApplicationRecords() {
         <div className="flex gap-6 lg:gap-8">
           <UserWorkbenchSidebar />
           <section className="flex-1">
+            <div className="mb-4 hidden overflow-x-auto border-b border-surface-mid md:block">
+              <div data-testid="applications-tabs-desktop" className="flex gap-8">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`pb-4 whitespace-nowrap border-b-2 px-1 text-base font-bold transition-all ${
+                      activeTab === tab ? 'border-primary text-primary' : 'border-transparent text-on-surface-variant hover:text-on-surface'
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {error ? (
               <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">{error}</div>
             ) : null}
