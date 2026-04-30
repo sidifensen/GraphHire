@@ -1,10 +1,11 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { NAV_ITEMS } from "../constants";
 import { cn } from "../lib/utils";
 import { motion } from "framer-motion";
 import { enterpriseAuthStore } from "@/lib/stores/auth-store";
 import { companyApi } from "@/lib/api/company";
+import { logoutWithServerInvalidation } from "@/lib/logout";
 
 interface TopNavProps {
   title: string;
@@ -17,9 +18,14 @@ interface TopNavProps {
 export function TopNav({ title, showBack, rightAction, userAvatar, onBack }: TopNavProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const desktopMenuRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const menuPanelRef = useRef<HTMLDivElement>(null);
   const [authState, setAuthState] = useState(() => enterpriseAuthStore.getState());
   const isAuthenticated = authState.isAuthenticated;
   const user = authState.user;
+  const [showAccountMenu, setShowAccountMenu] = useState(false);
+  const [menuAnchor, setMenuAnchor] = useState<'mobile' | 'desktop'>('desktop');
   const [isDark, setIsDark] = useState(() => {
     if (typeof document !== 'undefined') {
       return document.documentElement.classList.contains('dark') || 
@@ -52,6 +58,23 @@ export function TopNav({ title, showBack, rightAction, userAvatar, onBack }: Top
     });
     return unsubscribe;
   }, []);
+
+  useEffect(() => {
+    if (!showAccountMenu) {
+      return;
+    }
+    const handleOutsideClick = (event: MouseEvent) => {
+      const target = event.target as Node;
+      const inDesktopTrigger = !!desktopMenuRef.current?.contains(target);
+      const inMobileTrigger = !!mobileMenuRef.current?.contains(target);
+      const inMenuPanel = !!menuPanelRef.current?.contains(target);
+      if (!inDesktopTrigger && !inMobileTrigger && !inMenuPanel) {
+        setShowAccountMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, [showAccountMenu]);
 
   useEffect(() => {
     let active = true;
@@ -100,8 +123,13 @@ export function TopNav({ title, showBack, rightAction, userAvatar, onBack }: Top
     }
   };
 
+  const handleLogout = async () => {
+    setShowAccountMenu(false);
+    await logoutWithServerInvalidation((path) => navigate(path), '/login', 'enterprise');
+  };
+
   return (
-    <header className="bg-surface border-b border-surface-variant shadow-sm flex items-center justify-between h-16 w-full z-40 sticky top-0 md:px-8 px-4 flex-shrink-0 transition-colors">
+    <header className="relative bg-surface border-b border-surface-variant shadow-sm flex items-center justify-between h-16 w-full z-40 sticky top-0 md:px-8 px-4 flex-shrink-0 transition-colors">
       {/* Left Area (Mobile Backup or Empty Space on Desktop since logo is in the nav area) */}
       <div className="flex items-center gap-3 w-10 md:hidden">
         {showBack ? (
@@ -113,8 +141,27 @@ export function TopNav({ title, showBack, rightAction, userAvatar, onBack }: Top
           </button>
         ) : (
           userAvatar && (
-            <div className="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant shrink-0 flex items-center justify-center">
-               <span className="material-symbols-outlined text-on-surface-variant" style={{ fontVariationSettings: "'FILL' 1" }}>person</span>
+            <div className="relative" ref={mobileMenuRef}>
+              <button
+                type="button"
+                aria-label="企业账户菜单"
+                onClick={() => {
+                  setMenuAnchor('mobile');
+                  setShowAccountMenu((prev) => !prev);
+                }}
+                className="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant shrink-0 flex items-center justify-center"
+              >
+                {!avatarSrc || avatarError ? (
+                  <span className="material-symbols-outlined text-on-surface-variant" style={{ fontVariationSettings: "'FILL' 1" }}>person</span>
+                ) : (
+                  <img
+                    src={avatarSrc}
+                    alt="企业用户头像"
+                    className="w-full h-full object-cover"
+                    onError={() => setAvatarError(true)}
+                  />
+                )}
+              </button>
             </div>
           )
         )}
@@ -196,9 +243,17 @@ export function TopNav({ title, showBack, rightAction, userAvatar, onBack }: Top
             </Link>
         )}
 
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-2" ref={desktopMenuRef}>
           {isAuthenticated ? <span className="max-w-[180px] truncate text-sm text-on-surface">{displayName}</span> : null}
-          <div className="w-9 h-9 rounded-full bg-primary-container text-on-primary-container overflow-hidden shrink-0 items-center justify-center border border-primary/20 cursor-pointer hover:ring-2 hover:ring-primary/40 transition-all flex">
+          <button
+            type="button"
+            aria-label="企业账户菜单"
+            onClick={() => {
+              setMenuAnchor('desktop');
+              setShowAccountMenu((prev) => !prev);
+            }}
+            className="w-9 h-9 rounded-full bg-primary-container text-on-primary-container overflow-hidden shrink-0 items-center justify-center border border-primary/20 cursor-pointer hover:ring-2 hover:ring-primary/40 transition-all flex"
+          >
             {!avatarSrc || avatarError ? (
               <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>person</span>
             ) : (
@@ -209,11 +264,34 @@ export function TopNav({ title, showBack, rightAction, userAvatar, onBack }: Top
                 onError={() => setAvatarError(true)}
               />
             )}
-          </div>
+          </button>
         </div>
-        
-        {/* Mobile theme toggle as well since we moved avatar? Let's just keep theme toggle hidden on mobile or put it somewhere else. We'll leave it hidden on mobile to save space, or we can show it. Actually we don't need it on mobile right area. */}
       </div>
+      {showAccountMenu ? (
+        <div
+          ref={menuPanelRef}
+          className={cn(
+            'absolute top-full mt-2 w-48 rounded-xl border border-outline-variant/40 bg-surface-lowest shadow-lg overflow-hidden z-50',
+            menuAnchor === 'mobile' ? 'left-4' : 'right-4'
+          )}
+        >
+          <div className="px-4 py-3 border-b border-outline-variant/40">
+            <p className="text-sm font-medium text-on-surface truncate">{displayName}</p>
+            <p className="text-xs text-on-surface-variant mt-0.5">企业管理中心</p>
+          </div>
+          <button
+            type="button"
+            aria-label="退出登录"
+            onClick={() => {
+              void handleLogout();
+            }}
+            className="w-full px-4 py-3 text-left text-sm text-error hover:bg-error-container transition-colors flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined text-[18px]">logout</span>
+            退出登录
+          </button>
+        </div>
+      ) : null}
     </header>
   );
 }

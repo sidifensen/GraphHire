@@ -23,9 +23,9 @@ export default function Profile() {
 
   const menuItems = [
     { name: '个人资料', icon: User, path: '/personal-info' },
-    { name: '简历管理', icon: FileText, path: '/resume' },
+    { name: '简历管理', icon: FileText, path: '/resume/manage' },
     { name: '投递记录', icon: Send, path: '/applications' },
-    { name: '我的图谱', icon: Network, path: '/graph' },
+    { name: '我的图谱', icon: Network, path: '/skill-graph' },
     { name: '账号设置', icon: Settings, path: '#', divider: true },
   ];
 

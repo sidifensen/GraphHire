@@ -143,8 +143,8 @@ export const personApi = {
     return response.data;
   },
 
-  getApplications: async (params?: { page?: number; size?: number; status?: string }): Promise<{ list: Application[]; total: number; page: number; size: number }> => {
-    const response = await apiClient.get('/person/application/list', { params });
+  getApplications: async (): Promise<Application[]> => {
+    const response = await apiClient.get<Application[]>('/person/application/list');
     return response.data;
   },
 

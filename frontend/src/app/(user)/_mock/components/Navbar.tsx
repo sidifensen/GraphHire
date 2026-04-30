@@ -1,10 +1,11 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Briefcase, Building2, User, Bell } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { userAuthStore } from '@/lib/stores/auth-store';
 import { personApi } from '@/lib/api/person';
 import { resolveHorizontalIndicatorMetrics } from '@/lib/ui/nav-indicator';
+import { logoutWithServerInvalidation } from '@/lib/logout';
 
 function normalizePath(pathname: string) {
   if (pathname.length > 1 && pathname.endsWith('/')) {
@@ -21,10 +22,12 @@ function isPathActive(currentPathname: string, navPath: string) {
 }
 
 export default function Navbar() {
+  const navigate = useNavigate();
   const location = useLocation();
   const normalizedPathname = normalizePath(location.pathname);
   const [authState, setAuthState] = React.useState(() => userAuthStore.getState());
   const [avatarError, setAvatarError] = React.useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = React.useState(false);
   const isAuthenticated = authState.isAuthenticated;
   const user = authState.user;
 
@@ -49,6 +52,10 @@ export default function Navbar() {
   React.useEffect(() => {
     setAvatarError(false);
   }, [avatarSrc]);
+
+  React.useEffect(() => {
+    setAccountMenuOpen(false);
+  }, [isAuthenticated, user?.id]);
 
   React.useEffect(() => {
     const unsubscribe = userAuthStore.subscribe((nextState) => {
@@ -145,21 +152,41 @@ export default function Navbar() {
             <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-surface-lowest"></span>
           </Link>
           {isAuthenticated ? (
-            <button className="flex items-center gap-2.5 px-3 py-1.5 bg-surface-low text-on-surface font-bold rounded-xl hover:bg-surface-mid transition-colors text-sm">
-              <span className="max-w-[180px] truncate">{displayName}</span>
-              <span className="w-7 h-7 rounded-full overflow-hidden bg-surface-mid border border-surface-mid flex items-center justify-center">
-                {!avatarSrc || avatarError ? (
-                  <span className="material-symbols-outlined text-[18px] text-on-surface-variant">person</span>
-                ) : (
-                  <img
-                    src={avatarSrc}
-                    alt="用户头像"
-                    className="w-full h-full object-cover"
-                    onError={() => setAvatarError(true)}
-                  />
-                )}
-              </span>
-            </button>
+            <div className="relative">
+              <button
+                aria-label="用户账户菜单"
+                onClick={() => setAccountMenuOpen((prev) => !prev)}
+                className="flex items-center gap-2.5 px-3 py-1.5 bg-surface-low text-on-surface font-bold rounded-xl hover:bg-surface-mid transition-colors text-sm"
+              >
+                <span className="max-w-[180px] truncate">{displayName}</span>
+                <span className="w-7 h-7 rounded-full overflow-hidden bg-surface-mid border border-surface-mid flex items-center justify-center">
+                  {!avatarSrc || avatarError ? (
+                    <span className="material-symbols-outlined text-[18px] text-on-surface-variant">person</span>
+                  ) : (
+                    <img
+                      src={avatarSrc}
+                      alt="用户头像"
+                      className="w-full h-full object-cover"
+                      onError={() => setAvatarError(true)}
+                    />
+                  )}
+                </span>
+              </button>
+              {accountMenuOpen ? (
+                <div className="absolute right-0 mt-2 min-w-32 rounded-xl border border-surface-mid bg-surface-lowest shadow-lg p-2 z-20">
+                  <button
+                    aria-label="退出登录"
+                    onClick={() => {
+                      setAccountMenuOpen(false);
+                      void logoutWithServerInvalidation(navigate, '/login', 'user');
+                    }}
+                    className="w-full text-left text-sm font-semibold text-red-500 hover:bg-surface-low rounded-lg px-3 py-2"
+                  >
+                    退出登录
+                  </button>
+                </div>
+              ) : null}
+            </div>
           ) : (
             <Link 
               to="/login"
