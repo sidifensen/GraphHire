@@ -83,7 +83,10 @@ export function TopNav({ title, showBack, rightAction, userAvatar, onBack }: Top
         </Link>
 
         {/* Desktop Header Nav */}
-        <nav className="hidden md:flex items-center gap-2">
+        <nav
+          data-testid="enterprise-desktop-nav-track"
+          className="hidden md:flex items-center gap-1 rounded-xl border border-outline-variant/40 bg-surface-container/70 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]"
+        >
           {NAV_ITEMS.map((item) => {
             const isActive = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
             return (
@@ -91,20 +94,24 @@ export function TopNav({ title, showBack, rightAction, userAvatar, onBack }: Top
                 key={item.path}
                 to={item.path}
                 className={cn(
-                  "relative px-4 py-2 rounded-lg font-label-md text-[15px] transition-colors flex items-center gap-2",
+                  "relative px-4 py-2 rounded-lg font-label-md text-[15px] transition-all duration-200 ease-out flex items-center gap-2",
                   isActive 
-                    ? "text-primary font-semibold" 
-                    : "text-on-surface-variant hover:bg-surface-variant/50 hover:text-on-surface"
+                    ? "text-primary font-semibold"
+                    : "text-on-surface-variant hover:bg-surface-variant/55 hover:text-on-surface hover:-translate-y-0.5 hover:scale-[1.02]"
                 )}
               >
                 {isActive && (
                   <motion.div
+                    data-testid="enterprise-desktop-nav-indicator"
                     layoutId="desktop-nav-indicator"
-                    className="absolute inset-0 bg-primary/10 rounded-lg -z-10"
-                    transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                    className="absolute inset-0 rounded-lg bg-primary/12 shadow-[0_6px_14px_rgba(59,130,246,0.18)] -z-10"
+                    transition={{ type: "spring", stiffness: 260, damping: 26, mass: 0.9 }}
                   />
                 )}
-                <span className="material-symbols-outlined text-[18px]" style={item.iconFill && isActive ? { fontVariationSettings: "'FILL' 1" } : {}}>
+                <span
+                  className={cn("material-symbols-outlined text-[18px] transition-transform duration-200", isActive ? "scale-105" : "")}
+                  style={item.iconFill && isActive ? { fontVariationSettings: "'FILL' 1" } : {}}
+                >
                   {item.icon}
                 </span>
                 {item.label}
