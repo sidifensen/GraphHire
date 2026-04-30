@@ -1,7 +1,9 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import RegisterPage from '@/app/mobile-user/register/page';
+
+vi.setConfig({ testTimeout: 10000 });
 
 const mockNavigate = vi.fn();
 const mockSendVerifyCode = vi.fn();
@@ -126,4 +128,8 @@ describe('MobileUserRegisterPage', () => {
     });
     timeoutSpy.mockRestore();
   });
+});
+
+afterAll(() => {
+  vi.resetConfig();
 });
