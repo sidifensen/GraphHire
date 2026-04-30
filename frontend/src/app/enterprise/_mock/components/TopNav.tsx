@@ -3,6 +3,8 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { NAV_ITEMS } from "../constants";
 import { cn } from "../lib/utils";
 import { motion } from "framer-motion";
+import { enterpriseAuthStore } from "@/lib/stores/auth-store";
+import { companyApi } from "@/lib/api/company";
 
 interface TopNavProps {
   title: string;
@@ -15,6 +17,9 @@ interface TopNavProps {
 export function TopNav({ title, showBack, rightAction, userAvatar, onBack }: TopNavProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const [authState, setAuthState] = useState(() => enterpriseAuthStore.getState());
+  const isAuthenticated = authState.isAuthenticated;
+  const user = authState.user;
   const [isDark, setIsDark] = useState(() => {
     if (typeof document !== 'undefined') {
       return document.documentElement.classList.contains('dark') || 
@@ -23,6 +28,9 @@ export function TopNav({ title, showBack, rightAction, userAvatar, onBack }: Top
     }
     return false;
   });
+  const [avatarError, setAvatarError] = useState(false);
+  const avatarSrc = user?.avatarUrl ?? null;
+  const displayName = user?.displayName || user?.username || "企业账号";
 
   useEffect(() => {
     if (isDark) {
@@ -33,6 +41,52 @@ export function TopNav({ title, showBack, rightAction, userAvatar, onBack }: Top
       localStorage.setItem('theme', 'light');
     }
   }, [isDark]);
+
+  useEffect(() => {
+    setAvatarError(false);
+  }, [avatarSrc]);
+
+  useEffect(() => {
+    const unsubscribe = enterpriseAuthStore.subscribe((nextState) => {
+      setAuthState(nextState);
+    });
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    if (!isAuthenticated || !user?.id) {
+      return () => {
+        active = false;
+      };
+    }
+    companyApi
+      .getInfo()
+      .then((company) => {
+        if (!active || !company) {
+          return;
+        }
+        const nextPatch: {
+          displayName?: string;
+          avatarUrl?: string | null;
+        } = {};
+        if (company.name && company.name.trim()) {
+          nextPatch.displayName = company.name.trim();
+        }
+        if (company.avatarUrl) {
+          nextPatch.avatarUrl = company.avatarUrl;
+        } else if (company.logo) {
+          nextPatch.avatarUrl = company.logo;
+        }
+        if (Object.keys(nextPatch).length > 0) {
+          enterpriseAuthStore.getState().updateUser(nextPatch);
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [isAuthenticated, user?.id]);
 
   const toggleDark = () => {
     setIsDark(!isDark);
@@ -135,9 +189,20 @@ export function TopNav({ title, showBack, rightAction, userAvatar, onBack }: Top
             </Link>
         )}
 
-        {/* Desktop Avatar (moved to right) */}
-        <div className="hidden md:flex w-9 h-9 rounded-full bg-primary-container text-on-primary-container overflow-hidden shrink-0 items-center justify-center border border-primary/20 cursor-pointer hover:ring-2 hover:ring-primary/40 transition-all">
-           <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>person</span>
+        <div className="hidden md:flex items-center gap-2">
+          {isAuthenticated ? <span className="max-w-[180px] truncate text-sm text-on-surface">{displayName}</span> : null}
+          <div className="w-9 h-9 rounded-full bg-primary-container text-on-primary-container overflow-hidden shrink-0 items-center justify-center border border-primary/20 cursor-pointer hover:ring-2 hover:ring-primary/40 transition-all flex">
+            {!avatarSrc || avatarError ? (
+              <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>person</span>
+            ) : (
+              <img
+                src={avatarSrc}
+                alt="企业用户头像"
+                className="w-full h-full object-cover"
+                onError={() => setAvatarError(true)}
+              />
+            )}
+          </div>
         </div>
         
         {/* Mobile theme toggle as well since we moved avatar? Let's just keep theme toggle hidden on mobile or put it somewhere else. We'll leave it hidden on mobile to save space, or we can show it. Actually we don't need it on mobile right area. */}

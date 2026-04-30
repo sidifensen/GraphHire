@@ -1,0 +1,73 @@
+import { render, screen } from '@testing-library/react';
+import { vi } from 'vitest';
+
+type EnterpriseState = {
+  isAuthenticated: boolean;
+  user: {
+    id: number;
+    username: string;
+    displayName?: string;
+    type: 'PERSON' | 'COMPANY' | 'ADMIN';
+    avatarUrl?: string | null;
+  } | null;
+  updateUser: (partial: Partial<NonNullable<EnterpriseState['user']>>) => void;
+};
+
+const { enterpriseAuthStore } = vi.hoisted(() => {
+  const state: EnterpriseState = {
+    isAuthenticated: false,
+    user: null,
+    updateUser: (partial) => {
+      if (state.user) {
+        state.user = { ...state.user, ...partial };
+      }
+    },
+  };
+  const listeners = new Set<(nextState: EnterpriseState) => void>();
+  return {
+    enterpriseAuthStore: {
+      getState: () => state,
+      setState: (partial: Partial<EnterpriseState>) => {
+        Object.assign(state, partial);
+        listeners.forEach((listener) => listener(state));
+      },
+      subscribe: (listener: (nextState: EnterpriseState) => void) => {
+        listeners.add(listener);
+        return () => listeners.delete(listener);
+      },
+    },
+  };
+});
+
+vi.mock('@/lib/stores/auth-store', () => ({
+  enterpriseAuthStore,
+}));
+
+vi.mock('@/lib/api/company', () => ({
+  companyApi: {
+    getInfo: vi.fn().mockResolvedValue(null),
+  },
+}));
+
+import { TopNav } from '@/app/enterprise/_mock/components/TopNav';
+
+describe('Enterprise TopNav auth display', () => {
+  test('登录后显示企业名称与头像', () => {
+    enterpriseAuthStore.setState({
+      isAuthenticated: true,
+      user: {
+        id: 201,
+        username: 'hr@graphhire.com',
+        displayName: '测试企业',
+        type: 'COMPANY',
+        avatarUrl: 'https://picsum.photos/90',
+      },
+    });
+    expect(enterpriseAuthStore.getState().isAuthenticated).toBe(true);
+
+    render(<TopNav title="GraphHire 图谱智聘" userAvatar />);
+
+    expect(screen.getByText('测试企业')).toBeInTheDocument();
+    expect(screen.getByAltText('企业用户头像')).toBeInTheDocument();
+  });
+});

@@ -15,6 +15,7 @@ export interface Company {
   id: number;
   name: string;
   logo?: string;
+  avatarUrl?: string;
   unifiedSocialCreditCode?: string;
   description?: string;
   website?: string;

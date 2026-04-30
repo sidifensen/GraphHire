@@ -1,13 +1,25 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Edit2, MessageSquare, Briefcase, Heart, ChevronRight, User, FileText, Send, Network, Settings, Moon, Sun } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useTheme } from '@/app/(user)/_mock/context/ThemeContext';
+import { userAuthStore } from '@/lib/stores/auth-store';
+import { personApi, type PersonProfile } from '@/lib/api/person';
+import { logoutWithServerInvalidation } from '@/lib/logout';
+import { useRouter } from 'next/navigation';
 
 export default function Profile() {
+  const router = useRouter();
   const { theme, toggleTheme } = useTheme();
+  const [authState, setAuthState] = useState(() => userAuthStore.getState());
+  const authUser = authState.user;
+  const [profile, setProfile] = useState<PersonProfile | null>(null);
+  const [avatarError, setAvatarError] = useState(false);
+  const displayName = profile?.realName?.trim() || authUser?.displayName || authUser?.username || '未登录用户';
+  const contactText = profile?.email?.trim() || authUser?.email || authUser?.username || '暂无联系方式';
+  const avatarSrc = profile?.avatarUrl || authUser?.avatarUrl || null;
 
   const menuItems = [
     { name: '个人资料', icon: User, path: '/personal-info' },
@@ -17,6 +29,60 @@ export default function Profile() {
     { name: '账号设置', icon: Settings, path: '#', divider: true },
   ];
 
+  useEffect(() => {
+    setAvatarError(false);
+  }, [avatarSrc]);
+
+  useEffect(() => {
+    const unsubscribe = userAuthStore.subscribe((nextState) => {
+      setAuthState(nextState);
+    });
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    if (!authUser?.id) {
+      return () => {
+        active = false;
+      };
+    }
+    personApi
+      .getProfile()
+      .then((nextProfile) => {
+        if (!active || !nextProfile) {
+          return;
+        }
+        setProfile(nextProfile);
+        const nextPatch: {
+          displayName?: string;
+          email?: string;
+          avatarUrl?: string | null;
+        } = {};
+        if (nextProfile.realName && nextProfile.realName.trim()) {
+          nextPatch.displayName = nextProfile.realName.trim();
+        }
+        if (nextProfile.email && nextProfile.email.trim()) {
+          nextPatch.email = nextProfile.email.trim();
+        }
+        if (nextProfile.avatarUrl) {
+          nextPatch.avatarUrl = nextProfile.avatarUrl;
+        }
+        if (Object.keys(nextPatch).length > 0) {
+          userAuthStore.getState().updateUser(nextPatch);
+        }
+      })
+      .catch(() => undefined);
+
+    return () => {
+      active = false;
+    };
+  }, [authUser?.id]);
+
+  const handleLogout = async () => {
+    await logoutWithServerInvalidation(router.push, '/login', 'user');
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-surface-background p-5 md:p-8">
       <div className="max-w-7xl mx-auto w-full md:pt-16 md:pb-32 grid md:grid-cols-12 gap-8 md:gap-12 items-start">
@@ -25,15 +91,22 @@ export default function Profile() {
           <section className="bg-surface-lowest rounded-3xl p-6 shadow-[0_4px_20px_rgba(0,82,255,0.05)] relative overflow-hidden pt-8">
             <div className="flex items-center gap-5 relative z-10 flex-col text-center">
               <div className="w-20 md:w-28 md:h-28 h-20 rounded-full overflow-hidden border-4 border-surface-background bg-surface-mid shadow-sm mx-auto">
-                <img 
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnus9w6DjRzKduWO6OdWsQ5CrAHYTuOA4N0nIS2qm3U0bcXewIH_VWXSKG79WP9TY_Zo71TQQxA3Mz-EkJN5_RUN2B1E2SUvEMDEERGWtO9CL8xXP6kxDiq9egkABG41l8DsPnw26HDF1NhmpLCR-sw88FwbGXMlepsG5ha2wo8sXbgEFm7oc-60MHHMRKpPtr5EnGNsgG0AwGqmD6TIdkyAfqFz4xeGH_Pd34fXSxdjmVK4SV4dHRqtl4JWmOk1l-AIROvjeQdl4" 
-                  className="w-full h-full object-cover" 
-                  alt="avatar" 
-                />
+                {!avatarSrc || avatarError ? (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <span className="material-symbols-outlined text-4xl text-on-surface-variant">person</span>
+                  </div>
+                ) : (
+                  <img 
+                    src={avatarSrc}
+                    className="w-full h-full object-cover" 
+                    alt="avatar"
+                    onError={() => setAvatarError(true)}
+                  />
+                )}
               </div>
               <div className="flex-1 w-full flex flex-col items-center">
-                <h2 className="text-2xl font-black text-on-surface mb-1">陈智图</h2>
-                <p className="text-body-md text-on-surface-variant mb-4">138****8888</p>
+                <h2 className="text-2xl font-black text-on-surface mb-1">{displayName}</h2>
+                <p className="text-body-md text-on-surface-variant mb-4">{contactText}</p>
                 <div className="flex flex-wrap gap-2 justify-center">
                   <span className="inline-flex items-center px-3 py-1 rounded-full bg-secondary-container/30 text-primary text-xs font-bold">
                     离职-随时到岗
@@ -116,7 +189,11 @@ export default function Profile() {
                 </Link>
               ))}
               <Link 
-                href="/login"
+                href="#"
+                onClick={(event) => {
+                  event.preventDefault();
+                  void handleLogout();
+                }}
                 className="flex items-center justify-between p-5 hover:bg-surface-low transition-colors text-red-500 md:col-span-2"
               >
                 <div className="flex items-center gap-4">

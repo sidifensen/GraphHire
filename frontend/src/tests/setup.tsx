@@ -59,24 +59,104 @@ vi.mock('@/lib/api/auth', () => ({
 // Mock auth store
 vi.mock('@/lib/stores/auth-store', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/lib/stores/auth-store')>();
-  const mockStore = {
-    getState: () => ({
-      setAuth: vi.fn(),
-      logout: vi.fn(),
-      accessToken: null,
-      isAuthenticated: false,
-      user: null,
-    }),
-    setState: vi.fn(),
-    subscribe: vi.fn(() => () => {}),
+  type MockAuthUser = {
+    id: number;
+    username: string;
+    email?: string;
+    type: 'PERSON' | 'COMPANY' | 'ADMIN';
+    avatarUrl?: string | null;
+    displayName?: string;
   };
+  type MockAuthState = {
+    accessToken: string | null;
+    refreshToken: string | null;
+    user: MockAuthUser | null;
+    isAuthenticated: boolean;
+    setAuth: (tokens: { accessToken: string; refreshToken?: string }, user: MockAuthUser) => void;
+    updateUser: (partial: Partial<MockAuthUser>) => void;
+    logout: () => void;
+  };
+
+  const createMockStore = () => {
+    let state: MockAuthState = {
+      accessToken: null,
+      refreshToken: null,
+      user: null,
+      isAuthenticated: false,
+      setAuth: vi.fn((tokens, user) => {
+        state = {
+          ...state,
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken ?? null,
+          user,
+          isAuthenticated: true,
+        };
+      }),
+      updateUser: vi.fn((partial) => {
+        state = {
+          ...state,
+          user: state.user ? { ...state.user, ...partial } : state.user,
+        };
+      }),
+      logout: vi.fn(() => {
+        state = {
+          ...state,
+          accessToken: null,
+          refreshToken: null,
+          user: null,
+          isAuthenticated: false,
+        };
+      }),
+    };
+
+    const listeners = new Set<(nextState: MockAuthState) => void>();
+    const boundStore = ((selector?: (nextState: MockAuthState) => unknown) =>
+      selector ? selector(state) : state) as unknown as {
+      getState: () => MockAuthState;
+      setState: (partial: Partial<MockAuthState>) => void;
+      subscribe: (listener: (nextState: MockAuthState) => void) => () => void;
+    } & ((selector?: (nextState: MockAuthState) => unknown) => unknown);
+
+    boundStore.getState = () => state;
+    boundStore.setState = (partial) => {
+      state = { ...state, ...partial };
+      listeners.forEach((listener) => listener(state));
+    };
+    boundStore.subscribe = (listener) => {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    };
+
+    return boundStore;
+  };
+
+  const globalKey = '__GRAPHHIRE_AUTH_STORE_MOCKS__' as const;
+  type MockStores = {
+    userStore: ReturnType<typeof createMockStore>;
+    enterpriseStore: ReturnType<typeof createMockStore>;
+    adminStore: ReturnType<typeof createMockStore>;
+  };
+  const globalObj = globalThis as unknown as Record<string, MockStores | undefined>;
+  if (!globalObj[globalKey]) {
+    globalObj[globalKey] = {
+      userStore: createMockStore(),
+      enterpriseStore: createMockStore(),
+      adminStore: createMockStore(),
+    };
+  }
+  const { userStore, enterpriseStore, adminStore } = globalObj[globalKey]!;
+
   return {
     ...actual,
-    authStore: mockStore,
-    userAuthStore: mockStore,
-    enterpriseAuthStore: mockStore,
-    adminAuthStore: mockStore,
-    getAuthStoreByDomain: () => mockStore,
+    authStore: userStore,
+    userAuthStore: userStore,
+    enterpriseAuthStore: enterpriseStore,
+    adminAuthStore: adminStore,
+    getAuthStoreByDomain: (domain: 'user' | 'enterprise' | 'admin') => {
+      if (domain === 'enterprise') return enterpriseStore;
+      if (domain === 'admin') return adminStore;
+      return userStore;
+    },
   };
 });
 
