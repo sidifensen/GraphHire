@@ -101,9 +101,11 @@ export default function ApplicationRecords() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <TopNav title="投递记录" />
+      <div className="md:hidden">
+        <TopNav title="投递记录" />
+      </div>
 
-      <nav className="bg-surface-lowest/90 backdrop-blur-md sticky top-16 md:top-32 z-40 flex overflow-x-auto px-5 md:px-12 gap-8 pt-4 hide-scrollbar border-b border-surface-mid">
+      <nav className="bg-surface-lowest/90 backdrop-blur-md sticky top-16 md:top-16 z-40 flex overflow-x-auto px-5 md:px-12 gap-8 pt-4 hide-scrollbar border-b border-surface-mid">
         <div className="max-w-7xl mx-auto w-full flex gap-8">
           {tabs.map((tab) => (
             <button

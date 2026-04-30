@@ -213,7 +213,9 @@ export default function ResumeManageContent() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <TopNav title="简历管理" />
+      <div className="md:hidden">
+        <TopNav title="简历管理" />
+      </div>
 
       <main className="flex-1 px-5 pt-6 pb-32 md:pt-12 md:pb-24 md:px-8 max-w-7xl mx-auto w-full">
         <div className="flex gap-6 lg:gap-8">

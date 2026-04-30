@@ -9,7 +9,9 @@ import UserWorkbenchSidebar from '@/app/(user)/_components/UserWorkbenchSidebar'
 export default function KnowledgeGraph() {
   return (
     <div className="flex flex-col min-h-screen">
-      <TopNav title="我的图谱" />
+      <div className="md:hidden">
+        <TopNav title="我的图谱" />
+      </div>
 
       <main className="mx-auto flex w-full max-w-7xl flex-1 gap-6 p-5 pb-28 md:px-8 md:py-12 md:pb-32 lg:gap-8">
         <UserWorkbenchSidebar />
