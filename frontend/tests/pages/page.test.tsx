@@ -15,5 +15,8 @@ describe('HomePage', () => {
     render(<HomePage />);
     expect(screen.getByText('图谱智聘领航未来')).toBeInTheDocument();
     expect(screen.getAllByText('立即开启智能招聘').length).toBeGreaterThan(0);
+    expect(screen.getByText('AI匹配指数')).toBeInTheDocument();
+    expect(screen.getByText('企业活跃席位')).toBeInTheDocument();
+    expect(screen.getByText('候选人响应率')).toBeInTheDocument();
   });
 });

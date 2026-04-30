@@ -77,22 +77,41 @@ export default function HomePage() {
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 }}
-              className="hidden md:block relative h-[500px]"
+              className="hidden md:block relative h-[520px]"
             >
-              <div className="absolute inset-0 bg-primary/5 rounded-[40px] rotate-3 scale-95 border border-primary/10"></div>
-              <img 
-                src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
-                alt="GraphHire Platform" 
-                className="w-full h-full object-cover rounded-[40px] relative z-10 shadow-2xl border border-surface-mid"
-              />
-              <div className="absolute -bottom-6 -left-6 bg-surface-lowest p-4 rounded-2xl shadow-xl z-20 border border-surface-mid">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary">
-                    <Database size={20} />
+              <div className="absolute -inset-4 rounded-[44px] bg-gradient-to-br from-primary/20 via-[#1d4ed8]/10 to-[#dbeafe] blur-2xl opacity-70"></div>
+              <div className="relative h-full overflow-hidden rounded-[40px] border border-white/50 shadow-[0_28px_72px_rgba(15,23,42,0.28)]">
+                <img
+                  src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+                  alt="GraphHire Platform"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0b1020]/85 via-[#0b1020]/38 to-transparent"></div>
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_86%_18%,rgba(255,255,255,0.26),transparent_34%)]"></div>
+
+                <div className="absolute left-6 top-6 z-20 rounded-3xl border border-white/35 bg-white/14 px-5 py-4 text-white backdrop-blur-xl shadow-[0_12px_35px_rgba(2,6,23,0.35)]">
+                  <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white/25">
+                    <Target size={18} />
                   </div>
-                  <div>
-                    <div className="text-xs font-black text-on-surface">50M+</div>
-                    <div className="text-[10px] text-on-surface-variant font-bold">人才节点</div>
+                  <div className="text-[11px] font-black uppercase tracking-[0.2em] text-white/80">AI匹配指数</div>
+                  <div className="mt-1 text-3xl font-black tracking-tight">98.7</div>
+                  <div className="text-xs font-semibold text-white/80">高潜候选人识别稳定提升</div>
+                </div>
+
+                <div className="absolute bottom-6 left-6 right-6 z-20 rounded-2xl border border-white/30 bg-white/10 p-4 backdrop-blur-xl">
+                  <div className="grid grid-cols-3 gap-3 text-white">
+                    <div className="rounded-xl border border-white/15 bg-black/10 p-3">
+                      <div className="text-[11px] font-semibold text-white/75">企业活跃席位</div>
+                      <div className="mt-1 text-xl font-black">12,480</div>
+                    </div>
+                    <div className="rounded-xl border border-white/15 bg-black/10 p-3">
+                      <div className="text-[11px] font-semibold text-white/75">候选人响应率</div>
+                      <div className="mt-1 text-xl font-black">92.4%</div>
+                    </div>
+                    <div className="rounded-xl border border-white/15 bg-black/10 p-3">
+                      <div className="text-[11px] font-semibold text-white/75">7日成功匹配</div>
+                      <div className="mt-1 text-xl font-black">3,286</div>
+                    </div>
                   </div>
                 </div>
               </div>
