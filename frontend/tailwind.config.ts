@@ -82,6 +82,13 @@ const config: Config = {
       spacing: {
         'margin-mobile': '1.25rem',
         'margin-desktop': '4rem',
+        'stack-gap-xs': '8px',
+        'stack-gap-sm': '12px',
+        'stack-gap-md': '16px',
+        'stack-gap-lg': '24px',
+        'inline-padding-sm': '12px',
+        'inline-padding-md': '16px',
+        'container-margin': '16px',
       },
     },
   },

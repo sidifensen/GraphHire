@@ -47,7 +47,7 @@ export function TopNav({ title, showBack, rightAction, userAvatar, onBack }: Top
   };
 
   return (
-    <header className="bg-surface border-b border-surface-variant shadow-sm flex items-center justify-between h-16 w-full z-40 sticky top-0 max-w-[375px] mx-auto md:max-w-none md:px-8 px-4 flex-shrink-0 transition-colors">
+    <header className="bg-surface border-b border-surface-variant shadow-sm flex items-center justify-between h-16 w-full z-40 sticky top-0 md:px-8 px-4 flex-shrink-0 transition-colors">
       {/* Left Area (Mobile Backup or Empty Space on Desktop since logo is in the nav area) */}
       <div className="flex items-center gap-3 w-10 md:hidden">
         {showBack ? (

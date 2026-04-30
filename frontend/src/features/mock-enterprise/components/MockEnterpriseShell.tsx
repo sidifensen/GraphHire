@@ -47,7 +47,7 @@ export default function MockEnterpriseShell({ children }: { children: ReactNode 
 
   return (
     <div className="mock-enterprise-theme flex min-h-screen justify-center bg-surface-dim">
-      <div className="relative mx-auto flex min-h-screen w-full max-w-[375px] flex-col overflow-hidden bg-background font-body-md text-body-md text-on-surface shadow-2xl md:max-w-none">
+      <div className="relative mx-auto flex min-h-screen w-full flex-col overflow-hidden bg-background font-body-md text-body-md text-on-surface shadow-2xl">
         <TopNav {...getTopNavProps(pathname)} />
         <AnimatePresence mode="wait">
           <motion.div

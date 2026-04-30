@@ -19,7 +19,7 @@ export function BottomNav() {
   }
 
   return (
-    <nav className="bg-surface/90 backdrop-blur-md border-t border-surface-variant shadow-[0_-2px_8px_rgba(0,0,0,0.04)] fixed bottom-0 left-0 right-0 h-16 z-50 flex justify-around items-center px-4 pb-safe max-w-[375px] mx-auto md:hidden">
+    <nav className="bg-surface/90 backdrop-blur-md border-t border-surface-variant shadow-[0_-2px_8px_rgba(0,0,0,0.04)] fixed bottom-0 left-0 right-0 h-16 z-50 flex justify-around items-center px-4 pb-safe md:hidden">
       {NAV_ITEMS.map((item) => {
         const isActive = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
         
