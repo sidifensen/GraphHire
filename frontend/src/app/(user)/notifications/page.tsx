@@ -1,6 +1,6 @@
 'use client';
 
-import Notifications from '@/features/mock-user/pages/Notifications';
+import Notifications from '@/app/(user)/_mock/pages/Notifications';
 
 export default function NotificationsPage() {
   return <Notifications />;

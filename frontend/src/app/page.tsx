@@ -1,7 +1,7 @@
 'use client';
 
-import MockUserShell from '@/features/mock-user/components/MockUserShell';
-import Home from '@/features/mock-user/pages/Home';
+import MockUserShell from '@/app/(user)/_mock/components/MockUserShell';
+import Home from '@/app/(user)/_mock/pages/Home';
 
 export default function HomePage() {
   return (

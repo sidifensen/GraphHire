@@ -1,6 +1,6 @@
 'use client';
 
-import CompanyDetail from '@/features/mock-user/pages/CompanyDetail';
+import CompanyDetail from '@/app/(user)/_mock/pages/CompanyDetail';
 
 export default function CompanyDetailPage() {
   return <CompanyDetail />;

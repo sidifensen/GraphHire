@@ -1,6 +1,6 @@
 'use client';
 
-import ResumeManagement from '@/features/mock-user/pages/ResumeManagement';
+import ResumeManagement from '@/app/(user)/_mock/pages/ResumeManagement';
 
 export default function ResumeUploadPage() {
   return <ResumeManagement />;

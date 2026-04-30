@@ -1,6 +1,6 @@
 'use client';
 
-import Messages from '@/features/mock-enterprise/pages/Messages';
+import Messages from '@/app/enterprise/_mock/pages/Messages';
 
 export default function NotificationsPage() {
   return <Messages />;

@@ -1,6 +1,6 @@
 'use client';
 
-import Profile from '@/features/mock-user/pages/Profile';
+import Profile from '@/app/(user)/_mock/pages/Profile';
 
 export default function ProfilePage() {
   return <Profile />;

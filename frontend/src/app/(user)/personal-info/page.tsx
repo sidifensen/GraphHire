@@ -1,6 +1,6 @@
 'use client';
 
-import PersonalInfo from '@/features/mock-user/pages/PersonalInfo';
+import PersonalInfo from '@/app/(user)/_mock/pages/PersonalInfo';
 
 export default function PersonalInfoPage() {
   return <PersonalInfo />;

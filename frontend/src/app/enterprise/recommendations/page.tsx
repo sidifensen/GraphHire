@@ -1,6 +1,6 @@
 'use client';
 
-import Recommendations from '@/features/mock-enterprise/pages/Recommendations';
+import Recommendations from '@/app/enterprise/_mock/pages/Recommendations';
 
 export default function RecommendationsPage() {
   return <Recommendations />;

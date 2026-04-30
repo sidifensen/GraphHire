@@ -1,6 +1,6 @@
 'use client';
 
-import CandidateDetail from '@/features/mock-enterprise/pages/CandidateDetail';
+import CandidateDetail from '@/app/enterprise/_mock/pages/CandidateDetail';
 
 export default function CandidateDetailPage() {
   return <CandidateDetail />;

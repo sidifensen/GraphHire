@@ -1,6 +1,6 @@
 'use client';
 
-import Team from '@/features/mock-enterprise/pages/Team';
+import Team from '@/app/enterprise/_mock/pages/Team';
 
 export default function EmployeesPage() {
   return <Team />;

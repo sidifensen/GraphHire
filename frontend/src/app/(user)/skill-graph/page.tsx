@@ -1,6 +1,6 @@
 'use client';
 
-import KnowledgeGraph from '@/features/mock-user/pages/KnowledgeGraph';
+import KnowledgeGraph from '@/app/(user)/_mock/pages/KnowledgeGraph';
 
 export default function SkillGraphPage() {
   return <KnowledgeGraph />;

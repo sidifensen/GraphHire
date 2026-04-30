@@ -1,6 +1,6 @@
 'use client';
 
-import JobCreate from '@/features/mock-enterprise/pages/JobCreate';
+import JobCreate from '@/app/enterprise/_mock/pages/JobCreate';
 
 export default function JobNewPage() {
   return <JobCreate />;

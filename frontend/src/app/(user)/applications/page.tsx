@@ -1,6 +1,6 @@
 'use client';
 
-import ApplicationRecords from '@/features/mock-user/pages/ApplicationRecords';
+import ApplicationRecords from '@/app/(user)/_mock/pages/ApplicationRecords';
 
 export default function ApplicationsPage() {
   return <ApplicationRecords />;

@@ -1,6 +1,6 @@
 'use client';
 
-import CompanyList from '@/features/mock-user/pages/CompanyList';
+import CompanyList from '@/app/(user)/_mock/pages/CompanyList';
 
 export default function CompaniesPage() {
   return <CompanyList />;
