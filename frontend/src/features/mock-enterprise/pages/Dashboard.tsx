@@ -199,29 +199,30 @@ export default function Dashboard() {
             </section>
 
             <section className="bg-surface-container-lowest rounded-xl border border-surface-variant shadow-[0_2px_8px_rgba(0,0,0,0.04)] p-inline-padding-md flex-1">
-               <h2 className="font-headline-sm text-lg font-bold text-on-surface mb-4">待办事项</h2>
-               <div className="flex flex-col gap-3">
-                 <label className="flex items-start gap-3 p-2.5 rounded-lg border border-transparent hover:border-outline-variant hover:bg-surface-container-low cursor-pointer transition-colors">
-                   <input type="checkbox" className="mt-[3px] w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary shrink-0" />
-                   <div className="flex-1">
-                     <p className="text-[14px] font-medium text-on-surface leading-snug">确认下周入职的3位员工设备</p>
-                     <p className="text-[12px] text-error mt-1 font-medium bg-error/10 w-fit px-1.5 py-0.5 rounded">今天到期</p>
-                   </div>
-                 </label>
-                 <label className="flex items-start gap-3 p-2.5 rounded-lg border border-transparent hover:border-outline-variant hover:bg-surface-container-low cursor-pointer transition-colors">
-                   <input type="checkbox" className="mt-[3px] w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary shrink-0" />
-                   <div className="flex-1">
-                     <p className="text-[14px] font-medium text-on-surface leading-snug">评估【王大拿】的笔试结果</p>
-                     <p className="text-[12px] text-on-surface-variant mt-1">明天 18:00 前</p>
-                   </div>
-                 </label>
-                 <label className="flex items-start gap-3 p-2.5 rounded-lg border border-transparent hover:border-outline-variant hover:bg-surface-container-low cursor-pointer transition-colors opacity-60">
-                   <input type="checkbox" defaultChecked className="mt-[3px] w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary shrink-0" />
-                   <div className="flex-1 line-through">
-                     <p className="text-[14px] font-medium text-on-surface leading-snug">发布Java高级工程师JD</p>
-                   </div>
-                 </label>
-               </div>
+              <h2 className="font-headline-sm text-lg font-bold text-on-surface mb-4">招聘动态</h2>
+              <div className="flex flex-col gap-3">
+                <div className="p-3 rounded-lg border border-outline-variant bg-surface-container-low">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="material-symbols-outlined text-[18px] text-primary">mail</span>
+                    <p className="text-[14px] font-semibold text-on-surface">新增投递 8 份</p>
+                  </div>
+                  <p className="text-[12px] text-on-surface-variant">其中 3 位候选人与在招岗位匹配度超过 90%</p>
+                </div>
+                <div className="p-3 rounded-lg border border-outline-variant bg-surface-container-low">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="material-symbols-outlined text-[18px] text-primary">event_available</span>
+                    <p className="text-[14px] font-semibold text-on-surface">面试确认进度</p>
+                  </div>
+                  <p className="text-[12px] text-on-surface-variant">今日 2 场已确认，1 场待候选人回复</p>
+                </div>
+                <div className="p-3 rounded-lg border border-outline-variant bg-surface-container-low">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="material-symbols-outlined text-[18px] text-primary">workspace_premium</span>
+                    <p className="text-[14px] font-semibold text-on-surface">Offer 进展</p>
+                  </div>
+                  <p className="text-[12px] text-on-surface-variant">本周已发出 4 份 Offer，待候选人确认 2 份</p>
+                </div>
+              </div>
             </section>
           </div>
         </div>
