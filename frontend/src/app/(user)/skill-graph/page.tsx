@@ -120,14 +120,6 @@ export default function KnowledgeGraph() {
         </div>
       </main>
 
-      <div className="fixed bottom-0 left-0 w-full min-h-[80px] bg-surface-lowest/90 backdrop-blur-md border-t border-surface-mid pb-safe z-40 md:rounded-t-[32px]">
-        <div className="max-w-7xl mx-auto w-full px-5 md:px-8 py-4 md:py-8 flex items-center justify-center">
-          <button className="w-full md:max-w-[400px] h-14 md:h-16 rounded-2xl md:rounded-[20px] border-2 border-surface-mid text-on-surface font-bold text-sm md:text-base flex justify-center items-center gap-3 hover:bg-surface-low transition-all active:scale-[0.98]">
-            <RefreshCw size={20} className="md:size-24" />
-            重新生成分析视图
-          </button>
-        </div>
-      </div>
     </div>
   );
 }

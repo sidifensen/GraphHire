@@ -7,6 +7,6 @@ describe('User Skill Graph page', () => {
 
     expect(screen.getByRole('navigation', { name: '我的页面菜单' })).toBeInTheDocument();
     expect(screen.getByText('全景图谱')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '重新生成分析视图' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '重新生成分析视图' })).not.toBeInTheDocument();
   });
 });

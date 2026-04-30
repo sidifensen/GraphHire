@@ -16,7 +16,7 @@ function normalizePath(pathname: string) {
 
 function isPathActive(currentPathname: string, navPath: string) {
   if (navPath === '/profile') {
-    const mySubPaths = ['/personal-info', '/applications', '/skill-graph'];
+    const mySubPaths = ['/personal-info', '/applications', '/skill-graph', '/graph'];
     if (mySubPaths.some((path) => currentPathname === path || currentPathname.startsWith(`${path}/`))) {
       return true;
     }

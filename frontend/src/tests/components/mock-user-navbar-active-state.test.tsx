@@ -36,4 +36,15 @@ describe('MockUser Navbar active state', () => {
     expect(myLink.className).toContain('text-white');
     expect(homeLink.className).not.toContain('text-white');
   });
+
+  it('keeps 我的 active on skill graph path mapping', () => {
+    pathname = '/skill-graph';
+    render(<Navbar />);
+
+    const myLink = screen.getByRole('link', { name: '我的' });
+    const homeLink = screen.getByRole('link', { name: '首页' });
+
+    expect(myLink.className).toContain('text-white');
+    expect(homeLink.className).not.toContain('text-white');
+  });
 });
