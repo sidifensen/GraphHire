@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 
 type EnterpriseState = {
@@ -49,6 +49,14 @@ vi.mock('@/lib/api/company', () => ({
   },
 }));
 
+const { logoutWithServerInvalidation } = vi.hoisted(() => ({
+  logoutWithServerInvalidation: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock('@/lib/logout', () => ({
+  logoutWithServerInvalidation,
+}));
+
 import { TopNav } from '@/app/enterprise/_mock/components/TopNav';
 
 describe('Enterprise TopNav auth display', () => {
@@ -68,6 +76,45 @@ describe('Enterprise TopNav auth display', () => {
     render(<TopNav title="GraphHire 图谱智聘" userAvatar />);
 
     expect(screen.getByText('测试企业')).toBeInTheDocument();
-    expect(screen.getByAltText('企业用户头像')).toBeInTheDocument();
+    expect(screen.getAllByAltText('企业用户头像').length).toBeGreaterThan(0);
+  });
+
+  test('点击企业头像展示退出登录菜单', () => {
+    enterpriseAuthStore.setState({
+      isAuthenticated: true,
+      user: {
+        id: 201,
+        username: 'hr@graphhire.com',
+        displayName: '测试企业',
+        type: 'COMPANY',
+      },
+    });
+
+    render(<TopNav title="GraphHire 图谱智聘" userAvatar />);
+
+    fireEvent.click(screen.getAllByRole('button', { name: '企业账户菜单' })[0]);
+
+    expect(screen.getByRole('button', { name: '退出登录' })).toBeInTheDocument();
+  });
+
+  test('点击企业退出登录调用统一登出逻辑', async () => {
+    enterpriseAuthStore.setState({
+      isAuthenticated: true,
+      user: {
+        id: 201,
+        username: 'hr@graphhire.com',
+        displayName: '测试企业',
+        type: 'COMPANY',
+      },
+    });
+
+    render(<TopNav title="GraphHire 图谱智聘" userAvatar />);
+
+    fireEvent.click(screen.getAllByRole('button', { name: '企业账户菜单' })[0]);
+    fireEvent.click(screen.getByRole('button', { name: '退出登录' }));
+
+    await waitFor(() => {
+      expect(logoutWithServerInvalidation).toHaveBeenCalledWith(expect.any(Function), '/login', 'enterprise');
+    });
   });
 });

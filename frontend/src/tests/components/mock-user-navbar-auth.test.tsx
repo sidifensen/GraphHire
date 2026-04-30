@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 
 type UserState = {
@@ -49,6 +49,14 @@ vi.mock('@/lib/api/person', () => ({
   },
 }));
 
+const { logoutWithServerInvalidation } = vi.hoisted(() => ({
+  logoutWithServerInvalidation: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock('@/lib/logout', () => ({
+  logoutWithServerInvalidation,
+}));
+
 import Navbar from '@/app/(user)/_mock/components/Navbar';
 
 describe('MockUser Navbar auth display', () => {
@@ -69,5 +77,44 @@ describe('MockUser Navbar auth display', () => {
 
     expect(screen.getByText('测试求职者')).toBeInTheDocument();
     expect(screen.getByAltText('用户头像')).toBeInTheDocument();
+  });
+
+  test('点击用户头像展示退出登录菜单', () => {
+    userAuthStore.setState({
+      isAuthenticated: true,
+      user: {
+        id: 101,
+        username: 'test-user@example.com',
+        displayName: '测试求职者',
+        type: 'PERSON',
+      },
+    });
+
+    render(<Navbar />);
+
+    fireEvent.click(screen.getByRole('button', { name: '用户账户菜单' }));
+
+    expect(screen.getByRole('button', { name: '退出登录' })).toBeInTheDocument();
+  });
+
+  test('点击用户退出登录调用统一登出逻辑', async () => {
+    userAuthStore.setState({
+      isAuthenticated: true,
+      user: {
+        id: 101,
+        username: 'test-user@example.com',
+        displayName: '测试求职者',
+        type: 'PERSON',
+      },
+    });
+
+    render(<Navbar />);
+
+    fireEvent.click(screen.getByRole('button', { name: '用户账户菜单' }));
+    fireEvent.click(screen.getByRole('button', { name: '退出登录' }));
+
+    await waitFor(() => {
+      expect(logoutWithServerInvalidation).toHaveBeenCalledWith(expect.any(Function), '/login', 'user');
+    });
   });
 });
