@@ -20,6 +20,26 @@
 
 ## 约束与事实
 
+### 0. 新页面样式与 UI 冻结
+
+`docs/graphhire用户端新页面` 与 `docs/graphhire企业端新页面` 中已有的新页面样式、UI 和视觉结构不允许改动。
+
+允许改动的范围仅限：
+
+- React Router 到 Next Router 的适配
+- mock 数据接入与参数传递
+- 认证跳转接线
+- 删除当前项目旧移动端 rewrite / 内部移动路由
+
+不允许改动的范围包括：
+
+- 页面视觉层次
+- 组件排版
+- CSS class 与样式表达方式
+- 原型页面中的响应式 UI 形态
+
+这意味着“删除手机版”指的是删除当前项目旧的 `/mobile-user`、`/mobile-enterprise` 内部实现与切换逻辑，而不是重新设计你提供的新页面响应式界面。
+
 ### 1. 认证接口的真实能力
 
 后端当前提供：
@@ -271,22 +291,23 @@ frontend/src/features/mock-enterprise/
 
 不再沿用当前 `Header + Sidebar + Footer` 桌面壳。
 
-改为新 mock 用户壳：
+改为直接迁移原型用户端壳：
 
-- 顶部导航来源于原型 `Navbar.tsx`
-- 去掉底部导航
-- 页面内容宽度、桌面留白、分区标题沿用原型风格
+- 保留原型 `Navbar.tsx`
+- 保留原型页面中的响应式 UI 结构，包括其底部导航表达
+- 只把 `react-router-dom` 的导航和路由参数替换成 Next 实现
+- 不重排、不重命名、不重写样式
 
 ### 二、企业端
 
 不再沿用当前 `EnterpriseHeader` 的旧导航结构。
 
-改为新 mock 企业壳：
+改为直接迁移原型企业端壳：
 
-- 顶部导航来源于原型 `TopNav.tsx`
-- 去掉底部导航
+- 保留原型 `TopNav.tsx`
+- 保留原型页面中的响应式 UI 结构，包括其底部导航表达
 - 继续保留 `EnterpriseAuthGuard`
-- 企业端业务页全部走新的 mock 顶部导航与桌面容器
+- 只改路由接线和数据来源，不改页面样式和 UI 编排
 
 ## 测试设计
 
@@ -332,8 +353,9 @@ frontend/src/features/mock-enterprise/
 
 控制：
 
-- 迁移时显式删掉 `BottomNav`
-- 页面组件中不再保留移动端 route 判断
+- 不删除原型页面自身的响应式 UI 组件
+- 仅删除当前项目旧的移动端内部路由与 rewrite
+- 若原型组件中存在依赖 React Router 的导航判断，只替换为 Next 路由读取，保持视觉输出不变
 
 ### 风险二：原型页面依赖 React Router API
 
@@ -364,4 +386,3 @@ frontend/src/features/mock-enterprise/
 4. 逐页把原型页面迁移为 Next 组件
 5. 接入登录注册真实后端流转
 6. 跑测试、构建和浏览器验证
-

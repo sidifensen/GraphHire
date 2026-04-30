@@ -24,4 +24,4 @@
 | AC-012 | 项目中不再保留依赖移动端内部路由的测试 | Logic | 代码改造完成后检查 `frontend/tests` 与 `frontend/src/tests` | 不再存在 `mobile-user`、`mobile-enterprise`、`device-routing` 相关前端测试文件或测试用例引用 |
 | AC-013 | 用户端首页和企业端工作台能够在 Next 路由下渲染迁移后的 mock 页面核心文案 | UI interaction | 前端开发服务器启动；分别访问 `/` 和 `/enterprise/dashboard` | `/` 页面能看到迁移后的用户端首页核心标题或首屏模块；`/enterprise/dashboard` 页面能看到迁移后的企业端工作台核心标题或数据区块 |
 | AC-014 | 前端验证阶段仅要求前端测试、前端构建和浏览器验收通过，不要求执行后端编译与后端测试 | Logic | 执行本次任务的完成验证 | 完成说明和验证记录中包含 `frontend` 的 `npm run test:run`、`npm run build` 和 CDP 浏览器验证结果；不要求运行 `backend` 的 `mvn compile` 或 `mvn test` |
-
+| AC-015 | 新页面迁移到 Next 后，不改变用户提供原型页面的样式、UI 和响应式结构 | UI interaction | 前端开发服务器启动；对照 `docs/graphhire用户端新页面` 与 `docs/graphhire企业端新页面` 中对应页面源码 | 迁移后的页面保留原型页面的视觉结构、核心 className 组织和界面层次；允许的差异仅限 `react-router-dom` 到 Next 路由适配、mock 数据绑定与登录跳转接线 |
