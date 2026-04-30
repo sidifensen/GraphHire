@@ -8,6 +8,7 @@ describe('enterprise style regressions', () => {
   it('loads a local complete material symbols font source for prototype icon names', () => {
     const css = readFileSync(join(root, 'src/styles/mock-enterprise.css'), 'utf8');
     expect(css).toContain("@font-face");
+    expect(css).toContain("Material Symbols Outlined Full");
     expect(css).toContain("material-symbols-outlined-full.ttf");
     expect(existsSync(join(root, 'public/fonts/material-symbols-outlined-full.ttf'))).toBe(true);
   });

@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
 @font-face {
-  font-family: 'Material Symbols Outlined';
+  font-family: 'Material Symbols Outlined Full';
   font-style: normal;
   font-weight: 400;
   font-display: swap;
@@ -164,8 +164,8 @@
   font-family: 'Inter', 'PingFang SC', sans-serif;
 }
 
-.material-symbols-outlined {
-  font-family: 'Material Symbols Outlined';
+.mock-enterprise-theme .material-symbols-outlined {
+  font-family: 'Material Symbols Outlined Full';
   font-weight: normal;
   font-style: normal;
   font-size: 24px;
