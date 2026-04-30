@@ -1,13 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const root = process.cwd();
 
 describe('enterprise style regressions', () => {
-  it('loads a complete material symbols font source for prototype icon names', () => {
+  it('loads a local complete material symbols font source for prototype icon names', () => {
     const css = readFileSync(join(root, 'src/styles/mock-enterprise.css'), 'utf8');
-    expect(css).toContain('Material+Symbols+Outlined');
+    expect(css).toContain("@font-face");
+    expect(css).toContain("material-symbols-outlined-full.ttf");
+    expect(existsSync(join(root, 'public/fonts/material-symbols-outlined-full.ttf'))).toBe(true);
   });
 
   it('keeps enterprise spacing tokens required by the migrated prototype', () => {
@@ -30,4 +32,3 @@ describe('enterprise style regressions', () => {
     expect(bottomNav).not.toContain('max-w-[375px]');
   });
 });
-
