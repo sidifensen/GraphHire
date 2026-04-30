@@ -5,8 +5,8 @@ const config: Config = {
   content: [
     './src/app/**/*.{js,ts,jsx,tsx}',
     './src/components/**/*.{js,ts,jsx,tsx}',
+    './src/features/**/*.{js,ts,jsx,tsx}',
     './src/lib/**/*.{js,ts,jsx,tsx}',
-    './src/mobile-user-page/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
     extend: {
@@ -21,6 +21,7 @@ const config: Config = {
         tertiary: 'var(--color-tertiary)',
         'tertiary-fixed': 'var(--color-tertiary-fixed)',
         'surface-background': 'var(--color-surface-background)',
+        'surface-lowest': 'var(--color-surface-lowest)',
         'surface-low': 'var(--color-surface-low)',
         'surface-mid': 'var(--color-surface-mid)',
         'surface-high': 'var(--color-surface-high)',
@@ -66,6 +67,7 @@ const config: Config = {
         'tertiary-fixed-dim': 'var(--color-tertiary-fixed-dim)',
       },
       fontFamily: {
+        sans: ['Manrope', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         headline: ['Manrope', 'sans-serif'],
         body: ['Inter', 'PingFang SC', 'Microsoft YaHei', 'sans-serif'],
         display: ['Space Grotesk', 'Manrope', 'sans-serif'],
@@ -79,6 +81,7 @@ const config: Config = {
       },
       spacing: {
         'margin-mobile': '1.25rem',
+        'margin-desktop': '4rem',
       },
     },
   },

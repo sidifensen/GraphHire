@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { Manrope, Inter } from 'next/font/google';
 import '@/styles/globals.css';
+import '@/styles/mock-user.css';
+import '@/styles/mock-enterprise.css';
 
 const manrope = Manrope({
   subsets: ['latin'],

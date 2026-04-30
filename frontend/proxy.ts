@@ -1,1 +1,0 @@
-export { config, proxy } from "./src/proxy";

@@ -1,20 +1,12 @@
-import HomePageClient from '@/app/HomePageClient';
-import { fetchHomeOverview } from '@/lib/api/homeApi';
-import type { HomeOverview } from '@/lib/types/home';
+'use client';
 
-const emptyOverview: HomeOverview = {
-  featuredJobs: [],
-  popularCompanies: [],
-  hotCities: [],
-};
+import MockUserShell from '@/features/mock-user/components/MockUserShell';
+import Home from '@/features/mock-user/pages/Home';
 
-export default async function HomePage() {
-  try {
-    const overview = await fetchHomeOverview();
-    return <HomePageClient initialOverview={overview} initialError="" />;
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '首页数据加载失败';
-    return <HomePageClient initialOverview={emptyOverview} initialError={message} />;
-  }
+export default function HomePage() {
+  return (
+    <MockUserShell>
+      <Home />
+    </MockUserShell>
+  );
 }
-

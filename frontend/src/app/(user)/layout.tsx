@@ -1,14 +1,11 @@
-import type { Metadata } from 'next';
-import UserLayout from '@/components/layout/UserLayout';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'GraphHire 图谱智聘 - 用户端',
-};
+import MockUserShell from '@/features/mock-user/components/MockUserShell';
 
 export default function UserRouteLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <UserLayout>{children}</UserLayout>;
+  return <MockUserShell>{children}</MockUserShell>;
 }
