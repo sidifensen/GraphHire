@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { MessageSquare, Briefcase, Settings, Moon, Sun } from 'lucide-react';
+import { MessageSquare, Briefcase, Settings, Moon, Sun, User, FileText, Send, Network, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 import { useTheme } from '@/app/(user)/_mock/context/ThemeContext';
 import { userAuthStore } from '@/lib/stores/auth-store';
 import { personApi, type PersonProfile } from '@/lib/api/person';
@@ -20,6 +21,13 @@ export default function Profile() {
   const displayName = profile?.realName?.trim() || authUser?.displayName || authUser?.username || '未登录用户';
   const contactText = profile?.email?.trim() || authUser?.email || authUser?.username || '暂无联系方式';
   const avatarSrc = profile?.avatarUrl || authUser?.avatarUrl || null;
+  const mobileMenuItems = [
+    { name: '个人资料', icon: User, path: '/personal-info' },
+    { name: '简历管理', icon: FileText, path: '/resume/manage' },
+    { name: '投递记录', icon: Send, path: '/applications' },
+    { name: '我的图谱', icon: Network, path: '/skill-graph' },
+    { name: '账号设置', icon: Settings, path: '#' },
+  ];
 
   useEffect(() => {
     setAvatarError(false);
@@ -121,6 +129,24 @@ export default function Profile() {
                 <div className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">收藏</div>
               </div>
             </div>
+          </section>
+
+          <section className="md:hidden overflow-hidden rounded-2xl border border-surface-mid bg-surface-lowest">
+            <nav aria-label="我的页面移动菜单">
+              {mobileMenuItems.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.path}
+                  className="flex items-center justify-between border-b border-surface-mid px-5 py-4 text-on-surface transition-colors last:border-b-0 hover:bg-surface-low"
+                >
+                  <span className="flex items-center gap-3">
+                    <item.icon size={18} className="text-primary" />
+                    <span className="text-base font-bold">{item.name}</span>
+                  </span>
+                  <ChevronRight size={16} className="text-outline" />
+                </Link>
+              ))}
+            </nav>
           </section>
 
           <section className="rounded-2xl border border-surface-mid bg-surface-lowest p-6">
