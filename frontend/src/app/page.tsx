@@ -115,7 +115,7 @@ export default function HomePage() {
                   className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-primary"
                 >
                   <Sparkles size={14} />
-                  <span className="text-[12px] font-semibold tracking-wide">GraphHire 图谱智聘</span>
+                  <span className="text-[12px] font-semibold tracking-wide">AI智能匹配招聘</span>
                 </motion.div>
 
                 <motion.h1
@@ -124,7 +124,7 @@ export default function HomePage() {
                   transition={{ delay: 0.05 }}
                   className="mb-3 text-3xl font-black leading-tight tracking-tight text-on-surface md:text-4xl lg:text-5xl"
                 >
-                  更快完成人岗匹配
+                  GraphHire 图谱智聘
                 </motion.h1>
 
                 <motion.p
