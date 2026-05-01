@@ -15,15 +15,51 @@ const trustMetrics = [
 ];
 
 const enterpriseFlow = [
-  { title: '发布职位', desc: '结构化 JD 一键发布，自动同步关键画像字段。', result: '平均发布耗时缩短 63%' },
-  { title: 'AI 推荐候选人', desc: '基于能力图谱进行语义匹配，优先输出高契合候选池。', result: '首批候选准确率提升 41%' },
-  { title: '面试协同转化', desc: '标准化流程看板追踪每个环节，减少沟通与等待损耗。', result: '到岗周期平均缩短 2.1 天' },
+  {
+    title: '发布职位',
+    desc: '结构化 JD 一键发布，自动同步关键画像字段。',
+    result: '平均发布耗时缩短 63%',
+    image:
+      'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    title: 'AI 推荐候选人',
+    desc: '基于能力图谱进行语义匹配，优先输出高契合候选池。',
+    result: '首批候选准确率提升 41%',
+    image:
+      'https://images.unsplash.com/photo-1551281044-8d8d3f9f4f2a?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    title: '面试协同转化',
+    desc: '标准化流程看板追踪每个环节，减少沟通与等待损耗。',
+    result: '到岗周期平均缩短 2.1 天',
+    image:
+      'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1200&q=80',
+  },
 ];
 
 const candidateFlow = [
-  { title: '上传简历', desc: '自动解析工作经历、技能结构和目标岗位方向。', result: '建立可检索能力档案仅需 1 分钟' },
-  { title: '图谱诊断', desc: '识别优势技能与缺口能力，给出可执行补强建议。', result: '岗位匹配命中率提升 35%' },
-  { title: '精准岗位推荐', desc: '按城市、薪资与成长路径推送更高相关岗位。', result: '无效投递比例下降 48%' },
+  {
+    title: '上传简历',
+    desc: '自动解析工作经历、技能结构和目标岗位方向。',
+    result: '建立可检索能力档案仅需 1 分钟',
+    image:
+      'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    title: '图谱诊断',
+    desc: '识别优势技能与缺口能力，给出可执行补强建议。',
+    result: '岗位匹配命中率提升 35%',
+    image:
+      'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80',
+  },
+  {
+    title: '精准岗位推荐',
+    desc: '按城市、薪资与成长路径推送更高相关岗位。',
+    result: '无效投递比例下降 48%',
+    image:
+      'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1200&q=80',
+  },
 ];
 
 const enterpriseMatrix = [
@@ -161,11 +197,15 @@ export default function HomePage() {
               </div>
               <div className="grid gap-5 md:grid-cols-3">
                 {enterpriseFlow.map((step, idx) => (
-                  <article key={step.title} className={cardCls}>
-                    <p className="mb-2 text-xs font-black uppercase tracking-[0.18em] text-outline">Step {idx + 1}</p>
-                    <h3 className="text-xl font-black text-on-surface">{step.title}</h3>
-                    <p className="mt-3 text-sm leading-relaxed text-on-surface-variant">{step.desc}</p>
-                    <div className="mt-4 flex items-start gap-2 rounded-xl bg-primary/8 px-3 py-2 text-sm font-semibold text-primary">
+                  <article key={step.title} className={`${cardCls} relative overflow-hidden border-white/10 text-white`}>
+                    <img src={step.image} alt={`${step.title}背景图`} className="absolute inset-0 h-full w-full object-cover" />
+                    <div className="absolute inset-0 bg-[linear-gradient(160deg,rgba(7,17,36,0.58),rgba(3,11,26,0.88))]" />
+                    <div className="relative z-10">
+                      <p className="mb-2 text-xs font-black uppercase tracking-[0.18em] text-white/70">Step {idx + 1}</p>
+                      <h3 className="text-xl font-black text-white">{step.title}</h3>
+                      <p className="mt-3 text-sm leading-relaxed text-white/85">{step.desc}</p>
+                    </div>
+                    <div className="relative z-10 mt-4 flex items-start gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-sm font-semibold text-white">
                       <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
                       <span>{step.result}</span>
                     </div>
@@ -183,11 +223,15 @@ export default function HomePage() {
               </div>
               <div className="grid gap-5 md:grid-cols-3">
                 {candidateFlow.map((step, idx) => (
-                  <article key={step.title} className={cardCls}>
-                    <p className="mb-2 text-xs font-black uppercase tracking-[0.18em] text-outline">Step {idx + 1}</p>
-                    <h3 className="text-xl font-black text-on-surface">{step.title}</h3>
-                    <p className="mt-3 text-sm leading-relaxed text-on-surface-variant">{step.desc}</p>
-                    <div className="mt-4 flex items-start gap-2 rounded-xl bg-tertiary/12 px-3 py-2 text-sm font-semibold text-tertiary">
+                  <article key={step.title} className={`${cardCls} relative overflow-hidden border-white/10 text-white`}>
+                    <img src={step.image} alt={`${step.title}背景图`} className="absolute inset-0 h-full w-full object-cover" />
+                    <div className="absolute inset-0 bg-[linear-gradient(160deg,rgba(18,16,42,0.56),rgba(11,9,30,0.88))]" />
+                    <div className="relative z-10">
+                      <p className="mb-2 text-xs font-black uppercase tracking-[0.18em] text-white/70">Step {idx + 1}</p>
+                      <h3 className="text-xl font-black text-white">{step.title}</h3>
+                      <p className="mt-3 text-sm leading-relaxed text-white/85">{step.desc}</p>
+                    </div>
+                    <div className="relative z-10 mt-4 flex items-start gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-sm font-semibold text-white">
                       <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
                       <span>{step.result}</span>
                     </div>
