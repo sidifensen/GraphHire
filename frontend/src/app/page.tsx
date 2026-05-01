@@ -1,11 +1,12 @@
 'use client';
 
 import React from 'react';
-import { ArrowRight, BarChart3, Building2, CheckCircle2, Clock3, ShieldCheck, Sparkles, Users } from 'lucide-react';
+import { BarChart3, Building2, CheckCircle2, Clock3, ShieldCheck, Sparkles, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 import Type1Button from '@/components/home/Type1Button';
+import HeroJobButton from '@/components/home/HeroJobButton';
 import MockUserShell from '@/app/(user)/_mock/components/MockUserShell';
 
 const trustMetrics = [
@@ -153,10 +154,7 @@ export default function HomePage() {
                   className="flex w-full flex-col items-center gap-3 sm:flex-row sm:items-center md:w-auto md:items-start"
                 >
                   <Type1Button href="/register?role=enterprise" text="免费发布职位" />
-                  <Link href="/jobs" className={`${primaryBtnCls} bg-surface-container text-on-surface border border-surface-mid hover:bg-surface-low`}>
-                    立即找工作
-                    <ArrowRight size={16} />
-                  </Link>
+                  <HeroJobButton href="/jobs" />
                 </motion.div>
 
                 <div className="mt-4 flex flex-wrap justify-center gap-3 text-xs font-bold text-outline md:justify-start">

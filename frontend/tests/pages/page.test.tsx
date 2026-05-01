@@ -14,7 +14,8 @@ describe('HomePage', () => {
   it('renders dual-funnel hero actions', () => {
     render(<HomePage />);
     expect(screen.getAllByRole('link', { name: '免费发布职位' })).toHaveLength(2);
-    expect(screen.getAllByRole('link', { name: '立即找工作' })).toHaveLength(2);
+    expect(screen.getAllByRole('link', { name: "Let's get started" })).toHaveLength(1);
+    expect(screen.getAllByRole('link', { name: '立即找工作' })).toHaveLength(1);
   });
 
   it('renders trust metrics and dual flows', () => {
