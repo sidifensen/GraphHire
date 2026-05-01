@@ -85,8 +85,17 @@ export default function JobDetail() {
 
   return (
     <div className="flex flex-col h-full bg-background relative pb-[80px]">
-      
-      <main className="w-full max-w-[375px] md:max-w-3xl mx-auto px-container-margin py-stack-gap-md flex-1 flex flex-col gap-stack-gap-md overflow-y-auto pb-24 md:pb-8">
+      <main className="w-full max-w-[375px] md:max-w-3xl mx-auto px-container-margin py-stack-gap-md flex-1 flex flex-col gap-stack-gap-md overflow-y-auto pb-28 md:pb-10">
+        <div className="flex items-center">
+          <Link
+            href="/enterprise/jobs"
+            className="inline-flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-colors"
+          >
+            <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+            返回职位列表
+          </Link>
+        </div>
+
         {/* Header Card */}
         <div className="bg-surface-container-lowest rounded-xl border border-surface-variant p-inline-padding-md shadow-[0_2px_8px_rgba(0,0,0,0.04)] flex flex-col gap-stack-gap-sm">
           <div className="flex justify-between items-start">
@@ -175,7 +184,7 @@ export default function JobDetail() {
       </main>
 
       {/* Bottom Fixed Actions */}
-      <div className="fixed bottom-0 left-0 right-0 w-full bg-surface-container-lowest border-t border-surface-variant p-4 shadow-[0_-4px_16px_rgba(0,0,0,0.05)] z-50 flex gap-4 items-center justify-center max-w-[375px] md:max-w-3xl mx-auto pb-safe">
+      <div className="fixed bottom-4 md:bottom-6 left-0 right-0 w-full z-50 flex gap-4 items-center justify-center max-w-[375px] md:max-w-3xl mx-auto px-container-margin pb-safe">
         <Link href={`/enterprise/jobs/${job.id}/edit`} className="flex-1 h-12 rounded-lg border border-outline-variant text-on-surface font-label-md text-[15px] font-medium hover:bg-surface-container-low flex justify-center items-center transition-colors active:scale-[0.98]">
             修改职位
         </Link>
