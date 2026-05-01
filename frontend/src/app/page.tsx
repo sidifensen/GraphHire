@@ -298,7 +298,7 @@ export default function HomePage() {
                 <span className="font-black uppercase tracking-[0.16em] text-outline">谁在使用</span>
                 <span className="text-on-surface-variant">已有 10,000+ 企业团队使用 GraphHire 完成招聘协同</span>
               </div>
-              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-4">
                 {logoCompanies.map((item) => (
                   <div
                     key={item.name}
