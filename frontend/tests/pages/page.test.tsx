@@ -19,4 +19,12 @@ describe('HomePage', () => {
     expect(screen.getByText('企业活跃席位')).toBeInTheDocument();
     expect(screen.getByText('候选人响应率')).toBeInTheDocument();
   });
+
+  it('renders galaxy style right hero card metrics', () => {
+    render(<HomePage />);
+    expect(screen.getByText('7日成功匹配')).toBeInTheDocument();
+    expect(screen.getByText('3,286')).toBeInTheDocument();
+    expect(screen.getByTestId('hero-visual-card')).toBeInTheDocument();
+    expect(screen.getByTestId('hero-metrics-strip')).toBeInTheDocument();
+  });
 });

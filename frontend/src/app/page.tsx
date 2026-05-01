@@ -79,38 +79,45 @@ export default function HomePage() {
               transition={{ delay: 0.4 }}
               className="hidden md:block relative h-[520px]"
             >
-              <div className="absolute -inset-4 rounded-[44px] bg-gradient-to-br from-primary/20 via-[#1d4ed8]/10 to-[#dbeafe] blur-2xl opacity-70"></div>
-              <div className="relative h-full overflow-hidden rounded-[40px] border border-white/50 shadow-[0_28px_72px_rgba(15,23,42,0.28)]">
+              <div className="absolute -inset-5 rounded-[46px] bg-[radial-gradient(circle_at_22%_12%,rgba(59,130,246,0.28),transparent_48%),radial-gradient(circle_at_85%_86%,rgba(148,163,184,0.22),transparent_46%)] blur-2xl opacity-80"></div>
+              <div
+                data-testid="hero-visual-card"
+                className="group relative h-full overflow-hidden rounded-[42px] border border-white/45 shadow-[0_32px_72px_rgba(15,23,42,0.30)]"
+              >
                 <img
                   src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
                   alt="GraphHire Platform"
-                  className="w-full h-full object-cover"
+                  className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-[1.04]"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0b1020]/85 via-[#0b1020]/38 to-transparent"></div>
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_86%_18%,rgba(255,255,255,0.26),transparent_34%)]"></div>
+                <div className="absolute inset-0 bg-gradient-to-b from-[#0a1327]/28 via-[#081124]/44 to-[#060d1f]/90"></div>
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_12%,rgba(255,255,255,0.30),transparent_34%)]"></div>
+                <div className="absolute inset-0 border border-white/20 rounded-[42px] pointer-events-none"></div>
 
-                <div className="absolute left-6 top-6 z-20 rounded-3xl border border-white/35 bg-white/14 px-5 py-4 text-white backdrop-blur-xl shadow-[0_12px_35px_rgba(2,6,23,0.35)]">
-                  <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white/25">
+                <div className="absolute left-6 top-6 z-20 w-[220px] rounded-[34px] border border-white/30 bg-[linear-gradient(145deg,rgba(255,255,255,0.22),rgba(255,255,255,0.08))] px-7 py-6 text-white backdrop-blur-2xl shadow-[0_18px_42px_rgba(2,6,23,0.4)]">
+                  <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/24">
                     <Target size={18} />
                   </div>
-                  <div className="text-[11px] font-black uppercase tracking-[0.2em] text-white/80">AI匹配指数</div>
+                  <div className="text-[12px] font-black uppercase tracking-[0.2em] text-white/80">AI匹配指数</div>
                   <div className="mt-1 text-3xl font-black tracking-tight">98.7</div>
-                  <div className="text-xs font-semibold text-white/80">高潜候选人识别稳定提升</div>
+                  <div className="mt-1 text-sm font-semibold text-white/80">高潜候选人识别稳定提升</div>
                 </div>
 
-                <div className="absolute bottom-6 left-6 right-6 z-20 rounded-2xl border border-white/30 bg-white/10 p-4 backdrop-blur-xl">
+                <div
+                  data-testid="hero-metrics-strip"
+                  className="absolute bottom-6 left-6 right-6 z-20 rounded-[26px] border border-white/28 bg-[linear-gradient(102deg,rgba(15,23,42,0.72),rgba(30,41,59,0.55))] p-5 backdrop-blur-xl"
+                >
                   <div className="grid grid-cols-3 gap-3 text-white">
-                    <div className="rounded-xl border border-white/15 bg-black/10 p-3">
+                    <div className="rounded-2xl border border-white/16 bg-black/14 p-4">
                       <div className="text-[11px] font-semibold text-white/75">企业活跃席位</div>
-                      <div className="mt-1 text-xl font-black">12,480</div>
+                      <div className="mt-1 text-[40px] leading-none font-black tracking-tight">12,480</div>
                     </div>
-                    <div className="rounded-xl border border-white/15 bg-black/10 p-3">
+                    <div className="rounded-2xl border border-white/16 bg-black/14 p-4">
                       <div className="text-[11px] font-semibold text-white/75">候选人响应率</div>
-                      <div className="mt-1 text-xl font-black">92.4%</div>
+                      <div className="mt-1 text-[40px] leading-none font-black tracking-tight">92.4%</div>
                     </div>
-                    <div className="rounded-xl border border-white/15 bg-black/10 p-3">
+                    <div className="rounded-2xl border border-white/16 bg-black/14 p-4">
                       <div className="text-[11px] font-semibold text-white/75">7日成功匹配</div>
-                      <div className="mt-1 text-xl font-black">3,286</div>
+                      <div className="mt-1 text-[40px] leading-none font-black tracking-tight">3,286</div>
                     </div>
                   </div>
                 </div>
