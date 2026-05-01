@@ -11,6 +11,7 @@ import com.graphhire.auth.domain.vo.AuthStatus;
 import com.graphhire.auth.domain.vo.EncryptedPassword;
 import com.graphhire.auth.domain.vo.UserType;
 import com.graphhire.auth.domain.vo.Username;
+import com.graphhire.common.constants.UploadErrorMessages;
 import com.graphhire.common.vo.Exceptions;
 import com.graphhire.common.vo.Result;
 import com.graphhire.config.UploadProperties;
@@ -130,11 +131,11 @@ public class CompanyController {
     public Result<String> uploadAvatar(@RequestParam("file") MultipartFile file) {
         long maxFileSize = uploadProperties.getAvatar().getMaxFileSize().toBytes();
         if (file.getSize() > maxFileSize) {
-            throw new RuntimeException("文件大小不能超过" + uploadProperties.getAvatar().getMaxFileSize().toMegabytes() + "MB");
+            throw new RuntimeException(UploadErrorMessages.avatarTooLarge(uploadProperties.getAvatar().getMaxFileSize().toMegabytes()));
         }
         String contentType = file.getContentType() == null ? "" : file.getContentType();
         if (!contentType.startsWith("image/")) {
-            throw new RuntimeException("只能上传图片文件");
+            throw new RuntimeException(UploadErrorMessages.AVATAR_INVALID_TYPE);
         }
 
         Long companyId = currentCompanyId();
@@ -149,7 +150,7 @@ public class CompanyController {
             companyAppService.updateCompanyAvatarPath(companyId, avatarPath);
             return Result.success(companyAvatarUrlResolver.resolve(avatarPath));
         } catch (IOException e) {
-            throw new RuntimeException("上传企业头像失败: " + e.getMessage(), e);
+            throw new RuntimeException(UploadErrorMessages.companyAvatarUploadFailed(e.getMessage()), e);
         }
     }
 

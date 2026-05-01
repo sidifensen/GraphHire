@@ -1,6 +1,7 @@
 package com.graphhire.config;
 
 import cn.dev33.satoken.exception.NotLoginException;
+import com.graphhire.common.constants.UploadErrorMessages;
 import com.graphhire.common.vo.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
@@ -66,16 +67,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public Result<Void> handleMaxUploadSizeExceeded(MaxUploadSizeExceededException e) {
-        return Result.error(400, "文件超过上传大小限制");
+        return Result.error(400, UploadErrorMessages.UPLOAD_SIZE_EXCEEDED);
     }
 
     @ExceptionHandler(MultipartException.class)
     public Result<Void> handleMultipartException(MultipartException e) {
         String message = e.getMessage();
         if (message != null && message.toLowerCase().contains("size")) {
-            return Result.error(400, "文件超过上传大小限制");
+            return Result.error(400, UploadErrorMessages.UPLOAD_SIZE_EXCEEDED);
         }
-        return Result.error(400, "文件上传失败，请检查文件格式和大小");
+        return Result.error(400, UploadErrorMessages.UPLOAD_FAILED_GENERIC);
     }
 
     /**

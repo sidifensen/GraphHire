@@ -5,6 +5,7 @@ import { TopNav } from '@/app/(user)/_mock/components/TopNav';
 import { CheckCircle, Clock, Trash2, Eye, CloudUpload, XCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { resumeApi, type Resume } from '@/lib/api/resume';
+import { UPLOAD_ERRORS } from '@/lib/constants/upload-errors';
 import UserWorkbenchSidebar from '@/app/(user)/_components/UserWorkbenchSidebar';
 
 function formatDate(value?: string) {
@@ -198,13 +199,13 @@ export default function ResumeManageContent() {
     const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
     const mimeType = file.type.toLowerCase();
     if (!ALLOWED_RESUME_EXTENSIONS.has(extension) || !ALLOWED_RESUME_MIME_TYPES.has(mimeType)) {
-      setError('仅支持上传 PDF、DOC、DOCX 格式的简历');
+      setError(UPLOAD_ERRORS.resumeInvalidType);
       setMessage(null);
       event.target.value = '';
       return;
     }
     if (file.size > MAX_RESUME_FILE_SIZE) {
-      setError('简历文件不能超过 10MB');
+      setError(UPLOAD_ERRORS.resumeTooLarge);
       setMessage(null);
       event.target.value = '';
       return;

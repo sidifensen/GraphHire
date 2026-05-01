@@ -8,6 +8,7 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.graphhire.common.vo.Exceptions;
 import com.graphhire.common.vo.PageResult;
+import com.graphhire.common.constants.UploadErrorMessages;
 import com.graphhire.resume.application.command.UploadResumeCmd;
 import com.graphhire.resume.application.service.dto.ResumePreviewFile;
 import com.graphhire.resume.domain.model.ParseTask;
@@ -68,25 +69,25 @@ public class ResumeAppService {
     public Resume uploadResume(UploadResumeCmd cmd) throws IOException {
         List<Resume> existingResumes = resumeRepository.findByUserId(cmd.getUserId());
         if (existingResumes.size() >= 3) {
-            throw Exceptions.BusinessException.of(400, "最多上传3份简历，请先删除旧简历");
+            throw Exceptions.BusinessException.of(400, UploadErrorMessages.RESUME_LIMIT_REACHED);
         }
 
         String fileName = cmd.getFileName();
         String fileExt = StrUtil.blankToDefault(FileUtil.extName(fileName), "").toLowerCase(Locale.ROOT);
         Set<String> allowedExt = uploadProperties.getResume().getAllowedExtensions();
         if (!allowedExt.contains(fileExt)) {
-            throw Exceptions.BusinessException.of(400, "仅支持上传 " + String.join("、", allowedExt).toUpperCase(Locale.ROOT) + " 格式的简历");
+            throw Exceptions.BusinessException.of(400, UploadErrorMessages.resumeInvalidExtension(allowedExt));
         }
 
         long maxBytes = uploadProperties.getResume().getMaxFileSize().toBytes();
         if (cmd.getFileSize() > maxBytes) {
-            throw Exceptions.BusinessException.of(400, "简历文件超过大小限制，最大支持 " + uploadProperties.getResume().getMaxFileSize().toMegabytes() + "MB");
+            throw Exceptions.BusinessException.of(400, UploadErrorMessages.resumeTooLarge(uploadProperties.getResume().getMaxFileSize().toMegabytes()));
         }
 
         String contentType = StrUtil.blankToDefault(cmd.getContentType(), "").toLowerCase(Locale.ROOT);
         Set<String> allowedMimeTypes = uploadProperties.getResume().getAllowedMimeTypes();
         if (StrUtil.isBlank(contentType) || !allowedMimeTypes.contains(contentType)) {
-            throw Exceptions.BusinessException.of(400, "简历文件类型不合法，请上传 PDF、DOC、DOCX 文件");
+            throw Exceptions.BusinessException.of(400, UploadErrorMessages.RESUME_INVALID_MIME);
         }
 
         // 步骤1：上传文件到RustFS

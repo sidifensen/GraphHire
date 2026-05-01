@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { TopNav } from '@/app/(user)/_mock/components/TopNav';
 import { Camera, MapPin, ChevronDown } from 'lucide-react';
 import { personApi, type PersonProfile } from '@/lib/api/person';
+import { UPLOAD_ERRORS } from '@/lib/constants/upload-errors';
 import { userAuthStore } from '@/lib/stores/auth-store';
 import UserWorkbenchSidebar from '@/app/(user)/_components/UserWorkbenchSidebar';
 
@@ -159,13 +160,13 @@ export default function PersonalInfo() {
 
     const isImage = file.type.toLowerCase().startsWith('image/');
     if (!isImage) {
-      setError('只能上传图片文件');
+      setError(UPLOAD_ERRORS.avatarInvalidType);
       setMessage(null);
       event.target.value = '';
       return;
     }
     if (file.size > MAX_AVATAR_FILE_SIZE) {
-      setError('头像文件不能超过 2MB');
+      setError(UPLOAD_ERRORS.avatarTooLarge);
       setMessage(null);
       event.target.value = '';
       return;

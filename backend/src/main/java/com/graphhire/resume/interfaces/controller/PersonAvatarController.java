@@ -3,6 +3,7 @@ package com.graphhire.resume.interfaces.controller;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.io.file.FileNameUtil;
 import com.graphhire.common.vo.Result;
+import com.graphhire.common.constants.UploadErrorMessages;
 import com.graphhire.config.UploadProperties;
 import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.repository.PersonInfoRepository;
@@ -41,12 +42,12 @@ public class PersonAvatarController {
 
         long maxFileSize = uploadProperties.getAvatar().getMaxFileSize().toBytes();
         if (file.getSize() > maxFileSize) {
-            throw new RuntimeException("文件大小不能超过" + uploadProperties.getAvatar().getMaxFileSize().toMegabytes() + "MB");
+            throw new RuntimeException(UploadErrorMessages.avatarTooLarge(uploadProperties.getAvatar().getMaxFileSize().toMegabytes()));
         }
 
         String contentType = Optional.ofNullable(file.getContentType()).orElse("");
         if (!contentType.startsWith("image/")) {
-            throw new RuntimeException("只能上传图片文件");
+            throw new RuntimeException(UploadErrorMessages.AVATAR_INVALID_TYPE);
         }
 
         String originalFilename = file.getOriginalFilename();
@@ -70,7 +71,7 @@ public class PersonAvatarController {
 
             return Result.success("/person/avatar/public/" + userId);
         } catch (IOException e) {
-            throw new RuntimeException("上传头像失败: " + e.getMessage());
+            throw new RuntimeException(UploadErrorMessages.avatarUploadFailed(e.getMessage()));
         }
     }
 
