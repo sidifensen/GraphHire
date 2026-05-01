@@ -241,7 +241,7 @@ export default function AdminEnterpriseReviewPage() {
                   </div>
                 </div>
               ),
-              className: 'w-[36%] normal-case tracking-normal text-[13px] font-semibold text-slate-600',
+              className: 'w-[28%] normal-case tracking-normal text-[13px] font-semibold text-slate-600',
             },
             { header: '联系人', accessor: (company) => company.contact ?? '-', className: 'normal-case tracking-normal text-[13px] font-semibold text-slate-600' },
             { header: '企业主', accessor: (company) => company.ownerName ?? '-', className: 'normal-case tracking-normal text-[13px] font-semibold text-slate-600' },
