@@ -14,6 +14,17 @@ const trustMetrics = [
   { label: '投递响应率', value: '92.4%' },
 ];
 
+const logoCompanies = [
+  'TechNova',
+  'BlueCore',
+  '星桥科技',
+  '云脉数据',
+  'FutureLink',
+  '凌越智能',
+  'NorthGrid',
+  '极点制造',
+];
+
 const enterpriseFlow = [
   {
     title: '发布职位',
@@ -149,6 +160,25 @@ export default function HomePage() {
                 </div>
               </div>
 
+            </div>
+          </section>
+
+          <section className="bg-surface-lowest px-5 pb-8 md:px-margin-desktop" aria-label="谁在使用">
+            <div className="mx-auto w-full max-w-7xl rounded-2xl border border-surface-mid bg-surface-background/70 px-5 py-5">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
+                <span className="font-black uppercase tracking-[0.16em] text-outline">谁在使用</span>
+                <span className="text-on-surface-variant">已有 10,000+ 企业团队使用 GraphHire 完成招聘协同</span>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
+                {logoCompanies.map((name) => (
+                  <div
+                    key={name}
+                    className="flex h-12 items-center justify-center rounded-lg border border-surface-mid bg-surface-low px-2 text-center text-xs font-bold text-on-surface-variant"
+                  >
+                    {name}
+                  </div>
+                ))}
+              </div>
             </div>
           </section>
 
