@@ -42,21 +42,45 @@ const { userAuthStore } = vi.hoisted(() => {
   };
 });
 
+const { getProfileMock, getApplicationsMock, getFavoritesMock } = vi.hoisted(() => ({
+  getProfileMock: vi.fn(),
+  getApplicationsMock: vi.fn(),
+  getFavoritesMock: vi.fn(),
+}));
+
 vi.mock('@/lib/stores/auth-store', () => ({
   userAuthStore,
 }));
 
 vi.mock('@/lib/api/person', () => ({
   personApi: {
-    getProfile: vi.fn().mockResolvedValue({
-      realName: '测试姓名',
-      email: 'test-user@example.com',
-      avatarUrl: 'https://picsum.photos/100',
-    }),
+    getProfile: getProfileMock,
+    getApplications: getApplicationsMock,
+    getFavorites: getFavoritesMock,
   },
 }));
 
 describe('User Profile auth info', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    getProfileMock.mockResolvedValue({
+      realName: '测试姓名',
+      email: 'test-user@example.com',
+      avatarUrl: 'https://picsum.photos/100',
+    });
+    getApplicationsMock.mockResolvedValue([
+      { id: 1, jobId: 1, status: 'VIEWED', appliedAt: '2026-05-01T00:00:00.000Z' },
+      { id: 2, jobId: 2, status: 'INTERVIEW_INVITED', appliedAt: '2026-05-01T00:00:00.000Z' },
+      { id: 3, jobId: 3, status: 'VIEWED', appliedAt: '2026-05-01T00:00:00.000Z' },
+    ]);
+    getFavoritesMock.mockResolvedValue({
+      list: [],
+      total: 7,
+      page: 1,
+      size: 10,
+    });
+  });
+
   test('显示当前登录用户对应资料', async () => {
     userAuthStore.setState({
       isAuthenticated: true,
@@ -77,5 +101,28 @@ describe('User Profile auth info', () => {
 
     expect(await screen.findByText('测试姓名')).toBeInTheDocument();
     expect(screen.getByText('test-user@example.com')).toBeInTheDocument();
+    expect(await screen.findByTestId('profile-stat-viewed')).toHaveTextContent('2');
+    expect(screen.getByTestId('profile-stat-interview')).toHaveTextContent('1');
+    expect(screen.getByTestId('profile-stat-favorite')).toHaveTextContent('7');
+  });
+
+  test('未登录时不请求统计接口并显示0', async () => {
+    userAuthStore.setState({
+      isAuthenticated: false,
+      user: null,
+    });
+
+    render(
+      <ThemeProvider>
+        <ProfilePage />
+      </ThemeProvider>
+    );
+
+    expect(await screen.findByText('未登录用户')).toBeInTheDocument();
+    expect(screen.getByTestId('profile-stat-viewed')).toHaveTextContent('0');
+    expect(screen.getByTestId('profile-stat-interview')).toHaveTextContent('0');
+    expect(screen.getByTestId('profile-stat-favorite')).toHaveTextContent('0');
+    expect(getApplicationsMock).not.toHaveBeenCalled();
+    expect(getFavoritesMock).not.toHaveBeenCalled();
   });
 });

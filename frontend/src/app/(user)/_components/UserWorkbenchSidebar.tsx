@@ -8,13 +8,9 @@ const MENU_ITEMS = [
   { label: '简历管理', href: '/resume/manage' },
   { label: '投递记录', href: '/applications' },
   { label: '我的图谱', href: '/skill-graph' },
-  { label: '账号设置', href: '#' },
 ] as const;
 
 function isActive(pathname: string, href: string) {
-  if (href === '#') {
-    return false;
-  }
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
