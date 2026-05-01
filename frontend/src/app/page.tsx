@@ -292,7 +292,7 @@ export default function HomePage() {
             </div>
           </section>
 
-          <section className="bg-surface-lowest px-5 pb-8 md:px-margin-desktop" aria-label="谁在使用">
+          <section className="bg-surface-lowest px-5 pb-8 pt-6 md:px-margin-desktop md:pt-10" aria-label="谁在使用">
             <div className="mx-auto w-full max-w-7xl rounded-2xl border border-surface-mid bg-surface-background/70 px-5 py-5">
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
                 <span className="font-black uppercase tracking-[0.16em] text-outline">谁在使用</span>
