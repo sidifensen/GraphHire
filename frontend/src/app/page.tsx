@@ -200,14 +200,16 @@ export default function HomePage() {
                   <article key={step.title} className={`${cardCls} relative min-h-[320px] overflow-hidden border-white/10 text-white md:min-h-[360px]`}>
                     <img src={step.image} alt={`${step.title}背景图`} className="absolute inset-0 h-full w-full object-cover" />
                     <div className="absolute inset-0 bg-[linear-gradient(160deg,rgba(7,17,36,0.58),rgba(3,11,26,0.88))]" />
-                    <div className="relative z-10">
-                      <p className="mb-2 text-xs font-black uppercase tracking-[0.18em] text-white/70">Step {idx + 1}</p>
-                      <h3 className="text-xl font-black text-white">{step.title}</h3>
-                      <p className="mt-3 text-sm leading-relaxed text-white/85">{step.desc}</p>
-                    </div>
-                    <div className="relative z-10 mt-4 flex items-start gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-sm font-semibold text-white">
-                      <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
-                      <span>{step.result}</span>
+                    <div className="relative z-10 flex h-full flex-col justify-end">
+                      <div>
+                        <p className="mb-2 text-xs font-black uppercase tracking-[0.18em] text-white/70">Step {idx + 1}</p>
+                        <h3 className="text-xl font-black text-white">{step.title}</h3>
+                        <p className="mt-3 text-sm leading-relaxed text-white/85">{step.desc}</p>
+                      </div>
+                      <div className="mt-4 flex items-start gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-sm font-semibold text-white">
+                        <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
+                        <span>{step.result}</span>
+                      </div>
                     </div>
                   </article>
                 ))}
@@ -226,7 +228,7 @@ export default function HomePage() {
                   <article key={step.title} className={`${cardCls} relative min-h-[320px] overflow-hidden border-white/10 text-white md:min-h-[360px]`}>
                     <img src={step.image} alt={`${step.title}背景图`} className="absolute inset-0 h-full w-full object-cover" />
                     <div className="absolute inset-0 bg-[linear-gradient(160deg,rgba(18,16,42,0.56),rgba(11,9,30,0.88))]" />
-                    <div className={`relative z-10 flex h-full flex-col ${step.title === '图谱诊断' ? 'justify-end' : ''}`}>
+                    <div className="relative z-10 flex h-full flex-col justify-end">
                       <div>
                         <p className="mb-2 text-xs font-black uppercase tracking-[0.18em] text-white/70">Step {idx + 1}</p>
                         <h3 className="text-xl font-black text-white">{step.title}</h3>
