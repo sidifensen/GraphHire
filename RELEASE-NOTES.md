@@ -2,6 +2,7 @@
 
 ## 2026-05-01
 
+- refactor: 统一“谁在使用”品牌名称展示风格为更接近官方命名样式（如 Alibaba.com、HUAWEI）
 - feat: “谁在使用”团队标识从缩写徽标改为真实品牌 SVG 图标（Google/Meta/Netflix/Spotify/Alibaba/ByteDance/Huawei/Tesla）
 - fix: 增加“谁在使用”区块上方留白（`pt-6 md:pt-10`），改善与“双侧案例”之间的视觉间距
 - refactor: 首屏文案定稿为“主标题：GraphHire 图谱智聘”，徽标文案改为“AI智能匹配招聘”

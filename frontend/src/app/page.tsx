@@ -19,9 +19,9 @@ const logoCompanies = [
   { name: 'Meta', logo: 'https://cdn.simpleicons.org/meta' },
   { name: 'Netflix', logo: 'https://cdn.simpleicons.org/netflix' },
   { name: 'Spotify', logo: 'https://cdn.simpleicons.org/spotify' },
-  { name: 'Alibaba', logo: 'https://cdn.simpleicons.org/alibabadotcom' },
+  { name: 'Alibaba.com', logo: 'https://cdn.simpleicons.org/alibabadotcom' },
   { name: 'ByteDance', logo: 'https://cdn.simpleicons.org/bytedance' },
-  { name: 'Huawei', logo: 'https://cdn.simpleicons.org/huawei' },
+  { name: 'HUAWEI', logo: 'https://cdn.simpleicons.org/huawei' },
   { name: 'Tesla', logo: 'https://cdn.simpleicons.org/tesla' },
 ];
 
