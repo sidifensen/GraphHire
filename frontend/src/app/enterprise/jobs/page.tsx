@@ -19,14 +19,43 @@ function formatSalary(job: EnterpriseJobListItem): string {
   if (job.salaryMin == null && job.salaryMax == null) {
     return "薪资面议";
   }
-  const unit = job.salaryUnit ? ` ${job.salaryUnit}` : "";
-  if (job.salaryMin != null && job.salaryMax != null) {
-    return `${job.salaryMin}-${job.salaryMax}${unit}`;
+
+  const normalizeToK = (value?: number | null): number | null => {
+    if (value == null) return null;
+    // 大于 1000 视为元，转换为 k；小于等于 1000 视为已经是 k
+    return value > 1000 ? Number((value / 1000).toFixed(1)) : value;
+  };
+
+  const minK = normalizeToK(job.salaryMin);
+  const maxK = normalizeToK(job.salaryMax);
+  if (minK != null && maxK != null) {
+    return `${minK}-${maxK}k`;
   }
-  if (job.salaryMin != null) {
-    return `${job.salaryMin}+${unit}`;
+  if (minK != null) {
+    return `${minK}+k`;
   }
-  return `${job.salaryMax}${unit}`;
+  return `${maxK}k`;
+}
+
+function formatDate(value?: string | null): string | null {
+  if (!value) return null;
+  const normalized = value.includes("T") ? value : value.replace(" ", "T");
+  const date = new Date(normalized);
+  if (Number.isNaN(date.getTime())) return null;
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
+    date.getDate(),
+  ).padStart(2, "0")}`;
+}
+
+function formatDescriptionPreview(description?: string | null): string {
+  if (!description || description.trim().length === 0) {
+    return "暂无岗位详情";
+  }
+  const normalized = description.replace(/\s+/g, " ").trim();
+  if (normalized.length <= 66) {
+    return normalized;
+  }
+  return `${normalized.slice(0, 66)}...`;
 }
 
 export default function Jobs() {
@@ -174,62 +203,54 @@ export default function Jobs() {
                 job.status === "CLOSED" ? "opacity-80" : ""
               )}
             >
-              <div className="flex justify-between items-start">
-                <div>
-                   <div className="flex items-center gap-2 mb-1">
-                      <h2 className="font-headline-sm text-headline-sm text-on-surface cursor-pointer hover:text-primary transition-colors">
+              <div className="flex justify-between items-start gap-3">
+                <div className="min-w-0">
+                   <div className="flex items-start gap-2 mb-1">
+                      <h2 className="font-headline-sm text-headline-sm text-on-surface cursor-pointer hover:text-primary transition-colors leading-snug break-words">
                         <Link href={`/enterprise/jobs/${job.id}`}>{job.title}</Link>
                       </h2>
-                      {job.status === "CLOSED" ? (
-                          <span className="bg-surface-variant text-on-surface-variant px-1.5 py-0.5 rounded text-[10px] font-medium tracking-wide">已关闭</span>
-                      ) : job.status === "DRAFT" ? (
-                          <span className="bg-secondary-container text-secondary px-1.5 py-0.5 rounded text-[10px] font-medium tracking-wide">草稿</span>
-                      ) : (
-                          <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded text-[10px] font-medium tracking-wide">招聘中</span>
-                      )}
                   </div>
                   <div className="flex items-center gap-2 font-body-md text-body-md text-on-surface-variant">
-                    <span>{job.department || "未分配部门"}</span>
-                    <span className="w-1 h-1 rounded-full bg-outline-variant"></span>
                     <span>{job.city || "地点待定"}</span>
                   </div>
                 </div>
-                <span className={cn("font-headline-sm text-headline-sm", job.status === "CLOSED" ? "text-on-surface-variant" : "text-primary")}>
+                <div className="flex flex-col items-end gap-2 shrink-0">
+                  <span
+                    className={cn(
+                      "px-2 py-0.5 rounded text-[11px] font-semibold tracking-wide",
+                      job.status === "CLOSED"
+                        ? "bg-surface-variant text-on-surface-variant"
+                        : job.status === "DRAFT"
+                          ? "bg-secondary-container text-secondary"
+                          : "bg-primary/10 text-primary",
+                    )}
+                  >
+                    {getStatusText(job.status)}
+                  </span>
+                <span className={cn("font-headline-sm text-headline-sm whitespace-nowrap", job.status === "CLOSED" ? "text-on-surface-variant" : "text-primary")}>
                   {formatSalary(job)}
                 </span>
-              </div>
-
-              {/* Stats Bento */}
-              <div className="flex gap-3">
-                <div className="flex-1 bg-surface-container-low rounded-lg p-2.5 flex flex-col items-center justify-center border border-white/50 dark:border-white/5">
-                  <span className="font-label-md text-label-md text-on-surface-variant mb-1">曝光量</span>
-                  <span className={cn("font-headline-sm text-headline-sm", job.status === "CLOSED" ? "text-on-surface-variant" : "text-on-surface")}>
-                    {(job.viewCount ?? 0).toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex-1 bg-surface-container-low rounded-lg p-2.5 flex flex-col items-center justify-center border border-white/50 dark:border-white/5">
-                  <span className="font-label-md text-label-md text-on-surface-variant mb-1">投递数</span>
-                  <span className={cn("font-headline-sm text-headline-sm", job.status === "CLOSED" ? "text-on-surface-variant" : "text-on-surface")}>
-                    {job.applyCount ?? 0}
-                  </span>
-                </div>
-                <div className={cn("flex-1 rounded-lg p-2.5 flex flex-col items-center justify-center border border-white/50 dark:border-white/5", job.status === "CLOSED" ? "bg-surface-container-low" : "bg-primary/5")}>
-                  <span className={cn("font-label-md text-label-md mb-1", job.status === "CLOSED" ? "text-on-surface-variant" : "text-primary")}>高匹配数</span>
-                  <span className={cn("font-headline-sm text-headline-sm text-primary")}>
-                    {job.matchCount ?? 0}
-                  </span>
                 </div>
               </div>
 
-              <div className="flex-1"></div> {/* Spacer for alignment */}
+              {/* Description Preview */}
+              <div className="bg-surface-container-low rounded-lg p-3 border border-white/50 dark:border-white/5">
+                <div className="font-label-md text-label-md text-on-surface-variant mb-1">岗位详情</div>
+                <div className="font-body-md text-body-md text-on-surface leading-relaxed break-words">
+                  {formatDescriptionPreview(job.description)}
+                </div>
+              </div>
 
               {/* Actions */}
-              <div className="flex gap-3 mt-1 pt-4 border-t border-surface-variant">
-                <Link href={`/enterprise/jobs/${job.id}`} className="flex-[0.8] h-10 rounded-lg border border-outline-variant font-label-md text-label-md text-on-surface flex items-center justify-center gap-1.5 hover:bg-surface-container-low transition-colors active:scale-95">
+              <div className="flex gap-2 mt-1 pt-4 border-t border-surface-variant">
+                <Link href={`/enterprise/jobs/${job.id}`} className="flex-1 h-10 rounded-lg border border-outline-variant font-label-md text-label-md text-on-surface flex items-center justify-center gap-1.5 hover:bg-surface-container-low transition-colors active:scale-95">
                   详情
                 </Link>
+                <Link href={`/enterprise/jobs/${job.id}/edit`} className="flex-1 h-10 rounded-lg border border-outline-variant font-label-md text-label-md text-on-surface flex items-center justify-center gap-1.5 hover:bg-surface-container-low transition-colors active:scale-95">
+                  编辑
+                </Link>
                 {job.status === "PUBLISHED" ? (
-                  <Link href={`/enterprise/recommendations?jobId=${job.id}`} className="flex-1 h-10 rounded-lg bg-primary font-label-md text-label-md text-on-primary flex items-center justify-center gap-1.5 hover:bg-opacity-90 transition-all shadow-sm hover:shadow active:scale-95">
+                  <Link href={`/enterprise/recommendations?jobId=${job.id}`} className="flex-1 h-10 rounded-lg bg-primary font-label-md text-label-md text-on-primary flex items-center justify-center gap-1.5 hover:bg-opacity-90 transition-all shadow-sm hover:shadow active:scale-95 whitespace-nowrap">
                     匹配候选人
                   </Link>
                 ) : (
@@ -237,6 +258,11 @@ export default function Jobs() {
                     {getStatusText(job.status)}
                   </button>
                 )}
+              </div>
+              <div className="flex justify-end items-center mt-1">
+                <span className="font-label-sm text-label-sm text-on-surface-variant">
+                  发布时间：{formatDate(job.publishedAt) || formatDate(job.createdAt) || "暂无"}
+                </span>
               </div>
             </article>
           ))}
