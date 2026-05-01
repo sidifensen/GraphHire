@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ArrowRight, BarChart3, Building2, CheckCircle2, Clock3, ShieldCheck, Users } from 'lucide-react';
+import { ArrowRight, BarChart3, Building2, CheckCircle2, Clock3, ShieldCheck, Sparkles, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
@@ -109,6 +109,15 @@ export default function HomePage() {
 
             <div className="relative z-10 mx-auto w-full max-w-7xl">
               <div className="max-w-4xl text-center md:text-left">
+                <motion.div
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-primary"
+                >
+                  <Sparkles size={14} />
+                  <span className="text-[12px] font-semibold tracking-wide">GraphHire 图谱智聘</span>
+                </motion.div>
+
                 <motion.h1
                   initial={{ opacity: 0, y: 18 }}
                   animate={{ opacity: 1, y: 0 }}
