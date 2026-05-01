@@ -112,27 +112,34 @@ export default function HomePage() {
                 <motion.div
                   initial={{ opacity: 0, y: 18 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-primary"
+                  className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-primary"
                 >
                   <Sparkles size={14} />
-                  <span className="text-[12px] font-semibold tracking-wide">AI 图谱驱动的人岗精准连接</span>
+                  <span className="text-[12px] font-semibold tracking-wide">GraphHire 图谱智聘</span>
                 </motion.div>
 
                 <motion.h1
                   initial={{ opacity: 0, y: 18 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.05 }}
-                  className="mb-5 text-4xl font-black leading-tight tracking-tight text-on-surface md:text-[44px] lg:text-[56px] xl:text-[64px]"
+                  className="mb-3 text-3xl font-black leading-tight tracking-tight text-on-surface md:text-4xl lg:text-5xl"
                 >
-                  <span className="md:whitespace-nowrap">企业更快招到合适的人，</span>
-                  <br />
-                  <span className="md:whitespace-nowrap">人才更快找到匹配的岗</span>
+                  GraphHire 图谱智聘
                 </motion.h1>
 
                 <motion.p
                   initial={{ opacity: 0, y: 18 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
+                  className="mb-4 max-w-3xl text-xl font-bold leading-relaxed text-on-surface md:text-2xl"
+                >
+                  企业更快招到合适的人，人才更快找到匹配的岗
+                </motion.p>
+
+                <motion.p
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15 }}
                   className="mb-8 max-w-xl text-base leading-relaxed text-on-surface-variant md:text-lg"
                 >
                   以能力图谱与语义匹配为核心，统一招聘效率、候选质量与投递体验，帮助企业和人才在同一条路径上高效完成匹配。
