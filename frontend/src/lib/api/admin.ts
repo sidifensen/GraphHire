@@ -95,6 +95,7 @@ export interface CompanyAuthItem {
   scale?: string;
   address?: string;
   contact?: string;
+  ownerName?: string;
   legalPerson: string;
   phone: string;
   businessLicenseUrl?: string;

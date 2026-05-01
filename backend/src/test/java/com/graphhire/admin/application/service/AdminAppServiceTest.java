@@ -244,15 +244,22 @@ class AdminAppServiceTest {
             c1.setContactPhone("138");
             c1.setLicenseUrl("/a.png");
             c1.setAuthStatus(AuthStatus.PENDING_VERIFY);
+            c1.setUserId(100L);
+
+            User owner = new User();
+            owner.setId(100L);
+            owner.setUsername(Username.of("owner@graphhire.com"));
 
             when(companyRepository.findByAuthStatus(AuthStatus.PENDING_VERIFY)).thenReturn(List.of(c1));
             when(companyAvatarUrlResolver.resolve("avatar/company-1.png")).thenReturn("https://cdn.example.com/company-1.png");
+            when(userRepository.findById(100L)).thenReturn(Optional.of(owner));
 
             AdminPageResponse<AdminCompanyAuthItemResponse> page = adminAppService.getCompanyAuthList("PENDING", "星河", 1, 10);
 
             assertEquals(1, page.getTotal());
             assertEquals("星河科技", page.getList().get(0).getCompanyName());
             assertEquals("https://cdn.example.com/company-1.png", page.getList().get(0).getAvatarUrl());
+            assertEquals("owner@graphhire.com", page.getList().get(0).getOwnerName());
             assertEquals("PENDING", page.getList().get(0).getStatus());
         }
 

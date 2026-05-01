@@ -16,6 +16,7 @@ const { getCompanyAuthList, updateCompanyAuth } = vi.hoisted(() => ({
         legalPerson: '张三',
         phone: '13800000000',
         contact: '张三',
+        ownerName: 'owner@graphhire.com',
         submittedAt: '2026-04-24 12:00:00',
         status: 'PENDING',
         reviewedAt: null,
@@ -55,6 +56,8 @@ describe('AdminEnterpriseReviewPage', () => {
     expect(screen.getByText('互联网')).toBeInTheDocument();
     expect(screen.getByText('中型')).toBeInTheDocument();
     expect(screen.getByAltText('测试科技有限公司 头像')).toHaveAttribute('src', 'https://cdn.example.com/company-avatar.png');
+    expect(screen.getByText(/联系人：张三/)).toBeInTheDocument();
+    expect(screen.getByText(/企业主：owner@graphhire.com/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByText('详情'));
 

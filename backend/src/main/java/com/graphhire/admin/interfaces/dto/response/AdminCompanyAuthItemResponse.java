@@ -10,6 +10,7 @@ public class AdminCompanyAuthItemResponse {
     private String scale;
     private String address;
     private String contact;
+    private String ownerName;
     private String legalPerson;
     private String phone;
     private String businessLicenseUrl;
@@ -37,6 +38,8 @@ public class AdminCompanyAuthItemResponse {
     public void setAddress(String address) { this.address = address; }
     public String getContact() { return contact; }
     public void setContact(String contact) { this.contact = contact; }
+    public String getOwnerName() { return ownerName; }
+    public void setOwnerName(String ownerName) { this.ownerName = ownerName; }
     public String getLegalPerson() { return legalPerson; }
     public void setLegalPerson(String legalPerson) { this.legalPerson = legalPerson; }
     public String getPhone() { return phone; }

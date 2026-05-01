@@ -791,6 +791,7 @@ public class AdminAppService {
         item.setScale(company.getScale());
         item.setAddress(company.getAddress());
         item.setContact(company.getContactName());
+        item.setOwnerName(resolveCompanyOwnerName(company.getUserId()));
         item.setLegalPerson(company.getContactName());
         item.setPhone(company.getContactPhone());
         item.setBusinessLicenseUrl(company.getLicenseUrl());
@@ -800,6 +801,16 @@ public class AdminAppService {
         item.setReviewerId(null);
         item.setRejectReason(null);
         return item;
+    }
+
+    private String resolveCompanyOwnerName(Long userId) {
+        if (userId == null) {
+            return null;
+        }
+        return userRepository.findById(userId)
+            .map(User::getUsername)
+            .map(username -> username == null ? null : username.getValue())
+            .orElse(null);
     }
 
     private AdminUserItemResponse toAdminUserItem(User user) {

@@ -15,6 +15,7 @@ interface Company {
   size: string | null;
   address: string | null;
   contact: string | null;
+  ownerName: string | null;
   phone: string | null;
   licenseUrl: string | null;
   applyDate: string;
@@ -54,6 +55,7 @@ function mapCompany(item: CompanyAuthItem): Company {
     size: item.scale ?? null,
     address: item.address ?? null,
     contact: item.contact ?? item.legalPerson ?? null,
+    ownerName: item.ownerName ?? null,
     phone: item.phone ?? null,
     licenseUrl: item.businessLicenseUrl ?? null,
     applyDate: item.submittedAt ?? '-',
@@ -235,6 +237,8 @@ export default function AdminEnterpriseReviewPage() {
                   <div>
                     <p className="text-sm font-bold text-on-surface">{company.name}</p>
                     <p className="mt-0.5 text-[10px] uppercase text-outline">{company.code}</p>
+                    <p className="mt-1 text-xs text-outline">联系人：{company.contact ?? '-'}</p>
+                    <p className="mt-0.5 text-xs text-outline">企业主：{company.ownerName ?? '-'}</p>
                     <p className="mt-1 text-xs text-outline">{company.address ?? '-'}</p>
                   </div>
                 </div>
