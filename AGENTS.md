@@ -5,6 +5,7 @@
 - 允许的前缀：`feat`、`fix`、`docs`、`refactor`、`test`、`chore`
 - 示例：`feat: 新增职位详情页筛选条件`
 - 完成任务后，默认由助手协助执行提交（`git add` + `git commit`）；
+- 简单任务豁免范围内的小改动默认不提交代码；仅当用户明确要求提交时才执行 `git add` + `git commit`；
 - 每次提交后必须同步更新 `RELEASE-NOTES.md`（简要记录本次变更）；
 
 > **强制要求：除符合简单任务豁免规则外，开发前必须遵循以下 superpowers-plus 流程，禁止跳过。**
