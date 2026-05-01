@@ -96,8 +96,8 @@ export default function HomePage() {
               <div className="absolute bottom-[-180px] left-[-60px] h-[340px] w-[340px] rounded-full bg-tertiary/10 blur-3xl" />
             </div>
 
-            <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-10 md:grid-cols-2">
-              <div className="max-w-2xl">
+            <div className="relative z-10 mx-auto w-full max-w-7xl">
+              <div className="max-w-4xl">
                 <motion.div
                   initial={{ opacity: 0, y: 18 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -149,68 +149,6 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <motion.div
-                initial={{ opacity: 0, x: 28 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 }}
-                className="hidden md:block"
-              >
-                <div className="rounded-[28px] border border-surface-mid bg-surface-lowest p-6 text-on-surface shadow-[0_20px_44px_rgba(15,23,42,0.10)]">
-                  <div className="mb-4 flex items-center justify-between border-b border-surface-mid pb-4">
-                    <div>
-                      <p className="text-[11px] uppercase tracking-[0.16em] text-outline">招聘看板</p>
-                      <p className="mt-1 text-lg font-black">本周在招岗位 26 个</p>
-                    </div>
-                    <span className="rounded-md border border-surface-mid bg-surface-low px-2.5 py-1 text-xs font-bold text-on-surface-variant">
-                      今日更新
-                    </span>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="rounded-xl border border-surface-mid bg-surface-background p-4">
-                      <p className="text-xs font-black tracking-wider text-outline">优先岗位</p>
-                      <div className="mt-2 space-y-2 text-sm text-on-surface">
-                        <div className="flex items-center justify-between rounded-lg bg-surface-low px-2.5 py-1.5">
-                          <span>高级后端工程师</span>
-                          <span className="text-on-surface-variant">待筛选 18</span>
-                        </div>
-                        <div className="flex items-center justify-between rounded-lg bg-surface-low px-2.5 py-1.5">
-                          <span>产品运营经理</span>
-                          <span className="text-on-surface-variant">待筛选 12</span>
-                        </div>
-                        <div className="flex items-center justify-between rounded-lg bg-surface-low px-2.5 py-1.5">
-                          <span>数据分析师</span>
-                          <span className="text-on-surface-variant">待筛选 9</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="rounded-xl border border-surface-mid bg-surface-background p-4">
-                      <p className="text-xs font-black tracking-wider text-outline">候选人进度</p>
-                      <div className="mt-3 flex items-center justify-between rounded-lg border border-surface-mid bg-surface-low px-3 py-2.5">
-                        <div>
-                          <p className="text-sm font-bold">赵嘉宁 · 后端候选人</p>
-                          <p className="text-xs text-on-surface-variant">Go / 分布式 / 5 年经验</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-xs text-on-surface-variant">当前状态</p>
-                          <p className="text-sm font-black text-primary">一面待约</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="rounded-xl border border-surface-mid bg-surface-background p-4">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="font-bold">流程状态</span>
-                        <span className="text-on-surface-variant">本周平均反馈 2.3 天</span>
-                      </div>
-                      <div className="mt-3 h-2 rounded-full bg-surface-mid">
-                        <div className="h-full w-[72%] rounded-full bg-primary" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
             </div>
           </section>
 
