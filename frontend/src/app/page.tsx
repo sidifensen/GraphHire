@@ -93,6 +93,8 @@ const primaryBtnCls =
   'inline-flex items-center justify-center gap-2 rounded-xl px-7 py-3.5 text-sm font-black transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/35';
 
 const cardCls = 'rounded-2xl border border-surface-mid bg-surface-lowest p-6 shadow-sm';
+const flowCardOverlayCls = 'absolute inset-0 bg-[linear-gradient(160deg,rgba(7,17,36,0.46),rgba(3,11,26,0.72))]';
+const candidateFlowOverlayCls = 'absolute inset-0 bg-[linear-gradient(160deg,rgba(7,17,36,0.34),rgba(3,11,26,0.58))]';
 
 export default function HomePage() {
   return (
@@ -187,7 +189,7 @@ export default function HomePage() {
                 {enterpriseFlow.map((step, idx) => (
                   <article key={step.title} className={`${cardCls} relative min-h-[320px] overflow-hidden border-white/10 text-white md:min-h-[360px]`}>
                     <img src={step.image} alt={`${step.title}背景图`} className="absolute inset-0 h-full w-full object-cover" />
-                    <div className="absolute inset-0 bg-[linear-gradient(160deg,rgba(7,17,36,0.58),rgba(3,11,26,0.88))]" />
+                    <div className={flowCardOverlayCls} />
                     <div className="relative z-10 flex h-full flex-col justify-end">
                       <div>
                         <p className="mb-2 text-xs font-black uppercase tracking-[0.18em] text-white/70">Step {idx + 1}</p>
@@ -214,8 +216,8 @@ export default function HomePage() {
               <div className="grid gap-5 md:grid-cols-3">
                 {candidateFlow.map((step, idx) => (
                   <article key={step.title} className={`${cardCls} relative min-h-[320px] overflow-hidden border-white/10 text-white md:min-h-[360px]`}>
-                    <img src={step.image} alt={`${step.title}背景图`} className="absolute inset-0 h-full w-full object-cover" />
-                    <div className="absolute inset-0 bg-[linear-gradient(160deg,rgba(18,16,42,0.56),rgba(11,9,30,0.88))]" />
+                    <img src={step.image} alt={`${step.title}背景图`} className="absolute inset-0 h-full w-full object-cover contrast-125" />
+                    <div className={candidateFlowOverlayCls} />
                     <div className="relative z-10 flex h-full flex-col justify-end">
                       <div>
                         <p className="mb-2 text-xs font-black uppercase tracking-[0.18em] text-white/70">Step {idx + 1}</p>
@@ -338,3 +340,4 @@ export default function HomePage() {
     </MockUserShell>
   );
 }
+
