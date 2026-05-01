@@ -237,8 +237,6 @@ export default function AdminEnterpriseReviewPage() {
                   <div>
                     <p className="text-sm font-bold text-on-surface">{company.name}</p>
                     <p className="mt-0.5 text-[10px] uppercase text-outline">{company.code}</p>
-                    <p className="mt-1 text-xs text-outline">联系人：{company.contact ?? '-'}</p>
-                    <p className="mt-0.5 text-xs text-outline">企业主：{company.ownerName ?? '-'}</p>
                     <p className="mt-1 text-xs text-outline">{company.address ?? '-'}</p>
                   </div>
                 </div>
@@ -247,6 +245,8 @@ export default function AdminEnterpriseReviewPage() {
             },
             { header: '所属行业', accessor: (company) => company.industry ?? '-', className: 'normal-case tracking-normal text-[13px] font-semibold text-slate-600' },
             { header: '人员规模', accessor: (company) => company.size ?? '-', className: 'normal-case tracking-normal text-[13px] font-semibold text-slate-600' },
+            { header: '联系人', accessor: (company) => company.contact ?? '-', className: 'normal-case tracking-normal text-[13px] font-semibold text-slate-600' },
+            { header: '企业主', accessor: (company) => company.ownerName ?? '-', className: 'normal-case tracking-normal text-[13px] font-semibold text-slate-600' },
             { header: '申请时间', accessor: (company) => <span className="font-display text-sm text-outline">{company.applyDate}</span>, className: 'normal-case tracking-normal text-[13px] font-semibold text-slate-600' },
             {
               header: '状态',

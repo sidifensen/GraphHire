@@ -55,9 +55,11 @@ describe('AdminEnterpriseReviewPage', () => {
     expect(screen.getByText('测试科技有限公司')).toBeInTheDocument();
     expect(screen.getByText('互联网')).toBeInTheDocument();
     expect(screen.getByText('中型')).toBeInTheDocument();
+    expect(screen.getByText('联系人')).toBeInTheDocument();
+    expect(screen.getByText('企业主')).toBeInTheDocument();
     expect(screen.getByAltText('测试科技有限公司 头像')).toHaveAttribute('src', 'https://cdn.example.com/company-avatar.png');
-    expect(screen.getByText(/联系人：张三/)).toBeInTheDocument();
-    expect(screen.getByText(/企业主：owner@graphhire.com/)).toBeInTheDocument();
+    expect(screen.getByText('张三')).toBeInTheDocument();
+    expect(screen.getByText('owner@graphhire.com')).toBeInTheDocument();
 
     fireEvent.click(screen.getByText('详情'));
 
