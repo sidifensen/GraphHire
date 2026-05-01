@@ -2,6 +2,7 @@
 
 ## 2026-05-01
 
+- docs: 新增首页双入口落地页重构设计规格（科技理性 + 品牌高端），明确双主 CTA、7 区块信息架构、Uiverse 借鉴策略与 TDD 验收边界
 - fix: 行业管理表格启用固定列布局，排序切换时列位置保持稳定；操作列统一为按钮样式并移除 hover 下划线
 - feat: 行业管理新增排序能力：`/admin/industry/list` 支持 `sortBy(name/sortOrder/updatedAt)` 与 `sortDir(asc/desc)` 参数，前端行业页支持列头升降序切换
 - feat: 行业管理新增顺序调整能力：后端新增 `PUT /admin/industry/{id}/move`（`UP/DOWN`），前端行业页新增“上移/下移”操作按钮并持久化顺序
