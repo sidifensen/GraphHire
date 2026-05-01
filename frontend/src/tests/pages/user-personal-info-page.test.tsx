@@ -59,6 +59,17 @@ describe('User PersonalInfo page', () => {
     expect(screen.getByLabelText('期望薪资')).toHaveValue(35000);
   });
 
+  it('keeps desktop sidebar alignment wrapper consistent with profile page', async () => {
+    const { container } = render(<PersonalInfoPage />);
+
+    await waitFor(() => expect(getProfileMock).toHaveBeenCalledTimes(1));
+
+    const root = container.firstElementChild as HTMLElement | null;
+    expect(root).not.toBeNull();
+    expect(root).toHaveClass('px-5');
+    expect(root).toHaveClass('md:px-8');
+  });
+
   it('submits backend-shaped payload on save', async () => {
     const user = userEvent.setup();
     render(<PersonalInfoPage />);
