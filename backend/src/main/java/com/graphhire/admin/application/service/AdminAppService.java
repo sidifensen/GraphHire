@@ -29,6 +29,7 @@ import com.graphhire.job.domain.model.Company;
 import com.graphhire.job.domain.model.Job;
 import com.graphhire.job.domain.repository.CompanyRepository;
 import com.graphhire.job.domain.repository.JobRepository;
+import com.graphhire.job.domain.vo.CompanyScale;
 import com.graphhire.job.interfaces.dto.response.CompanyAvatarUrlResolver;
 import com.graphhire.notification.domain.model.Notification;
 import com.graphhire.notification.domain.repository.NotificationRepository;
@@ -833,7 +834,7 @@ public class AdminAppService {
         item.setAvatarUrl(companyAvatarUrlResolver.resolve(company.getAvatarPath()));
         item.setUnifiedSocialCreditCode(company.getUnifiedSocialCreditCode());
         item.setIndustry(resolveIndustryName(company.getIndustryId()));
-        item.setScale(company.getScale());
+        item.setScale(CompanyScale.toLabel(company.getScale()));
         item.setAddress(company.getAddress());
         item.setContact(company.getContactName());
         item.setOwnerName(resolveCompanyOwnerName(company.getUserId()));

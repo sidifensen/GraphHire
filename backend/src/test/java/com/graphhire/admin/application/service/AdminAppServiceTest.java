@@ -249,6 +249,7 @@ class AdminAppServiceTest {
             c1.setLicenseUrl("/a.png");
             c1.setAuthStatus(AuthStatus.PENDING_VERIFY);
             c1.setUserId(100L);
+            c1.setScale("4");
 
             User owner = new User();
             owner.setId(100L);
@@ -265,6 +266,7 @@ class AdminAppServiceTest {
             assertEquals("https://cdn.example.com/company-1.png", page.getList().get(0).getAvatarUrl());
             assertEquals("owner@graphhire.com", page.getList().get(0).getOwnerName());
             assertEquals("PENDING", page.getList().get(0).getStatus());
+            assertEquals("500-999人", page.getList().get(0).getScale());
         }
 
         @Test

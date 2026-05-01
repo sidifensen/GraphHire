@@ -62,7 +62,7 @@ ON CONFLICT (name) DO NOTHING;
 
 -- IT测试用公司（供 test_company@graphhire.com 使用）
 INSERT INTO company (id, user_id, name, code, license_path, auth_status, industry_id, scale, address, contact, phone, create_time, update_time, deleted) VALUES
-(100, 101, 'IT测试科技有限公司', '91110000IT00000001', '/files/company/license_it_test.pdf', 1, (SELECT id FROM industry WHERE name = '互联网/人工智能' LIMIT 1), '小型', '北京市海淀区测试路1号', '测试HR', '13800009999', '2026-04-16 00:00:00', '2026-04-16 00:00:00', 0)
+(100, 101, 'IT测试科技有限公司', '91110000IT00000001', '/files/company/license_it_test.pdf', 1, (SELECT id FROM industry WHERE name = '互联网/人工智能' LIMIT 1), '2', '北京市海淀区测试路1号', '测试HR', '13800009999', '2026-04-16 00:00:00', '2026-04-16 00:00:00', 0)
 ON CONFLICT (code) DO NOTHING;
 
 -- IT测试公司员工关联
@@ -218,8 +218,8 @@ ON CONFLICT (user_id) DO NOTHING;
 -- 4. 企业信息
 -- =============================================
 INSERT INTO company (id, user_id, name, code, license_path, auth_status, industry_id, scale, address, contact, phone, create_time, update_time, deleted) VALUES
-(1, 2, '图智科技有限公司', '91110108MA01XXXX01', '/files/company/license_1.pdf', 1, (SELECT id FROM industry WHERE name = '互联网/人工智能' LIMIT 1), '中型', '北京市海淀区中关村大街1号', '张HR', '13800001111', '2026-04-15 11:00:00', '2026-04-15 11:00:00', 0),
-(2, 3, '智能招聘解决方案有限公司', '91110108MA01YYYY02', '/files/company/license_2.pdf', 1, (SELECT id FROM industry WHERE name = '人力资源服务' LIMIT 1), '大型', '北京市朝阳区建国路88号', '李HR', '13800002222', '2026-04-15 11:30:00', '2026-04-15 11:30:00', 0)
+(1, 2, '图智科技有限公司', '91110108MA01XXXX01', '/files/company/license_1.pdf', 1, (SELECT id FROM industry WHERE name = '互联网/人工智能' LIMIT 1), '3', '北京市海淀区中关村大街1号', '张HR', '13800001111', '2026-04-15 11:00:00', '2026-04-15 11:00:00', 0),
+(2, 3, '智能招聘解决方案有限公司', '91110108MA01YYYY02', '/files/company/license_2.pdf', 1, (SELECT id FROM industry WHERE name = '人力资源服务' LIMIT 1), '5', '北京市朝阳区建国路88号', '李HR', '13800002222', '2026-04-15 11:30:00', '2026-04-15 11:30:00', 0)
 ON CONFLICT (code) DO NOTHING;
 
 -- =============================================

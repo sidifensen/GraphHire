@@ -88,4 +88,30 @@ class CompanyAppServiceTest {
         assertEquals("avatar/new-path.png", updated.getAvatarPath());
         verify(companyRepository).save(company);
     }
+
+    @Test
+    @DisplayName("更新企业资料时公司规模必须是1到6")
+    void updateCompanyProfile_WhenScaleOutOfRange_ThrowsValidationException() {
+        Company company = new Company();
+        company.setId(1L);
+        when(companyRepository.findById(1L)).thenReturn(Optional.of(company));
+
+        Exceptions.ValidationException exception = assertThrows(
+            Exceptions.ValidationException.class,
+            () -> companyAppService.updateCompanyProfile(
+                1L,
+                "GraphHire",
+                "Alice",
+                "13800138000",
+                "alice@graphhire.com",
+                "desc",
+                "https://graphhire.com",
+                10L,
+                "7",
+                "Beijing"
+            )
+        );
+
+        assertEquals("公司规模编码不合法，仅支持1-6", exception.getMessage());
+    }
 }

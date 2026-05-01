@@ -396,6 +396,7 @@ class CompanyControllerTest {
                 company.setId(companyId);
                 company.setName("Test Company");
                 company.setAvatarPath("avatar/1987654321098767360.png");
+                company.setScale("1");
 
                 when(companyAppService.getCompanyByUserId(userId)).thenReturn(company);
                 when(companyAvatarUrlResolver.resolve("avatar/1987654321098767360.png"))
@@ -409,6 +410,7 @@ class CompanyControllerTest {
                 assertEquals(200, result.getCode());
                 assertEquals(companyId, result.getData().id());
                 assertEquals("Test Company", result.getData().name());
+                assertEquals("0-20人", result.getData().scale());
                 assertEquals("http://localhost:9000/resumes/avatar/1987654321098767360.png", result.getData().avatarUrl());
                 verify(companyAppService).getCompanyByUserId(userId);
             }

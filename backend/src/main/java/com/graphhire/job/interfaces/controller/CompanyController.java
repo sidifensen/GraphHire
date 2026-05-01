@@ -24,6 +24,7 @@ import com.graphhire.job.domain.model.CompanyStaff;
 import com.graphhire.job.domain.model.Job;
 import com.graphhire.job.domain.repository.CompanyStaffRepository;
 import com.graphhire.job.domain.repository.JobRepository;
+import com.graphhire.job.domain.vo.CompanyScale;
 import com.graphhire.job.domain.vo.JobStatus;
 import com.graphhire.job.domain.vo.SalaryRange;
 import com.graphhire.job.interfaces.dto.request.CreateStaffRequest;
@@ -647,7 +648,7 @@ public class CompanyController {
                 company.getWebsite(),
                 company.getIndustryId(),
                 resolveIndustryName(company.getIndustryId()),
-                company.getScale(),
+                CompanyScale.toLabel(company.getScale()),
                 company.getAddress(),
                 companyAvatarUrlResolver.resolve(company.getAvatarPath())
         );

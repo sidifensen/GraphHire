@@ -4,6 +4,7 @@ import com.graphhire.job.domain.model.Company;
 import com.graphhire.job.domain.model.CompanyStaff;
 import com.graphhire.job.domain.repository.CompanyRepository;
 import com.graphhire.job.domain.repository.CompanyStaffRepository;
+import com.graphhire.job.domain.vo.CompanyScale;
 import com.graphhire.auth.domain.vo.AuthStatus;
 import com.graphhire.common.vo.Exceptions;
 import org.slf4j.Logger;
@@ -136,9 +137,12 @@ public class CompanyAppService {
                                         String description, String website,
                                         Long industryId, String scale, String address) {
         Company company = requireCompany(companyId);
+        String scaleCode = CompanyScale.fromInput(scale)
+                .map(CompanyScale::getCode)
+                .orElseThrow(() -> new Exceptions.ValidationException("公司规模编码不合法，仅支持1-6"));
         company.updateInfo(name, contactName, contactPhone, contactEmail, description, website);
         company.setIndustryId(industryId);
-        company.setScale(scale);
+        company.setScale(scaleCode);
         company.setAddress(address);
         log.info("更新企业资料: companyId={}, name={}, industryId={}", companyId, name, industryId);
         return saveCompany(company, "更新企业资料完成");

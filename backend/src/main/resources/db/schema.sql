@@ -119,7 +119,7 @@ COMMENT ON COLUMN company.code IS '统一社会信用代码（18位）';
 COMMENT ON COLUMN company.license_path IS '营业执照存储路径（RustFS）';
 COMMENT ON COLUMN company.auth_status IS '认证状态：0-待审核 1-已认证 2-已拒绝';
 COMMENT ON COLUMN company.industry_id IS '所属行业ID（关联industry表）';
-COMMENT ON COLUMN company.scale IS '企业规模：初创型/小型/中型/大型/上市公司';
+COMMENT ON COLUMN company.scale IS '企业规模编码：1-0-20人 2-20-99人 3-100-499人 4-500-999人 5-1000-9999人 6-10000人以上';
 COMMENT ON COLUMN company.address IS '详细地址';
 COMMENT ON COLUMN company.contact IS '联系人姓名';
 COMMENT ON COLUMN company.phone IS '联系电话';
