@@ -302,9 +302,9 @@ export default function HomePage() {
                 {logoCompanies.map((item) => (
                   <div
                     key={item.name}
-                    className="flex h-12 items-center gap-2 rounded-lg border border-surface-mid bg-surface-low px-2.5 text-left text-xs font-bold text-on-surface-variant"
+                    className="flex h-14 items-center gap-2.5 rounded-lg border border-surface-mid bg-surface-low px-3 text-left text-sm font-bold text-on-surface-variant"
                   >
-                    <img src={item.logo} alt={`${item.name} logo`} className="h-6 w-6 shrink-0 object-contain" />
+                    <img src={item.logo} alt={`${item.name} logo`} className="h-7 w-7 shrink-0 object-contain" />
                     <span className="truncate">{item.name}</span>
                   </div>
                 ))}
