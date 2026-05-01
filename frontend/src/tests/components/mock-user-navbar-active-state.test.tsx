@@ -44,6 +44,14 @@ describe('MockUser Navbar active state', () => {
     expect(homeLink.className).not.toContain('text-white');
   });
 
+  it('uses /profile as 我的 target', () => {
+    pathname = '/profile';
+    render(<Navbar />);
+
+    const myLink = screen.getByRole('link', { name: '我的' });
+    expect(myLink).toHaveAttribute('href', '/profile');
+  });
+
   it('keeps 我的 active on skill graph path mapping', () => {
     pathname = '/skill-graph';
     render(<Navbar />);

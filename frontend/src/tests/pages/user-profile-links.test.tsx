@@ -29,6 +29,7 @@ describe('User Profile links', () => {
 
     expect(desktopMenu).toBeInTheDocument();
     expect(mobileMenu).toBeInTheDocument();
+    expect(within(desktopMenu).getByRole('link', { name: '个人主页' })).toHaveAttribute('href', '/profile');
     expect(within(desktopMenu).getByRole('link', { name: '简历管理' })).toHaveAttribute('href', '/resume/manage');
     expect(within(desktopMenu).getByRole('link', { name: '我的图谱' })).toHaveAttribute('href', '/skill-graph');
     expect(within(desktopMenu).queryByRole('link', { name: '账号设置' })).not.toBeInTheDocument();
