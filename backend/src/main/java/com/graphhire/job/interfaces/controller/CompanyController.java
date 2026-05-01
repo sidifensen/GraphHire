@@ -27,6 +27,7 @@ import com.graphhire.job.domain.repository.JobRepository;
 import com.graphhire.job.domain.vo.JobStatus;
 import com.graphhire.job.domain.vo.SalaryRange;
 import com.graphhire.job.interfaces.dto.request.CreateStaffRequest;
+import com.graphhire.job.interfaces.dto.request.CompanyProfileUpdateRequest;
 import com.graphhire.job.interfaces.dto.request.SalaryUpdateRequest;
 import com.graphhire.job.interfaces.dto.request.StatusChangeRequest;
 import com.graphhire.job.interfaces.dto.response.CompanyAvatarUrlResolver;
@@ -41,6 +42,8 @@ import com.graphhire.match.application.service.MatchAppService;
 import com.graphhire.match.domain.repository.MatchRecordRepository;
 import com.graphhire.match.interfaces.dto.response.MatchDetailResponse;
 import com.graphhire.resume.infrastructure.file.RustFSClient;
+import com.graphhire.industry.application.service.IndustryAppService;
+import com.graphhire.industry.domain.model.Industry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -99,6 +102,9 @@ public class CompanyController {
     @Autowired
     private UploadProperties uploadProperties;
 
+    @Autowired
+    private IndustryAppService industryAppService;
+
     @GetMapping("/info")
     public Result<CompanyProfileResponse> getCompanyInfo() {
         Long userId = StpUtil.getLoginIdAsLong();
@@ -117,6 +123,28 @@ public class CompanyController {
         Long companyId = currentCompanyId();
         companyAppService.updateCompanyInfo(companyId, name, contactName, contactPhone,
                 contactEmail, description, website);
+        return Result.success();
+    }
+
+    
+    @PutMapping("/profile")
+    public Result<Void> updateCompanyProfile(@RequestBody CompanyProfileUpdateRequest request) {
+        CompanyStaff staff = currentStaffActive();
+        assertOwner(staff);
+
+        Industry industry = industryAppService.getEnabledIndustryById(request.getIndustryId());
+        companyAppService.updateCompanyProfile(
+                staff.getCompanyId(),
+                request.getName(),
+                request.getContactName(),
+                request.getContactPhone(),
+                request.getContactEmail(),
+                request.getDescription(),
+                request.getWebsite(),
+                industry.getId(),
+                request.getScale(),
+                request.getAddress()
+        );
         return Result.success();
     }
 
@@ -152,6 +180,20 @@ public class CompanyController {
         } catch (IOException e) {
             throw new RuntimeException(UploadErrorMessages.companyAvatarUploadFailed(e.getMessage()), e);
         }
+    }
+
+    
+    @GetMapping("/industry/options")
+    public Result<List<Map<String, Object>>> listIndustryOptions() {
+        List<Map<String, Object>> list = industryAppService.listIndustries(1).stream().map(industry -> {
+            Map<String, Object> item = new HashMap<>();
+            item.put("id", industry.getId());
+            item.put("name", industry.getName());
+            item.put("enabled", industry.getEnabled());
+            item.put("sortOrder", industry.getSortOrder());
+            return item;
+        }).toList();
+        return Result.success(list);
     }
 
     @GetMapping("/dashboard")
@@ -603,11 +645,24 @@ public class CompanyController {
                 company.getContactEmail(),
                 company.getDescription(),
                 company.getWebsite(),
-                company.getIndustry(),
+                company.getIndustryId(),
+                resolveIndustryName(company.getIndustryId()),
                 company.getScale(),
                 company.getAddress(),
                 companyAvatarUrlResolver.resolve(company.getAvatarPath())
         );
+    }
+
+    
+    private String resolveIndustryName(Long industryId) {
+        if (industryId == null) {
+            return null;
+        }
+        try {
+            return industryAppService.getIndustryById(industryId).getName();
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 
     private CompanyDashboardJobItemResponse toDashboardJobItem(Job job) {
@@ -671,3 +726,10 @@ public class CompanyController {
         return staff.getStatus() == null || CompanyStaff.STATUS_ACTIVE.equalsIgnoreCase(staff.getStatus());
     }
 }
+
+
+
+
+
+
+

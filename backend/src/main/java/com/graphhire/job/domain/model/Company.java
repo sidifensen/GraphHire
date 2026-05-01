@@ -43,8 +43,8 @@ public class Company extends BaseAggregateRoot {
     private String website;
     /** 企业头像对象路径 */
     private String avatarPath;
-    /** 所属行业 */
-    private String industry;
+    /** 所属行业ID */
+    private Long industryId;
     /** 企业规模 */
     private String scale;
     /** 企业地址 */
@@ -188,12 +188,12 @@ public class Company extends BaseAggregateRoot {
         this.avatarPath = avatarPath;
     }
 
-    public String getIndustry() {
-        return industry;
+    public Long getIndustryId() {
+        return industryId;
     }
 
-    public void setIndustry(String industry) {
-        this.industry = industry;
+    public void setIndustryId(Long industryId) {
+        this.industryId = industryId;
     }
 
     public String getScale() {
@@ -228,3 +228,4 @@ public class Company extends BaseAggregateRoot {
         this.updatedAt = updatedAt;
     }
 }
+

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, ShieldCheck, Users, Tags, Activity } from 'lucide-react';
+import { LayoutDashboard, ShieldCheck, Users, Tags, Activity, Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -11,6 +11,7 @@ const navItems = [
   { icon: ShieldCheck, label: '企业审核', path: '/admin/enterprise-review' },
   { icon: Users, label: '用户管理', path: '/admin/users' },
   { icon: Tags, label: '标签管理', path: '/admin/skill-tags' },
+  { icon: Building2, label: '行业管理', path: '/admin/industry' },
   { icon: Activity, label: '任务监控', path: '/admin/task-monitor' },
 ];
 
@@ -59,15 +60,15 @@ export function AdminSidebar({ isCollapsed = false }: { isCollapsed?: boolean })
               key={item.path}
               href={item.path}
               className="relative block"
-              title={isCollapsed ? item.label : ""}
+              title={isCollapsed ? item.label : ''}
             >
               <div
                 className={cn(
-                  "flex h-12 items-center gap-3 px-4 rounded-lg transition-colors duration-200 font-medium text-sm",
+                  'flex h-12 items-center gap-3 px-4 rounded-lg transition-colors duration-200 font-medium text-sm',
                   isActive
-                    ? "text-blue-600 font-bold"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800/80",
-                  isCollapsed && "px-0 justify-center"
+                    ? 'text-blue-600 font-bold'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800/80',
+                  isCollapsed && 'px-0 justify-center'
                 )}
               >
                 {isActive && (
@@ -113,10 +114,12 @@ export function AdminSidebar({ isCollapsed = false }: { isCollapsed?: boolean })
       </nav>
 
       <div className="px-4 mt-auto">
-        <div className={cn(
-          "p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 text-center transition-all",
-          isCollapsed && "p-2 bg-transparent border-none"
-        )}>
+        <div
+          className={cn(
+            'p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 text-center transition-all',
+            isCollapsed && 'p-2 bg-transparent border-none'
+          )}
+        >
           {!isCollapsed ? (
             <>
               <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">系统版本 V2.5.0</p>

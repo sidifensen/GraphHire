@@ -2,6 +2,11 @@
 
 ## 2026-05-01
 
+- feat: 新增行业主数据能力：数据库新增 `industry` 表，行业初始数据与测试假数据入库，`company` 新增 `industry_id` 并通过迁移脚本回填后移除旧 `industry` 文本列
+- feat: 管理端新增行业管理接口（列表/新增/编辑/启用停用）与页面 `/admin/industry`，并在左侧菜单新增“行业管理”入口
+- feat: 企业端新增公司资料编辑能力：新增 `PUT /company/profile`（仅企业主可用）与 `/company/industry/options`，行业字段改为行业ID选择并校验启用状态
+- feat: 企业端新增页面 `/enterprise/company/profile`，支持公司资料编辑与行业下拉选择，导航新增“公司”页签与账户菜单“公司资料”入口
+- refactor: 公司资料返回结构升级为 `industryId + industryName`，后端公司/管理端审核展示改为按行业ID解析名称
 - feat: 完善上传链路治理：新增 `app.upload` 配置中心、后端文件类型与大小校验、简历流式上传 RustFS、`resume.file_size` 落库、前端简历/头像上传前置拦截
 - refactor: 统一上传相关异常提示文案，新增后端 `UploadErrorMessages` 与前端 `upload-errors` 常量，替换上传链路硬编码字符串
 - fix: 后端职位 `job_type` 扩展为 `1-全职 2-兼职 3-实习`，同步更新 `schema.sql` 约束与字段注释
@@ -47,7 +52,3 @@
 - test: 新增 `LoginRequest` 邮箱校验单测，更新前端登录/注册页测试覆盖新文案与交互
 - feat: 登录后在用户端与企业端右上角显示头像与名称，补齐个人主页动态用户信息展示并保留持久登录态
 - feat: 用户端 `personal-info`、`resume/manage|upload`、`applications` 三页切换真实后端接口，支持资料保存、头像上传、简历设默认/重解析/上传、投递记录状态筛选与撤回
-
-
-
-

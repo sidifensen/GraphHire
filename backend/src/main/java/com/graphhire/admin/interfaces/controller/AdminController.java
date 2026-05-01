@@ -138,6 +138,31 @@ public class AdminController {
         return Result.success();
     }
 
+    
+    @GetMapping("/industry/list")
+    public Result<AdminPageResponse<AdminIndustryItemResponse>> getIndustryList(
+            @RequestParam(required = false) Integer enabled,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int pageSize) {
+        return Result.success(adminAppService.getIndustryList(enabled, keyword, page, pageSize));
+    }
+
+    @PostMapping("/industry")
+    public Result<AdminIndustryItemResponse> createIndustry(@RequestBody AdminIndustryCreateRequest request) {
+        return Result.success(adminAppService.createIndustry(request.getName(), request.getEnabled(), request.getSortOrder()));
+    }
+
+    @PutMapping("/industry/{id}")
+    public Result<AdminIndustryItemResponse> updateIndustry(@PathVariable Long id, @RequestBody AdminIndustryUpdateRequest request) {
+        return Result.success(adminAppService.updateIndustry(id, request.getName(), request.getSortOrder()));
+    }
+
+    @PutMapping("/industry/{id}/status")
+    public Result<AdminIndustryItemResponse> updateIndustryStatus(@PathVariable Long id, @RequestBody AdminIndustryStatusUpdateRequest request) {
+        return Result.success(adminAppService.updateIndustryStatus(id, request.getEnabled()));
+    }
+
     @GetMapping("/task/list")
     public Result<AdminTaskListResponse> getTaskList(
             @RequestParam(required = false) String type,
@@ -159,3 +184,5 @@ public class AdminController {
         return Result.success();
     }
 }
+
+

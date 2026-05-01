@@ -129,7 +129,20 @@ public class CompanyAppService {
      * 步骤2：若公司不存在则抛出异常
      * 步骤3：返回公司信息
      */
-    public Company getCompanyById(Long companyId) {
+    
+    @Transactional
+    public Company updateCompanyProfile(Long companyId, String name, String contactName,
+                                        String contactPhone, String contactEmail,
+                                        String description, String website,
+                                        Long industryId, String scale, String address) {
+        Company company = requireCompany(companyId);
+        company.updateInfo(name, contactName, contactPhone, contactEmail, description, website);
+        company.setIndustryId(industryId);
+        company.setScale(scale);
+        company.setAddress(address);
+        log.info("更新企业资料: companyId={}, name={}, industryId={}", companyId, name, industryId);
+        return saveCompany(company, "更新企业资料完成");
+    }    public Company getCompanyById(Long companyId) {
         // 步骤1：根据公司ID查询公司信息
         return requireCompany(companyId);
         // 步骤3：返回公司信息
@@ -244,3 +257,6 @@ public class CompanyAppService {
         return savedCompany;
     }
 }
+
+
+

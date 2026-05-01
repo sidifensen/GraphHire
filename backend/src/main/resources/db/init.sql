@@ -1,4 +1,4 @@
--- =============================================
+﻿-- =============================================
 -- GraphHire 图谱智聘 - PostgreSQL 初始化数据
 -- 版本: v1.0
 -- 日期: 2026-04-16
@@ -30,9 +30,39 @@ INSERT INTO sys_user (id, username, password, user_type, company_id, status, cre
 (102, 'test_admin@graphhire.com', '$2a$10$w5zZsRUx.D7UTyoDrsXaxuTSShu5y7uFU8cNtD/sb3qzJ1OfPRzvC', 3, NULL, 1, '2026-04-16 00:00:00', '2026-04-16 00:00:00', 0)
 ON CONFLICT (username) DO NOTHING;
 
+-- =============================================
+-- 行业字典初始数据
+-- =============================================
+INSERT INTO industry (name, enabled, sort_order) VALUES
+('互联网/人工智能', 1, 1),
+('互联网服务', 1, 2),
+('人力资源服务', 1, 3),
+('软件服务', 1, 4),
+('金融科技', 1, 10),
+('电子商务', 1, 20),
+('医疗健康', 1, 30),
+('教育培训', 1, 40),
+('游戏', 1, 50),
+('企业服务', 1, 60),
+('消费品', 1, 70),
+('智能制造', 1, 80),
+('新能源', 1, 90),
+('物流供应链', 1, 100),
+('文娱传媒', 1, 110),
+('房地产服务', 1, 120),
+('汽车出行', 1, 130),
+('农业科技', 1, 140),
+('政务服务', 1, 150),
+('通信设备', 1, 160),
+('半导体', 1, 170),
+('人工智能平台', 1, 180),
+('本地生活', 1, 190),
+('跨境贸易', 1, 200)
+ON CONFLICT (name) DO NOTHING;
+
 -- IT测试用公司（供 test_company@graphhire.com 使用）
-INSERT INTO company (id, user_id, name, code, license_path, auth_status, industry, scale, address, contact, phone, create_time, update_time, deleted) VALUES
-(100, 101, 'IT测试科技有限公司', '91110000IT00000001', '/files/company/license_it_test.pdf', 1, '互联网/人工智能', '小型', '北京市海淀区测试路1号', '测试HR', '13800009999', '2026-04-16 00:00:00', '2026-04-16 00:00:00', 0)
+INSERT INTO company (id, user_id, name, code, license_path, auth_status, industry_id, scale, address, contact, phone, create_time, update_time, deleted) VALUES
+(100, 101, 'IT测试科技有限公司', '91110000IT00000001', '/files/company/license_it_test.pdf', 1, (SELECT id FROM industry WHERE name = '互联网/人工智能' LIMIT 1), '小型', '北京市海淀区测试路1号', '测试HR', '13800009999', '2026-04-16 00:00:00', '2026-04-16 00:00:00', 0)
 ON CONFLICT (code) DO NOTHING;
 
 -- IT测试公司员工关联
@@ -183,12 +213,13 @@ INSERT INTO person_info (user_id, real_name, gender, age, education, city, targe
 (8, '孙七', 2, 29, '本科', '广州', '北京', '13800138005', 'sunqi@example.com', '2026-04-15 14:00:00', '2026-04-15 14:00:00', 0)
 ON CONFLICT (user_id) DO NOTHING;
 
+
 -- =============================================
 -- 4. 企业信息
 -- =============================================
-INSERT INTO company (id, user_id, name, code, license_path, auth_status, industry, scale, address, contact, phone, create_time, update_time, deleted) VALUES
-(1, 2, '图智科技有限公司', '91110108MA01XXXX01', '/files/company/license_1.pdf', 1, '互联网/人工智能', '中型', '北京市海淀区中关村大街1号', '张HR', '13800001111', '2026-04-15 11:00:00', '2026-04-15 11:00:00', 0),
-(2, 3, '智能招聘解决方案有限公司', '91110108MA01YYYY02', '/files/company/license_2.pdf', 1, '人力资源服务', '大型', '北京市朝阳区建国路88号', '李HR', '13800002222', '2026-04-15 11:30:00', '2026-04-15 11:30:00', 0)
+INSERT INTO company (id, user_id, name, code, license_path, auth_status, industry_id, scale, address, contact, phone, create_time, update_time, deleted) VALUES
+(1, 2, '图智科技有限公司', '91110108MA01XXXX01', '/files/company/license_1.pdf', 1, (SELECT id FROM industry WHERE name = '互联网/人工智能' LIMIT 1), '中型', '北京市海淀区中关村大街1号', '张HR', '13800001111', '2026-04-15 11:00:00', '2026-04-15 11:00:00', 0),
+(2, 3, '智能招聘解决方案有限公司', '91110108MA01YYYY02', '/files/company/license_2.pdf', 1, (SELECT id FROM industry WHERE name = '人力资源服务' LIMIT 1), '大型', '北京市朝阳区建国路88号', '李HR', '13800002222', '2026-04-15 11:30:00', '2026-04-15 11:30:00', 0)
 ON CONFLICT (code) DO NOTHING;
 
 -- =============================================
@@ -318,3 +349,8 @@ SELECT setval('company_id_seq', (SELECT MAX(id) FROM company));
 SELECT setval('resume_id_seq', (SELECT MAX(id) FROM resume));
 SELECT setval('job_id_seq', (SELECT MAX(id) FROM job));
 SELECT setval('skill_tag_id_seq', (SELECT MAX(id) FROM skill_tag));
+
+
+
+
+

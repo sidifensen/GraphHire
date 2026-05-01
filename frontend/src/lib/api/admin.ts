@@ -1,4 +1,4 @@
-import apiClient from './client';
+﻿import apiClient from './client';
 
 // ============ Admin Login ============
 export interface AdminLoginRequest {
@@ -113,6 +113,23 @@ export interface CompanyAuthListResponse {
   pageSize: number;
 }
 
+// ============ Industry ============
+export interface AdminIndustryItem {
+  id: number;
+  name: string;
+  enabled: number;
+  sortOrder: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface AdminIndustryListResponse {
+  list: AdminIndustryItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
 // ============ User Management ============
 export interface UserItem {
   id: number;
@@ -139,7 +156,7 @@ export interface PersonInfoDetail {
   id: number;
   userId: number;
   realName: string;
-  gender: number; // 0=未知, 1=男, 2=女
+  gender: number;
   age: number;
   phone: string;
   email: string;
@@ -258,6 +275,26 @@ export const adminApi = {
 
   updateCompanyAuth: async (id: number, data: { status: 'APPROVED' | 'REJECTED'; rejectReason?: string }): Promise<void> => {
     await apiClient.put(`/admin/company/auth/${id}`, data);
+  },
+
+  getIndustryList: async (params?: { enabled?: number; keyword?: string; page?: number; pageSize?: number }): Promise<AdminIndustryListResponse> => {
+    const response = await apiClient.get('/admin/industry/list', { params });
+    return response.data;
+  },
+
+  createIndustry: async (data: { name: string; enabled?: number; sortOrder?: number }): Promise<AdminIndustryItem> => {
+    const response = await apiClient.post('/admin/industry', data);
+    return response.data;
+  },
+
+  updateIndustry: async (id: number, data: { name?: string; sortOrder?: number }): Promise<AdminIndustryItem> => {
+    const response = await apiClient.put(`/admin/industry/${id}`, data);
+    return response.data;
+  },
+
+  updateIndustryStatus: async (id: number, enabled: number): Promise<AdminIndustryItem> => {
+    const response = await apiClient.put(`/admin/industry/${id}/status`, { enabled });
+    return response.data;
   },
 
   getUserList: async (params?: { type?: string; status?: string; keyword?: string; page?: number; pageSize?: number }): Promise<UserListResponse> => {

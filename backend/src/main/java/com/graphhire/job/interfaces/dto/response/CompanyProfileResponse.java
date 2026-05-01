@@ -12,9 +12,11 @@ public record CompanyProfileResponse(
         String contactEmail,
         String description,
         String website,
-        String industry,
+        Long industryId,
+        String industryName,
         String scale,
         String address,
         String avatarUrl
 ) {
 }
+

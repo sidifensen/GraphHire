@@ -29,8 +29,9 @@ public class CompanyPO {
     private String licensePath;
     /** 认证状态：0=待审核，1=已认证，2=已拒绝 */
     private Integer authStatus;
-    /** 所属行业 */
-    private String industry;
+    /** 所属行业ID */
+    @TableField("industry_id")
+    private Long industryId;
     /** 企业规模 */
     private String scale;
     /** 企业地址 */
@@ -103,12 +104,12 @@ public class CompanyPO {
         this.authStatus = authStatus;
     }
 
-    public String getIndustry() {
-        return industry;
+    public Long getIndustryId() {
+        return industryId;
     }
 
-    public void setIndustry(String industry) {
-        this.industry = industry;
+    public void setIndustryId(Long industryId) {
+        this.industryId = industryId;
     }
 
     public String getScale() {
@@ -183,3 +184,4 @@ public class CompanyPO {
         this.updatedAt = updatedAt;
     }
 }
+

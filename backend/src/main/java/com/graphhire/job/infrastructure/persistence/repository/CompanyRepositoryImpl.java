@@ -138,6 +138,7 @@ public class CompanyRepositoryImpl implements CompanyRepository {
         company.setContactName(po.getContact());
         company.setContactPhone(po.getPhone());
         company.setAvatarPath(po.getAvatarPath());
+        company.setIndustryId(po.getIndustryId());
         company.setAuthStatus(toDomainStatus(po.getAuthStatus()));
         return company;
     }
@@ -152,6 +153,7 @@ public class CompanyRepositoryImpl implements CompanyRepository {
         po.setContact(company.getContactName());
         po.setPhone(company.getContactPhone());
         po.setAvatarPath(company.getAvatarPath());
+        po.setIndustryId(company.getIndustryId());
         po.setAuthStatus(toDbStatus(company.getAuthStatus()));
         return po;
     }
@@ -178,3 +180,4 @@ public class CompanyRepositoryImpl implements CompanyRepository {
         };
     }
 }
+

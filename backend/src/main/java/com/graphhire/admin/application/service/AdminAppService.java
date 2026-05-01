@@ -10,6 +10,7 @@ import com.graphhire.admin.interfaces.dto.response.AdminCompanyAuthItemResponse;
 import com.graphhire.admin.interfaces.dto.response.AdminPageResponse;
 import com.graphhire.admin.interfaces.dto.response.AdminSkillItemResponse;
 import com.graphhire.admin.interfaces.dto.response.AdminTaskItemResponse;
+import com.graphhire.admin.interfaces.dto.response.AdminIndustryItemResponse;
 import com.graphhire.admin.interfaces.dto.response.AdminTaskListResponse;
 import com.graphhire.admin.interfaces.dto.response.AdminTaskSummaryResponse;
 import com.graphhire.admin.interfaces.dto.response.AdminUserDetailResponse;
@@ -38,6 +39,8 @@ import com.graphhire.resume.domain.repository.ParseTaskRepository;
 import com.graphhire.skill.application.service.SkillTagAppService;
 import com.graphhire.skill.application.command.CreateSkillTagCmd;
 import com.graphhire.skill.domain.model.SkillTag;
+import com.graphhire.industry.application.service.IndustryAppService;
+import com.graphhire.industry.domain.model.Industry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -104,6 +107,43 @@ public class AdminAppService {
 
     @Autowired
     private CompanyAvatarUrlResolver companyAvatarUrlResolver;
+
+    @Autowired
+    private IndustryAppService industryAppService;
+
+    
+    public AdminPageResponse<AdminIndustryItemResponse> getIndustryList(Integer enabled, String keyword, int page, int pageSize) {
+        List<Industry> industries = industryAppService.listIndustries(enabled).stream()
+                .filter(industry -> {
+                    if (keyword == null || keyword.isBlank()) {
+                        return true;
+                    }
+                    return industry.getName() != null && industry.getName().toLowerCase().contains(keyword.toLowerCase());
+                })
+                .toList();
+
+        List<AdminIndustryItemResponse> list = industries.stream().map(this::toAdminIndustryItem).toList();
+        return paginateList(list, page, pageSize);
+    }
+
+    @Transactional
+    public AdminIndustryItemResponse createIndustry(String name, Integer enabled, Integer sortOrder) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("行业名称不能为空");
+        }
+        return toAdminIndustryItem(industryAppService.createIndustry(name.trim(), enabled, sortOrder));
+    }
+
+    @Transactional
+    public AdminIndustryItemResponse updateIndustry(Long id, String name, Integer sortOrder) {
+        String nextName = name == null ? null : name.trim();
+        return toAdminIndustryItem(industryAppService.updateIndustry(id, nextName, sortOrder));
+    }
+
+    @Transactional
+    public AdminIndustryItemResponse updateIndustryStatus(Long id, Integer enabled) {
+        return toAdminIndustryItem(industryAppService.updateIndustryStatus(id, enabled));
+    }
 
     public DashboardStatsResponse getDashboardStats() {
         LocalDateTime now = LocalDateTime.now();
@@ -787,7 +827,7 @@ public class AdminAppService {
         item.setCompanyName(company.getName());
         item.setAvatarUrl(companyAvatarUrlResolver.resolve(company.getAvatarPath()));
         item.setUnifiedSocialCreditCode(company.getUnifiedSocialCreditCode());
-        item.setIndustry(company.getIndustry());
+        item.setIndustry(resolveIndustryName(company.getIndustryId()));
         item.setScale(company.getScale());
         item.setAddress(company.getAddress());
         item.setContact(company.getContactName());
@@ -865,6 +905,29 @@ public class AdminAppService {
         return item;
     }
 
+    
+    private AdminIndustryItemResponse toAdminIndustryItem(Industry industry) {
+        AdminIndustryItemResponse item = new AdminIndustryItemResponse();
+        item.setId(industry.getId());
+        item.setName(industry.getName());
+        item.setEnabled(industry.getEnabled());
+        item.setSortOrder(industry.getSortOrder());
+        item.setCreatedAt(formatDateTime(industry.getCreateTime()));
+        item.setUpdatedAt(formatDateTime(industry.getUpdateTime()));
+        return item;
+    }
+
+    private String resolveIndustryName(Long industryId) {
+        if (industryId == null) {
+            return null;
+        }
+        try {
+            return industryAppService.getIndustryById(industryId).getName();
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
     private String mapCompanyStatus(AuthStatus status) {
         if (status == null) {
             return "PENDING";
@@ -929,3 +992,8 @@ public class AdminAppService {
         return new AdminPageResponse<>(pageList, list.size(), page, pageSize);
     }
 }
+
+
+
+
+

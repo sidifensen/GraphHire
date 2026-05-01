@@ -1,4 +1,4 @@
-import apiClient from './client';
+﻿import apiClient from './client';
 import type {
   EnterpriseCreateStaffRequest,
   EnterpriseCreateJobRequest,
@@ -20,16 +20,50 @@ export interface Company {
   description?: string;
   website?: string;
   city?: string;
-  industry?: string;
+  industryId?: number;
+  industryName?: string;
   employeeCount?: string;
+  scale?: string;
+  address?: string;
+  contactName?: string;
+  contactPhone?: string;
+  contactEmail?: string;
   authStatus: 'PENDING' | 'VERIFIED' | 'REJECTED';
   createdAt?: string;
+}
+
+export interface CompanyProfileUpdateRequest {
+  name?: string;
+  contactName?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  description?: string;
+  website?: string;
+  industryId: number;
+  scale?: string;
+  address?: string;
+}
+
+export interface IndustryOption {
+  id: number;
+  name: string;
+  enabled: number;
+  sortOrder: number;
 }
 
 export const companyApi = {
   getInfo: async (): Promise<Company> => {
     const response = await apiClient.get<Company>('/company/info');
     return response.data;
+  },
+
+  listIndustryOptions: async (): Promise<IndustryOption[]> => {
+    const response = await apiClient.get<IndustryOption[]>('/company/industry/options');
+    return response.data;
+  },
+
+  updateProfile: async (data: CompanyProfileUpdateRequest): Promise<void> => {
+    await apiClient.put('/company/profile', data);
   },
 
   getDashboard: async (): Promise<EnterpriseDashboard> => {

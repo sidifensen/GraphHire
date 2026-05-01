@@ -1,4 +1,4 @@
--- =============================================
+﻿-- =============================================
 -- GraphHire 图谱智聘 - PostgreSQL 建表脚本
 -- 版本: v1.1
 -- 日期: 2026-04-17
@@ -98,7 +98,7 @@ CREATE TABLE company
     code         VARCHAR(50)  NOT NULL UNIQUE,
     license_path VARCHAR(500),
     auth_status  SMALLINT     NOT NULL DEFAULT 0,
-    industry     VARCHAR(50),
+    industry_id  BIGINT,
     scale        VARCHAR(20),
     address      VARCHAR(300),
     contact      VARCHAR(50),
@@ -118,7 +118,7 @@ COMMENT ON COLUMN company.name IS '企业名称';
 COMMENT ON COLUMN company.code IS '统一社会信用代码（18位）';
 COMMENT ON COLUMN company.license_path IS '营业执照存储路径（RustFS）';
 COMMENT ON COLUMN company.auth_status IS '认证状态：0-待审核 1-已认证 2-已拒绝';
-COMMENT ON COLUMN company.industry IS '所属行业';
+COMMENT ON COLUMN company.industry_id IS '所属行业ID（关联industry表）';
 COMMENT ON COLUMN company.scale IS '企业规模：初创型/小型/中型/大型/上市公司';
 COMMENT ON COLUMN company.address IS '详细地址';
 COMMENT ON COLUMN company.contact IS '联系人姓名';
@@ -131,6 +131,7 @@ COMMENT ON COLUMN company.deleted IS '软删除标记：0-未删除 1-已删除'
 CREATE INDEX idx_company_user_id ON company (user_id);
 CREATE INDEX idx_company_auth_status ON company (auth_status) WHERE deleted = 0;
 CREATE INDEX idx_company_code ON company (code);
+CREATE INDEX idx_company_industry_id ON company (industry_id);
 
 -- =============================================
 -- 4. 企业员工关联表 company_staff
@@ -491,3 +492,4 @@ COMMENT ON COLUMN person_info.avatar_url IS '头像URL';
 ALTER TABLE notification DROP CONSTRAINT IF EXISTS chk_notif_type;
 ALTER TABLE notification ADD CONSTRAINT chk_notif_type CHECK (type IN (1, 2, 3, 4, 5, 6, 7));
 COMMENT ON COLUMN notification.type IS '通知类型：1-简历解析完成 2-新职位推荐 3-收到候选人推荐 4-企业认证结果 5-简历被查看 6-面试邀请 7-简历投递';
+
