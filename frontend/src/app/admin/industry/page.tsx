@@ -82,8 +82,10 @@ export default function AdminIndustryPage() {
       onClick={() => changeSort(key)}
       aria-label={label}
     >
-      {label}
-      {sortBy === key ? (sortDir === 'asc' ? '↑' : '↓') : ''}
+      <span>{label}</span>
+      <span className="inline-block w-3 text-center">
+        {sortBy === key ? (sortDir === 'asc' ? '↑' : '↓') : ''}
+      </span>
     </button>
   );
 
@@ -117,33 +119,35 @@ export default function AdminIndustryPage() {
 
       <AdminDataTable
         data={list}
+        tableClassName="table-fixed"
         pagination={{ currentPage: page, totalPages, totalItems: total, pageSize, onPageChange: setPage }}
         columns={[
-          { header: sortLabel('行业名称', 'name'), accessor: 'name' },
-          { header: '状态', accessor: (item) => (item.enabled === 1 ? '启用' : '停用') },
-          { header: sortLabel('排序', 'sortOrder'), accessor: (item) => String(item.sortOrder ?? 0) },
-          { header: sortLabel('更新时间', 'updatedAt'), accessor: (item) => item.updatedAt ?? '-' },
+          { header: sortLabel('行业名称', 'name'), accessor: 'name', className: 'w-[24%]' },
+          { header: '状态', accessor: (item) => (item.enabled === 1 ? '启用' : '停用'), className: 'w-[12%]' },
+          { header: sortLabel('排序', 'sortOrder'), accessor: (item) => String(item.sortOrder ?? 0), className: 'w-[10%]' },
+          { header: sortLabel('更新时间', 'updatedAt'), accessor: (item) => item.updatedAt ?? '-', className: 'w-[26%]' },
           {
             header: '操作',
+            className: 'w-[28%]',
             accessor: (item) => (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 whitespace-nowrap">
                 <button
                   type="button"
-                  className="text-xs font-bold text-primary hover:underline"
+                  className="rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-600 transition-colors hover:bg-blue-100"
                   onClick={() => void moveItem(item, 'UP')}
                 >
                   上移
                 </button>
                 <button
                   type="button"
-                  className="text-xs font-bold text-primary hover:underline"
+                  className="rounded-md border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-600 transition-colors hover:bg-indigo-100"
                   onClick={() => void moveItem(item, 'DOWN')}
                 >
                   下移
                 </button>
                 <button
                   type="button"
-                  className="text-xs font-bold text-primary hover:underline"
+                  className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100"
                   onClick={() => void toggleStatus(item)}
                 >
                   {item.enabled === 1 ? '停用' : '启用'}
