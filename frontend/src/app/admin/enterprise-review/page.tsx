@@ -243,10 +243,10 @@ export default function AdminEnterpriseReviewPage() {
               ),
               className: 'w-[36%] normal-case tracking-normal text-[13px] font-semibold text-slate-600',
             },
-            { header: '所属行业', accessor: (company) => company.industry ?? '-', className: 'normal-case tracking-normal text-[13px] font-semibold text-slate-600' },
-            { header: '人员规模', accessor: (company) => company.size ?? '-', className: 'normal-case tracking-normal text-[13px] font-semibold text-slate-600' },
             { header: '联系人', accessor: (company) => company.contact ?? '-', className: 'normal-case tracking-normal text-[13px] font-semibold text-slate-600' },
             { header: '企业主', accessor: (company) => company.ownerName ?? '-', className: 'normal-case tracking-normal text-[13px] font-semibold text-slate-600' },
+            { header: '所属行业', accessor: (company) => company.industry ?? '-', className: 'normal-case tracking-normal text-[13px] font-semibold text-slate-600' },
+            { header: '人员规模', accessor: (company) => company.size ?? '-', className: 'normal-case tracking-normal text-[13px] font-semibold text-slate-600' },
             { header: '申请时间', accessor: (company) => <span className="font-display text-sm text-outline">{company.applyDate}</span>, className: 'normal-case tracking-normal text-[13px] font-semibold text-slate-600' },
             {
               header: '状态',

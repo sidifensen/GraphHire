@@ -57,6 +57,8 @@ describe('AdminEnterpriseReviewPage', () => {
     expect(screen.getByText('中型')).toBeInTheDocument();
     expect(screen.getByText('联系人')).toBeInTheDocument();
     expect(screen.getByText('企业主')).toBeInTheDocument();
+    const headers = screen.getAllByRole('columnheader').map((header) => header.textContent?.trim() ?? '');
+    expect(headers.slice(0, 3)).toEqual(['企业名称', '联系人', '企业主']);
     expect(screen.getByAltText('测试科技有限公司 头像')).toHaveAttribute('src', 'https://cdn.example.com/company-avatar.png');
     expect(screen.getByText('张三')).toBeInTheDocument();
     expect(screen.getByText('owner@graphhire.com')).toBeInTheDocument();
