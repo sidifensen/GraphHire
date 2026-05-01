@@ -111,11 +111,11 @@ export default function HomePage() {
                   initial={{ opacity: 0, y: 18 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.05 }}
-                  className="mb-5 text-4xl font-black leading-tight tracking-tight text-on-surface md:text-5xl lg:text-6xl"
+                  className="mb-5 text-4xl font-black leading-tight tracking-tight text-on-surface md:text-[44px] lg:text-[56px] xl:text-[64px]"
                 >
-                  企业更快招到合适的人，
+                  <span className="md:whitespace-nowrap">企业更快招到合适的人，</span>
                   <br />
-                  人才更快找到匹配的岗
+                  <span className="md:whitespace-nowrap">人才更快找到匹配的岗</span>
                 </motion.h1>
 
                 <motion.p
