@@ -15,14 +15,14 @@ const trustMetrics = [
 ];
 
 const logoCompanies = [
-  { name: 'TechNova', mark: 'TN' },
-  { name: 'BlueCore', mark: 'BC' },
-  { name: '星桥科技', mark: '星' },
-  { name: '云脉数据', mark: '云' },
-  { name: 'FutureLink', mark: 'FL' },
-  { name: '凌越智能', mark: '凌' },
-  { name: 'NorthGrid', mark: 'NG' },
-  { name: '极点制造', mark: '极' },
+  { name: 'Google', logo: 'https://cdn.simpleicons.org/google' },
+  { name: 'Meta', logo: 'https://cdn.simpleicons.org/meta' },
+  { name: 'Netflix', logo: 'https://cdn.simpleicons.org/netflix' },
+  { name: 'Spotify', logo: 'https://cdn.simpleicons.org/spotify' },
+  { name: 'Alibaba', logo: 'https://cdn.simpleicons.org/alibabadotcom' },
+  { name: 'ByteDance', logo: 'https://cdn.simpleicons.org/bytedance' },
+  { name: 'Huawei', logo: 'https://cdn.simpleicons.org/huawei' },
+  { name: 'Tesla', logo: 'https://cdn.simpleicons.org/tesla' },
 ];
 
 const enterpriseFlow = [
@@ -304,9 +304,7 @@ export default function HomePage() {
                     key={item.name}
                     className="flex h-12 items-center gap-2 rounded-lg border border-surface-mid bg-surface-low px-2.5 text-left text-xs font-bold text-on-surface-variant"
                   >
-                    <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/10 text-[10px] font-black text-primary">
-                      {item.mark}
-                    </span>
+                    <img src={item.logo} alt={`${item.name} logo`} className="h-6 w-6 shrink-0 object-contain" />
                     <span className="truncate">{item.name}</span>
                   </div>
                 ))}

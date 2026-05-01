@@ -2,6 +2,7 @@
 
 ## 2026-05-01
 
+- feat: “谁在使用”团队标识从缩写徽标改为真实品牌 SVG 图标（Google/Meta/Netflix/Spotify/Alibaba/ByteDance/Huawei/Tesla）
 - fix: 增加“谁在使用”区块上方留白（`pt-6 md:pt-10`），改善与“双侧案例”之间的视觉间距
 - refactor: 首屏文案定稿为“主标题：GraphHire 图谱智聘”，徽标文案改为“AI智能匹配招聘”
 - fix: 恢复首页首屏“GraphHire 图谱智聘”徽标文案展示（保留单次展示，不与主副标题重复冲突）
