@@ -111,7 +111,7 @@ export default function HomePage() {
                   initial={{ opacity: 0, y: 18 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.05 }}
-                  className="mb-5 text-4xl font-black leading-tight tracking-tight text-on-surface md:text-6xl"
+                  className="mb-5 text-4xl font-black leading-tight tracking-tight text-on-surface md:text-5xl lg:text-6xl"
                 >
                   企业更快招到合适的人，
                   <br />
