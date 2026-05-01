@@ -2,6 +2,7 @@
 
 ## 2026-05-01
 
+- fix: 行业管理表格启用固定列布局，排序切换时列位置保持稳定；操作列统一为按钮样式并移除 hover 下划线
 - feat: 行业管理新增排序能力：`/admin/industry/list` 支持 `sortBy(name/sortOrder/updatedAt)` 与 `sortDir(asc/desc)` 参数，前端行业页支持列头升降序切换
 - feat: 行业管理新增顺序调整能力：后端新增 `PUT /admin/industry/{id}/move`（`UP/DOWN`），前端行业页新增“上移/下移”操作按钮并持久化顺序
 - fix: 行业排序值连续化：后端在行业查询与移动流程中自动归一化 `sortOrder` 为 `0..N-1`，避免持续出现 `0/10/20...` 的十位步长排序

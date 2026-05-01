@@ -76,6 +76,17 @@ describe('AdminIndustryPage sorting and move actions', () => {
     await waitFor(() => {
       expect(moveIndustry).toHaveBeenCalledWith(2, 'DOWN');
     });
+
+    const table = screen.getByRole('table');
+    expect(table.className).toContain('table-fixed');
+
+    const actionButtons = screen.getAllByRole('button', { name: /上移|下移|停用|启用/ });
+    expect(actionButtons.length).toBeGreaterThan(0);
+    for (const button of actionButtons) {
+      expect(button.className).toContain('rounded-md');
+      expect(button.className).toContain('border');
+      expect(button.className).not.toContain('hover:underline');
+    }
   });
 
   it('uses max sortOrder + 1 as default value in create form', async () => {

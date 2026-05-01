@@ -14,6 +14,7 @@ interface AdminDataTableProps<T> {
   columns: Column<T>[];
   data: T[];
   className?: string;
+  tableClassName?: string;
   pagination?: {
     currentPage: number;
     totalPages: number;
@@ -23,7 +24,13 @@ interface AdminDataTableProps<T> {
   };
 }
 
-export default function AdminDataTable<T>({ columns, data, className, pagination }: AdminDataTableProps<T>) {
+export default function AdminDataTable<T>({
+  columns,
+  data,
+  className,
+  tableClassName,
+  pagination,
+}: AdminDataTableProps<T>) {
   return (
     <div
       className={cn(
@@ -32,7 +39,7 @@ export default function AdminDataTable<T>({ columns, data, className, pagination
       )}
     >
       <div className="overflow-x-auto">
-        <table className="w-full text-left">
+        <table className={cn('w-full text-left', tableClassName)}>
           <thead>
             <tr className="border-b border-outline-variant/50 bg-slate-50/50 dark:border-white/10 dark:bg-white/5">
               {columns.map((col, idx) => (
