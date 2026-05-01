@@ -15,14 +15,14 @@ const trustMetrics = [
 ];
 
 const logoCompanies = [
-  'TechNova',
-  'BlueCore',
-  '星桥科技',
-  '云脉数据',
-  'FutureLink',
-  '凌越智能',
-  'NorthGrid',
-  '极点制造',
+  { name: 'TechNova', mark: 'TN' },
+  { name: 'BlueCore', mark: 'BC' },
+  { name: '星桥科技', mark: '星' },
+  { name: '云脉数据', mark: '云' },
+  { name: 'FutureLink', mark: 'FL' },
+  { name: '凌越智能', mark: '凌' },
+  { name: 'NorthGrid', mark: 'NG' },
+  { name: '极点制造', mark: '极' },
 ];
 
 const enterpriseFlow = [
@@ -292,12 +292,15 @@ export default function HomePage() {
                 <span className="text-on-surface-variant">已有 10,000+ 企业团队使用 GraphHire 完成招聘协同</span>
               </div>
               <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
-                {logoCompanies.map((name) => (
+                {logoCompanies.map((item) => (
                   <div
-                    key={name}
-                    className="flex h-12 items-center justify-center rounded-lg border border-surface-mid bg-surface-low px-2 text-center text-xs font-bold text-on-surface-variant"
+                    key={item.name}
+                    className="flex h-12 items-center gap-2 rounded-lg border border-surface-mid bg-surface-low px-2.5 text-left text-xs font-bold text-on-surface-variant"
                   >
-                    {name}
+                    <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/10 text-[10px] font-black text-primary">
+                      {item.mark}
+                    </span>
+                    <span className="truncate">{item.name}</span>
                   </div>
                 ))}
               </div>
