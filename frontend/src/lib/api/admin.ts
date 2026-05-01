@@ -130,6 +130,9 @@ export interface AdminIndustryListResponse {
   pageSize: number;
 }
 
+export type IndustrySortBy = 'name' | 'sortOrder' | 'updatedAt';
+export type IndustrySortDir = 'asc' | 'desc';
+
 // ============ User Management ============
 export interface UserItem {
   id: number;
@@ -277,7 +280,14 @@ export const adminApi = {
     await apiClient.put(`/admin/company/auth/${id}`, data);
   },
 
-  getIndustryList: async (params?: { enabled?: number; keyword?: string; page?: number; pageSize?: number }): Promise<AdminIndustryListResponse> => {
+  getIndustryList: async (params?: {
+    enabled?: number;
+    keyword?: string;
+    page?: number;
+    pageSize?: number;
+    sortBy?: IndustrySortBy;
+    sortDir?: IndustrySortDir;
+  }): Promise<AdminIndustryListResponse> => {
     const response = await apiClient.get('/admin/industry/list', { params });
     return response.data;
   },
@@ -294,6 +304,11 @@ export const adminApi = {
 
   updateIndustryStatus: async (id: number, enabled: number): Promise<AdminIndustryItem> => {
     const response = await apiClient.put(`/admin/industry/${id}/status`, { enabled });
+    return response.data;
+  },
+
+  moveIndustry: async (id: number, direction: 'UP' | 'DOWN'): Promise<AdminIndustryItem> => {
+    const response = await apiClient.put(`/admin/industry/${id}/move`, { direction });
     return response.data;
   },
 

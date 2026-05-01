@@ -143,9 +143,11 @@ public class AdminController {
     public Result<AdminPageResponse<AdminIndustryItemResponse>> getIndustryList(
             @RequestParam(required = false) Integer enabled,
             @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDir,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int pageSize) {
-        return Result.success(adminAppService.getIndustryList(enabled, keyword, page, pageSize));
+        return Result.success(adminAppService.getIndustryList(enabled, keyword, sortBy, sortDir, page, pageSize));
     }
 
     @PostMapping("/industry")
@@ -161,6 +163,11 @@ public class AdminController {
     @PutMapping("/industry/{id}/status")
     public Result<AdminIndustryItemResponse> updateIndustryStatus(@PathVariable Long id, @RequestBody AdminIndustryStatusUpdateRequest request) {
         return Result.success(adminAppService.updateIndustryStatus(id, request.getEnabled()));
+    }
+
+    @PutMapping("/industry/{id}/move")
+    public Result<AdminIndustryItemResponse> moveIndustry(@PathVariable Long id, @RequestBody AdminIndustryMoveRequest request) {
+        return Result.success(adminAppService.moveIndustry(id, request.getDirection()));
     }
 
     @GetMapping("/task/list")

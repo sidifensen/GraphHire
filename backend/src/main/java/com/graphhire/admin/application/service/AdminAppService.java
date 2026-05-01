@@ -112,8 +112,8 @@ public class AdminAppService {
     private IndustryAppService industryAppService;
 
     
-    public AdminPageResponse<AdminIndustryItemResponse> getIndustryList(Integer enabled, String keyword, int page, int pageSize) {
-        List<Industry> industries = industryAppService.listIndustries(enabled).stream()
+    public AdminPageResponse<AdminIndustryItemResponse> getIndustryList(Integer enabled, String keyword, String sortBy, String sortDir, int page, int pageSize) {
+        List<Industry> industries = industryAppService.listIndustries(enabled, sortBy, sortDir).stream()
                 .filter(industry -> {
                     if (keyword == null || keyword.isBlank()) {
                         return true;
@@ -143,6 +143,11 @@ public class AdminAppService {
     @Transactional
     public AdminIndustryItemResponse updateIndustryStatus(Long id, Integer enabled) {
         return toAdminIndustryItem(industryAppService.updateIndustryStatus(id, enabled));
+    }
+
+    @Transactional
+    public AdminIndustryItemResponse moveIndustry(Long id, String direction) {
+        return toAdminIndustryItem(industryAppService.moveIndustry(id, direction));
     }
 
     public DashboardStatsResponse getDashboardStats() {

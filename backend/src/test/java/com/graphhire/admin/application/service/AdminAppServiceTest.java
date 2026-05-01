@@ -29,6 +29,8 @@ import com.graphhire.resume.domain.repository.PersonInfoRepository;
 import com.graphhire.resume.domain.repository.ParseTaskRepository;
 import com.graphhire.resume.domain.repository.ResumeRepository;
 import com.graphhire.resume.domain.vo.ParseStatus;
+import com.graphhire.industry.application.service.IndustryAppService;
+import com.graphhire.industry.domain.model.Industry;
 import com.graphhire.skill.application.service.SkillTagAppService;
 import com.graphhire.skill.domain.model.SkillTag;
 import org.junit.jupiter.api.DisplayName;
@@ -77,6 +79,8 @@ class AdminAppServiceTest {
     private CompanyAppService companyAppService;
     @Mock
     private CompanyAvatarUrlResolver companyAvatarUrlResolver;
+    @Mock
+    private IndustryAppService industryAppService;
 
     @InjectMocks
     private AdminAppService adminAppService;
@@ -269,6 +273,46 @@ class AdminAppServiceTest {
             adminAppService.batchRejectCompany(List.of(1L, 2L), "材料不完整");
             verify(companyAppService).rejectCompany(1L);
             verify(companyAppService).rejectCompany(2L);
+        }
+    }
+
+    @Nested
+    @DisplayName("行业")
+    class IndustryTests {
+        @Test
+        @DisplayName("行业列表按排序参数返回")
+        void getIndustryListWithSort() {
+            Industry a = new Industry();
+            a.setId(1L);
+            a.setName("互联网");
+            a.setSortOrder(2);
+            Industry b = new Industry();
+            b.setId(2L);
+            b.setName("AI");
+            b.setSortOrder(1);
+            when(industryAppService.listIndustries(1, "name", "desc")).thenReturn(List.of(a, b));
+
+            AdminPageResponse<AdminIndustryItemResponse> response = adminAppService.getIndustryList(1, null, "name", "desc", 1, 10);
+
+            assertEquals(2, response.getTotal());
+            assertEquals("互联网", response.getList().get(0).getName());
+            verify(industryAppService).listIndustries(1, "name", "desc");
+        }
+
+        @Test
+        @DisplayName("行业移动由应用层完成并返回结果")
+        void moveIndustrySuccess() {
+            Industry moved = new Industry();
+            moved.setId(9L);
+            moved.setName("金融科技");
+            moved.setSortOrder(3);
+            when(industryAppService.moveIndustry(9L, "DOWN")).thenReturn(moved);
+
+            AdminIndustryItemResponse response = adminAppService.moveIndustry(9L, "DOWN");
+
+            assertEquals(9L, response.getId());
+            assertEquals(3, response.getSortOrder());
+            verify(industryAppService).moveIndustry(9L, "DOWN");
         }
     }
 

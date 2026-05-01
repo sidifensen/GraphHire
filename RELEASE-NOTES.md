@@ -2,6 +2,10 @@
 
 ## 2026-05-01
 
+- feat: 行业管理新增排序能力：`/admin/industry/list` 支持 `sortBy(name/sortOrder/updatedAt)` 与 `sortDir(asc/desc)` 参数，前端行业页支持列头升降序切换
+- feat: 行业管理新增顺序调整能力：后端新增 `PUT /admin/industry/{id}/move`（`UP/DOWN`），前端行业页新增“上移/下移”操作按钮并持久化顺序
+- fix: 行业排序值连续化：后端在行业查询与移动流程中自动归一化 `sortOrder` 为 `0..N-1`，避免持续出现 `0/10/20...` 的十位步长排序
+- test: 新增/增强行业排序与移动相关后端单测（`AdminControllerTest`、`AdminAppServiceTest`、`IndustryAppServiceTest`）与前端页面测试（`admin-industry-page.test.tsx`）
 - feat: 首页 Hero 右侧视觉卡片升级为 Galaxy 风格，增强玻璃拟态浮层、高光渐变与底部指标条层次，并补充首页卡片结构回归测试
 - docs: 同步精简 AGENTS/CLAUDE 规范，新增“简单任务直接修改 + 按改动面验证”规则，避免无关模块校验
 - fix: 全局异常处理器识别客户端断连场景（`AsyncRequestNotUsableException`/`ClientAbortException`），将该类响应写出失败从 `ERROR` 降级为告警与调试日志，避免污染未处理异常告警

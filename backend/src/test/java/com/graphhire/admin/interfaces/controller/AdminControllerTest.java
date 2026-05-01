@@ -6,6 +6,7 @@ import com.graphhire.admin.interfaces.dto.request.AdminBatchDisableUserRequest;
 import com.graphhire.admin.interfaces.dto.request.AdminBatchRejectRequest;
 import com.graphhire.admin.interfaces.dto.request.AdminBatchRetryTaskRequest;
 import com.graphhire.admin.interfaces.dto.request.AdminCompanyAuthUpdateRequest;
+import com.graphhire.admin.interfaces.dto.request.AdminIndustryMoveRequest;
 import com.graphhire.admin.interfaces.dto.request.AdminSkillTagUpsertRequest;
 import com.graphhire.admin.interfaces.dto.request.UpdateUserStatusRequest;
 import com.graphhire.admin.interfaces.dto.response.*;
@@ -136,6 +137,38 @@ class AdminControllerTest {
 
             assertEquals(200, result.getCode());
             verify(adminAppService).batchRejectCompany(List.of(1L, 2L), "资料不完整");
+        }
+    }
+
+    @Nested
+    @DisplayName("行业")
+    class IndustryTests {
+        @Test
+        @DisplayName("行业列表透传排序参数")
+        void getIndustryListWithSortParams() {
+            AdminPageResponse<AdminIndustryItemResponse> page = new AdminPageResponse<>(List.of(), 0, 1, 10);
+            when(adminAppService.getIndustryList(any(), any(), any(), any(), anyInt(), anyInt())).thenReturn(page);
+
+            var result = adminController.getIndustryList(1, "互联", "name", "desc", 1, 10);
+
+            assertEquals(200, result.getCode());
+            verify(adminAppService).getIndustryList(1, "互联", "name", "desc", 1, 10);
+        }
+
+        @Test
+        @DisplayName("行业移动调用应用服务")
+        void moveIndustrySuccess() {
+            AdminIndustryMoveRequest request = new AdminIndustryMoveRequest();
+            request.setDirection("UP");
+            AdminIndustryItemResponse response = new AdminIndustryItemResponse();
+            response.setId(1L);
+            when(adminAppService.moveIndustry(1L, "UP")).thenReturn(response);
+
+            var result = adminController.moveIndustry(1L, request);
+
+            assertEquals(200, result.getCode());
+            assertEquals(1L, result.getData().getId());
+            verify(adminAppService).moveIndustry(1L, "UP");
         }
     }
 

@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import AdminPagination from './AdminPagination';
 
 interface Column<T> {
-  header: string;
+  header: ReactNode;
   accessor: keyof T | ((item: T) => ReactNode);
   className?: string;
 }
