@@ -95,6 +95,22 @@ const primaryBtnCls =
 const cardCls = 'rounded-2xl border border-surface-mid bg-surface-lowest p-6 shadow-sm';
 const flowCardOverlayCls = 'absolute inset-0 bg-[linear-gradient(160deg,rgba(7,17,36,0.46),rgba(3,11,26,0.72))]';
 const candidateFlowOverlayCls = 'absolute inset-0 bg-[linear-gradient(160deg,rgba(7,17,36,0.34),rgba(3,11,26,0.58))]';
+const heroVisualNodes = [
+  { id: 'n1', top: '14%', left: '24%', size: 10, delay: 0.1 },
+  { id: 'n2', top: '26%', left: '72%', size: 8, delay: 0.2 },
+  { id: 'n3', top: '40%', left: '42%', size: 11, delay: 0.35 },
+  { id: 'n4', top: '54%', left: '78%', size: 9, delay: 0.45 },
+  { id: 'n5', top: '64%', left: '28%', size: 10, delay: 0.55 },
+  { id: 'n6', top: '78%', left: '60%', size: 8, delay: 0.65 },
+];
+
+const heroVisualLinks = [
+  { id: 'l1', top: '22%', left: '31%', width: 168, rotate: 16, delay: 0.16 },
+  { id: 'l2', top: '34%', left: '44%', width: 146, rotate: -10, delay: 0.28 },
+  { id: 'l3', top: '49%', left: '45%', width: 118, rotate: 18, delay: 0.4 },
+  { id: 'l4', top: '62%', left: '33%', width: 150, rotate: -18, delay: 0.5 },
+  { id: 'l5', top: '69%', left: '44%', width: 128, rotate: 12, delay: 0.6 },
+];
 
 export default function HomePage() {
   return (
@@ -112,59 +128,104 @@ export default function HomePage() {
             </div>
 
             <div className="relative z-10 mx-auto w-full max-w-7xl">
-              <div className="max-w-4xl text-center md:text-left">
-                <motion.div
-                  initial={{ opacity: 0, y: 18 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-primary"
-                >
-                  <Sparkles size={14} />
-                  <span className="text-[12px] font-semibold tracking-wide">AI智能匹配招聘</span>
-                </motion.div>
+              <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1.1fr)_minmax(380px,0.9fr)]">
+                <div className="max-w-4xl text-center md:text-left">
+                  <motion.div
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-primary"
+                  >
+                    <Sparkles size={14} />
+                    <span className="text-[12px] font-semibold tracking-wide">AI智能匹配招聘</span>
+                  </motion.div>
 
-                <motion.h1
-                  initial={{ opacity: 0, y: 18 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.05 }}
-                  className="mb-6 text-3xl font-black leading-[1.18] tracking-tight text-on-surface md:text-4xl lg:text-5xl"
-                >
-                  GraphHire 图谱智聘
-                </motion.h1>
+                  <motion.h1
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.05 }}
+                    className="mb-6 text-3xl font-black leading-[1.18] tracking-tight text-on-surface md:text-4xl lg:text-5xl"
+                  >
+                    GraphHire 图谱智聘
+                  </motion.h1>
 
-                <motion.p
-                  initial={{ opacity: 0, y: 18 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                  className="mb-6 max-w-3xl text-lg font-bold leading-[1.6] text-on-surface md:text-xl"
-                >
-                  企业更快招到合适的人，人才更快找到匹配的岗
-                </motion.p>
+                  <motion.p
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="mb-6 max-w-3xl text-lg font-bold leading-[1.6] text-on-surface md:text-xl"
+                  >
+                    企业更快招到合适的人，人才更快找到匹配的岗
+                  </motion.p>
 
-                <motion.p
-                  initial={{ opacity: 0, y: 18 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.15 }}
-                  className="mb-10 mx-auto max-w-2xl text-sm leading-[1.9] text-on-surface-variant md:mx-0 md:text-base"
-                >
-                  基于能力图谱与语义匹配，统一提升招聘效率、候选质量与投递体验。
-                </motion.p>
+                  <motion.p
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 }}
+                    className="mb-10 mx-auto max-w-2xl text-sm leading-[1.9] text-on-surface-variant md:mx-0 md:text-base"
+                  >
+                    基于能力图谱与语义匹配，统一提升招聘效率、候选质量与投递体验。
+                  </motion.p>
 
-                <motion.div
-                  initial={{ opacity: 0, y: 18 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.15 }}
-                  className="flex w-full flex-col items-center gap-3 sm:flex-row sm:items-center md:w-auto md:items-start"
-                >
-                  <Type1Button href="/register?role=enterprise" text="免费发布职位" />
-                  <HeroJobButton href="/jobs" text="开始找工作" />
-                </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 }}
+                    className="flex w-full flex-col items-center gap-3 sm:flex-row sm:items-center md:w-auto md:items-start"
+                  >
+                    <Type1Button href="/register?role=enterprise" text="免费发布职位" />
+                    <HeroJobButton href="/jobs" text="开始找工作" />
+                  </motion.div>
 
-                <div className="mt-4 flex flex-wrap justify-center gap-3 text-xs font-bold text-outline md:justify-start">
-                  <span className="rounded-full bg-surface-low px-3 py-1">面向招聘方</span>
-                  <span className="rounded-full bg-surface-low px-3 py-1">面向求职者</span>
+                  <div className="mt-4 flex flex-wrap justify-center gap-3 text-xs font-bold text-outline md:justify-start">
+                    <span className="rounded-full bg-surface-low px-3 py-1">面向招聘方</span>
+                    <span className="rounded-full bg-surface-low px-3 py-1">面向求职者</span>
+                  </div>
                 </div>
-              </div>
 
+                <motion.div
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.18 }}
+                  className="relative hidden h-[440px] w-full overflow-hidden rounded-[32px] border border-primary/15 bg-[linear-gradient(145deg,rgba(11,39,84,0.08),rgba(15,74,190,0.03)_45%,rgba(255,255,255,0.22))] lg:block"
+                  aria-hidden
+                >
+                  <div className="absolute left-1/2 top-1/2 h-[290px] w-[290px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/20 blur-3xl" />
+                  <div className="absolute left-[38%] top-[26%] h-[190px] w-[190px] rounded-full bg-tertiary/15 blur-[80px]" />
+                  <div className="absolute right-[12%] top-[56%] h-[140px] w-[140px] rounded-full bg-primary/12 blur-[72px]" />
+
+                  {heroVisualLinks.map((link) => (
+                    <motion.span
+                      key={link.id}
+                      initial={{ opacity: 0.14, scaleX: 0.9 }}
+                      animate={{ opacity: [0.2, 0.5, 0.2], scaleX: [0.95, 1.03, 0.95] }}
+                      transition={{ duration: 8, repeat: Number.POSITIVE_INFINITY, delay: link.delay, ease: 'easeInOut' }}
+                      className="absolute h-px origin-left bg-gradient-to-r from-primary/10 via-primary/65 to-transparent"
+                      style={{
+                        top: link.top,
+                        left: link.left,
+                        width: `${link.width}px`,
+                        transform: `rotate(${link.rotate}deg)`,
+                      }}
+                    />
+                  ))}
+
+                  {heroVisualNodes.map((node) => (
+                    <motion.span
+                      key={node.id}
+                      initial={{ opacity: 0.26, y: 0 }}
+                      animate={{ opacity: [0.28, 0.88, 0.28], y: [0, -5, 0] }}
+                      transition={{ duration: 6.5, repeat: Number.POSITIVE_INFINITY, delay: node.delay, ease: 'easeInOut' }}
+                      className="absolute rounded-full border border-primary/25 bg-primary/50 shadow-[0_0_0_6px_rgba(37,99,235,0.08)]"
+                      style={{
+                        top: node.top,
+                        left: node.left,
+                        width: `${node.size}px`,
+                        height: `${node.size}px`,
+                      }}
+                    />
+                  ))}
+                </motion.div>
+              </div>
             </div>
           </section>
 
