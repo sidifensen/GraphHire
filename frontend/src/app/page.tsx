@@ -122,7 +122,7 @@ export default function HomePage() {
                   initial={{ opacity: 0, y: 18 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.05 }}
-                  className="mb-3 text-3xl font-black leading-tight tracking-tight text-on-surface md:text-4xl lg:text-5xl"
+                  className="mb-6 text-3xl font-black leading-[1.18] tracking-tight text-on-surface md:text-4xl lg:text-5xl"
                 >
                   GraphHire 图谱智聘
                 </motion.h1>
@@ -131,7 +131,7 @@ export default function HomePage() {
                   initial={{ opacity: 0, y: 18 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
-                  className="mb-4 max-w-3xl text-lg font-bold leading-relaxed text-on-surface md:text-xl"
+                  className="mb-6 max-w-3xl text-lg font-bold leading-[1.6] text-on-surface md:text-xl"
                 >
                   企业更快招到合适的人，人才更快找到匹配的岗
                 </motion.p>
@@ -140,7 +140,7 @@ export default function HomePage() {
                   initial={{ opacity: 0, y: 18 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.15 }}
-                  className="mb-8 mx-auto max-w-2xl text-sm leading-relaxed text-on-surface-variant md:mx-0 md:text-base"
+                  className="mb-10 mx-auto max-w-2xl text-sm leading-[1.9] text-on-surface-variant md:mx-0 md:text-base"
                 >
                   基于能力图谱与语义匹配，统一提升招聘效率、候选质量与投递体验。
                 </motion.p>
