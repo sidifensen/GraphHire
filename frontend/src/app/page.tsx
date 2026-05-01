@@ -154,7 +154,7 @@ export default function HomePage() {
                   className="flex w-full flex-col items-center gap-3 sm:flex-row sm:items-center md:w-auto md:items-start"
                 >
                   <Type1Button href="/register?role=enterprise" text="免费发布职位" />
-                  <HeroJobButton href="/jobs" />
+                  <HeroJobButton href="/jobs" text="Let's get started" />
                 </motion.div>
 
                 <div className="mt-4 flex flex-wrap justify-center gap-3 text-xs font-bold text-outline md:justify-start">
