@@ -24,10 +24,12 @@ export interface EnterpriseJobListItem {
   salaryMax?: number | null;
   salaryUnit?: string | null;
   status: 'DRAFT' | 'PUBLISHED' | 'CLOSED' | string;
+  description?: string | null;
   parseStatus?: string | null;
   viewCount: number;
   applyCount: number;
   matchCount: number;
+  createdAt?: string | null;
   publishedAt?: string | null;
 }
 

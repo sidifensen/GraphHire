@@ -192,7 +192,7 @@ export default function RegisterPage() {
             {error && <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-600 text-sm">{error}</div>}
             {notice && <div className="mb-4 p-3 rounded-lg bg-blue-50 text-blue-700 text-sm">{notice}</div>}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
               <div>
                 <label className="block text-xs font-bold text-on-surface-variant mb-3 uppercase tracking-wider">选择您的身份</label>
                 <div className="flex gap-4" role="tablist">
@@ -277,6 +277,7 @@ export default function RegisterPage() {
                   </label>
                   <input
                     id="email"
+                    autoComplete="off"
                     className="w-full px-4 py-2.5 bg-surface-lowest border border-outline-variant rounded-lg text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all"
                     placeholder="请输入邮箱"
                     type="email"
@@ -292,6 +293,7 @@ export default function RegisterPage() {
                   <div className="flex gap-3">
                     <input
                       id="verificationCode"
+                      autoComplete="off"
                       className="w-full px-4 py-2.5 bg-surface-lowest border border-outline-variant rounded-lg text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all"
                       placeholder="6位验证码"
                       type="text"
@@ -316,6 +318,7 @@ export default function RegisterPage() {
                     </label>
                     <input
                       id="password"
+                      autoComplete="new-password"
                       className="w-full px-4 py-2.5 bg-surface-lowest border border-outline-variant rounded-lg text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all"
                       placeholder="至少8位字符"
                       type="password"
@@ -329,6 +332,7 @@ export default function RegisterPage() {
                     </label>
                     <input
                       id="confirmPassword"
+                      autoComplete="new-password"
                       className="w-full px-4 py-2.5 bg-surface-lowest border border-outline-variant rounded-lg text-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all"
                       placeholder="再次输入密码"
                       type="password"
@@ -354,7 +358,7 @@ export default function RegisterPage() {
               </div>
 
               <button
-                className="w-full relative group overflow-hidden bg-gradient-to-r from-primary to-primary/80 text-white py-4 rounded-xl font-black text-lg shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all duration-300 active:scale-[0.98] disabled:opacity-50"
+                className="w-full relative group overflow-hidden bg-primary text-white py-4 rounded-xl font-black text-lg shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all duration-300 active:scale-[0.98] disabled:opacity-50"
                 type="submit"
                 disabled={loading}
               >

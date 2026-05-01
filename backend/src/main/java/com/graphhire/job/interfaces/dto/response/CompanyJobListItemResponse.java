@@ -11,10 +11,12 @@ public class CompanyJobListItemResponse {
     private Integer salaryMax;
     private String salaryUnit;
     private String status;
+    private String description;
     private String parseStatus;
     private long viewCount;
     private long applyCount;
     private long matchCount;
+    private LocalDateTime createdAt;
     private LocalDateTime publishedAt;
 
     public Long getId() {
@@ -81,6 +83,14 @@ public class CompanyJobListItemResponse {
         this.status = status;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public String getParseStatus() {
         return parseStatus;
     }
@@ -111,6 +121,14 @@ public class CompanyJobListItemResponse {
 
     public void setMatchCount(long matchCount) {
         this.matchCount = matchCount;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
     public LocalDateTime getPublishedAt() {

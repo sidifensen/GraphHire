@@ -32,4 +32,9 @@ describe('enterprise style regressions', () => {
     expect(topNav).not.toContain('max-w-[375px]');
     expect(bottomNav).not.toContain('max-w-[375px]');
   });
+
+  it('does not cap enterprise recommendations page width to 375px on mobile', () => {
+    const recommendationsPage = readFileSync(join(root, 'src/app/enterprise/recommendations/page.tsx'), 'utf8');
+    expect(recommendationsPage).not.toContain('max-w-[375px]');
+  });
 });

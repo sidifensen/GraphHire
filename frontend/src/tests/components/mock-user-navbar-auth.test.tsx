@@ -53,8 +53,19 @@ const { logoutWithServerInvalidation } = vi.hoisted(() => ({
   logoutWithServerInvalidation: vi.fn().mockResolvedValue(undefined),
 }));
 
+const { toggleThemeMock } = vi.hoisted(() => ({
+  toggleThemeMock: vi.fn(),
+}));
+
 vi.mock('@/lib/logout', () => ({
   logoutWithServerInvalidation,
+}));
+
+vi.mock('@/app/(user)/_mock/context/ThemeContext', () => ({
+  useTheme: () => ({
+    theme: 'light',
+    toggleTheme: toggleThemeMock,
+  }),
 }));
 
 import Navbar from '@/app/(user)/_mock/components/Navbar';
@@ -116,5 +127,19 @@ describe('MockUser Navbar auth display', () => {
     await waitFor(() => {
       expect(logoutWithServerInvalidation).toHaveBeenCalledWith(expect.any(Function), '/login', 'user');
     });
+  });
+
+  test('右上角显示夜间模式切换图标并可触发切换', () => {
+    userAuthStore.setState({
+      isAuthenticated: false,
+      user: null,
+    });
+
+    render(<Navbar />);
+
+    const themeToggleButton = screen.getByRole('button', { name: '切换夜间模式' });
+    fireEvent.click(themeToggleButton);
+
+    expect(toggleThemeMock).toHaveBeenCalledTimes(1);
   });
 });

@@ -117,4 +117,21 @@ describe('Enterprise TopNav auth display', () => {
       expect(logoutWithServerInvalidation).toHaveBeenCalledWith(expect.any(Function), '/login', 'enterprise');
     });
   });
+
+  test('夜间模式按钮在移动端保持可见（不使用 hidden）', () => {
+    enterpriseAuthStore.setState({
+      isAuthenticated: true,
+      user: {
+        id: 201,
+        username: 'hr@graphhire.com',
+        displayName: '测试企业',
+        type: 'COMPANY',
+      },
+    });
+
+    render(<TopNav title="GraphHire 图谱智聘" userAvatar />);
+
+    const darkModeButton = screen.getByTitle('切换夜间模式');
+    expect(darkModeButton.className).not.toContain('hidden');
+  });
 });

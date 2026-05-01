@@ -615,7 +615,7 @@ public class CompanyController {
         item.setApplyCount(applicationRepository.findByJobId(job.getId()).size());
         item.setMatchCount(matchRecordRepository.findByJobId(job.getId()).size());
         item.setStatus(job.getStatus().name());
-        item.setPublishedAt(job.getPublishedAt());
+        item.setPublishedAt(job.getPublishedAt() != null ? job.getPublishedAt() : job.getCreateTime());
         return item;
     }
 
@@ -629,10 +629,12 @@ public class CompanyController {
         item.setSalaryMax(job.getSalaryRange() != null ? job.getSalaryRange().getMax() : null);
         item.setSalaryUnit(job.getSalaryRange() != null ? job.getSalaryRange().getUnit() : null);
         item.setStatus(job.getStatus().name());
+        item.setDescription(job.getDescription());
         item.setParseStatus(null);
         item.setViewCount(0L);
         item.setApplyCount(applicationRepository.findByJobId(job.getId()).size());
         item.setMatchCount(matchRecordRepository.findByJobId(job.getId()).size());
+        item.setCreatedAt(job.getCreateTime());
         item.setPublishedAt(job.getPublishedAt());
         return item;
     }

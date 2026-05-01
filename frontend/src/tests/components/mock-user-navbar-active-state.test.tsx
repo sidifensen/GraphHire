@@ -23,6 +23,13 @@ vi.mock('@/lib/api/person', () => ({
   },
 }));
 
+vi.mock('@/app/(user)/_mock/context/ThemeContext', () => ({
+  useTheme: () => ({
+    theme: 'light',
+    toggleTheme: vi.fn(),
+  }),
+}));
+
 import Navbar from '@/app/(user)/_mock/components/Navbar';
 
 describe('MockUser Navbar active state', () => {

@@ -14,6 +14,29 @@ export default function JobCreate() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
+  const createDraft = async () => {
+    if (submitting) return;
+    setSubmitting(true);
+    setError("");
+    try {
+      await companyApi.createJob({
+        title: title.trim(),
+        location: { city: city.trim() },
+        salaryRange: {
+          min: Number(salaryMin || "0"),
+          max: Number(salaryMax || "0"),
+          unit: "k/月",
+        },
+        description: description.trim(),
+      });
+      router.push('/enterprise/jobs');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "保存草稿失败");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const submit = async () => {
     if (submitting) return;
     setSubmitting(true);
@@ -39,13 +62,27 @@ export default function JobCreate() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-surface-container-highest relative pb-[80px]">
-      
-      <main className="w-full max-w-[375px] md:max-w-3xl mx-auto bg-background flex-1 flex flex-col shadow-lg overflow-y-auto px-container-margin py-stack-gap-md pb-[100px] gap-stack-gap-lg">
+    <div className="flex flex-col h-full bg-background">
+      <main className="w-full max-w-[375px] md:max-w-5xl mx-auto flex-1 flex flex-col overflow-y-auto px-container-margin md:px-10 py-stack-gap-md pb-10 gap-stack-gap-lg">
         {/* Instructions / Context */}
-        <div className="flex flex-col gap-stack-gap-xs">
+        <div className="flex items-start gap-3">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="mt-1 w-9 h-9 rounded-full border border-outline-variant text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors flex items-center justify-center shrink-0"
+            aria-label="返回上一页"
+          >
+            <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+          </button>
+          <div className="flex flex-col gap-stack-gap-xs">
           <h2 className="font-headline-md text-headline-md text-on-background">职位详情</h2>
           <p className="font-body-md text-body-md text-on-surface-variant">请提供准确的职位信息，以吸引最合适的候选人。</p>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between rounded-lg bg-surface-container-low px-4 py-3 border border-surface-variant">
+          <span className="font-label-md text-label-md text-on-surface-variant">职位状态</span>
+          <span className="font-label-md text-label-md text-secondary font-semibold">草稿</span>
         </div>
 
         <form className="flex flex-col gap-stack-gap-md">
@@ -125,17 +162,22 @@ export default function JobCreate() {
             <div className="text-error text-sm">{error}</div>
           ) : null}
         </form>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+          <button
+            onClick={createDraft}
+            disabled={submitting}
+            className="flex-1 h-[48px] border border-outline-variant text-on-surface font-label-md text-[16px] font-medium rounded-DEFAULT flex items-center justify-center transition-all hover:bg-surface-container-low"
+          >
+            {submitting ? "保存中..." : "保存为草稿"}
+          </button>
+          <button 
+            onClick={submit}
+            disabled={submitting}
+            className="flex-1 h-[48px] bg-primary text-on-primary font-label-md text-[16px] font-medium rounded-DEFAULT flex items-center justify-center shadow-sm hover:opacity-90 active:scale-[0.98] active:shadow-md transition-all">
+            {submitting ? "发布中..." : "创建并发布"}
+          </button>
+        </div>
       </main>
-
-      {/* Bottom Fixed Action Area */}
-      <div className="fixed bottom-0 left-0 right-0 bg-surface/95 backdrop-blur-sm border-t border-surface-variant px-container-margin py-4 pb-safe shadow-[0_-4px_16px_rgba(0,0,0,0.02)] max-w-[375px] md:max-w-3xl mx-auto z-20">
-        <button 
-          onClick={submit}
-          disabled={submitting}
-          className="w-full h-[48px] bg-primary text-on-primary font-label-md text-[16px] font-medium rounded-DEFAULT flex items-center justify-center shadow-sm hover:opacity-90 active:scale-[0.98] active:shadow-md transition-all">
-          {submitting ? "发布中..." : "创建并发布"}
-        </button>
-      </div>
     </div>
   );
 }

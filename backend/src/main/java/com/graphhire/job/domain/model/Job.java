@@ -56,6 +56,12 @@ public class Job extends BaseAggregateRoot {
     private String education;
     /** 工作类型（0=未知 1=全职 2=兼职 3=实习） */
     private Integer jobType;
+    /** 创建时间 */
+    private LocalDateTime createTime;
+    /** 更新时间 */
+    private LocalDateTime updateTime;
+    /** 逻辑删除 */
+    private Boolean deleted;
     /** 发布时间 */
     private LocalDateTime publishedAt;
 
@@ -219,6 +225,30 @@ public class Job extends BaseAggregateRoot {
 
     public void setJobType(Integer jobType) {
         this.jobType = jobType;
+    }
+
+    public LocalDateTime getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(LocalDateTime createTime) {
+        this.createTime = createTime;
+    }
+
+    public LocalDateTime getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(LocalDateTime updateTime) {
+        this.updateTime = updateTime;
+    }
+
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
     }
 
     public LocalDateTime getPublishedAt() {

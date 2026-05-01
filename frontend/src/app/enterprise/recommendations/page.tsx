@@ -22,7 +22,7 @@ export default function Recommendations() {
   return (
     <div className="flex flex-col h-screen bg-surface overflow-hidden">
       
-      <main className="w-full max-w-[375px] md:max-w-7xl mx-auto flex-1 flex flex-col md:flex-row md:gap-8 px-container-margin md:px-8 pt-stack-gap-md md:pt-8 overflow-hidden pb-[80px] md:pb-8">
+      <main className="w-full max-w-none md:max-w-7xl mx-auto flex-1 flex flex-col md:flex-row md:gap-8 px-3 md:px-8 pt-stack-gap-md md:pt-8 overflow-hidden pb-[80px] md:pb-8">
         
         {/* LEFT COLUMN: Job Selection */}
         {/* Mobile Dropdown */}

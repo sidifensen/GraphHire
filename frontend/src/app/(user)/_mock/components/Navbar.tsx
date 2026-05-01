@@ -1,11 +1,12 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Briefcase, Building2, User, Bell } from 'lucide-react';
+import { Home, Briefcase, Building2, User, Bell, Moon, Sun } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { userAuthStore } from '@/lib/stores/auth-store';
 import { personApi } from '@/lib/api/person';
 import { resolveHorizontalIndicatorMetrics } from '@/lib/ui/nav-indicator';
 import { logoutWithServerInvalidation } from '@/lib/logout';
+import { useTheme } from '@/app/(user)/_mock/context/ThemeContext';
 
 function normalizePath(pathname: string) {
   if (pathname.length > 1 && pathname.endsWith('/')) {
@@ -33,6 +34,7 @@ function isPathActive(currentPathname: string, navPath: string) {
 export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { theme, toggleTheme } = useTheme();
   const normalizedPathname = normalizePath(location.pathname);
   const [authState, setAuthState] = React.useState(() => userAuthStore.getState());
   const [avatarError, setAvatarError] = React.useState(false);
@@ -153,6 +155,15 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-4">
+          <button
+            type="button"
+            aria-label="切换夜间模式"
+            aria-pressed={theme === 'dark'}
+            onClick={toggleTheme}
+            className="p-2 text-on-surface-variant hover:bg-surface-low rounded-full transition-colors"
+          >
+            {theme === 'dark' ? <Sun size={22} /> : <Moon size={22} />}
+          </button>
           <Link 
             to="/notifications" 
             className="p-2 text-on-surface-variant hover:bg-surface-low rounded-full transition-colors relative"

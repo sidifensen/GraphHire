@@ -226,7 +226,7 @@ export function TopNav({ title, showBack, rightAction, userAvatar, onBack }: Top
       <div className="flex items-center justify-end min-w-[40px] gap-3 md:gap-4 md:w-auto">
         <button 
           onClick={toggleDark}
-          className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-surface-container active:scale-95 transition-colors duration-150 text-on-surface-variant hidden md:flex"
+          className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-surface-container active:scale-95 transition-colors duration-150 text-on-surface-variant"
           title="切换夜间模式"
         >
           <span className="material-symbols-outlined text-[20px]">
@@ -271,8 +271,10 @@ export function TopNav({ title, showBack, rightAction, userAvatar, onBack }: Top
         <div
           ref={menuPanelRef}
           className={cn(
-            'absolute top-full mt-2 w-48 rounded-xl border border-outline-variant/40 bg-surface-lowest shadow-lg overflow-hidden z-50',
-            menuAnchor === 'mobile' ? 'left-4' : 'right-4'
+            'absolute top-full mt-2 w-48 rounded-xl border border-outline-variant/40 shadow-lg overflow-hidden z-50',
+            menuAnchor === 'mobile'
+              ? 'left-4 bg-white dark:bg-[#1a1d20]'
+              : 'right-4 bg-surface-lowest'
           )}
         >
           <div className="px-4 py-3 border-b border-outline-variant/40">

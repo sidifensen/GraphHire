@@ -53,9 +53,12 @@ describe('enterprise jobs real api integration pages', () => {
         salaryMax: 35,
         salaryUnit: 'k/月',
         status: 'PUBLISHED',
+        description: '负责核心服务开发与稳定性优化',
         viewCount: 1280,
         applyCount: 12,
         matchCount: 5,
+        createdAt: '2026-04-29 09:00:00',
+        publishedAt: '2026-04-30 12:30:00',
       },
     ]);
 
@@ -65,6 +68,11 @@ describe('enterprise jobs real api integration pages', () => {
       expect(hoisted.companyApiMock.getJobList).toHaveBeenCalledWith();
     });
     expect(await screen.findByText('后端开发工程师')).toBeInTheDocument();
+    expect(screen.getByText('20-35k')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '编辑' })).toHaveAttribute('href', '/enterprise/jobs/101/edit');
+    expect(screen.getByText('负责核心服务开发与稳定性优化')).toBeInTheDocument();
+    expect(screen.getByText('岗位详情')).toBeInTheDocument();
+    expect(screen.getByText('发布时间：2026-04-30')).toBeInTheDocument();
   });
 
   it('loads detail page from companyApi.getJobDetail', async () => {
@@ -112,6 +120,26 @@ describe('enterprise jobs real api integration pages', () => {
       expect(hoisted.companyApiMock.createJob).toHaveBeenCalledTimes(1);
     });
     expect(hoisted.companyApiMock.publishJob).toHaveBeenCalledWith(88);
+    expect(hoisted.mockPush).toHaveBeenCalledWith('/enterprise/jobs');
+  });
+
+  it('creates draft job without publishing on draft button click', async () => {
+    hoisted.companyApiMock.createJob.mockResolvedValue(99);
+    const user = userEvent.setup();
+
+    render(<JobCreatePage />);
+
+    await user.type(screen.getByPlaceholderText('例如：高级前端工程师'), '草稿职位');
+    await user.type(screen.getByPlaceholderText('选择或输入城市'), '广州');
+    await user.type(screen.getAllByPlaceholderText('0')[0], '15');
+    await user.type(screen.getAllByPlaceholderText('0')[1], '25');
+    await user.type(screen.getByPlaceholderText('详细描述岗位职责、任职要求及加分项...'), '草稿描述');
+    await user.click(screen.getByRole('button', { name: '保存为草稿' }));
+
+    await waitFor(() => {
+      expect(hoisted.companyApiMock.createJob).toHaveBeenCalledTimes(1);
+    });
+    expect(hoisted.companyApiMock.publishJob).not.toHaveBeenCalled();
     expect(hoisted.mockPush).toHaveBeenCalledWith('/enterprise/jobs');
   });
 

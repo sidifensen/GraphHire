@@ -33,4 +33,18 @@ describe('RegisterPage', () => {
 
     expect(sendVerifyCodeMock).toHaveBeenCalledWith('new-user@example.com', 'register');
   });
+
+  test('注册页禁用账号密码自动填充且提交按钮为纯色', () => {
+    render(<RegisterPage />);
+
+    const emailInput = screen.getByPlaceholderText('请输入邮箱');
+    const passwordInput = screen.getByPlaceholderText('至少8位字符');
+    const confirmPasswordInput = screen.getByPlaceholderText('再次输入密码');
+    const submitButton = screen.getByRole('button', { name: '创建账号' });
+
+    expect(emailInput).toHaveAttribute('autocomplete', 'off');
+    expect(passwordInput).toHaveAttribute('autocomplete', 'new-password');
+    expect(confirmPasswordInput).toHaveAttribute('autocomplete', 'new-password');
+    expect(submitButton.className).not.toContain('bg-gradient-to-r');
+  });
 });
