@@ -5,6 +5,7 @@ import { ArrowRight, BarChart3, Building2, CheckCircle2, Clock3, ShieldCheck, Sp
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
+import Type1Button from '@/components/home/Type1Button';
 import MockUserShell from '@/app/(user)/_mock/components/MockUserShell';
 
 const trustMetrics = [
@@ -149,12 +150,9 @@ export default function HomePage() {
                   initial={{ opacity: 0, y: 18 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.15 }}
-                  className="flex w-full flex-col gap-3 sm:flex-row md:w-auto"
+                  className="flex w-full flex-col items-center gap-3 sm:flex-row sm:items-center md:w-auto md:items-start"
                 >
-                  <Link href="/register?role=enterprise" className={`${primaryBtnCls} bg-primary text-white shadow-[0_10px_28px_rgba(0,62,199,0.28)] hover:bg-primary/90`}>
-                    免费发布职位
-                    <ArrowRight size={16} />
-                  </Link>
+                  <Type1Button href="/register?role=enterprise" text="免费发布职位" />
                   <Link href="/jobs" className={`${primaryBtnCls} bg-surface-container text-on-surface border border-surface-mid hover:bg-surface-low`}>
                     立即找工作
                     <ArrowRight size={16} />
