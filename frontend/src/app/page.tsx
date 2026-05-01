@@ -155,57 +155,57 @@ export default function HomePage() {
                 transition={{ delay: 0.2 }}
                 className="hidden md:block"
               >
-                <div className="rounded-[32px] border border-surface-mid bg-[linear-gradient(160deg,#0a1832,#11264a_52%,#16315f)] p-6 text-white shadow-[0_32px_64px_rgba(3,12,29,0.35)]">
-                  <div className="mb-5 flex items-center justify-between">
+                <div className="rounded-[28px] border border-surface-mid bg-surface-lowest p-6 text-on-surface shadow-[0_20px_44px_rgba(15,23,42,0.10)]">
+                  <div className="mb-4 flex items-center justify-between border-b border-surface-mid pb-4">
                     <div>
-                      <p className="text-[11px] uppercase tracking-[0.18em] text-white/70">招聘工作台预览</p>
-                      <p className="mt-1 text-xl font-black">本周在招岗位 26 个</p>
+                      <p className="text-[11px] uppercase tracking-[0.16em] text-outline">招聘看板</p>
+                      <p className="mt-1 text-lg font-black">本周在招岗位 26 个</p>
                     </div>
-                    <span className="rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-bold text-white/90">
-                      实时同步
+                    <span className="rounded-md border border-surface-mid bg-surface-low px-2.5 py-1 text-xs font-bold text-on-surface-variant">
+                      今日更新
                     </span>
                   </div>
 
                   <div className="space-y-3">
-                    <div className="rounded-2xl border border-white/20 bg-white/10 p-4">
-                      <p className="text-xs font-black tracking-wider text-white/70">优先岗位</p>
-                      <div className="mt-2 space-y-2 text-sm">
-                        <div className="flex items-center justify-between">
+                    <div className="rounded-xl border border-surface-mid bg-surface-background p-4">
+                      <p className="text-xs font-black tracking-wider text-outline">优先岗位</p>
+                      <div className="mt-2 space-y-2 text-sm text-on-surface">
+                        <div className="flex items-center justify-between rounded-lg bg-surface-low px-2.5 py-1.5">
                           <span>高级后端工程师</span>
-                          <span className="text-white/75">待筛选 18</span>
+                          <span className="text-on-surface-variant">待筛选 18</span>
                         </div>
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between rounded-lg bg-surface-low px-2.5 py-1.5">
                           <span>产品运营经理</span>
-                          <span className="text-white/75">待筛选 12</span>
+                          <span className="text-on-surface-variant">待筛选 12</span>
                         </div>
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between rounded-lg bg-surface-low px-2.5 py-1.5">
                           <span>数据分析师</span>
-                          <span className="text-white/75">待筛选 9</span>
+                          <span className="text-on-surface-variant">待筛选 9</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="rounded-2xl border border-white/20 bg-white/10 p-4">
-                      <p className="text-xs font-black tracking-wider text-white/70">候选人匹配结果</p>
-                      <div className="mt-3 flex items-center justify-between rounded-xl border border-white/15 bg-black/10 px-3 py-2.5">
+                    <div className="rounded-xl border border-surface-mid bg-surface-background p-4">
+                      <p className="text-xs font-black tracking-wider text-outline">候选人进度</p>
+                      <div className="mt-3 flex items-center justify-between rounded-lg border border-surface-mid bg-surface-low px-3 py-2.5">
                         <div>
                           <p className="text-sm font-bold">赵嘉宁 · 后端候选人</p>
-                          <p className="text-xs text-white/75">Go / 分布式 / 5 年经验</p>
+                          <p className="text-xs text-on-surface-variant">Go / 分布式 / 5 年经验</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-xs text-white/70">匹配度</p>
-                          <p className="text-xl font-black">89%</p>
+                          <p className="text-xs text-on-surface-variant">当前状态</p>
+                          <p className="text-sm font-black text-primary">一面待约</p>
                         </div>
                       </div>
                     </div>
 
-                    <div className="rounded-2xl border border-white/20 bg-white/10 p-4">
+                    <div className="rounded-xl border border-surface-mid bg-surface-background p-4">
                       <div className="flex items-center justify-between text-sm">
                         <span className="font-bold">流程状态</span>
-                        <span className="text-white/75">本周平均反馈 2.3 天</span>
+                        <span className="text-on-surface-variant">本周平均反馈 2.3 天</span>
                       </div>
-                      <div className="mt-3 h-2 rounded-full bg-white/20">
-                        <div className="h-full w-[72%] rounded-full bg-white" />
+                      <div className="mt-3 h-2 rounded-full bg-surface-mid">
+                        <div className="h-full w-[72%] rounded-full bg-primary" />
                       </div>
                     </div>
                   </div>
