@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ArrowRight, BarChart3, Building2, CheckCircle2, Clock3, ShieldCheck, Sparkles, Users } from 'lucide-react';
+import { ArrowRight, BarChart3, Building2, CheckCircle2, Clock3, ShieldCheck, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
@@ -108,30 +108,21 @@ export default function HomePage() {
             </div>
 
             <div className="relative z-10 mx-auto w-full max-w-7xl">
-              <div className="max-w-4xl">
-                <motion.div
-                  initial={{ opacity: 0, y: 18 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-primary"
-                >
-                  <Sparkles size={14} />
-                  <span className="text-[12px] font-semibold tracking-wide">GraphHire 图谱智聘</span>
-                </motion.div>
-
+              <div className="max-w-4xl text-center md:text-left">
                 <motion.h1
                   initial={{ opacity: 0, y: 18 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.05 }}
                   className="mb-3 text-3xl font-black leading-tight tracking-tight text-on-surface md:text-4xl lg:text-5xl"
                 >
-                  GraphHire 图谱智聘
+                  更快完成人岗匹配
                 </motion.h1>
 
                 <motion.p
                   initial={{ opacity: 0, y: 18 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
-                  className="mb-4 max-w-3xl text-xl font-bold leading-relaxed text-on-surface md:text-2xl"
+                  className="mb-4 max-w-3xl text-lg font-bold leading-relaxed text-on-surface md:text-xl"
                 >
                   企业更快招到合适的人，人才更快找到匹配的岗
                 </motion.p>
@@ -140,16 +131,16 @@ export default function HomePage() {
                   initial={{ opacity: 0, y: 18 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.15 }}
-                  className="mb-8 max-w-xl text-base leading-relaxed text-on-surface-variant md:text-lg"
+                  className="mb-8 mx-auto max-w-2xl text-sm leading-relaxed text-on-surface-variant md:mx-0 md:text-base"
                 >
-                  以能力图谱与语义匹配为核心，统一招聘效率、候选质量与投递体验，帮助企业和人才在同一条路径上高效完成匹配。
+                  基于能力图谱与语义匹配，统一提升招聘效率、候选质量与投递体验。
                 </motion.p>
 
                 <motion.div
                   initial={{ opacity: 0, y: 18 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.15 }}
-                  className="flex w-full flex-col gap-3 sm:flex-row"
+                  className="flex w-full flex-col gap-3 sm:flex-row md:w-auto"
                 >
                   <Link href="/register?role=enterprise" className={`${primaryBtnCls} bg-primary text-white shadow-[0_10px_28px_rgba(0,62,199,0.28)] hover:bg-primary/90`}>
                     免费发布职位
@@ -161,7 +152,7 @@ export default function HomePage() {
                   </Link>
                 </motion.div>
 
-                <div className="mt-4 flex flex-wrap gap-3 text-xs font-bold text-outline">
+                <div className="mt-4 flex flex-wrap justify-center gap-3 text-xs font-bold text-outline md:justify-start">
                   <span className="rounded-full bg-surface-low px-3 py-1">面向招聘方</span>
                   <span className="rounded-full bg-surface-low px-3 py-1">面向求职者</span>
                 </div>
