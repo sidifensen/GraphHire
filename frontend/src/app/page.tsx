@@ -27,7 +27,7 @@ const enterpriseFlow = [
     desc: '基于能力图谱进行语义匹配，优先输出高契合候选池。',
     result: '首批候选准确率提升 41%',
     image:
-      'https://images.unsplash.com/photo-1551281044-8d8d3f9f4f2a?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1200&q=80',
   },
   {
     title: '面试协同转化',
@@ -197,7 +197,7 @@ export default function HomePage() {
               </div>
               <div className="grid gap-5 md:grid-cols-3">
                 {enterpriseFlow.map((step, idx) => (
-                  <article key={step.title} className={`${cardCls} relative overflow-hidden border-white/10 text-white`}>
+                  <article key={step.title} className={`${cardCls} relative min-h-[320px] overflow-hidden border-white/10 text-white md:min-h-[360px]`}>
                     <img src={step.image} alt={`${step.title}背景图`} className="absolute inset-0 h-full w-full object-cover" />
                     <div className="absolute inset-0 bg-[linear-gradient(160deg,rgba(7,17,36,0.58),rgba(3,11,26,0.88))]" />
                     <div className="relative z-10">
@@ -223,7 +223,7 @@ export default function HomePage() {
               </div>
               <div className="grid gap-5 md:grid-cols-3">
                 {candidateFlow.map((step, idx) => (
-                  <article key={step.title} className={`${cardCls} relative overflow-hidden border-white/10 text-white`}>
+                  <article key={step.title} className={`${cardCls} relative min-h-[320px] overflow-hidden border-white/10 text-white md:min-h-[360px]`}>
                     <img src={step.image} alt={`${step.title}背景图`} className="absolute inset-0 h-full w-full object-cover" />
                     <div className="absolute inset-0 bg-[linear-gradient(160deg,rgba(18,16,42,0.56),rgba(11,9,30,0.88))]" />
                     <div className="relative z-10">
