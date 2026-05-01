@@ -2,6 +2,8 @@
 
 ## 2026-05-01
 
+- fix: 全局异常处理器识别客户端断连场景（`AsyncRequestNotUsableException`/`ClientAbortException`），将该类响应写出失败从 `ERROR` 降级为告警与调试日志，避免污染未处理异常告警
+- test: 新增 `GlobalExceptionHandler` 客户端断连识别单测，覆盖断连与普通异常分支
 - feat: 新增行业主数据能力：数据库新增 `industry` 表，行业初始数据与测试假数据入库，`company` 新增 `industry_id` 并通过迁移脚本回填后移除旧 `industry` 文本列
 - feat: 管理端新增行业管理接口（列表/新增/编辑/启用停用）与页面 `/admin/industry`，并在左侧菜单新增“行业管理”入口
 - feat: 企业端新增公司资料编辑能力：新增 `PUT /company/profile`（仅企业主可用）与 `/company/industry/options`，行业字段改为行业ID选择并校验启用状态

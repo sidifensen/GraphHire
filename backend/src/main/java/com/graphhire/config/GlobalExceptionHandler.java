@@ -4,6 +4,7 @@ import cn.dev33.satoken.exception.NotLoginException;
 import com.graphhire.common.constants.UploadErrorMessages;
 import com.graphhire.common.vo.Result;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -84,7 +85,40 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public Result<Void> handleGeneral(Exception e) {
+        if (isClientAbortException(e)) {
+            log.warn("客户端连接已断开，忽略响应写出异常: {}", e.getMessage());
+            log.debug("客户端断连异常详情", e);
+            return Result.error(500, "服务器内部错误");
+        }
         log.error("未处理的异常", e);
         return Result.error(500, "服务器内部错误");
+    }
+
+    boolean isClientAbortException(Throwable throwable) {
+        Throwable current = throwable;
+        while (current != null) {
+            if (current instanceof AsyncRequestNotUsableException) {
+                return true;
+            }
+
+            String className = current.getClass().getName();
+            if (className.contains("ClientAbortException")) {
+                return true;
+            }
+
+            String message = current.getMessage();
+            if (message != null) {
+                String normalized = message.toLowerCase();
+                if (normalized.contains("broken pipe")
+                    || normalized.contains("connection reset by peer")
+                    || normalized.contains("an established connection was aborted")
+                    || message.contains("已建立的连接")) {
+                    return true;
+                }
+            }
+
+            current = current.getCause();
+        }
+        return false;
     }
 }
