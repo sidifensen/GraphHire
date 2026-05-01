@@ -9,6 +9,7 @@ import { adminApi } from '@/lib/api/admin';
 interface Company {
   id: number;
   name: string;
+  avatarUrl: string | null;
   code: string;
   industry: string | null;
   size: string | null;
@@ -47,6 +48,7 @@ function mapCompany(item: CompanyAuthItem): Company {
   return {
     id: item.id,
     name: item.companyName,
+    avatarUrl: item.avatarUrl ?? null,
     code: item.unifiedSocialCreditCode,
     industry: item.industry ?? null,
     size: item.scale ?? null,
@@ -59,6 +61,25 @@ function mapCompany(item: CompanyAuthItem): Company {
     rejectReason: item.rejectReason ?? null,
     initial: (item.companyName || '?').slice(0, 1).toUpperCase(),
   };
+}
+
+function CompanyAvatar({ company }: { company: Company }) {
+  const [broken, setBroken] = useState(false);
+  if (company.avatarUrl && !broken) {
+    return (
+      <img
+        src={company.avatarUrl}
+        alt={`${company.name} 头像`}
+        className="h-10 w-10 rounded-lg border border-outline-variant/30 object-cover dark:border-slate-700"
+        onError={() => setBroken(true)}
+      />
+    );
+  }
+  return (
+    <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-outline-variant/30 bg-surface font-bold text-primary dark:border-slate-700 dark:bg-slate-800">
+      {company.initial}
+    </div>
+  );
 }
 
 export default function AdminEnterpriseReviewPage() {
@@ -210,9 +231,7 @@ export default function AdminEnterpriseReviewPage() {
               header: '企业名称',
               accessor: (company) => (
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-outline-variant/30 bg-surface font-bold text-primary dark:border-slate-700 dark:bg-slate-800">
-                    {company.initial}
-                  </div>
+                  <CompanyAvatar company={company} />
                   <div>
                     <p className="text-sm font-bold text-on-surface">{company.name}</p>
                     <p className="mt-0.5 text-[10px] uppercase text-outline">{company.code}</p>

@@ -28,6 +28,7 @@ import com.graphhire.job.domain.model.Company;
 import com.graphhire.job.domain.model.Job;
 import com.graphhire.job.domain.repository.CompanyRepository;
 import com.graphhire.job.domain.repository.JobRepository;
+import com.graphhire.job.interfaces.dto.response.CompanyAvatarUrlResolver;
 import com.graphhire.notification.domain.model.Notification;
 import com.graphhire.notification.domain.repository.NotificationRepository;
 import com.graphhire.notification.domain.vo.NotificationType;
@@ -100,6 +101,9 @@ public class AdminAppService {
 
     @Autowired
     private CompanyAppService companyAppService;
+
+    @Autowired
+    private CompanyAvatarUrlResolver companyAvatarUrlResolver;
 
     public DashboardStatsResponse getDashboardStats() {
         LocalDateTime now = LocalDateTime.now();
@@ -781,6 +785,7 @@ public class AdminAppService {
         item.setId(company.getId());
         item.setCompanyId(company.getId());
         item.setCompanyName(company.getName());
+        item.setAvatarUrl(companyAvatarUrlResolver.resolve(company.getAvatarPath()));
         item.setUnifiedSocialCreditCode(company.getUnifiedSocialCreditCode());
         item.setIndustry(company.getIndustry());
         item.setScale(company.getScale());

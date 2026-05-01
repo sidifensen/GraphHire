@@ -17,6 +17,7 @@ import com.graphhire.job.domain.model.Company;
 import com.graphhire.job.domain.model.Job;
 import com.graphhire.job.domain.repository.CompanyRepository;
 import com.graphhire.job.domain.repository.JobRepository;
+import com.graphhire.job.interfaces.dto.response.CompanyAvatarUrlResolver;
 import com.graphhire.notification.domain.model.Notification;
 import com.graphhire.notification.domain.repository.NotificationRepository;
 import com.graphhire.notification.domain.vo.NotificationType;
@@ -74,6 +75,8 @@ class AdminAppServiceTest {
     private ResumeRepository resumeRepository;
     @Mock
     private CompanyAppService companyAppService;
+    @Mock
+    private CompanyAvatarUrlResolver companyAvatarUrlResolver;
 
     @InjectMocks
     private AdminAppService adminAppService;
@@ -236,17 +239,20 @@ class AdminAppServiceTest {
             c1.setId(1L);
             c1.setName("星河科技");
             c1.setUnifiedSocialCreditCode("911");
+            c1.setAvatarPath("avatar/company-1.png");
             c1.setContactName("张三");
             c1.setContactPhone("138");
             c1.setLicenseUrl("/a.png");
             c1.setAuthStatus(AuthStatus.PENDING_VERIFY);
 
             when(companyRepository.findByAuthStatus(AuthStatus.PENDING_VERIFY)).thenReturn(List.of(c1));
+            when(companyAvatarUrlResolver.resolve("avatar/company-1.png")).thenReturn("https://cdn.example.com/company-1.png");
 
             AdminPageResponse<AdminCompanyAuthItemResponse> page = adminAppService.getCompanyAuthList("PENDING", "星河", 1, 10);
 
             assertEquals(1, page.getTotal());
             assertEquals("星河科技", page.getList().get(0).getCompanyName());
+            assertEquals("https://cdn.example.com/company-1.png", page.getList().get(0).getAvatarUrl());
             assertEquals("PENDING", page.getList().get(0).getStatus());
         }
 

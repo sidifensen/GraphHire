@@ -4,6 +4,7 @@ public class AdminCompanyAuthItemResponse {
     private Long id;
     private Long companyId;
     private String companyName;
+    private String avatarUrl;
     private String unifiedSocialCreditCode;
     private String industry;
     private String scale;
@@ -24,6 +25,8 @@ public class AdminCompanyAuthItemResponse {
     public void setCompanyId(Long companyId) { this.companyId = companyId; }
     public String getCompanyName() { return companyName; }
     public void setCompanyName(String companyName) { this.companyName = companyName; }
+    public String getAvatarUrl() { return avatarUrl; }
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
     public String getUnifiedSocialCreditCode() { return unifiedSocialCreditCode; }
     public void setUnifiedSocialCreditCode(String unifiedSocialCreditCode) { this.unifiedSocialCreditCode = unifiedSocialCreditCode; }
     public String getIndustry() { return industry; }

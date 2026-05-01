@@ -8,6 +8,7 @@ const { getCompanyAuthList, updateCompanyAuth } = vi.hoisted(() => ({
         id: 1,
         companyId: 10,
         companyName: '测试科技有限公司',
+        avatarUrl: 'https://cdn.example.com/company-avatar.png',
         unifiedSocialCreditCode: '91330100TEST0001',
         industry: '互联网',
         scale: '中型',
@@ -53,6 +54,7 @@ describe('AdminEnterpriseReviewPage', () => {
     expect(screen.getByText('测试科技有限公司')).toBeInTheDocument();
     expect(screen.getByText('互联网')).toBeInTheDocument();
     expect(screen.getByText('中型')).toBeInTheDocument();
+    expect(screen.getByAltText('测试科技有限公司 头像')).toHaveAttribute('src', 'https://cdn.example.com/company-avatar.png');
 
     fireEvent.click(screen.getByText('详情'));
 

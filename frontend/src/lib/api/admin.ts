@@ -89,6 +89,7 @@ export interface CompanyAuthItem {
   id: number;
   companyId: number;
   companyName: string;
+  avatarUrl?: string;
   unifiedSocialCreditCode: string;
   industry?: string;
   scale?: string;
