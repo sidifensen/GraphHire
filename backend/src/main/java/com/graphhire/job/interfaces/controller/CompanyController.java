@@ -13,6 +13,7 @@ import com.graphhire.auth.domain.vo.UserType;
 import com.graphhire.auth.domain.vo.Username;
 import com.graphhire.common.vo.Exceptions;
 import com.graphhire.common.vo.Result;
+import com.graphhire.config.UploadProperties;
 import com.graphhire.job.application.command.PublishJobCmd;
 import com.graphhire.job.application.service.CompanyAppService;
 import com.graphhire.job.application.service.CompanyGraphAppService;
@@ -56,8 +57,6 @@ import java.time.LocalDateTime;
 @RestController
 @RequestMapping("/company")
 public class CompanyController {
-    private static final long MAX_AVATAR_SIZE = 2 * 1024 * 1024;
-
     @Autowired
     private CompanyAppService companyAppService;
 
@@ -96,6 +95,8 @@ public class CompanyController {
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private UploadProperties uploadProperties;
 
     @GetMapping("/info")
     public Result<CompanyProfileResponse> getCompanyInfo() {
@@ -127,8 +128,9 @@ public class CompanyController {
 
     @PostMapping("/avatar")
     public Result<String> uploadAvatar(@RequestParam("file") MultipartFile file) {
-        if (file.getSize() > MAX_AVATAR_SIZE) {
-            throw new RuntimeException("文件大小不能超过2MB");
+        long maxFileSize = uploadProperties.getAvatar().getMaxFileSize().toBytes();
+        if (file.getSize() > maxFileSize) {
+            throw new RuntimeException("文件大小不能超过" + uploadProperties.getAvatar().getMaxFileSize().toMegabytes() + "MB");
         }
         String contentType = file.getContentType() == null ? "" : file.getContentType();
         if (!contentType.startsWith("image/")) {

@@ -1,8 +1,10 @@
 package com.graphhire.resume.application.service;
 
 import com.graphhire.common.vo.Exceptions;
+import com.graphhire.config.UploadProperties;
 import com.graphhire.resume.application.command.UploadResumeCmd;
 import com.graphhire.resume.application.service.dto.ResumePreviewFile;
+import com.graphhire.resume.domain.model.ParseTask;
 import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.model.Resume;
 import com.graphhire.resume.domain.repository.ParseTaskRepository;
@@ -19,17 +21,24 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.util.unit.DataSize;
 
 import java.lang.reflect.Field;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 class ResumeAppServiceTest {
@@ -53,6 +62,8 @@ class ResumeAppServiceTest {
     private GraphBuildService graphBuildService;
     @Mock
     private MatchAppService matchAppService;
+    @Mock
+    private UploadProperties uploadProperties;
 
     private ResumeAppService resumeAppService;
 
@@ -66,6 +77,17 @@ class ResumeAppServiceTest {
         setField(resumeAppService, "personInfoRepository", personInfoRepository);
         setField(resumeAppService, "graphBuildService", graphBuildService);
         setField(resumeAppService, "matchAppService", matchAppService);
+        setField(resumeAppService, "uploadProperties", uploadProperties);
+
+        UploadProperties.Resume resumeUpload = new UploadProperties.Resume();
+        resumeUpload.setMaxFileSize(DataSize.ofMegabytes(10));
+        resumeUpload.setAllowedExtensions(new java.util.LinkedHashSet<>(List.of("pdf", "doc", "docx")));
+        resumeUpload.setAllowedMimeTypes(new java.util.LinkedHashSet<>(List.of(
+            "application/pdf",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        )));
+        lenient().when(uploadProperties.getResume()).thenReturn(resumeUpload);
     }
 
     @Test
@@ -102,6 +124,74 @@ class ResumeAppServiceTest {
 
         assertEquals("仅支持上传 PDF、DOC、DOCX 格式的简历", ex.getMessage());
         verifyNoInteractions(rustFSClient);
+    }
+
+    @Test
+    @DisplayName("uploadResume 文件大小超过限制时应拒绝")
+    void uploadResume_shouldRejectWhenFileTooLarge() throws Exception {
+        when(resumeRepository.findByUserId(8L)).thenReturn(List.of());
+        byte[] large = new byte[1024];
+        UploadResumeCmd cmd = new UploadResumeCmd(new MockMultipartFile(
+            "file", "test.pdf", "application/pdf", large
+        )) {
+            @Override
+            public long getFileSize() {
+                return DataSize.ofMegabytes(11).toBytes();
+            }
+        };
+        cmd.setUserId(8L);
+
+        Exceptions.BusinessException ex = assertThrows(
+            Exceptions.BusinessException.class,
+            () -> resumeAppService.uploadResume(cmd)
+        );
+
+        assertEquals("简历文件超过大小限制，最大支持 10MB", ex.getMessage());
+        verifyNoInteractions(rustFSClient);
+    }
+
+    @Test
+    @DisplayName("uploadResume MIME 类型不合法时应拒绝")
+    void uploadResume_shouldRejectWhenMimeTypeNotAllowed() throws Exception {
+        when(resumeRepository.findByUserId(8L)).thenReturn(List.of());
+        UploadResumeCmd cmd = new UploadResumeCmd(new MockMultipartFile(
+            "file", "test.pdf", "application/zip", "content".getBytes()
+        ));
+        cmd.setUserId(8L);
+
+        Exceptions.BusinessException ex = assertThrows(
+            Exceptions.BusinessException.class,
+            () -> resumeAppService.uploadResume(cmd)
+        );
+
+        assertEquals("简历文件类型不合法，请上传 PDF、DOC、DOCX 文件", ex.getMessage());
+        verifyNoInteractions(rustFSClient);
+    }
+
+    @Test
+    @DisplayName("uploadResume 成功时应以流式上传并记录文件大小")
+    void uploadResume_shouldUploadWithStreamAndPersistFileSize() throws Exception {
+        when(resumeRepository.findByUserId(8L)).thenReturn(List.of());
+        byte[] content = "resume".getBytes();
+        MockMultipartFile file = new MockMultipartFile("file", "ok.pdf", "application/pdf", content);
+        UploadResumeCmd cmd = new UploadResumeCmd(file);
+        cmd.setUserId(8L);
+
+        when(rustFSClient.upload(any(InputStream.class), eq((long) content.length), eq("ok.pdf")))
+            .thenReturn("s3://resumes/ok.pdf");
+        when(resumeRepository.save(any(Resume.class))).thenAnswer(invocation -> {
+            Resume resume = invocation.getArgument(0);
+            if (resume.getId() == null) {
+                resume.setId(99L);
+            }
+            return resume;
+        });
+
+        resumeAppService.uploadResume(cmd);
+
+        verify(rustFSClient).upload(any(InputStream.class), eq((long) content.length), eq("ok.pdf"));
+        verify(resumeRepository, atLeastOnce()).save(argThat(resume -> resume.getFileSize() != null && resume.getFileSize() == content.length));
+        verify(parseTaskRepository).save(any(ParseTask.class));
     }
 
     @Test

@@ -117,4 +117,18 @@ describe('User PersonalInfo page', () => {
       expect(screen.getByAltText('个人头像')).toHaveAttribute('src', 'https://example.com/avatar-new.png');
     });
   });
+
+  it('rejects non-image avatar before api call', async () => {
+    const user = userEvent.setup({ applyAccept: false });
+    render(<PersonalInfoPage />);
+
+    await waitFor(() => expect(getProfileMock).toHaveBeenCalledTimes(1));
+
+    const file = new File(['avatar'], 'avatar.txt', { type: 'text/plain' });
+    const input = screen.getByTestId('avatar-upload-input');
+    await user.upload(input, file);
+
+    expect(uploadAvatarMock).not.toHaveBeenCalled();
+    expect(await screen.findByText('只能上传图片文件')).toBeInTheDocument();
+  });
 });

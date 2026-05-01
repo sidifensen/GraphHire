@@ -168,6 +168,7 @@ CREATE TABLE resume
     file_name    VARCHAR(255) NOT NULL,
     file_path    VARCHAR(500) NOT NULL,
     file_type    VARCHAR(10)  NOT NULL,
+    file_size    BIGINT       NOT NULL DEFAULT 0,
     parse_status SMALLINT     NOT NULL DEFAULT 0,
     parse_result JSONB,
     is_default   SMALLINT     NOT NULL DEFAULT 0,
@@ -185,6 +186,7 @@ COMMENT ON COLUMN resume.user_id IS '所属用户ID';
 COMMENT ON COLUMN resume.file_name IS '原始文件名';
 COMMENT ON COLUMN resume.file_path IS 'RustFS存储路径';
 COMMENT ON COLUMN resume.file_type IS '文件类型：doc/docx/pdf';
+COMMENT ON COLUMN resume.file_size IS '文件大小（字节）';
 COMMENT ON COLUMN resume.parse_status IS '解析状态：0-待解析 1-解析中 2-成功 3-失败';
 COMMENT ON COLUMN resume.parse_result IS 'AI解析结果JSON（包含结构化数据+置信度）';
 COMMENT ON COLUMN resume.is_default IS '是否默认简历：0-否 1-是';
@@ -197,6 +199,7 @@ CREATE INDEX idx_resume_parse_status ON resume (parse_status) WHERE deleted = 0;
 CREATE INDEX idx_resume_user_default ON resume (user_id, is_default) WHERE deleted = 0 AND is_default = 1;
 CREATE INDEX idx_resume_create_time ON resume (create_time DESC);
 CREATE INDEX idx_resume_parse_skills ON resume USING GIN ((parse_result -> 'skills'));
+ALTER TABLE resume ADD COLUMN IF NOT EXISTS file_size BIGINT NOT NULL DEFAULT 0;
 
 -- =============================================
 -- 6. 技能标签表 skill_tag

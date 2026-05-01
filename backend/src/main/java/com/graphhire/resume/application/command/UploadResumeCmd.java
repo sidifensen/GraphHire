@@ -3,6 +3,7 @@ package com.graphhire.resume.application.command;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * 上传简历命令对象
@@ -34,13 +35,14 @@ public class UploadResumeCmd {
         this.userId = userId;
     }
 
-    /** 获取文件字节数据 */
-    public byte[] getFileBytes() throws IOException {
-        return file.getBytes();
-    }
+    public InputStream getInputStream() throws IOException { return file.getInputStream(); }
+
+    public long getFileSize() { return file.getSize(); }
 
     /** 获取原始文件名 */
     public String getFileName() {
         return file.getOriginalFilename();
     }
+
+    public String getContentType() { return file.getContentType(); }
 }

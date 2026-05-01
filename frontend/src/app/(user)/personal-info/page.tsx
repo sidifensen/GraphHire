@@ -73,6 +73,7 @@ function normalizeInt(value: string): number | null {
 }
 
 export default function PersonalInfo() {
+  const MAX_AVATAR_FILE_SIZE = 2 * 1024 * 1024;
   const [formData, setFormData] = useState<FormState>({ ...EMPTY_FORM });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -153,6 +154,20 @@ export default function PersonalInfo() {
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) {
+      return;
+    }
+
+    const isImage = file.type.toLowerCase().startsWith('image/');
+    if (!isImage) {
+      setError('只能上传图片文件');
+      setMessage(null);
+      event.target.value = '';
+      return;
+    }
+    if (file.size > MAX_AVATAR_FILE_SIZE) {
+      setError('头像文件不能超过 2MB');
+      setMessage(null);
+      event.target.value = '';
       return;
     }
 

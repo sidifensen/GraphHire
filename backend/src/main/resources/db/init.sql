@@ -41,8 +41,8 @@ INSERT INTO company_staff (user_id, company_id, post, status, create_time, updat
 ON CONFLICT (user_id) DO NOTHING;
 
 -- IT测试用个人简历
-INSERT INTO resume (id, user_id, file_name, file_path, file_type, parse_status, parse_result, is_default, create_time, update_time, deleted) VALUES
-(100, 100, 'IT测试简历.txt', '/files/resume/resume_it_test.txt', 'txt', 2,
+INSERT INTO resume (id, user_id, file_name, file_path, file_type, file_size, parse_status, parse_result, is_default, create_time, update_time, deleted) VALUES
+(100, 100, 'IT测试简历.pdf', '/files/resume/resume_it_test.pdf', 'pdf', 1048576, 2,
  '{"Name":"IT测试用户","Skills":["Java","Spring Boot","MySQL","Redis"],"Experience":"3年","Education":"本科","ExpectedSalary":30000,"WorkHistory":[{"Company":"测试科技","Position":"Java开发","Duration":"2021-至今"}]}',
  1, '2026-04-16 00:00:00', '2026-04-16 00:00:00', 0)
 ON CONFLICT (id) DO NOTHING;
@@ -202,29 +202,29 @@ ON CONFLICT (user_id) DO NOTHING;
 -- =============================================
 -- 6. 简历数据
 -- =============================================
-INSERT INTO resume (id, user_id, file_name, file_path, file_type, parse_status, parse_result, is_default, create_time, update_time, deleted) VALUES
+INSERT INTO resume (id, user_id, file_name, file_path, file_type, file_size, parse_status, parse_result, is_default, create_time, update_time, deleted) VALUES
 -- 张三的简历 - Java后端开发
-(1, 4, '张三_后端开发.pdf', '/files/resume/resume_1.pdf', 'pdf', 2,
+(1, 4, '张三_后端开发.pdf', '/files/resume/resume_1.pdf', 'pdf', 1048576, 2,
  '{"name":"张三","skills":["Java","Spring Boot","MySQL","Redis","Docker"],"experience":"3年","education":"本科","expected_salary":30000,"work_history":[{"company":"ABC科技","position":"Java开发","duration":"2021-至今"},{"company":"DEF软件","position":"初级Java","duration":"2019-2021"}]}',
  1, '2026-04-15 12:00:00', '2026-04-15 12:00:00', 0),
 
 -- 李四的简历 - Python数据工程师
-(2, 5, '李四_数据工程师.pdf', '/files/resume/resume_2.pdf', 'pdf', 2,
+(2, 5, '李四_数据工程师.pdf', '/files/resume/resume_2.pdf', 'pdf', 983040, 2,
  '{"name":"李四","skills":["Python","Spark","Kafka","Hadoop","MySQL"],"experience":"2年","education":"硕士","expected_salary":35000,"work_history":[{"company":"数据智能公司","position":"数据工程师","duration":"2022-至今"}]}',
  1, '2026-04-15 12:30:00', '2026-04-15 12:30:00', 0),
 
 -- 王五的简历 - 前端开发
-(3, 6, '王五_前端开发.pdf', '/files/resume/resume_3.pdf', 'pdf', 2,
+(3, 6, '王五_前端开发.pdf', '/files/resume/resume_3.pdf', 'pdf', 1126400, 2,
  '{"name":"王五","skills":["React","Vue","TypeScript","Node.js","Git"],"experience":"5年","education":"本科","expected_salary":40000,"work_history":[{"company":"互联网金融公司","position":"前端Leader","duration":"2020-至今"},{"company":"电商平台","position":"前端开发","duration":"2017-2020"}]}',
  1, '2026-04-15 13:00:00', '2026-04-15 13:00:00', 0),
 
 -- 赵六的简历 - 运维工程师
-(4, 7, '赵六_运维工程师.pdf', '/files/resume/resume_4.pdf', 'pdf', 2,
+(4, 7, '赵六_运维工程师.pdf', '/files/resume/resume_4.pdf', 'pdf', 925696, 2,
  '{"name":"赵六","skills":["Linux","Docker","Kubernetes","Jenkins","Shell"],"experience":"2年","education":"大专","expected_salary":20000,"work_history":[{"company":"云服务公司","position":"运维工程师","duration":"2022-至今"}]}',
  1, '2026-04-15 13:30:00', '2026-04-15 13:30:00', 0),
 
 -- 孙七的简历 - AI工程师
-(5, 8, '孙七_AI工程师.pdf', '/files/resume/resume_5.pdf', 'pdf', 2,
+(5, 8, '孙七_AI工程师.pdf', '/files/resume/resume_5.pdf', 'pdf', 1179648, 2,
  '{"name":"孙七","skills":["Python","PyTorch","TensorFlow","LLM","LangChain","Kafka"],"experience":"3年","education":"本科","expected_salary":45000,"work_history":[{"company":"AI Lab","position":"AI工程师","duration":"2021-至今"}]}',
  1, '2026-04-15 14:00:00', '2026-04-15 14:00:00', 0)
 ON CONFLICT (id) DO NOTHING;

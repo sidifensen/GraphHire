@@ -3,6 +3,7 @@ package com.graphhire.resume.interfaces.controller;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.io.file.FileNameUtil;
 import com.graphhire.common.vo.Result;
+import com.graphhire.config.UploadProperties;
 import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.repository.PersonInfoRepository;
 import com.graphhire.resume.infrastructure.file.RustFSClient;
@@ -31,15 +32,16 @@ public class PersonAvatarController {
 
     @Autowired
     private RustFSClient rustFSClient;
-
-    private static final long MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+    @Autowired
+    private UploadProperties uploadProperties;
 
     @PostMapping("/avatar")
     public Result<String> uploadAvatar(@RequestParam("file") MultipartFile file) {
         Long userId = StpUtil.getLoginIdAsLong();
 
-        if (file.getSize() > MAX_FILE_SIZE) {
-            throw new RuntimeException("文件大小不能超过2MB");
+        long maxFileSize = uploadProperties.getAvatar().getMaxFileSize().toBytes();
+        if (file.getSize() > maxFileSize) {
+            throw new RuntimeException("文件大小不能超过" + uploadProperties.getAvatar().getMaxFileSize().toMegabytes() + "MB");
         }
 
         String contentType = Optional.ofNullable(file.getContentType()).orElse("");

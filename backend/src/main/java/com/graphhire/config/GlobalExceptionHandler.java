@@ -3,6 +3,8 @@ package com.graphhire.config;
 import cn.dev33.satoken.exception.NotLoginException;
 import com.graphhire.common.vo.Result;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -60,6 +62,20 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NoResourceFoundException.class)
     public Result<Void> handleNoResourceFound(NoResourceFoundException e) {
         return Result.error(404, "请求资源不存在");
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public Result<Void> handleMaxUploadSizeExceeded(MaxUploadSizeExceededException e) {
+        return Result.error(400, "文件超过上传大小限制");
+    }
+
+    @ExceptionHandler(MultipartException.class)
+    public Result<Void> handleMultipartException(MultipartException e) {
+        String message = e.getMessage();
+        if (message != null && message.toLowerCase().contains("size")) {
+            return Result.error(400, "文件超过上传大小限制");
+        }
+        return Result.error(400, "文件上传失败，请检查文件格式和大小");
     }
 
     /**

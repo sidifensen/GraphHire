@@ -30,8 +30,8 @@ public class ResumePO {
     /** 文件类型（MIME type） */
     @TableField("file_type")
     private String fileType;
-    /** 文件大小（数据库中不存在） */
-    @TableField(exist = false)
+    /** 文件大小（字节） */
+    @TableField("file_size")
     private Long fileSize;
     /** 解析状态（0:待解析,1:解析中,2:成功,3:失败） */
     @TableField("parse_status")

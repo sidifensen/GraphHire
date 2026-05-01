@@ -125,7 +125,7 @@ describe('User Resume Manage page', () => {
   });
 
   it('uploads file through uploadWithProgress', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ applyAccept: false });
     render(<ResumeManagePage />);
 
     await waitFor(() => expect(getMyResumesMock).toHaveBeenCalledTimes(1));
@@ -140,6 +140,20 @@ describe('User Resume Manage page', () => {
     expect(formDataArg).toBeInstanceOf(FormData);
     expect(onProgressArg).toEqual(expect.any(Function));
     expect((formDataArg as FormData).get('file')).toBe(file);
+  });
+
+  it('rejects non-doc file before calling upload api', async () => {
+    const user = userEvent.setup({ applyAccept: false });
+    render(<ResumeManagePage />);
+
+    await waitFor(() => expect(getMyResumesMock).toHaveBeenCalledTimes(1));
+
+    const file = new File(['resume-content'], 'resume.txt', { type: 'text/plain' });
+    const input = screen.getByTestId('resume-upload-input');
+    await user.upload(input, file);
+
+    expect(uploadWithProgressMock).not.toHaveBeenCalled();
+    expect(await screen.findByText('仅支持上传 PDF、DOC、DOCX 格式的简历')).toBeInTheDocument();
   });
 
   it('opens inline preview modal instead of new window', async () => {

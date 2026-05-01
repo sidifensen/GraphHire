@@ -25,6 +25,7 @@ import com.graphhire.job.interfaces.dto.response.CompanyAvatarUrlResolver;
 import com.graphhire.match.application.service.MatchAppService;
 import com.graphhire.match.domain.repository.MatchRecordRepository;
 import com.graphhire.match.interfaces.dto.response.MatchDetailResponse;
+import com.graphhire.config.UploadProperties;
 import com.graphhire.resume.infrastructure.file.RustFSClient;
 import com.graphhire.skill.infrastructure.graph.SkillGraphClient;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,6 +49,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.springframework.util.unit.DataSize;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -96,6 +98,8 @@ class CompanyControllerTest {
 
     @Mock
     private StringRedisTemplate stringRedisTemplate;
+    @Mock
+    private UploadProperties uploadProperties;
 
     @Mock
     private ValueOperations<String, String> valueOperations;
@@ -109,6 +113,9 @@ class CompanyControllerTest {
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(companyController).build();
         lenient().when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
+        UploadProperties.Avatar avatar = new UploadProperties.Avatar();
+        avatar.setMaxFileSize(DataSize.ofMegabytes(2));
+        lenient().when(uploadProperties.getAvatar()).thenReturn(avatar);
     }
 
     @Nested

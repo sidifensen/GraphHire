@@ -17,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import cn.hutool.core.util.StrUtil;
+import software.amazon.awssdk.core.sync.RequestBody;
 
 /**
  * RustFS文件存储客户端
@@ -62,6 +63,10 @@ public class RustFSClient {
      * 上传文件到S3存储（直接S3 PUT，避免预签名URL的签名兼容性问题）
      */
     public String upload(byte[] bytes, String fileName) {
+        return upload(new java.io.ByteArrayInputStream(bytes), bytes.length, fileName);
+    }
+
+    public String upload(InputStream inputStream, long contentLength, String fileName) {
         String key = fileName;
 
         try {
@@ -71,7 +76,7 @@ public class RustFSClient {
                 .bucket(bucketName)
                 .key(key)
                 .contentType(getContentType(key))
-                .build(), software.amazon.awssdk.core.sync.RequestBody.fromBytes(bytes));
+                .build(), RequestBody.fromInputStream(inputStream, contentLength));
 
             return "s3://" + bucketName + "/" + key;
         } catch (Exception e) {

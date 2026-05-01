@@ -59,6 +59,13 @@ function statusMeta(status: Resume['status']) {
 }
 
 export default function ResumeManageContent() {
+  const MAX_RESUME_FILE_SIZE = 10 * 1024 * 1024;
+  const ALLOWED_RESUME_MIME_TYPES = new Set([
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  ]);
+  const ALLOWED_RESUME_EXTENSIONS = new Set(['pdf', 'doc', 'docx']);
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -185,6 +192,21 @@ export default function ResumeManageContent() {
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) {
+      return;
+    }
+
+    const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
+    const mimeType = file.type.toLowerCase();
+    if (!ALLOWED_RESUME_EXTENSIONS.has(extension) || !ALLOWED_RESUME_MIME_TYPES.has(mimeType)) {
+      setError('仅支持上传 PDF、DOC、DOCX 格式的简历');
+      setMessage(null);
+      event.target.value = '';
+      return;
+    }
+    if (file.size > MAX_RESUME_FILE_SIZE) {
+      setError('简历文件不能超过 10MB');
+      setMessage(null);
+      event.target.value = '';
       return;
     }
 

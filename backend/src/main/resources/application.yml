@@ -38,8 +38,8 @@ spring:
   servlet:
     multipart:
       enabled: true
-      max-file-size: 10MB
-      max-request-size: 10MB
+      max-file-size: ${app.upload.resume.max-file-size:10MB}
+      max-request-size: ${app.upload.resume.max-file-size:10MB}
 
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
@@ -149,6 +149,16 @@ logging:
     console: '%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n'
 
 app:
+  upload:
+    resume:
+      max-file-size: 10MB
+      allowed-extensions: [pdf, doc, docx]
+      allowed-mime-types:
+        - application/pdf
+        - application/msword
+        - application/vnd.openxmlformats-officedocument.wordprocessingml.document
+    avatar:
+      max-file-size: 2MB
   logging:
     slow-api-threshold-ms: ${SLOW_API_THRESHOLD_MS:500}
 

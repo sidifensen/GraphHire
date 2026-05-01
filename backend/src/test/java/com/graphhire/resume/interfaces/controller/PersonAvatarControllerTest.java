@@ -1,6 +1,7 @@
 package com.graphhire.resume.interfaces.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
+import com.graphhire.config.UploadProperties;
 import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.repository.PersonInfoRepository;
 import com.graphhire.resume.infrastructure.file.RustFSClient;
@@ -16,6 +17,7 @@ import org.springframework.mock.web.MockMultipartFile;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import org.springframework.util.unit.DataSize;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -32,6 +34,8 @@ class PersonAvatarControllerTest {
 
     @Mock
     private RustFSClient rustFSClient;
+    @Mock
+    private UploadProperties uploadProperties;
 
     @InjectMocks
     private PersonAvatarController personAvatarController;
@@ -43,6 +47,9 @@ class PersonAvatarControllerTest {
             stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(101L);
             when(personInfoRepository.findByUserId(101L)).thenReturn(Optional.empty());
             when(rustFSClient.upload(any(), any())).thenReturn("s3://resumes/avatars/101.png");
+            UploadProperties.Avatar avatar = new UploadProperties.Avatar();
+            avatar.setMaxFileSize(DataSize.ofMegabytes(2));
+            when(uploadProperties.getAvatar()).thenReturn(avatar);
 
             MockMultipartFile file = new MockMultipartFile(
                 "file",
