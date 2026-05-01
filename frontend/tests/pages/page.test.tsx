@@ -11,20 +11,19 @@ vi.mock('next/navigation', () => ({
 }));
 
 describe('HomePage', () => {
-  it('renders migrated mock home hero', () => {
+  it('renders dual-funnel hero actions', () => {
     render(<HomePage />);
-    expect(screen.getByText('图谱智聘领航未来')).toBeInTheDocument();
-    expect(screen.getAllByText('立即开启智能招聘').length).toBeGreaterThan(0);
-    expect(screen.getByText('AI匹配指数')).toBeInTheDocument();
-    expect(screen.getByText('企业活跃席位')).toBeInTheDocument();
-    expect(screen.getByText('候选人响应率')).toBeInTheDocument();
+    expect(screen.getAllByRole('link', { name: '免费发布职位' })).toHaveLength(2);
+    expect(screen.getAllByRole('link', { name: '立即找工作' })).toHaveLength(2);
   });
 
-  it('renders galaxy style right hero card metrics', () => {
+  it('renders trust metrics and dual flows', () => {
     render(<HomePage />);
-    expect(screen.getByText('7日成功匹配')).toBeInTheDocument();
-    expect(screen.getByText('3,286')).toBeInTheDocument();
-    expect(screen.getByTestId('hero-visual-card')).toBeInTheDocument();
-    expect(screen.getByTestId('hero-metrics-strip')).toBeInTheDocument();
+    const trust = screen.getByLabelText('信任背书');
+    expect(trust).toHaveTextContent('活跃企业');
+    expect(trust).toHaveTextContent('活跃职位');
+    expect(screen.getByLabelText('企业招聘流程')).toBeInTheDocument();
+    expect(screen.getByLabelText('求职者流程')).toBeInTheDocument();
+    expect(screen.getByLabelText('能力矩阵对照')).toBeInTheDocument();
   });
 });

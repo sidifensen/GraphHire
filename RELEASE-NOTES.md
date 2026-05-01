@@ -2,6 +2,8 @@
 
 ## 2026-05-01
 
+- feat: 首页重构为双入口落地页：新增并列双主 CTA（企业/求职）、信任背书指标区、企业招聘流程与求职者流程、能力矩阵对照、双侧案例以及底部双 CTA 收口
+- test: 新增首页落地页重构测试 `src/tests/pages/home-landing-page.test.tsx`，并同步更新 `tests/pages/page.test.tsx` 断言到新信息架构
 - docs: 新增首页双入口落地页重构设计规格（科技理性 + 品牌高端），明确双主 CTA、7 区块信息架构、Uiverse 借鉴策略与 TDD 验收边界
 - fix: 行业管理表格启用固定列布局，排序切换时列位置保持稳定；操作列统一为按钮样式并移除 hover 下划线
 - feat: 行业管理新增排序能力：`/admin/industry/list` 支持 `sortBy(name/sortOrder/updatedAt)` 与 `sortDir(asc/desc)` 参数，前端行业页支持列头升降序切换

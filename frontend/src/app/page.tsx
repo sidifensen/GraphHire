@@ -1,290 +1,284 @@
 'use client';
 
 import React from 'react';
-import { Share2, BarChart3, Users, Database, Target, Megaphone } from 'lucide-react';
+import { ArrowRight, BarChart3, Building2, CheckCircle2, Clock3, SearchCheck, ShieldCheck, Sparkles, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 import MockUserShell from '@/app/(user)/_mock/components/MockUserShell';
 
+const trustMetrics = [
+  { label: '活跃企业', value: '10,000+' },
+  { label: '活跃职位', value: '128,000+' },
+  { label: '平均匹配时长', value: '2.3天' },
+  { label: '投递响应率', value: '92.4%' },
+];
+
+const enterpriseFlow = [
+  { title: '发布职位', desc: '结构化 JD 一键发布，自动同步关键画像字段。', result: '平均发布耗时缩短 63%' },
+  { title: 'AI 推荐候选人', desc: '基于能力图谱进行语义匹配，优先输出高契合候选池。', result: '首批候选准确率提升 41%' },
+  { title: '面试协同转化', desc: '标准化流程看板追踪每个环节，减少沟通与等待损耗。', result: '到岗周期平均缩短 2.1 天' },
+];
+
+const candidateFlow = [
+  { title: '上传简历', desc: '自动解析工作经历、技能结构和目标岗位方向。', result: '建立可检索能力档案仅需 1 分钟' },
+  { title: '图谱诊断', desc: '识别优势技能与缺口能力，给出可执行补强建议。', result: '岗位匹配命中率提升 35%' },
+  { title: '精准岗位推荐', desc: '按城市、薪资与成长路径推送更高相关岗位。', result: '无效投递比例下降 48%' },
+];
+
+const enterpriseMatrix = [
+  '候选筛选效率看板',
+  '多角色面试协同',
+  '渠道曝光与反馈追踪',
+  '招聘漏斗复盘分析',
+];
+
+const candidateMatrix = [
+  '岗位匹配优先级排序',
+  '能力缺口智能建议',
+  '投递进度实时回传',
+  '成长路径连续推荐',
+];
+
+const primaryBtnCls =
+  'inline-flex items-center justify-center gap-2 rounded-xl px-7 py-3.5 text-sm font-black transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/35';
+
+const cardCls = 'rounded-2xl border border-surface-mid bg-surface-lowest p-6 shadow-sm';
+
 export default function HomePage() {
   return (
     <MockUserShell>
-    <div className="flex flex-col min-h-screen">
-      {/* Mobile Top Header */}
-      <header className="md:hidden flex justify-center items-center h-16 px-5 w-full bg-surface-lowest/90 backdrop-blur-md sticky top-0 z-40 border-b border-surface-mid shadow-[0_4px_20px_rgba(0,82,255,0.05)]">
-        <span className="text-xl font-black text-primary tracking-tighter">GraphHire</span>
-      </header>
+      <div className="flex min-h-screen flex-col">
+        <header className="md:hidden flex justify-center items-center h-16 px-5 w-full bg-surface-lowest/90 backdrop-blur-md sticky top-0 z-40 border-b border-surface-mid shadow-[0_4px_20px_rgba(0,82,255,0.05)]">
+          <span className="text-xl font-black text-primary tracking-tighter">GraphHire</span>
+        </header>
 
-      <main className="w-full">
-        {/* 1. Hero Section */}
-        <section className="relative w-full min-h-[600px] flex flex-col justify-center items-start overflow-hidden bg-surface-lowest h-auto py-24 px-5 md:px-margin-desktop">
-          {/* Background Decoration */}
-          <div className="absolute inset-0 z-0">
-            <div className="absolute top-0 right-0 w-[150%] h-[150%] bg-gradient-to-bl from-primary/10 to-transparent rounded-full blur-3xl opacity-60 translate-x-1/4 -translate-y-1/4"></div>
-          </div>
-          
-          <div className="relative z-10 max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div className="max-w-2xl">
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary mb-6 border border-primary/20"
-              >
-                <Share2 size={14} />
-                <span className="text-[12px] font-semibold tracking-wide">GraphHire | 图谱智聘</span>
-              </motion.div>
-              
-              <motion.h1 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="text-4xl md:text-6xl font-black text-on-surface mb-6 leading-tight tracking-tight"
-              >
-                连接卓越，<br/>
-                <span className="text-primary">图谱智聘领航未来</span>
-              </motion.h1>
-              
-              <motion.p 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="text-lg md:text-xl text-on-surface-variant mb-10 max-w-md leading-relaxed font-medium"
-              >
-                基于数据驱动与AI深度学习，重塑招聘体验。精准描绘人才图谱，让企业与顶尖人才实现无缝对接。
-              </motion.p>
-              
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto"
-              >
-                <Link 
-                  href="/jobs" 
-                  className="w-full sm:w-auto px-10 py-4 bg-primary text-white font-bold rounded-xl shadow-[0_8px_24px_rgba(0,62,199,0.25)] hover:shadow-[0_12px_32px_rgba(0,62,199,0.35)] transition-all flex items-center justify-center text-center"
-                >
-                  立即开启智能招聘
-                </Link>
-                <button className="w-full sm:w-auto px-10 py-4 bg-transparent border border-outline-variant text-on-surface font-bold rounded-xl hover:bg-surface-container transition-colors text-center">
-                  了解更多
-                </button>
-              </motion.div>
+        <main className="w-full">
+          <section className="relative overflow-hidden bg-surface-lowest px-5 py-20 md:px-margin-desktop" aria-label="首屏双入口">
+            <div className="absolute inset-0">
+              <div className="absolute -top-24 right-[-10%] h-[460px] w-[460px] rounded-full bg-primary/12 blur-3xl" />
+              <div className="absolute bottom-[-180px] left-[-60px] h-[340px] w-[340px] rounded-full bg-tertiary/10 blur-3xl" />
             </div>
 
-            {/* Desktop Hero Illustration/Image */}
-            <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
-              className="hidden md:block relative h-[520px]"
-            >
-              <div className="absolute -inset-5 rounded-[46px] bg-[radial-gradient(circle_at_22%_12%,rgba(59,130,246,0.28),transparent_48%),radial-gradient(circle_at_85%_86%,rgba(148,163,184,0.22),transparent_46%)] blur-2xl opacity-80"></div>
-              <div
-                data-testid="hero-visual-card"
-                className="group relative h-full overflow-hidden rounded-[42px] border border-white/45 shadow-[0_32px_72px_rgba(15,23,42,0.30)]"
-              >
-                <img
-                  src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
-                  alt="GraphHire Platform"
-                  className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-[1.04]"
-                />
-                <div className="absolute inset-0 bg-gradient-to-b from-[#0a1327]/28 via-[#081124]/44 to-[#060d1f]/90"></div>
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_12%,rgba(255,255,255,0.30),transparent_34%)]"></div>
-                <div className="absolute inset-0 border border-white/20 rounded-[42px] pointer-events-none"></div>
-
-                <div className="absolute left-6 top-6 z-20 w-[220px] rounded-[34px] border border-white/30 bg-[linear-gradient(145deg,rgba(255,255,255,0.22),rgba(255,255,255,0.08))] px-7 py-6 text-white backdrop-blur-2xl shadow-[0_18px_42px_rgba(2,6,23,0.4)]">
-                  <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/24">
-                    <Target size={18} />
-                  </div>
-                  <div className="text-[12px] font-black uppercase tracking-[0.2em] text-white/80">AI匹配指数</div>
-                  <div className="mt-1 text-3xl font-black tracking-tight">98.7</div>
-                  <div className="mt-1 text-sm font-semibold text-white/80">高潜候选人识别稳定提升</div>
-                </div>
-
-                <div
-                  data-testid="hero-metrics-strip"
-                  className="absolute bottom-6 left-6 right-6 z-20 rounded-[26px] border border-white/28 bg-[linear-gradient(102deg,rgba(15,23,42,0.72),rgba(30,41,59,0.55))] p-5 backdrop-blur-xl"
+            <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-10 md:grid-cols-2">
+              <div className="max-w-2xl">
+                <motion.div
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-primary"
                 >
-                  <div className="grid grid-cols-3 gap-3 text-white">
-                    <div className="rounded-2xl border border-white/16 bg-black/14 p-4">
-                      <div className="text-[11px] font-semibold text-white/75">企业活跃席位</div>
-                      <div className="mt-1 text-[40px] leading-none font-black tracking-tight">12,480</div>
+                  <Sparkles size={14} />
+                  <span className="text-[12px] font-semibold tracking-wide">AI 图谱驱动的人岗精准连接</span>
+                </motion.div>
+
+                <motion.h1
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05 }}
+                  className="mb-5 text-4xl font-black leading-tight tracking-tight text-on-surface md:text-6xl"
+                >
+                  企业更快招到合适的人，
+                  <br />
+                  人才更快找到匹配的岗
+                </motion.h1>
+
+                <motion.p
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="mb-8 max-w-xl text-base leading-relaxed text-on-surface-variant md:text-lg"
+                >
+                  以能力图谱与语义匹配为核心，统一招聘效率、候选质量与投递体验，帮助企业和人才在同一条路径上高效完成匹配。
+                </motion.p>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15 }}
+                  className="flex w-full flex-col gap-3 sm:flex-row"
+                >
+                  <Link href="/register?role=enterprise" className={`${primaryBtnCls} bg-primary text-white shadow-[0_10px_28px_rgba(0,62,199,0.28)] hover:bg-primary/90`}>
+                    免费发布职位
+                    <ArrowRight size={16} />
+                  </Link>
+                  <Link href="/jobs" className={`${primaryBtnCls} bg-surface-container text-on-surface border border-surface-mid hover:bg-surface-low`}>
+                    立即找工作
+                    <ArrowRight size={16} />
+                  </Link>
+                </motion.div>
+
+                <div className="mt-4 flex flex-wrap gap-3 text-xs font-bold text-outline">
+                  <span className="rounded-full bg-surface-low px-3 py-1">面向招聘方</span>
+                  <span className="rounded-full bg-surface-low px-3 py-1">面向求职者</span>
+                </div>
+              </div>
+
+              <motion.div
+                initial={{ opacity: 0, x: 28 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+                className="hidden md:block"
+              >
+                <div className="rounded-[32px] border border-surface-mid bg-[linear-gradient(150deg,#081730,#0d2348_48%,#0c2f63)] p-7 text-white shadow-[0_32px_64px_rgba(3,12,29,0.35)]">
+                  <div className="mb-7 flex items-center justify-between">
+                    <div>
+                      <p className="text-[11px] uppercase tracking-[0.18em] text-white/70">匹配执行看板</p>
+                      <p className="mt-1 text-3xl font-black">98.7</p>
                     </div>
-                    <div className="rounded-2xl border border-white/16 bg-black/14 p-4">
-                      <div className="text-[11px] font-semibold text-white/75">候选人响应率</div>
-                      <div className="mt-1 text-[40px] leading-none font-black tracking-tight">92.4%</div>
-                    </div>
-                    <div className="rounded-2xl border border-white/16 bg-black/14 p-4">
-                      <div className="text-[11px] font-semibold text-white/75">7日成功匹配</div>
-                      <div className="mt-1 text-[40px] leading-none font-black tracking-tight">3,286</div>
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/20">
+                      <SearchCheck size={20} />
                     </div>
                   </div>
+                  <div className="space-y-3">
+                    {trustMetrics.map((metric) => (
+                      <div key={metric.label} className="flex items-center justify-between rounded-xl border border-white/20 bg-white/10 px-4 py-3">
+                        <span className="text-sm text-white/80">{metric.label}</span>
+                        <span className="text-lg font-black">{metric.value}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
+              </motion.div>
+            </div>
+          </section>
+
+          <section className="border-y border-surface-mid bg-surface-background px-5 py-10" aria-label="信任背书">
+            <div className="mx-auto grid w-full max-w-7xl grid-cols-2 gap-4 md:grid-cols-4">
+              {trustMetrics.map((metric) => (
+                <div key={metric.label} className="rounded-2xl border border-surface-mid bg-surface-lowest p-4 text-center shadow-sm">
+                  <div className="text-3xl font-black text-primary">{metric.value}</div>
+                  <div className="mt-1 text-sm font-bold text-on-surface-variant">{metric.label}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="bg-surface-lowest px-5 py-16 md:px-margin-desktop" aria-label="企业招聘流程">
+            <div className="mx-auto w-full max-w-7xl">
+              <div className="mb-8 flex items-center gap-3">
+                <Building2 className="text-primary" size={22} />
+                <h2 className="text-2xl font-black text-on-surface md:text-3xl">企业招聘流程</h2>
+              </div>
+              <div className="grid gap-5 md:grid-cols-3">
+                {enterpriseFlow.map((step, idx) => (
+                  <article key={step.title} className={cardCls}>
+                    <p className="mb-2 text-xs font-black uppercase tracking-[0.18em] text-outline">Step {idx + 1}</p>
+                    <h3 className="text-xl font-black text-on-surface">{step.title}</h3>
+                    <p className="mt-3 text-sm leading-relaxed text-on-surface-variant">{step.desc}</p>
+                    <div className="mt-4 flex items-start gap-2 rounded-xl bg-primary/8 px-3 py-2 text-sm font-semibold text-primary">
+                      <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
+                      <span>{step.result}</span>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section className="bg-surface-background px-5 py-16 md:px-margin-desktop" aria-label="求职者流程">
+            <div className="mx-auto w-full max-w-7xl">
+              <div className="mb-8 flex items-center gap-3">
+                <Users className="text-tertiary" size={22} />
+                <h2 className="text-2xl font-black text-on-surface md:text-3xl">求职者流程</h2>
+              </div>
+              <div className="grid gap-5 md:grid-cols-3">
+                {candidateFlow.map((step, idx) => (
+                  <article key={step.title} className={cardCls}>
+                    <p className="mb-2 text-xs font-black uppercase tracking-[0.18em] text-outline">Step {idx + 1}</p>
+                    <h3 className="text-xl font-black text-on-surface">{step.title}</h3>
+                    <p className="mt-3 text-sm leading-relaxed text-on-surface-variant">{step.desc}</p>
+                    <div className="mt-4 flex items-start gap-2 rounded-xl bg-tertiary/12 px-3 py-2 text-sm font-semibold text-tertiary">
+                      <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
+                      <span>{step.result}</span>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section className="bg-surface-lowest px-5 py-16 md:px-margin-desktop" aria-label="能力矩阵对照">
+            <div className="mx-auto w-full max-w-7xl">
+              <div className="mb-8 flex items-center gap-3">
+                <BarChart3 className="text-primary" size={22} />
+                <h2 className="text-2xl font-black text-on-surface md:text-3xl">企业能力 vs 求职能力</h2>
+              </div>
+              <div className="grid gap-5 md:grid-cols-2">
+                <article className={`${cardCls} border-primary/20`}>
+                  <h3 className="text-lg font-black text-on-surface">企业侧能力</h3>
+                  <ul className="mt-4 space-y-3">
+                    {enterpriseMatrix.map((item) => (
+                      <li key={item} className="flex items-center gap-2 text-sm text-on-surface-variant">
+                        <ShieldCheck size={16} className="text-primary" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+                <article className={`${cardCls} border-tertiary/25`}>
+                  <h3 className="text-lg font-black text-on-surface">求职侧能力</h3>
+                  <ul className="mt-4 space-y-3">
+                    {candidateMatrix.map((item) => (
+                      <li key={item} className="flex items-center gap-2 text-sm text-on-surface-variant">
+                        <ShieldCheck size={16} className="text-tertiary" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              </div>
+            </div>
+          </section>
+
+          <section className="bg-surface-background px-5 py-16 md:px-margin-desktop" aria-label="双侧案例">
+            <div className="mx-auto w-full max-w-7xl">
+              <h2 className="mb-8 text-2xl font-black text-on-surface md:text-3xl">双侧案例</h2>
+              <div className="grid gap-5 md:grid-cols-2">
+                <article className={cardCls}>
+                  <p className="text-xs font-black uppercase tracking-[0.16em] text-outline">企业案例</p>
+                  <h3 className="mt-2 text-xl font-black text-on-surface">某智能制造集团 45 天完成关键岗位补齐</h3>
+                  <p className="mt-3 text-sm leading-relaxed text-on-surface-variant">
+                    通过图谱筛选与流程协同，候选首轮匹配准确率提升至 89%，核心岗位平均到岗周期缩短 2.4 天。
+                  </p>
+                </article>
+                <article className={cardCls}>
+                  <p className="text-xs font-black uppercase tracking-[0.16em] text-outline">求职案例</p>
+                  <h3 className="mt-2 text-xl font-black text-on-surface">产品经理候选人 2 周内获得 3 轮面试机会</h3>
+                  <p className="mt-3 text-sm leading-relaxed text-on-surface-variant">
+                    基于能力图谱补全建议优化简历后，投递命中率提升 38%，并持续收到更高相关度岗位推荐。
+                  </p>
+                </article>
+              </div>
+            </div>
+          </section>
+
+          <section
+            className="relative overflow-hidden px-5 py-20 text-center md:px-margin-desktop"
+            aria-label="最终行动"
+          >
+            <div className="absolute inset-0 bg-[linear-gradient(132deg,#05132e,#0b2b5b_45%,#103b79)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(255,255,255,0.16),transparent_35%),radial-gradient(circle_at_78%_80%,rgba(59,130,246,0.24),transparent_40%)]" />
+            <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="relative z-10 mx-auto w-full max-w-3xl text-white">
+              <h2 className="text-3xl font-black md:text-4xl">现在开始，让匹配更快发生</h2>
+              <p className="mt-4 text-base text-white/80 md:text-lg">3 分钟完成初始设置，立即进入企业招聘或求职匹配流程。</p>
+              <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+                <Link href="/register?role=enterprise" className={`${primaryBtnCls} bg-white text-[#0a2a58] hover:bg-white/90`}>
+                  免费发布职位
+                </Link>
+                <Link href="/jobs" className={`${primaryBtnCls} border border-white/45 bg-white/10 text-white hover:bg-white/20`}>
+                  立即找工作
+                </Link>
+              </div>
+              <div className="mt-6 flex items-center justify-center gap-2 text-sm text-white/75">
+                <Clock3 size={15} />
+                <span>本周新增 6,240 个岗位，新增 182 家企业入驻</span>
               </div>
             </motion.div>
-          </div>
-        </section>
+          </section>
+        </main>
 
-        {/* 2. Secondary Visual (Bento Grid) */}
-        <section className="py-12 px-5 bg-surface-background">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto px-margin-mobile">
-            <div className="rounded-[32px] overflow-hidden shadow-lg bg-surface-lowest aspect-[4/3] md:aspect-auto relative group">
-              <img 
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSscNpoWWn3-hk1OF_9Bkp1z37yLejBqoI-Hc4nRPjviTBYbNjLU5LYrjIUMr71VeAtpP6s2lMRMP1BZTXr422BshLnuC2JspQjDALbNrC0ATXZm2mdcaVVju9y7fi1HIt-0dHn2bZDNwwADMzeLzNybvyB06iMVIsKnWarP-ZcOfv2sGALkYJBqBDuUng05MGuNEJDQvSMn7EzKGLEjfbNNkyLHUABLPvtUx1G3cg-GgKrmSXmwA_UZ-H2ChhA6jmyuUv1qDG-u8" 
-                alt="Meeting" 
-                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-              <div className="absolute bottom-0 left-0 p-8 w-full">
-                <Share2 className="text-white mb-6" size={48} />
-                <h3 className="text-white font-black text-2xl mb-2">重塑组织连接</h3>
-                <p className="text-white/80 text-base">在真实的业务场景中，洞察潜在的人才网络。</p>
-              </div>
-            </div>
-
-            <div className="grid grid-rows-2 gap-6">
-              <div className="rounded-[32px] p-8 text-white shadow-xl flex flex-col justify-between relative overflow-hidden group">
-                <img 
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuBW6bnzaqVZxkNeSPJVU9UBcLiKMlgo0rRUgP-CQM2ewO565oa2MCeykqRuzzS1xstUA-swVVVbJ7ntTTkybpBiCrQ7vg46hfG6_xn-QbkDSYL02Es1ANExotc_oD7y6gRxtBTUpKd-6LW4-F3XixV8pgYN-q_Xx0-Br9KG7_ljsa1RHykHztiD8_0ueXmvhpcylgSlGWshl5SHOu9Bzun7CVRdpBi8apwc-jVz-JeMq3jeHppHClFzHuPMMzrgvpfJc9BV6dik1Po" 
-                  alt="Data" 
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
-                <BarChart3 className="relative z-10 text-white" size={48} />
-                <div className="relative z-10">
-                  <h3 className="text-white font-black text-2xl mb-2">数据驱动决策</h3>
-                  <p className="text-white/90 text-base">超越直觉，用多维数据全景描绘候选人真实能力与潜力。</p>
-                </div>
-              </div>
-
-              <div className="rounded-[32px] p-8 text-white shadow-xl flex flex-col justify-between relative overflow-hidden group">
-                <img 
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNG4mko2Yaqt0FGME4UgRVgDw9BsVyPtGkxf2s2n84VwRjXjwiaKglHBqTT_fXLjvmJTSUQxFmHo0L7QPH3g0t4_sV8oTs6vza_8SDjxIxUaqKoTjIE0FORrDSQL59tLyVasHGjiNcyQLcsXL8UshAg9-Yz270CgxHH4v9DVwPAhojaRZPfPSEjv3lpexRORNqU4FGcHQxbKBWa1PJuQFccBlap3d81wRBd42UZj8NrQyFuSivjdWZ1R730cvESQtq2cA3Qotkd14" 
-                  alt="Talent" 
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
-                <Users className="relative z-10 text-white" size={48} />
-                <div className="relative z-10">
-                  <h3 className="text-white font-black text-2xl mb-2">全息人才洞察</h3>
-                  <p className="text-white/90 text-base">从技能栈到文化契合度，提供360度的立体评估报告。</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 3. Core Matrix */}
-        <section className="py-20 px-5 md:px-margin-desktop bg-surface-lowest relative overflow-hidden">
-          <div className="absolute top-20 left-10 w-96 h-96 bg-primary/5 rounded-full blur-[100px] opacity-70"></div>
-          <div className="max-w-7xl mx-auto relative z-10">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-black text-on-surface mb-4">核心能力矩阵</h2>
-              <p className="text-base md:text-lg text-on-surface-variant max-w-lg mx-auto leading-relaxed uppercase tracking-widest font-black">以技术赋能招聘全链路</p>
-            </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {/* Feature 1 */}
-              <div className="relative p-10 rounded-[32px] bg-surface-lowest border border-surface-mid shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full transition-transform duration-500 group-hover:scale-150"></div>
-                <div className="w-16 h-16 rounded-2xl bg-primary text-white flex items-center justify-center mb-6 relative z-10 shadow-lg shadow-primary/20">
-                  <Database size={32} />
-                </div>
-                <h3 className="text-2xl font-black text-on-surface mb-3 relative z-10">智能人才图谱</h3>
-                <p className="text-base text-on-surface-variant mb-6 relative z-10 leading-relaxed font-medium">构建行业深度的知识图谱，挖掘隐藏的人脉网络与能力关联，让优秀人才无处遁形。</p>
-                <div className="flex flex-wrap gap-2 relative z-10">
-                  <span className="px-4 py-1.5 rounded-full bg-surface-low text-on-surface-variant text-[12px] font-black tracking-wide uppercase">知识图谱</span>
-                  <span className="px-4 py-1.5 rounded-full bg-surface-low text-on-surface-variant text-[12px] font-black tracking-wide uppercase">深度挖掘</span>
-                </div>
-              </div>
-
-              {/* Feature 2 */}
-              <div className="relative p-10 rounded-[32px] bg-surface-lowest border border-surface-mid shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-tertiary/10 rounded-bl-full transition-transform duration-500 group-hover:scale-150"></div>
-                <div className="w-16 h-16 rounded-2xl bg-tertiary text-white flex items-center justify-center mb-6 relative z-10 shadow-lg shadow-tertiary/20">
-                  <Target size={32} />
-                </div>
-                <h3 className="text-2xl font-black text-on-surface mb-3 relative z-10">AI 精准匹配</h3>
-                <p className="text-base text-on-surface-variant mb-6 relative z-10 leading-relaxed font-medium">采用领先的自然语言处理与机器学习算法，实现JD与简历的毫秒级双向精准匹配。</p>
-                <div className="flex flex-wrap gap-2 relative z-10">
-                  <span className="px-4 py-1.5 rounded-full bg-surface-low text-on-surface-variant text-[12px] font-black tracking-wide uppercase">NLP解析</span>
-                  <span className="px-4 py-1.5 rounded-full bg-surface-low text-on-surface-variant text-[12px] font-black tracking-wide uppercase">双向推荐</span>
-                </div>
-              </div>
-
-              {/* Feature 3 (New for desktop) */}
-              <div className="relative p-10 rounded-[32px] bg-surface-lowest border border-surface-mid shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-bl-full transition-transform duration-500 group-hover:scale-150"></div>
-                <div className="w-16 h-16 rounded-2xl bg-secondary text-white flex items-center justify-center mb-6 relative z-10 shadow-lg shadow-secondary/20">
-                  <Megaphone size={32} />
-                </div>
-                <h3 className="text-2xl font-black text-on-surface mb-3 relative z-10">多端触达矩阵</h3>
-                <p className="text-base text-on-surface-variant mb-6 relative z-10 leading-relaxed font-medium">覆盖全网主流社交与招聘媒体，一键发布，全网响应，极速缩短候选人到岗周期。</p>
-                <div className="flex flex-wrap gap-2 relative z-10">
-                  <span className="px-4 py-1.5 rounded-full bg-surface-low text-on-surface-variant text-[12px] font-black tracking-wide uppercase">全网曝光</span>
-                  <span className="px-4 py-1.5 rounded-full bg-surface-low text-on-surface-variant text-[12px] font-black tracking-wide uppercase">极速反馈</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 4. Social Proof & Metrics */}
-        <section className="py-20 px-5 bg-surface-background border-y border-surface-mid">
-          <div className="max-w-6xl mx-auto px-margin-mobile">
-            <p className="text-[12px] font-black text-center text-on-surface-variant mb-12 tracking-[0.3em] uppercase">业界领先的数据表现</p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              <div className="flex flex-col items-center justify-center p-6 bg-surface-lowest rounded-3xl shadow-sm border border-surface-mid/50">
-                <span className="text-4xl font-black text-primary mb-2">10,000+</span>
-                <span className="text-[14px] text-on-surface-variant font-black">合作企业</span>
-              </div>
-              <div className="flex flex-col items-center justify-center p-6 bg-surface-lowest rounded-3xl shadow-sm border border-surface-mid/50">
-                <span className="text-4xl font-black text-primary mb-2">98%</span>
-                <span className="text-[14px] text-on-surface-variant font-black">岗位匹配率</span>
-              </div>
-              <div className="flex flex-col items-center justify-center p-6 bg-surface-lowest rounded-3xl shadow-sm border border-surface-mid/50">
-                <span className="text-4xl font-black text-primary mb-2">50M+</span>
-                <span className="text-[14px] text-on-surface-variant font-black">人才图谱节点</span>
-              </div>
-              <div className="flex flex-col items-center justify-center p-6 bg-surface-lowest rounded-3xl shadow-sm border border-surface-mid/50">
-                <span className="text-4xl font-black text-primary mb-2">3x</span>
-                <span className="text-[14px] text-on-surface-variant font-black">招聘效率提升</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 5. Final CTA */}
-        <section 
-          className="py-32 px-5 text-white text-center relative overflow-hidden" 
-          style={{ 
-            backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)), url("https://lh3.googleusercontent.com/aida-public/AB6AXuA2vNJVm-8iGPo6uhYZxd_U4DTvMCPX_wxcOvdSGiPJJlvhR8mOcfa4PgSst5aAdh2c8nrjFVl5Gzfj69GP-O8AtLEif5Jc-e5nSL3N3eTSzR64baSnaRDZd2e2oigOi2b5zEaBHnlBqXT8mu3dzbgT8r-lfImURYpgafRjjUVmqSqfo9k9Vx95O0GqCIKWd0sF3l6J7VwgMyKuMvto_cZ_Qjg9uc9Zv3YMIZLWeMrWQnp-27Ntzjyuqh4USYpNR4KMA1oNM_7uA8U")',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
-          }}
-        >
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="relative z-10 max-w-2xl mx-auto px-margin-mobile"
-          >
-            <h2 className="text-4xl font-black mb-6 leading-tight">准备好升级您的招聘引擎了吗？</h2>
-            <p className="text-xl text-white/80 mb-12 font-medium">加入领先企业的行列，用科技重塑人才获取方式。</p>
-            <Link 
-              href="/jobs" 
-              className="inline-block px-12 py-5 bg-primary text-white font-black text-xl rounded-2xl shadow-2xl hover:scale-105 hover:bg-primary/90 transition-all border border-white/20"
-            >
-              立即开启智能招聘
-            </Link>
-          </motion.div>
-        </section>
-      </main>
-
-      {/* Footer Safe Space */}
-      <div className="h-24 md:hidden"></div>
-    </div>
+        <div className="h-24 md:hidden" />
+      </div>
     </MockUserShell>
   );
 }
