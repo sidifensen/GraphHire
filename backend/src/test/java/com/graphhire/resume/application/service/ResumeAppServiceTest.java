@@ -87,6 +87,24 @@ class ResumeAppServiceTest {
     }
 
     @Test
+    @DisplayName("uploadResume 上传非PDF/DOC/DOCX文件时应拒绝")
+    void uploadResume_shouldRejectWhenFileTypeNotAllowed() throws Exception {
+        when(resumeRepository.findByUserId(8L)).thenReturn(List.of());
+        UploadResumeCmd cmd = new UploadResumeCmd(new MockMultipartFile(
+            "file", "test.txt", "text/plain", "content".getBytes()
+        ));
+        cmd.setUserId(8L);
+
+        Exceptions.BusinessException ex = assertThrows(
+            Exceptions.BusinessException.class,
+            () -> resumeAppService.uploadResume(cmd)
+        );
+
+        assertEquals("仅支持上传 PDF、DOC、DOCX 格式的简历", ex.getMessage());
+        verifyNoInteractions(rustFSClient);
+    }
+
+    @Test
     @DisplayName("setDefaultResume 非SUCCESS状态应拒绝")
     void setDefaultResume_shouldRejectWhenStatusNotSuccess() {
         Resume resume = buildResume(20L, 9L, "resume.pdf", "s3://r.pdf", "pdf");

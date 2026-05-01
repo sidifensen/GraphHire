@@ -31,12 +31,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
+import java.util.Set;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 @Service
 public class ResumeAppService {
     private static final Logger log = LoggerFactory.getLogger(ResumeAppService.class);
+    private static final Set<String> ALLOWED_RESUME_EXTENSIONS = Set.of("pdf", "doc", "docx");
 
     @Autowired
     private ResumeRepository resumeRepository;
@@ -66,14 +69,19 @@ public class ResumeAppService {
             throw Exceptions.BusinessException.of(400, "最多上传3份简历，请先删除旧简历");
         }
 
+        String fileName = cmd.getFileName();
+        String fileExt = StrUtil.blankToDefault(FileUtil.extName(fileName), "").toLowerCase(Locale.ROOT);
+        if (!ALLOWED_RESUME_EXTENSIONS.contains(fileExt)) {
+            throw Exceptions.BusinessException.of(400, "仅支持上传 PDF、DOC、DOCX 格式的简历");
+        }
+
         // 步骤1：上传文件到RustFS
-        String filePath = rustFSClient.upload(cmd.getFileBytes(), cmd.getFileName());
+        String filePath = rustFSClient.upload(cmd.getFileBytes(), fileName);
         // 步骤2：创建简历聚合根
         Resume resume = new Resume();
         resume.setUserId(cmd.getUserId());
         // 从文件名提取文件类型（扩展名）
-        String fileName = cmd.getFileName();
-        String fileType = fileName.contains(".") ? fileName.substring(fileName.lastIndexOf(".") + 1) : "unknown";
+        String fileType = StrUtil.isBlank(fileExt) ? "unknown" : fileExt;
         resume.setFileType(fileType);
         resume.upload(filePath, fileName);
         // 步骤3：保存简历
