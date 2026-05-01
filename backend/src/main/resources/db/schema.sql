@@ -240,7 +240,7 @@ CREATE TABLE job
     update_time  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted      SMALLINT     NOT NULL DEFAULT 0,
 
-    CONSTRAINT chk_job_type CHECK (job_type IN (1, 2)),
+    CONSTRAINT chk_job_type CHECK (job_type IN (1, 2, 3)),
     CONSTRAINT chk_job_status CHECK (status IN (0, 1)),
     CONSTRAINT chk_salary CHECK (salary_min IS NULL OR salary_max IS NULL OR salary_min <= salary_max)
 );
@@ -257,7 +257,7 @@ COMMENT ON COLUMN job.salary_max IS '最高薪资';
 COMMENT ON COLUMN job.salary_unit IS '薪资单位：月/年';
 COMMENT ON COLUMN job.experience IS '经验要求（如：1-3年、3-5年、不限）';
 COMMENT ON COLUMN job.education IS '学历要求：初中及以下/高中/中专/大专/本科/硕士/博士';
-COMMENT ON COLUMN job.job_type IS '工作类型：1-全职 2-兼职';
+COMMENT ON COLUMN job.job_type IS '工作类型：1-全职 2-兼职 3-实习';
 COMMENT ON COLUMN job.status IS '职位状态：0-草稿/下架 1-上架（发布中）';
 COMMENT ON COLUMN job.create_time IS '发布时间';
 COMMENT ON COLUMN job.update_time IS '更新时间';

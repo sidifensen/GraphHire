@@ -63,7 +63,7 @@ public class JobPO {
     /** 学历要求 */
     @TableField("education")
     private String education;
-    /** 工作类型 */
+    /** 工作类型：1=全职 2=兼职 3=实习 */
     @TableField("job_type")
     private Integer jobType;
     /** 创建时间 */

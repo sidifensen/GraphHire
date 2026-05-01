@@ -54,7 +54,7 @@ public class Job extends BaseAggregateRoot {
     private String experience;
     /** 学历要求 */
     private String education;
-    /** 工作类型（0=未知 1=全职 2=兼职 3=实习） */
+    /** 工作类型（1=全职 2=兼职 3=实习） */
     private Integer jobType;
     /** 创建时间 */
     private LocalDateTime createTime;

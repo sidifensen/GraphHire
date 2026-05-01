@@ -1,5 +1,11 @@
 ﻿# Release Notes
 
+## 2026-05-01
+
+- fix: 后端职位 `job_type` 扩展为 `1-全职 2-兼职 3-实习`，同步更新 `schema.sql` 约束与字段注释
+- fix: 新增数据库迁移脚本以兼容存量库 `job_type` 约束升级（drop/add `chk_job_type`）与注释修订
+- test: 新增 `JobSchemaSqlTest`，覆盖职位类型约束与注释文本回归校验
+
 ## 2026-04-25
 
 - feat: 新增用户端 `/applications` 投递记录页，支持列表查看、状态筛选与前端分页
@@ -39,3 +45,7 @@
 - test: 新增 `LoginRequest` 邮箱校验单测，更新前端登录/注册页测试覆盖新文案与交互
 - feat: 登录后在用户端与企业端右上角显示头像与名称，补齐个人主页动态用户信息展示并保留持久登录态
 - feat: 用户端 `personal-info`、`resume/manage|upload`、`applications` 三页切换真实后端接口，支持资料保存、头像上传、简历设默认/重解析/上传、投递记录状态筛选与撤回
+
+
+
+
