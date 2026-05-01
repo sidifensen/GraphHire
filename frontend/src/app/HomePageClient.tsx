@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import LoadingTextLoader from '@/components/ui/LoadingTextLoader';
 import { fetchHomeOverview } from '@/lib/api/homeApi';
 import type { HomeCompanyCard, HomeJobCard, HomeOverview } from '@/lib/types/home';
 
@@ -124,7 +125,10 @@ export default function HomePageClient({ initialOverview, initialError }: HomePa
 
         <section className="max-w-[1440px] mx-auto px-8 py-16 w-full">
           {loading ? (
-            <div className="py-16 text-center text-on-surface-variant">首页数据加载中...</div>
+            <div className="py-16 flex flex-col items-center gap-4 text-center text-on-surface-variant">
+              <LoadingTextLoader className="text-primary" label="Loading" />
+              <p>首页数据加载中...</p>
+            </div>
           ) : error ? (
             <div className="py-16 text-center flex flex-col items-center gap-4">
               <p className="text-error">{error}</p>
