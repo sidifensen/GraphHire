@@ -39,7 +39,41 @@ const {
               updatedAt: '2026-05-02 14:02:00',
               children: [],
             },
+            {
+              id: 1001003,
+              code: 1001003,
+              name: 'Go',
+              parentId: 1001000,
+              level: 3,
+              sortNo: 1,
+              status: 1,
+              updatedAt: '2026-05-02 14:03:00',
+              children: [],
+            },
           ],
+        },
+      ],
+    },
+    {
+      id: 2000000,
+      code: 2000000,
+      name: '产品',
+      parentId: null,
+      level: 1,
+      sortNo: 1,
+      status: 1,
+      updatedAt: '2026-05-02 14:10:00',
+      children: [
+        {
+          id: 2001000,
+          code: 2001000,
+          name: '产品经理',
+          parentId: 2000000,
+          level: 2,
+          sortNo: 0,
+          status: 1,
+          updatedAt: '2026-05-02 14:11:00',
+          children: [],
         },
       ],
     },
@@ -121,5 +155,42 @@ describe('AdminPositionTypesPage', () => {
       expect(movePositionType).toHaveBeenCalledWith(1001002, 'UP');
     });
   });
-});
 
+  it('supports breadcrumb view with same-level list and breadcrumb path', async () => {
+    render(<AdminPositionTypesPage />);
+
+    await waitFor(() => {
+      expect(getPositionTypeTree).toHaveBeenCalled();
+    });
+
+    fireEvent.click(screen.getByText('Java'));
+    fireEvent.click(screen.getByRole('button', { name: '路径面包屑视图' }));
+
+    expect(screen.getByText('技术 / 后端开发 / Java')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Java' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Go' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '产品' })).not.toBeInTheDocument();
+  });
+
+  it('supports cascade view and column linkage', async () => {
+    render(<AdminPositionTypesPage />);
+
+    await waitFor(() => {
+      expect(getPositionTypeTree).toHaveBeenCalled();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: '分栏级联视图' }));
+
+    expect(screen.getByRole('heading', { name: '一级' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '二级' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '三级' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: '产品' }));
+    expect(screen.getByRole('button', { name: '产品经理' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '后端开发' })).not.toBeInTheDocument();
+    expect(screen.getByDisplayValue('产品')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: '产品经理' }));
+    expect(screen.getByDisplayValue('产品经理')).toBeInTheDocument();
+  });
+});

@@ -5,7 +5,7 @@ import { Plus } from 'lucide-react';
 import AdminDataTable from '@/components/admin/AdminDataTable';
 import { adminApi, type AdminPositionTypeItem } from '@/lib/api/admin';
 
-type ViewMode = 'split' | 'table';
+type ViewMode = 'split' | 'table' | 'breadcrumb' | 'cascade';
 
 interface FlatNode extends AdminPositionTypeItem {
   depth: number;
@@ -54,6 +54,8 @@ export default function AdminPositionTypesPage() {
   }, [keyword, statusFilter, levelFilter]);
 
   const selectedNode = useMemo(() => findById(tree, selectedId), [tree, selectedId]);
+  const selectedPath = useMemo(() => findPath(tree, selectedId), [tree, selectedId]);
+  const visualMode = viewMode !== 'table';
 
   useEffect(() => {
     if (selectedNode) {
@@ -61,10 +63,49 @@ export default function AdminPositionTypesPage() {
     }
   }, [selectedNode?.id]);
 
-  const flatList = useMemo(() => flatten(tree), [tree]);
+  const tableRows = useMemo(() => flattenVisible(tree, new Set(expandedIds)), [tree, expandedIds]);
+
+  const breadcrumbLabel = selectedPath.map((node) => node.name).join(' / ');
+
+  const sameLevelNodes = useMemo(() => {
+    if (!selectedNode) {
+      return tree;
+    }
+    if (selectedPath.length <= 1) {
+      return tree;
+    }
+    const parent = selectedPath[selectedPath.length - 2];
+    return parent.children;
+  }, [selectedNode, selectedPath, tree]);
+
+  const cascadeRoot = useMemo(() => {
+    if (selectedPath.length > 0) {
+      return selectedPath[0];
+    }
+    return tree[0] ?? null;
+  }, [selectedPath, tree]);
+
+  const cascadeSecondNodes = cascadeRoot?.children ?? [];
+
+  const cascadeSecond = useMemo(() => {
+    if (!cascadeRoot) {
+      return null;
+    }
+    if (selectedPath.length > 1 && selectedPath[0]?.id === cascadeRoot.id) {
+      return selectedPath[1];
+    }
+    return cascadeSecondNodes[0] ?? null;
+  }, [cascadeRoot, selectedPath, cascadeSecondNodes]);
+
+  const cascadeThirdNodes = cascadeSecond?.children ?? [];
 
   const toggleExpanded = (id: number) => {
     setExpandedIds((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
+  };
+
+  const selectNode = (node: AdminPositionTypeItem) => {
+    setSelectedId(node.id);
+    setEditingName(node.name);
   };
 
   const openCreate = (parentId: number | null) => {
@@ -113,7 +154,7 @@ export default function AdminPositionTypesPage() {
   };
 
   return (
-    <div className="space-y-6 p-8">
+    <div className={`${visualMode ? 'flex h-full flex-col gap-6 overflow-hidden' : 'space-y-6'} p-8`}>
       <div className="flex items-end justify-between">
         <div>
           <h2 className="font-display text-2xl font-bold text-on-surface">职位类型管理</h2>
@@ -137,7 +178,7 @@ export default function AdminPositionTypesPage() {
             className="rounded-lg border border-outline-variant/30 bg-slate-50 px-3 py-2 text-sm"
           />
           <label className="flex items-center gap-2 text-sm">
-            <span className="text-outline">状态</span>
+            <span className="shrink-0 whitespace-nowrap text-outline">状态</span>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -149,7 +190,7 @@ export default function AdminPositionTypesPage() {
             </select>
           </label>
           <label className="flex items-center gap-2 text-sm">
-            <span className="text-outline">层级</span>
+            <span className="shrink-0 whitespace-nowrap text-outline">层级</span>
             <select
               value={levelFilter}
               onChange={(e) => setLevelFilter(e.target.value)}
@@ -164,7 +205,7 @@ export default function AdminPositionTypesPage() {
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
           className={`rounded-lg px-3 py-2 text-sm font-semibold ${viewMode === 'split' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700'}`}
@@ -179,13 +220,27 @@ export default function AdminPositionTypesPage() {
         >
           树形表格
         </button>
+        <button
+          type="button"
+          className={`rounded-lg px-3 py-2 text-sm font-semibold ${viewMode === 'breadcrumb' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700'}`}
+          onClick={() => setViewMode('breadcrumb')}
+        >
+          路径面包屑视图
+        </button>
+        <button
+          type="button"
+          className={`rounded-lg px-3 py-2 text-sm font-semibold ${viewMode === 'cascade' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700'}`}
+          onClick={() => setViewMode('cascade')}
+        >
+          分栏级联视图
+        </button>
       </div>
 
       {viewMode === 'split' ? (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[360px_1fr]">
-          <section className="rounded-xl border border-outline-variant/40 bg-white p-4 shadow-sm">
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-hidden lg:grid-cols-[360px_1fr]">
+          <section className="flex h-full min-h-0 flex-col rounded-xl border border-outline-variant/40 bg-white p-4 shadow-sm">
             <h3 className="mb-3 text-base font-bold">职位树</h3>
-            <div className="space-y-1">
+            <div className="min-h-0 flex-1 space-y-1 overflow-y-auto pr-1">
               {tree.map((node) => (
                 <TreeNode
                   key={node.id}
@@ -193,74 +248,60 @@ export default function AdminPositionTypesPage() {
                   depth={0}
                   expandedIds={expandedIds}
                   onToggle={toggleExpanded}
-                  onSelect={(item) => {
-                    setSelectedId(item.id);
-                    setEditingName(item.name);
-                  }}
+                  onSelect={selectNode}
                   selectedId={selectedId}
                 />
               ))}
             </div>
           </section>
 
-          <section className="rounded-xl border border-outline-variant/40 bg-white p-4 shadow-sm">
-            <h3 className="mb-4 text-base font-bold">节点详情</h3>
-            {selectedNode ? (
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                  <label className="text-sm">
-                    <span className="mb-1 block text-outline">名称</span>
-                    <input
-                      value={editingName}
-                      onChange={(e) => setEditingName(e.target.value)}
-                      className="w-full rounded-lg border border-outline-variant/30 px-3 py-2"
-                    />
-                  </label>
-                  <div className="text-sm">
-                    <span className="mb-1 block text-outline">编码</span>
-                    <div className="rounded-lg border border-outline-variant/30 bg-slate-50 px-3 py-2">{selectedNode.code}</div>
-                  </div>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <button type="button" className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-semibold" onClick={() => void saveName()}>保存名称</button>
-                  <button type="button" className="rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-700" onClick={() => void moveNode('UP')}>上移</button>
-                  <button type="button" className="rounded-md border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-sm font-semibold text-indigo-700" onClick={() => void moveNode('DOWN')}>下移</button>
-                  <button type="button" className="rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-semibold text-slate-700" onClick={() => void toggleStatus()}>
-                    {selectedNode.status === 1 ? '停用' : '启用'}
-                  </button>
-                  {selectedNode.level < 3 ? (
-                    <button type="button" className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-700" onClick={() => openCreate(selectedNode.id)}>
-                      新增子类
-                    </button>
-                  ) : null}
-                </div>
-              </div>
-            ) : (
-              <p className="text-sm text-outline">请选择左侧节点。</p>
-            )}
-          </section>
+          <NodeDetailPanel
+            selectedNode={selectedNode}
+            editingName={editingName}
+            setEditingName={setEditingName}
+            onSaveName={saveName}
+            onMove={moveNode}
+            onToggleStatus={toggleStatus}
+            onCreateChild={openCreate}
+          />
         </div>
-      ) : (
+      ) : null}
+
+      {viewMode === 'table' ? (
         <AdminDataTable
-          data={flatList}
+          data={tableRows}
           tableClassName="table-fixed"
           columns={[
             {
               header: '名称',
               className: 'w-[36%]',
               accessor: (item) => (
-                <button
-                  type="button"
-                  className="text-left"
-                  onClick={() => {
-                    setSelectedId(item.id);
-                    setEditingName(item.name);
-                    setViewMode('split');
-                  }}
-                  style={{ paddingLeft: `${item.depth * 16}px` }}
-                >
-                  {item.name}
-                </button>
+                <div className="flex items-center" style={{ paddingLeft: `${item.depth * 16}px` }}>
+                  {item.children.length > 0 ? (
+                    <button
+                      type="button"
+                      className="mr-1 flex h-7 w-7 items-center justify-center rounded text-base font-bold text-slate-600 hover:bg-slate-100"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        toggleExpanded(item.id);
+                      }}
+                    >
+                      {expandedIds.includes(item.id) ? '▾' : '▸'}
+                    </button>
+                  ) : (
+                    <span className="mr-1 inline-block w-5" />
+                  )}
+                  <button
+                    type="button"
+                    className="text-left"
+                    onClick={() => {
+                      selectNode(item);
+                      setViewMode('split');
+                    }}
+                  >
+                    {item.name}
+                  </button>
+                </div>
               ),
             },
             { header: '层级', className: 'w-[8%]', accessor: (item) => `L${item.level}` },
@@ -307,7 +348,74 @@ export default function AdminPositionTypesPage() {
             },
           ]}
         />
-      )}
+      ) : null}
+
+      {viewMode === 'breadcrumb' ? (
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-hidden lg:grid-cols-[360px_1fr]">
+          <section className="flex h-full min-h-0 flex-col rounded-xl border border-outline-variant/40 bg-white p-4 shadow-sm">
+            <h3 className="text-base font-bold">路径面包屑</h3>
+            <p className="mt-2 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">{breadcrumbLabel || '请选择节点'}</p>
+            <h4 className="mt-4 text-sm font-semibold text-outline">同级节点</h4>
+            <div className="mt-2 min-h-0 flex-1 space-y-1 overflow-y-auto pr-1">
+              {sameLevelNodes.map((node) => (
+                <button
+                  key={node.id}
+                  type="button"
+                  className={`w-full rounded-md px-3 py-2 text-left text-sm ${selectedId === node.id ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                  onClick={() => selectNode(node)}
+                >
+                  {node.name}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <NodeDetailPanel
+            selectedNode={selectedNode}
+            editingName={editingName}
+            setEditingName={setEditingName}
+            onSaveName={saveName}
+            onMove={moveNode}
+            onToggleStatus={toggleStatus}
+            onCreateChild={openCreate}
+          />
+        </div>
+      ) : null}
+
+      {viewMode === 'cascade' ? (
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-hidden xl:grid-cols-[1.4fr_1fr]">
+          <section className="grid min-h-0 grid-cols-1 gap-3 rounded-xl border border-outline-variant/40 bg-white p-4 shadow-sm md:grid-cols-3">
+            <CascadeColumn
+              title="一级"
+              nodes={tree}
+              selectedId={cascadeRoot?.id ?? null}
+              onSelect={selectNode}
+            />
+            <CascadeColumn
+              title="二级"
+              nodes={cascadeSecondNodes}
+              selectedId={cascadeSecond?.id ?? null}
+              onSelect={selectNode}
+            />
+            <CascadeColumn
+              title="三级"
+              nodes={cascadeThirdNodes}
+              selectedId={selectedPath[2]?.id ?? null}
+              onSelect={selectNode}
+            />
+          </section>
+
+          <NodeDetailPanel
+            selectedNode={selectedNode}
+            editingName={editingName}
+            setEditingName={setEditingName}
+            onSaveName={saveName}
+            onMove={moveNode}
+            onToggleStatus={toggleStatus}
+            onCreateChild={openCreate}
+          />
+        </div>
+      ) : null}
 
       {loading ? <p className="text-xs text-outline">加载中...</p> : null}
 
@@ -333,6 +441,93 @@ export default function AdminPositionTypesPage() {
   );
 }
 
+function NodeDetailPanel({
+  selectedNode,
+  editingName,
+  setEditingName,
+  onSaveName,
+  onMove,
+  onToggleStatus,
+  onCreateChild,
+}: {
+  selectedNode: AdminPositionTypeItem | null;
+  editingName: string;
+  setEditingName: (value: string) => void;
+  onSaveName: () => Promise<void>;
+  onMove: (direction: 'UP' | 'DOWN') => Promise<void>;
+  onToggleStatus: () => Promise<void>;
+  onCreateChild: (parentId: number | null) => void;
+}) {
+  return (
+    <section className="h-full min-h-0 overflow-hidden rounded-xl border border-outline-variant/40 bg-white p-4 shadow-sm">
+      <h3 className="mb-4 text-base font-bold">节点详情</h3>
+      {selectedNode ? (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <label className="text-sm">
+              <span className="mb-1 block text-outline">名称</span>
+              <input
+                value={editingName}
+                onChange={(e) => setEditingName(e.target.value)}
+                className="w-full rounded-lg border border-outline-variant/30 px-3 py-2"
+              />
+            </label>
+            <div className="text-sm">
+              <span className="mb-1 block text-outline">编码</span>
+              <div className="rounded-lg border border-outline-variant/30 bg-slate-50 px-3 py-2">{selectedNode.code}</div>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button type="button" className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-semibold" onClick={() => void onSaveName()}>保存名称</button>
+            <button type="button" className="rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-700" onClick={() => void onMove('UP')}>上移</button>
+            <button type="button" className="rounded-md border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-sm font-semibold text-indigo-700" onClick={() => void onMove('DOWN')}>下移</button>
+            <button type="button" className="rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-semibold text-slate-700" onClick={() => void onToggleStatus()}>
+              {selectedNode.status === 1 ? '停用' : '启用'}
+            </button>
+            {selectedNode.level < 3 ? (
+              <button type="button" className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-700" onClick={() => onCreateChild(selectedNode.id)}>
+                新增子类
+              </button>
+            ) : null}
+          </div>
+        </div>
+      ) : (
+        <p className="text-sm text-outline">请选择左侧节点。</p>
+      )}
+    </section>
+  );
+}
+
+function CascadeColumn({
+  title,
+  nodes,
+  selectedId,
+  onSelect,
+}: {
+  title: string;
+  nodes: AdminPositionTypeItem[];
+  selectedId: number | null;
+  onSelect: (node: AdminPositionTypeItem) => void;
+}) {
+  return (
+    <div className="flex min-h-0 flex-col rounded-lg border border-outline-variant/30 bg-slate-50/60 p-3">
+      <h3 className="mb-2 text-sm font-bold text-slate-700">{title}</h3>
+      <div className="min-h-0 flex-1 space-y-1 overflow-y-auto">
+        {nodes.map((node) => (
+          <button
+            key={node.id}
+            type="button"
+            className={`w-full rounded-md px-3 py-2 text-left text-sm ${selectedId === node.id ? 'bg-slate-900 text-white' : 'bg-white text-slate-700 hover:bg-slate-100'}`}
+            onClick={() => onSelect(node)}
+          >
+            {node.name}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function TreeNode({
   node,
   depth,
@@ -354,11 +549,15 @@ function TreeNode({
     <div>
       <div className="flex items-center gap-1">
         {hasChildren ? (
-          <button type="button" onClick={() => onToggle(node.id)} className="w-6 text-xs text-outline">
+          <button
+            type="button"
+            onClick={() => onToggle(node.id)}
+            className="flex h-7 w-7 items-center justify-center rounded text-base font-bold text-slate-600 hover:bg-slate-100"
+          >
             {expanded ? '▾' : '▸'}
           </button>
         ) : (
-          <span className="inline-block w-6" />
+          <span className="inline-block h-7 w-7" />
         )}
         <button
           type="button"
@@ -388,11 +587,13 @@ function TreeNode({
   );
 }
 
-function flatten(tree: AdminPositionTypeItem[], depth = 0): FlatNode[] {
+function flattenVisible(tree: AdminPositionTypeItem[], expanded: Set<number>, depth = 0): FlatNode[] {
   const result: FlatNode[] = [];
   for (const node of tree) {
     result.push({ ...node, depth });
-    result.push(...flatten(node.children, depth + 1));
+    if (node.children.length > 0 && expanded.has(node.id)) {
+      result.push(...flattenVisible(node.children, expanded, depth + 1));
+    }
   }
   return result;
 }
@@ -411,6 +612,23 @@ function findById(tree: AdminPositionTypeItem[], targetId: number | null): Admin
     }
   }
   return null;
+}
+
+function findPath(tree: AdminPositionTypeItem[], targetId: number | null, trail: AdminPositionTypeItem[] = []): AdminPositionTypeItem[] {
+  if (targetId == null) {
+    return [];
+  }
+  for (const node of tree) {
+    const nextTrail = [...trail, node];
+    if (node.id === targetId) {
+      return nextTrail;
+    }
+    const childPath = findPath(node.children, targetId, nextTrail);
+    if (childPath.length > 0) {
+      return childPath;
+    }
+  }
+  return [];
 }
 
 function collectExpandableIds(tree: AdminPositionTypeItem[]): number[] {
