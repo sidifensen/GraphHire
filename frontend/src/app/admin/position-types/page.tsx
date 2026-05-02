@@ -2,14 +2,17 @@
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Plus } from 'lucide-react';
-import AdminDataTable from '@/components/admin/AdminDataTable';
 import { adminApi, type AdminPositionTypeItem } from '@/lib/api/admin';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
-type ViewMode = 'split' | 'table' | 'breadcrumb' | 'cascade';
-
-interface FlatNode extends AdminPositionTypeItem {
-  depth: number;
-}
+type ViewMode = 'split' | 'cascade';
+const ALL_FILTER_VALUE = '__ALL__';
 
 export default function AdminPositionTypesPage() {
   const [tree, setTree] = useState<AdminPositionTypeItem[]>([]);
@@ -55,28 +58,12 @@ export default function AdminPositionTypesPage() {
 
   const selectedNode = useMemo(() => findById(tree, selectedId), [tree, selectedId]);
   const selectedPath = useMemo(() => findPath(tree, selectedId), [tree, selectedId]);
-  const visualMode = viewMode !== 'table';
 
   useEffect(() => {
     if (selectedNode) {
       setEditingName(selectedNode.name);
     }
   }, [selectedNode?.id]);
-
-  const tableRows = useMemo(() => flattenVisible(tree, new Set(expandedIds)), [tree, expandedIds]);
-
-  const breadcrumbLabel = selectedPath.map((node) => node.name).join(' / ');
-
-  const sameLevelNodes = useMemo(() => {
-    if (!selectedNode) {
-      return tree;
-    }
-    if (selectedPath.length <= 1) {
-      return tree;
-    }
-    const parent = selectedPath[selectedPath.length - 2];
-    return parent.children;
-  }, [selectedNode, selectedPath, tree]);
 
   const cascadeRoot = useMemo(() => {
     if (selectedPath.length > 0) {
@@ -154,7 +141,7 @@ export default function AdminPositionTypesPage() {
   };
 
   return (
-    <div className={`${visualMode ? 'flex h-full flex-col gap-6 overflow-hidden' : 'space-y-6'} p-8`}>
+    <div className="flex h-full flex-col gap-6 overflow-hidden p-8">
       <div className="flex items-end justify-between">
         <div>
           <h2 className="font-display text-2xl font-bold text-on-surface">职位类型管理</h2>
@@ -179,28 +166,36 @@ export default function AdminPositionTypesPage() {
           />
           <label className="flex items-center gap-2 text-sm">
             <span className="shrink-0 whitespace-nowrap text-outline">状态</span>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full rounded-lg border border-outline-variant/30 bg-slate-50 px-3 py-2 text-sm"
+            <Select
+              value={statusFilter === '' ? ALL_FILTER_VALUE : statusFilter}
+              onValueChange={(value) => setStatusFilter(value === ALL_FILTER_VALUE ? '' : value)}
             >
-              <option value="">全部</option>
-              <option value="1">启用</option>
-              <option value="0">停用</option>
-            </select>
+              <SelectTrigger>
+                <SelectValue placeholder="请选择状态" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL_FILTER_VALUE}>全部</SelectItem>
+                <SelectItem value="1">启用</SelectItem>
+                <SelectItem value="0">停用</SelectItem>
+              </SelectContent>
+            </Select>
           </label>
           <label className="flex items-center gap-2 text-sm">
             <span className="shrink-0 whitespace-nowrap text-outline">层级</span>
-            <select
-              value={levelFilter}
-              onChange={(e) => setLevelFilter(e.target.value)}
-              className="w-full rounded-lg border border-outline-variant/30 bg-slate-50 px-3 py-2 text-sm"
+            <Select
+              value={levelFilter === '' ? ALL_FILTER_VALUE : levelFilter}
+              onValueChange={(value) => setLevelFilter(value === ALL_FILTER_VALUE ? '' : value)}
             >
-              <option value="">全部</option>
-              <option value="1">一级</option>
-              <option value="2">二级</option>
-              <option value="3">三级</option>
-            </select>
+              <SelectTrigger>
+                <SelectValue placeholder="请选择层级" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL_FILTER_VALUE}>全部</SelectItem>
+                <SelectItem value="1">一级</SelectItem>
+                <SelectItem value="2">二级</SelectItem>
+                <SelectItem value="3">三级</SelectItem>
+              </SelectContent>
+            </Select>
           </label>
         </div>
       </div>
@@ -212,20 +207,6 @@ export default function AdminPositionTypesPage() {
           onClick={() => setViewMode('split')}
         >
           树+详情
-        </button>
-        <button
-          type="button"
-          className={`rounded-lg px-3 py-2 text-sm font-semibold ${viewMode === 'table' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700'}`}
-          onClick={() => setViewMode('table')}
-        >
-          树形表格
-        </button>
-        <button
-          type="button"
-          className={`rounded-lg px-3 py-2 text-sm font-semibold ${viewMode === 'breadcrumb' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700'}`}
-          onClick={() => setViewMode('breadcrumb')}
-        >
-          路径面包屑视图
         </button>
         <button
           type="button"
@@ -251,121 +232,6 @@ export default function AdminPositionTypesPage() {
                   onSelect={selectNode}
                   selectedId={selectedId}
                 />
-              ))}
-            </div>
-          </section>
-
-          <NodeDetailPanel
-            selectedNode={selectedNode}
-            editingName={editingName}
-            setEditingName={setEditingName}
-            onSaveName={saveName}
-            onMove={moveNode}
-            onToggleStatus={toggleStatus}
-            onCreateChild={openCreate}
-          />
-        </div>
-      ) : null}
-
-      {viewMode === 'table' ? (
-        <AdminDataTable
-          data={tableRows}
-          tableClassName="table-fixed"
-          columns={[
-            {
-              header: '名称',
-              className: 'w-[36%]',
-              accessor: (item) => (
-                <div className="flex items-center" style={{ paddingLeft: `${item.depth * 16}px` }}>
-                  {item.children.length > 0 ? (
-                    <button
-                      type="button"
-                      className="mr-1 flex h-7 w-7 items-center justify-center rounded text-base font-bold text-slate-600 hover:bg-slate-100"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        toggleExpanded(item.id);
-                      }}
-                    >
-                      {expandedIds.includes(item.id) ? '▾' : '▸'}
-                    </button>
-                  ) : (
-                    <span className="mr-1 inline-block w-5" />
-                  )}
-                  <button
-                    type="button"
-                    className="text-left"
-                    onClick={() => {
-                      selectNode(item);
-                      setViewMode('split');
-                    }}
-                  >
-                    {item.name}
-                  </button>
-                </div>
-              ),
-            },
-            { header: '层级', className: 'w-[8%]', accessor: (item) => `L${item.level}` },
-            { header: '状态', className: 'w-[10%]', accessor: (item) => (item.status === 1 ? '启用' : '停用') },
-            { header: '排序', className: 'w-[10%]', accessor: (item) => String(item.sortNo) },
-            { header: '更新时间', className: 'w-[20%]', accessor: (item) => item.updatedAt ?? '-' },
-            {
-              header: '操作',
-              className: 'w-[16%]',
-              accessor: (item) => (
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    className="rounded-md border border-blue-200 bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700"
-                    onClick={() => void (async () => {
-                      await adminApi.movePositionType(item.id, 'UP');
-                      await load();
-                    })()}
-                  >
-                    上移
-                  </button>
-                  <button
-                    type="button"
-                    className="rounded-md border border-indigo-200 bg-indigo-50 px-2 py-1 text-xs font-semibold text-indigo-700"
-                    onClick={() => void (async () => {
-                      await adminApi.movePositionType(item.id, 'DOWN');
-                      await load();
-                    })()}
-                  >
-                    下移
-                  </button>
-                  <button
-                    type="button"
-                    className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-semibold text-slate-700"
-                    onClick={() => void (async () => {
-                      await adminApi.updatePositionTypeStatus(item.id, item.status === 1 ? 0 : 1);
-                      await load();
-                    })()}
-                  >
-                    {item.status === 1 ? '停用' : '启用'}
-                  </button>
-                </div>
-              ),
-            },
-          ]}
-        />
-      ) : null}
-
-      {viewMode === 'breadcrumb' ? (
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-hidden lg:grid-cols-[360px_1fr]">
-          <section className="flex h-full min-h-0 flex-col rounded-xl border border-outline-variant/40 bg-white p-4 shadow-sm">
-            <h3 className="text-base font-bold">路径面包屑</h3>
-            <p className="mt-2 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">{breadcrumbLabel || '请选择节点'}</p>
-            <h4 className="mt-4 text-sm font-semibold text-outline">同级节点</h4>
-            <div className="mt-2 min-h-0 flex-1 space-y-1 overflow-y-auto pr-1">
-              {sameLevelNodes.map((node) => (
-                <button
-                  key={node.id}
-                  type="button"
-                  className={`w-full rounded-md px-3 py-2 text-left text-sm ${selectedId === node.id ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
-                  onClick={() => selectNode(node)}
-                >
-                  {node.name}
-                </button>
               ))}
             </div>
           </section>
@@ -426,10 +292,17 @@ export default function AdminPositionTypesPage() {
             <label className="mb-2 block text-sm">名称</label>
             <input value={createName} onChange={(e) => setCreateName(e.target.value)} className="mb-4 w-full rounded border px-3 py-2" />
             <label className="mb-2 block text-sm">状态</label>
-            <select value={createStatus} onChange={(e) => setCreateStatus(e.target.value)} className="mb-6 w-full rounded border px-3 py-2">
-              <option value="1">启用</option>
-              <option value="0">停用</option>
-            </select>
+            <div className="mb-6">
+              <Select value={createStatus} onValueChange={setCreateStatus}>
+                <SelectTrigger>
+                  <SelectValue placeholder="请选择状态" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">启用</SelectItem>
+                  <SelectItem value="0">停用</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="flex justify-end gap-2">
               <button type="button" className="rounded border px-4 py-2" onClick={() => setShowCreate(false)}>取消</button>
               <button type="submit" className="rounded bg-primary px-4 py-2 text-white">保存</button>
@@ -585,17 +458,6 @@ function TreeNode({
       ) : null}
     </div>
   );
-}
-
-function flattenVisible(tree: AdminPositionTypeItem[], expanded: Set<number>, depth = 0): FlatNode[] {
-  const result: FlatNode[] = [];
-  for (const node of tree) {
-    result.push({ ...node, depth });
-    if (node.children.length > 0 && expanded.has(node.id)) {
-      result.push(...flattenVisible(node.children, expanded, depth + 1));
-    }
-  }
-  return result;
 }
 
 function findById(tree: AdminPositionTypeItem[], targetId: number | null): AdminPositionTypeItem | null {

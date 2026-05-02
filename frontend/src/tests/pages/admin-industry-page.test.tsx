@@ -1,103 +1,105 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 
-const { getIndustryList, moveIndustry } = vi.hoisted(() => ({
-  getIndustryList: vi.fn().mockResolvedValue({
-    list: [
-      { id: 1, name: '互联网', enabled: 1, sortOrder: 0, updatedAt: '2026-05-01 10:00:00' },
-      { id: 2, name: '金融科技', enabled: 1, sortOrder: 1, updatedAt: '2026-05-01 11:00:00' },
-      { id: 3, name: '电子商务', enabled: 1, sortOrder: 2, updatedAt: '2026-05-01 12:00:00' },
-    ],
-    total: 3,
-    page: 1,
-    pageSize: 10,
-  }),
+const {
+  getIndustryTree,
+  createIndustry,
+  updateIndustryStatus,
+  moveIndustry,
+  deleteIndustry,
+} = vi.hoisted(() => ({
+  getIndustryTree: vi.fn().mockResolvedValue([
+    {
+      id: 1,
+      name: '计算机/互联网/通信/电子',
+      parentId: null,
+      level: 1,
+      enabled: 1,
+      sort: 0,
+      children: [
+        { id: 2, name: '计算机软件', parentId: 1, level: 2, enabled: 1, sort: 0, children: [] },
+        { id: 3, name: '计算机硬件', parentId: 1, level: 2, enabled: 1, sort: 1, children: [] },
+      ],
+    },
+    {
+      id: 4,
+      name: '会计/金融/银行/保险',
+      parentId: null,
+      level: 1,
+      enabled: 1,
+      sort: 1,
+      children: [{ id: 5, name: '会计/审计', parentId: 4, level: 2, enabled: 1, sort: 0, children: [] }],
+    },
+  ]),
+  createIndustry: vi.fn().mockResolvedValue(undefined),
+  updateIndustryStatus: vi.fn().mockResolvedValue(undefined),
   moveIndustry: vi.fn().mockResolvedValue(undefined),
+  deleteIndustry: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('@/lib/api/admin', () => ({
   adminApi: {
-    getIndustryList,
-    createIndustry: vi.fn().mockResolvedValue(undefined),
-    updateIndustryStatus: vi.fn().mockResolvedValue(undefined),
+    getIndustryTree,
+    createIndustry,
+    updateIndustryStatus,
     moveIndustry,
+    deleteIndustry,
   },
 }));
 
 import AdminIndustryPage from '@/app/admin/industry/page';
 
-describe('AdminIndustryPage sorting and move actions', () => {
+describe('AdminIndustryPage tree/cascade views', () => {
   beforeEach(() => {
-    getIndustryList.mockClear();
+    getIndustryTree.mockClear();
+    createIndustry.mockClear();
+    updateIndustryStatus.mockClear();
     moveIndustry.mockClear();
+    deleteIndustry.mockClear();
   });
 
-  it('supports sorting params and move up/down actions', async () => {
+  it('loads tree and supports split/cascade switch + basic operations', async () => {
     render(<AdminIndustryPage />);
 
     await waitFor(() => {
-      expect(getIndustryList).toHaveBeenCalledWith({
-        page: 1,
-        pageSize: 10,
+      expect(getIndustryTree).toHaveBeenCalledWith({
         keyword: undefined,
-        sortBy: 'sortOrder',
-        sortDir: 'asc',
+        enabled: undefined,
+        level: undefined,
       });
     });
 
-    fireEvent.click(screen.getByRole('button', { name: /行业名称/ }));
-    await waitFor(() => {
-      expect(getIndustryList).toHaveBeenLastCalledWith({
-        page: 1,
-        pageSize: 10,
-        keyword: undefined,
-        sortBy: 'name',
-        sortDir: 'asc',
-      });
-    });
+    expect(screen.getByText('行业树')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '分栏级联视图' }));
+    expect(screen.getAllByText('一级').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('二级').length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole('button', { name: '树+详情' }));
 
-    fireEvent.click(screen.getByRole('button', { name: /行业名称/ }));
-    await waitFor(() => {
-      expect(getIndustryList).toHaveBeenLastCalledWith({
-        page: 1,
-        pageSize: 10,
-        keyword: undefined,
-        sortBy: 'name',
-        sortDir: 'desc',
-      });
-    });
+    fireEvent.click(screen.getByRole('button', { name: '上移' }));
+    await waitFor(() => expect(moveIndustry).toHaveBeenCalled());
 
-    fireEvent.click(screen.getAllByRole('button', { name: '上移' })[1]);
-    await waitFor(() => {
-      expect(moveIndustry).toHaveBeenCalledWith(2, 'UP');
-    });
+    fireEvent.click(screen.getByRole('button', { name: '停用' }));
+    await waitFor(() => expect(updateIndustryStatus).toHaveBeenCalled());
 
-    fireEvent.click(screen.getAllByRole('button', { name: '下移' })[1]);
-    await waitFor(() => {
-      expect(moveIndustry).toHaveBeenCalledWith(2, 'DOWN');
-    });
-
-    const table = screen.getByRole('table');
-    expect(table.className).toContain('table-fixed');
-
-    const actionButtons = screen.getAllByRole('button', { name: /上移|下移|停用|启用/ });
-    expect(actionButtons.length).toBeGreaterThan(0);
-    for (const button of actionButtons) {
-      expect(button.className).toContain('rounded-md');
-      expect(button.className).toContain('border');
-      expect(button.className).not.toContain('hover:underline');
-    }
+    fireEvent.click(screen.getByRole('button', { name: '删除' }));
+    await waitFor(() => expect(deleteIndustry).toHaveBeenCalled());
   });
 
-  it('uses max sortOrder + 1 as default value in create form', async () => {
+  it('creates root industry and child industry', async () => {
     render(<AdminIndustryPage />);
 
-    await waitFor(() => {
-      expect(getIndustryList).toHaveBeenCalled();
-    });
+    await waitFor(() => expect(getIndustryTree).toHaveBeenCalled());
 
-    fireEvent.click(screen.getByRole('button', { name: /新增行业/ }));
-    const input = screen.getByLabelText('排序', { selector: 'input' }) as HTMLInputElement;
-    expect(input.value).toBe('3');
+    fireEvent.click(screen.getByRole('button', { name: /新增一级/ }));
+    fireEvent.change(screen.getByLabelText('行业名称'), { target: { value: '新一级行业' } });
+    fireEvent.click(screen.getByRole('button', { name: '保存' }));
+
+    await waitFor(() =>
+      expect(createIndustry).toHaveBeenCalledWith({
+        name: '新一级行业',
+        parentId: null,
+        enabled: 1,
+      }),
+    );
   });
 });

@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Search, ChevronDown } from 'lucide-react';
+import { Search } from 'lucide-react';
 import AdminDataTable from '@/components/admin/AdminDataTable';
 import { cn } from '@/lib/utils';
 import { adminApi } from '@/lib/api/admin';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface User {
   id: number;
@@ -124,36 +125,38 @@ export default function AdminUsersPage() {
 
         <div className="flex items-center justify-between rounded-xl border border-outline-variant/30 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-black/40 dark:backdrop-blur-xl">
           <div className="flex items-center gap-3">
-            <div className="group relative">
-              <select
-                value={type}
-                onChange={(e) => {
-                  setType(e.target.value);
-                  setPage(1);
-                }}
-                className="w-40 appearance-none rounded-lg border-none bg-surface py-2 pl-3 pr-8 text-sm font-medium text-on-surface focus:ring-1 focus:ring-primary dark:bg-slate-800"
-              >
-                <option>全部用户类型</option>
-                <option>求职者</option>
-                <option>企业HR</option>
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-outline" />
-            </div>
-            <div className="group relative">
-              <select
-                value={status}
-                onChange={(e) => {
-                  setStatus(e.target.value);
-                  setPage(1);
-                }}
-                className="w-32 appearance-none rounded-lg border-none bg-surface py-2 pl-3 pr-8 text-sm font-medium text-on-surface focus:ring-1 focus:ring-primary dark:bg-slate-800"
-              >
-                <option>全部状态</option>
-                <option>正常</option>
-                <option>禁用</option>
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-outline" />
-            </div>
+            <Select
+              value={type}
+              onValueChange={(value) => {
+                setType(value);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-40 border-none bg-surface py-2 text-sm font-medium text-on-surface dark:bg-slate-800">
+                <SelectValue placeholder="全部用户类型" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="全部用户类型">全部用户类型</SelectItem>
+                <SelectItem value="求职者">求职者</SelectItem>
+                <SelectItem value="企业HR">企业HR</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              value={status}
+              onValueChange={(value) => {
+                setStatus(value);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-32 border-none bg-surface py-2 text-sm font-medium text-on-surface dark:bg-slate-800">
+                <SelectValue placeholder="全部状态" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="全部状态">全部状态</SelectItem>
+                <SelectItem value="正常">正常</SelectItem>
+                <SelectItem value="禁用">禁用</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="relative w-80">

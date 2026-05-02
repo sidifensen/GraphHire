@@ -43,6 +43,18 @@ if (!window.matchMedia) {
   });
 }
 
+if (!HTMLElement.prototype.hasPointerCapture) {
+  HTMLElement.prototype.hasPointerCapture = () => false;
+}
+
+if (!HTMLElement.prototype.setPointerCapture) {
+  HTMLElement.prototype.setPointerCapture = () => {};
+}
+
+if (!HTMLElement.prototype.releasePointerCapture) {
+  HTMLElement.prototype.releasePointerCapture = () => {};
+}
+
 // Mock next/navigation - must use vi.mock at module level
 vi.mock('next/navigation', () => ({
   useRouter: () => ({

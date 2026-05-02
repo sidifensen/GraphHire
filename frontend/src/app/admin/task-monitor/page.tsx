@@ -5,6 +5,7 @@ import { RotateCcw, Filter, Clock, CheckCircle2, XCircle, RefreshCw } from 'luci
 import AdminDataTable from '@/components/admin/AdminDataTable';
 import { cn } from '@/lib/utils';
 import { adminApi, type TaskListItem, type TaskSummary } from '@/lib/api/admin';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface TaskRow {
   id: number;
@@ -18,6 +19,8 @@ interface TaskRow {
   errorMessage: string;
   status: '处理中' | '失败' | '成功' | '待处理';
 }
+
+const ALL_FILTER_VALUE = '__ALL__';
 
 function mapTaskTypeLabel(type: TaskListItem['type']): string {
   if (type === 'RESUME_PARSE') {
@@ -159,27 +162,35 @@ export default function AdminTaskMonitorPage() {
             <h3 className="text-sm font-bold opacity-80">最近任务队列</h3>
             <div className="flex gap-2">
               <div className="relative">
-                <select
-                  value={status}
-                  onChange={(event) => setStatus(event.target.value)}
-                  className="mr-2 rounded-lg border border-outline-variant bg-white px-3 py-2 text-xs font-bold text-on-surface dark:border-slate-800 dark:bg-slate-800"
+                <Select
+                  value={status === '' ? ALL_FILTER_VALUE : status}
+                  onValueChange={(value) => setStatus(value === ALL_FILTER_VALUE ? '' : value)}
                 >
-                  <option value="">全部状态</option>
-                  <option value="QUEUED">待处理</option>
-                  <option value="PROCESSING">处理中</option>
-                  <option value="COMPLETED">成功</option>
-                  <option value="FAILED">失败</option>
-                </select>
+                  <SelectTrigger className="mr-2 h-9 border border-outline-variant bg-white px-3 text-xs font-bold text-on-surface dark:border-slate-800 dark:bg-slate-800">
+                    <SelectValue placeholder="全部状态" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={ALL_FILTER_VALUE}>全部状态</SelectItem>
+                    <SelectItem value="QUEUED">待处理</SelectItem>
+                    <SelectItem value="PROCESSING">处理中</SelectItem>
+                    <SelectItem value="COMPLETED">成功</SelectItem>
+                    <SelectItem value="FAILED">失败</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="relative">
-                <select
-                  value={type}
-                  onChange={(event) => setType(event.target.value)}
-                  className="mr-2 rounded-lg border border-outline-variant bg-white px-3 py-2 text-xs font-bold text-on-surface dark:border-slate-800 dark:bg-slate-800"
+                <Select
+                  value={type === '' ? ALL_FILTER_VALUE : type}
+                  onValueChange={(value) => setType(value === ALL_FILTER_VALUE ? '' : value)}
                 >
-                  <option value="">全部类型</option>
-                  <option value="RESUME_PARSE">简历解析</option>
-                </select>
+                  <SelectTrigger className="mr-2 h-9 border border-outline-variant bg-white px-3 text-xs font-bold text-on-surface dark:border-slate-800 dark:bg-slate-800">
+                    <SelectValue placeholder="全部类型" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={ALL_FILTER_VALUE}>全部类型</SelectItem>
+                    <SelectItem value="RESUME_PARSE">简历解析</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <button
                 type="button"

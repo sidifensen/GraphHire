@@ -103,7 +103,7 @@ describe('AdminPositionTypesPage', () => {
     createPositionType.mockClear();
   });
 
-  it('renders split view by default and supports switching to table view', async () => {
+  it('renders split view by default and keeps two mode buttons', async () => {
     render(<AdminPositionTypesPage />);
 
     await waitFor(() => {
@@ -115,11 +115,15 @@ describe('AdminPositionTypesPage', () => {
     });
 
     expect(screen.getByText('树+详情')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '树形表格' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '路径面包屑视图' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '分栏级联视图' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '树形表格' })).not.toBeInTheDocument();
+    const modeButtons = screen.getAllByRole('button').filter((button) => {
+      const label = button.textContent?.trim();
+      return label === '树+详情' || label === '分栏级联视图';
+    });
+    expect(modeButtons.map((button) => button.textContent?.trim())).toEqual(['树+详情', '分栏级联视图']);
     expect(screen.getByText('节点详情')).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: '树形表格' }));
-    expect(screen.getByRole('table')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: '树+详情' }));
     expect(screen.getByText('节点详情')).toBeInTheDocument();
@@ -133,8 +137,13 @@ describe('AdminPositionTypesPage', () => {
     });
 
     fireEvent.change(screen.getByPlaceholderText('搜索职位类型'), { target: { value: 'Java' } });
-    fireEvent.change(screen.getByLabelText('状态'), { target: { value: '1' } });
-    fireEvent.change(screen.getByLabelText('层级'), { target: { value: '3' } });
+
+    const [statusSelect, levelSelect] = screen.getAllByRole('combobox');
+    fireEvent.mouseDown(statusSelect);
+    fireEvent.click(await screen.findByRole('option', { name: '启用' }));
+
+    fireEvent.mouseDown(levelSelect);
+    fireEvent.click(await screen.findByRole('option', { name: '三级' }));
 
     await waitFor(() => {
       expect(getPositionTypeTree).toHaveBeenLastCalledWith({
@@ -154,22 +163,6 @@ describe('AdminPositionTypesPage', () => {
     await waitFor(() => {
       expect(movePositionType).toHaveBeenCalledWith(1001002, 'UP');
     });
-  });
-
-  it('supports breadcrumb view with same-level list and breadcrumb path', async () => {
-    render(<AdminPositionTypesPage />);
-
-    await waitFor(() => {
-      expect(getPositionTypeTree).toHaveBeenCalled();
-    });
-
-    fireEvent.click(screen.getByText('Java'));
-    fireEvent.click(screen.getByRole('button', { name: '路径面包屑视图' }));
-
-    expect(screen.getByText('技术 / 后端开发 / Java')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Java' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Go' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: '产品' })).not.toBeInTheDocument();
   });
 
   it('supports cascade view and column linkage', async () => {

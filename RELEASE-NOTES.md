@@ -102,6 +102,9 @@
 
 ## 2026-05-02
 
+- refactor: 管理端所有筛选下拉统一切换为 shadcn Select（industry / position-types / users / task-monitor），并统一样式表现
+- fix: 修复管理端下拉展开时页面右侧白边问题，补充全局滚动锁样式覆盖
+- test: 更新管理端任务监控页测试断言以兼容 shadcn Select 结构
 - feat: 管理端职位类型管理新增“路径面包屑视图 / 分栏级联视图”，支持深层同级快速维护与三级分栏联动定位
 - test: 扩展 `admin-position-types-page.test.tsx`，新增面包屑路径展示、同级节点范围与三级分栏联动测试
 - refactor: 企业规模字段 `company.scale` 统一为编码存储（1-6），新增后端 `CompanyScale` 枚举管理编码与中文标签映射

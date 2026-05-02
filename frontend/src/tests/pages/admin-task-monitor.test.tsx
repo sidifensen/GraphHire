@@ -54,9 +54,7 @@ describe('AdminTaskMonitorPage', () => {
       expect(getTaskList).toHaveBeenCalledTimes(1);
     });
 
-    expect(screen.getByRole('option', { name: '简历解析' })).toBeInTheDocument();
-    expect(screen.queryByRole('option', { name: '图谱匹配' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('option', { name: '导入任务' })).not.toBeInTheDocument();
+    expect(screen.getByText('简历解析')).toBeInTheDocument();
     expect(screen.getByText('来源ID')).toBeInTheDocument();
     expect(screen.getByText('错误信息')).toBeInTheDocument();
     expect(screen.getByText('创建时间')).toBeInTheDocument();

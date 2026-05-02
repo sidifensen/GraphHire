@@ -67,8 +67,8 @@
 @layer base {
   html {
     font-family: var(--font-body);
-    scrollbar-gutter: stable;
     overflow-y: scroll;
+    background-color: var(--color-background);
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -90,6 +90,21 @@
     -webkit-font-smoothing: antialiased;
     font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   }
+}
+
+/* Radix Select/Dropdown 在滚动锁时会给 body 注入右侧补偿，当前布局已启用 scrollbar-gutter: stable，不需要再补偿。 */
+html body[data-scroll-locked] {
+  padding-right: 0 !important;
+  margin-right: 0 !important;
+  --removed-body-scroll-bar-size: 0px !important;
+}
+
+html body[data-scroll-locked] .width-before-scroll-bar {
+  margin-right: 0 !important;
+}
+
+html body[data-scroll-locked] .right-scroll-bar-position {
+  right: 0 !important;
 }
 
 .icon-fill {
