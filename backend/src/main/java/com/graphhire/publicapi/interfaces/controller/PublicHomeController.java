@@ -78,6 +78,7 @@ public class PublicHomeController {
                 job.getDescription(),
                 job.getExperience(),
                 job.getEducation(),
+                job.getPositionTypeId(),
                 job.getJobType(),
                 job.getPublishedAt()
         );

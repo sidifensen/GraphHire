@@ -34,6 +34,21 @@ public class EducationMatchScorer {
             return 0;
         }
         String normalized = education.trim();
+        if (normalized.matches("\\d+")) {
+            try {
+                int code = Integer.parseInt(normalized);
+                return switch (code) {
+                    case 1 -> RANK_MAP.get("中专");
+                    case 2 -> RANK_MAP.get("大专");
+                    case 3 -> RANK_MAP.get("本科");
+                    case 4 -> RANK_MAP.get("硕士");
+                    case 5 -> RANK_MAP.get("博士");
+                    default -> 0;
+                };
+            } catch (NumberFormatException ignored) {
+                return 0;
+            }
+        }
         if (normalized.contains("博士")) return RANK_MAP.get("博士");
         if (normalized.contains("硕士")) return RANK_MAP.get("硕士");
         if (normalized.contains("本科")) return RANK_MAP.get("本科");

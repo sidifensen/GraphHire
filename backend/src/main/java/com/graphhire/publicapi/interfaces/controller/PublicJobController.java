@@ -111,6 +111,7 @@ public class PublicJobController {
                 job.getDescription(),
                 job.getExperience(),
                 job.getEducation(),
+                job.getPositionTypeId(),
                 job.getJobType(),
                 job.getPublishedAt()
         );

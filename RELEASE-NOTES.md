@@ -108,3 +108,7 @@
 - docs: 更新数据库 `company.scale` 字段注释为编码语义，并同步初始化数据规模值为 1-6
 - test: 新增并更新公司规模相关单元测试与 schema 注释测试，覆盖编码校验与标签映射行为
 - docs: 新增岗位学历编码与职位类型树改造实施计划，并补充 Boss 职位类型名称树抓包产物（仅 name/children 嵌套）
+- feat: 新增 `position_type` 职位类型树表结构与岗位字段迁移，`job.education` 统一为编码（1-中专、2-大专、3-本科、4-硕士、5-博士），新增 `job.position_type_id`
+- feat: 新增职位类型初始化 SQL 生成脚本，基于 `docs/抓包/boss-position-type-tree-names.json` 生成全量幂等 seed SQL
+- refactor: 更新岗位领域模型/命令/持久化映射以支持学历编码与职位类型ID，公共职位接口返回 `educationCode` 与 `positionTypeId`
+- test: 新增并更新岗位 schema/seed/仓储与公共职位集成测试，补充测试基类对历史测试库 schema 的兼容迁移逻辑

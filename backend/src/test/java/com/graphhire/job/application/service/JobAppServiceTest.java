@@ -78,7 +78,9 @@ class JobAppServiceTest {
                 Location.of("北京", "海淀", "上地"),
                 SalaryRange.of(20000, 40000, "MONTH"),
                 List.of("Java", "Unknown Skill"),
-                "职位描述"
+                "职位描述",
+                3,
+                100101L
             )
         );
 

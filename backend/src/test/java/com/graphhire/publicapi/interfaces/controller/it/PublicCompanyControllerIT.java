@@ -91,7 +91,7 @@ class PublicCompanyControllerIT extends BaseControllerIT {
 
     private Long createJob(Long companyId, String title, String city, int salaryMin, int salaryMax, int status) {
         jdbcTemplate.update(
-            "INSERT INTO job (company_id, title, city, salary_min, salary_max, salary_unit, status, experience, education, create_time, update_time, deleted) VALUES (?, ?, ?, ?, ?, 'MONTH', ?, '3-5年', '本科', NOW(), NOW(), 0)",
+            "INSERT INTO job (company_id, title, city, salary_min, salary_max, salary_unit, status, experience, education, create_time, update_time, deleted) VALUES (?, ?, ?, ?, ?, 'MONTH', ?, '3-5年', 3, NOW(), NOW(), 0)",
             companyId, title, city, salaryMin, salaryMax, status
         );
         return jdbcTemplate.queryForObject("SELECT LASTVAL()", Long.class);

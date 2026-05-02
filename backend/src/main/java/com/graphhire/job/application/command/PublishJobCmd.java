@@ -30,6 +30,10 @@ public class PublishJobCmd {
     private List<String> skills;
     /** 职位描述 */
     private String description;
+    /** 学历要求编码（1=中专 2=大专 3=本科 4=硕士 5=博士） */
+    private Integer education;
+    /** 职位类型ID（关联 position_type.id） */
+    private Long positionTypeId;
     public PublishJobCmd() {
     }
 
@@ -100,6 +104,22 @@ public class PublishJobCmd {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Integer getEducation() {
+        return education;
+    }
+
+    public void setEducation(Integer education) {
+        this.education = education;
+    }
+
+    public Long getPositionTypeId() {
+        return positionTypeId;
+    }
+
+    public void setPositionTypeId(Long positionTypeId) {
+        this.positionTypeId = positionTypeId;
     }
 
     // 兼容旧前端字段

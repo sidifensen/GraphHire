@@ -100,7 +100,7 @@ class MatchGraphControllerIT extends BaseControllerIT {
             "MONTH",
             1,
             "匹配图谱测试职位",
-            "本科"
+            3
         );
         return jdbcTemplate.queryForObject("SELECT LASTVAL()", Long.class);
     }

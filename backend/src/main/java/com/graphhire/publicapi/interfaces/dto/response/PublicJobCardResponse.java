@@ -16,7 +16,8 @@ public record PublicJobCardResponse(
     List<String> requiredSkills,
     String description,
     String experience,
-    String education,
+    Integer educationCode,
+    Long positionTypeId,
     Integer jobType,
     LocalDateTime publishedAt
 ) {

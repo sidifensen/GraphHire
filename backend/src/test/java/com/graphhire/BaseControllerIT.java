@@ -77,6 +77,7 @@ public abstract class BaseControllerIT {
     protected void setupExternalMocks() {
         ensureCompanyAvatarPathColumn(jdbcTemplate);
         ensureResumeFileSizeColumn(jdbcTemplate);
+        ensureJobEducationAndPositionTypeColumns(jdbcTemplate);
         Mockito.lenient().when(rustFSClient.upload(any(byte[].class), anyString()))
             .thenAnswer(invocation -> "s3://resumes/mock/" + invocation.getArgument(1, String.class));
         Mockito.lenient().when(rustFSClient.download(anyString()))
@@ -188,6 +189,33 @@ public abstract class BaseControllerIT {
 
     private static void ensureResumeFileSizeColumn(JdbcTemplate jdbc) {
         jdbc.execute("ALTER TABLE resume ADD COLUMN IF NOT EXISTS file_size BIGINT NOT NULL DEFAULT 0");
+    }
+
+    private static void ensureJobEducationAndPositionTypeColumns(JdbcTemplate jdbc) {
+        jdbc.execute("ALTER TABLE job ADD COLUMN IF NOT EXISTS position_type_id BIGINT");
+        jdbc.execute("DO $$ " +
+                "DECLARE edu_type text; " +
+                "BEGIN " +
+                "SELECT data_type INTO edu_type FROM information_schema.columns " +
+                "WHERE table_schema='public' AND table_name='job' AND column_name='education'; " +
+                "IF edu_type IS NULL THEN " +
+                "ALTER TABLE job ADD COLUMN education SMALLINT; " +
+                "ELSIF edu_type <> 'smallint' THEN " +
+                "ALTER TABLE job ADD COLUMN IF NOT EXISTS education_code SMALLINT; " +
+                "UPDATE job SET education_code = CASE " +
+                "WHEN education IN ('中专', '中专/中技') THEN 1 " +
+                "WHEN education = '大专' THEN 2 " +
+                "WHEN education = '本科' THEN 3 " +
+                "WHEN education = '硕士' THEN 4 " +
+                "WHEN education = '博士' THEN 5 " +
+                "ELSE NULL END " +
+                "WHERE education_code IS NULL; " +
+                "ALTER TABLE job DROP COLUMN education; " +
+                "ALTER TABLE job RENAME COLUMN education_code TO education; " +
+                "END IF; " +
+                "END $$;");
+        jdbc.execute("ALTER TABLE job DROP CONSTRAINT IF EXISTS chk_job_education");
+        jdbc.execute("ALTER TABLE job ADD CONSTRAINT chk_job_education CHECK (education IS NULL OR education IN (1, 2, 3, 4, 5))");
     }
 
     private static String doHttpLogin(MockMvc mockMvc, ObjectMapper objectMapper,

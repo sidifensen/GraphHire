@@ -59,6 +59,28 @@ class JobRepositoryImplTest {
     }
 
     @Test
+    @DisplayName("save should persist education code and positionTypeId")
+    void save_ShouldPersistEducationAndPositionTypeId() {
+        Job job = new Job();
+        job.setCompanyId(1L);
+        job.setTitle("Java开发");
+        job.setStatus(JobStatus.DRAFT);
+        job.setEducation(3);
+        job.setPositionTypeId(100101L);
+
+        doAnswer(invocation -> {
+            JobPO po = invocation.getArgument(0);
+            po.setId(101L);
+            assertEquals(3, po.getEducation());
+            assertEquals(100101L, po.getPositionTypeId());
+            return 1;
+        }).when(jobMapper).insert(any(JobPO.class));
+
+        Job saved = repository.save(job);
+        assertEquals(101L, saved.getId());
+    }
+
+    @Test
     @DisplayName("findById should map description from job column")
     void findById_ShouldMapDescription() {
         JobPO po = new JobPO();

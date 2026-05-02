@@ -60,7 +60,9 @@ public class JobAppService {
     public Job createJob(Long companyId, String title, String department, Integer headcount,
                          Location location, SalaryRange salaryRange,
                          List<String> skills,
-                         String description) {
+                         String description,
+                         Integer education,
+                         Long positionTypeId) {
         List<String> normalizedSkills = validateAndNormalizeSkills(skills);
         // 步骤1：构建职位领域模型并填充基础信息
         Job job = new Job();
@@ -72,6 +74,9 @@ public class JobAppService {
         job.setSalaryRange(salaryRange);
         job.setSkills(normalizedSkills);
         job.setDescription(description);
+        validateEducationCode(education);
+        job.setEducation(education);
+        job.setPositionTypeId(positionTypeId);
 
         // 步骤2：设置职位初始状态为草稿（DRAFT）
         job.setStatus(JobStatus.DRAFT);
@@ -104,6 +109,9 @@ public class JobAppService {
                 cmd.getLocation(), cmd.getSalaryRange(),
                 normalizedSkills,
                 cmd.getDescription());
+        validateEducationCode(cmd.getEducation());
+        job.setEducation(cmd.getEducation());
+        job.setPositionTypeId(cmd.getPositionTypeId());
 
         // 步骤3：保存更新后的职位信息
         log.info("更新职位: jobId={}, title={}, skillCount={}", jobId, cmd.getTitle(), normalizedSkills.size());
@@ -160,6 +168,9 @@ public class JobAppService {
                     cmd.getLocation(), cmd.getSalaryRange(),
                     normalizedSkills,
                     cmd.getDescription());
+            validateEducationCode(cmd.getEducation());
+            job.setEducation(cmd.getEducation());
+            job.setPositionTypeId(cmd.getPositionTypeId());
         }
 
         // 步骤3：变更职位状态为已发布
@@ -309,5 +320,14 @@ public class JobAppService {
         Job savedJob = jobRepository.save(job);
         log.info("{}: jobId={}, status={}", action, savedJob.getId(), savedJob.getStatus());
         return savedJob;
+    }
+
+    private void validateEducationCode(Integer education) {
+        if (education == null) {
+            return;
+        }
+        if (education < 1 || education > 5) {
+            throw new IllegalArgumentException("学历编码非法");
+        }
     }
 }

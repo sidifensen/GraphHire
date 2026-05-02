@@ -231,7 +231,7 @@ public class CompanyController {
         ensureCompanyVerified(companyId);
         Job job = jobAppService.createJob(companyId, cmd.getTitle(), cmd.getDepartment(), cmd.getHeadcount(),
                 cmd.getLocation(), cmd.getSalaryRange(), cmd.getSkills(),
-                cmd.getDescription());
+                cmd.getDescription(), cmd.getEducation(), cmd.getPositionTypeId());
         return Result.success(job.getId());
     }
 

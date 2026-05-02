@@ -37,6 +37,8 @@ class PublicJobControllerIT extends BaseControllerIT {
             .andExpect(jsonPath("$.data.records[0].salaryMin").value(25000))
             .andExpect(jsonPath("$.data.records[0].salaryMax").value(38000))
             .andExpect(jsonPath("$.data.records[0].requiredSkills[0]").value("Java"))
+            .andExpect(jsonPath("$.data.records[0].educationCode").value(3))
+            .andExpect(jsonPath("$.data.records[0].positionTypeId").value(100101))
             .andReturn();
 
         assertThat(result.getResponse().getContentAsString()).contains("PUBLIC_JOB_IT_星云智能");
@@ -83,7 +85,7 @@ class PublicJobControllerIT extends BaseControllerIT {
 
     private Long createJob(Long companyId, String title, String city, int salaryMin, int salaryMax, int status) {
         jdbcTemplate.update(
-            "INSERT INTO job (company_id, title, city, salary_min, salary_max, salary_unit, status, experience, education, parse_result, create_time, update_time, deleted) VALUES (?, ?, ?, ?, ?, 'MONTH', ?, '3-5年', '本科', '{\"skills\":[\"Java\",\"Spring Boot\"],\"requirements\":[\"本科及以上学历\",\"具备3-5年经验\"]}'::jsonb, NOW(), NOW(), 0)",
+            "INSERT INTO job (company_id, title, city, salary_min, salary_max, salary_unit, status, experience, education, position_type_id, skills, create_time, update_time, deleted) VALUES (?, ?, ?, ?, ?, 'MONTH', ?, '3-5年', 3, 100101, ARRAY['Java','Spring Boot']::text[], NOW(), NOW(), 0)",
             companyId, title, city, salaryMin, salaryMax, status
         );
         return jdbcTemplate.queryForObject("SELECT LASTVAL()", Long.class);

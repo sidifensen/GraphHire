@@ -137,10 +137,10 @@ public class MatchGraphServiceImpl implements MatchGraphService {
 
     private String extractJobEducationRequired(Job job) {
         if (job == null) {
-            return "本科";
+            return "3";
         }
-        if (StrUtil.isNotBlank(job.getEducation())) {
-            return job.getEducation();
+        if (job.getEducation() != null) {
+            return String.valueOf(job.getEducation());
         }
         return extractEducationRequiredFromDescription(job.getDescription());
     }
@@ -279,13 +279,14 @@ public class MatchGraphServiceImpl implements MatchGraphService {
 
     private String extractEducationRequiredFromDescription(String description) {
         if (StrUtil.isBlank(description)) {
-            return "本科";
+            return "3";
         }
-        if (description.contains("博士")) return "博士";
-        if (description.contains("硕士")) return "硕士";
-        if (description.contains("本科")) return "本科";
-        if (description.contains("大专")) return "大专";
-        return "本科";
+        if (description.contains("博士")) return "5";
+        if (description.contains("硕士")) return "4";
+        if (description.contains("本科")) return "3";
+        if (description.contains("大专")) return "2";
+        if (description.contains("中专")) return "1";
+        return "3";
     }
 
     private String extractEducation(JsonNode root) {

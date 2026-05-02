@@ -223,6 +223,40 @@ CREATE INDEX idx_skill_tag_name ON skill_tag (name);
 CREATE INDEX idx_skill_tag_synonyms ON skill_tag USING GIN (synonyms);
 
 -- =============================================
+-- 8. 职位类型表 position_type
+-- =============================================
+CREATE TABLE position_type
+(
+    id          BIGSERIAL PRIMARY KEY,
+    code        BIGINT       NOT NULL UNIQUE,
+    name        VARCHAR(100) NOT NULL,
+    parent_id   BIGINT,
+    level       SMALLINT     NOT NULL,
+    sort_no     INT          NOT NULL DEFAULT 0,
+    status      SMALLINT     NOT NULL DEFAULT 1,
+    create_time TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted     SMALLINT     NOT NULL DEFAULT 0,
+
+    CONSTRAINT chk_position_type_level CHECK (level IN (1, 2, 3)),
+    CONSTRAINT chk_position_type_status CHECK (status IN (0, 1))
+);
+
+COMMENT ON TABLE position_type IS '职位类型树表：存储岗位类别层级（一级/二级/三级）';
+COMMENT ON COLUMN position_type.id IS '主键ID';
+COMMENT ON COLUMN position_type.code IS '职位类型业务编码（外部同步编码）';
+COMMENT ON COLUMN position_type.name IS '职位类型名称';
+COMMENT ON COLUMN position_type.parent_id IS '父级职位类型ID（根节点为NULL）';
+COMMENT ON COLUMN position_type.level IS '层级：1-一级 2-二级 3-三级';
+COMMENT ON COLUMN position_type.sort_no IS '同级排序号';
+COMMENT ON COLUMN position_type.status IS '状态：0-禁用 1-启用';
+COMMENT ON COLUMN position_type.deleted IS '软删除标记：0-未删除 1-已删除';
+
+CREATE INDEX idx_position_type_parent_id ON position_type (parent_id);
+CREATE INDEX idx_position_type_level ON position_type (level);
+CREATE INDEX idx_position_type_deleted_status ON position_type (deleted, status);
+
+-- =============================================
 -- 7. 职位表 job
 -- =============================================
 CREATE TABLE job
@@ -237,13 +271,15 @@ CREATE TABLE job
     salary_max   INT,
     salary_unit  VARCHAR(20),
     experience   VARCHAR(50),
-    education    VARCHAR(20),
+    education    SMALLINT,
+    position_type_id BIGINT,
     job_type     SMALLINT     NOT NULL DEFAULT 1,
     status       SMALLINT     NOT NULL DEFAULT 0,
     create_time  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     update_time  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted      SMALLINT     NOT NULL DEFAULT 0,
 
+    CONSTRAINT chk_job_education CHECK (education IS NULL OR education IN (1, 2, 3, 4, 5)),
     CONSTRAINT chk_job_type CHECK (job_type IN (1, 2, 3)),
     CONSTRAINT chk_job_status CHECK (status IN (0, 1)),
     CONSTRAINT chk_salary CHECK (salary_min IS NULL OR salary_max IS NULL OR salary_min <= salary_max)
@@ -260,7 +296,8 @@ COMMENT ON COLUMN job.salary_min IS '最低薪资';
 COMMENT ON COLUMN job.salary_max IS '最高薪资';
 COMMENT ON COLUMN job.salary_unit IS '薪资单位：月/年';
 COMMENT ON COLUMN job.experience IS '经验要求（如：1-3年、3-5年、不限）';
-COMMENT ON COLUMN job.education IS '学历要求：初中及以下/高中/中专/大专/本科/硕士/博士';
+COMMENT ON COLUMN job.education IS '学历要求编码：1-中专 2-大专 3-本科 4-硕士 5-博士';
+COMMENT ON COLUMN job.position_type_id IS '职位类型ID（关联position_type.id，由应用层保证）';
 COMMENT ON COLUMN job.job_type IS '工作类型：1-全职 2-兼职 3-实习';
 COMMENT ON COLUMN job.status IS '职位状态：0-草稿/下架 1-上架（发布中）';
 COMMENT ON COLUMN job.create_time IS '发布时间';
@@ -273,6 +310,7 @@ CREATE INDEX idx_job_city ON job (city) WHERE deleted = 0 AND status = 1;
 CREATE INDEX idx_job_create_time ON job (create_time DESC);
 CREATE INDEX idx_job_title ON job (title);
 CREATE INDEX idx_job_skills_gin ON job USING GIN (skills);
+CREATE INDEX idx_job_position_type_id ON job (position_type_id);
 
 -- =============================================
 -- 9. 匹配记录表 match_record
@@ -492,4 +530,5 @@ COMMENT ON COLUMN person_info.avatar_url IS '头像URL';
 ALTER TABLE notification DROP CONSTRAINT IF EXISTS chk_notif_type;
 ALTER TABLE notification ADD CONSTRAINT chk_notif_type CHECK (type IN (1, 2, 3, 4, 5, 6, 7));
 COMMENT ON COLUMN notification.type IS '通知类型：1-简历解析完成 2-新职位推荐 3-收到候选人推荐 4-企业认证结果 5-简历被查看 6-面试邀请 7-简历投递';
+
 
