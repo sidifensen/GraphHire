@@ -55,6 +55,10 @@ if (!HTMLElement.prototype.releasePointerCapture) {
   HTMLElement.prototype.releasePointerCapture = () => {};
 }
 
+if (!HTMLElement.prototype.scrollIntoView) {
+  HTMLElement.prototype.scrollIntoView = () => {};
+}
+
 // Mock next/navigation - must use vi.mock at module level
 vi.mock('next/navigation', () => ({
   useRouter: () => ({

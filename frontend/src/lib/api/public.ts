@@ -22,9 +22,18 @@ export interface Job {
   requiredSkills?: string[];
   description?: string | null;
   experience?: string | null;
-  education?: string | null;
+  educationCode?: number | null;
+  positionTypeId?: number | null;
   jobType?: number | null;
   publishedAt?: string | null;
+}
+
+export interface PublicTreeNode {
+  id: number;
+  name: string;
+  parentId?: number | null;
+  level?: number | null;
+  children: PublicTreeNode[];
 }
 
 export interface BackendPageResult<T> {
@@ -70,14 +79,30 @@ export const publicApi = {
       keyword?: string;
       companyId?: number;
       city?: string;
+      cityList?: string[];
       salaryMin?: number;
       salaryMax?: number;
       skills?: string[];
+      positionTypeLeafIds?: number[];
+      industryLeafIds?: number[];
+      jobType?: number;
+      educationCode?: number;
+      companyScaleCode?: string;
       sortBy?: 'createTime' | 'salary';
       page?: number;
       size?: number;
     }): Promise<BackendPageResult<Job>> => {
       const response = await apiClient.get<BackendPageResult<Job>>('/public/jobs', { params });
+      return response.data;
+    },
+
+    getPositionTypeTree: async (): Promise<PublicTreeNode[]> => {
+      const response = await apiClient.get<PublicTreeNode[]>('/public/position-types/tree');
+      return response.data;
+    },
+
+    getIndustryTree: async (): Promise<PublicTreeNode[]> => {
+      const response = await apiClient.get<PublicTreeNode[]>('/public/industries/tree');
       return response.data;
     },
 

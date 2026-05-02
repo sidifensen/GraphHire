@@ -122,3 +122,4 @@
 - test: 新增职位类型领域服务单测 `PositionTypeAppServiceTest`，并扩展 `AdminAppServiceTest`、`AdminControllerTest`、`admin-position-types-page.test.tsx` 覆盖树过滤与交互动作
 - docs: 新增 Position Type 管理设计、验收标准与实现计划文档（`docs/superpowers/specs|acceptance|plans`）
 - chore: 提交行业与职位类型相关在途改动快照（含企业资料联动与测试更新）
+- feat: 用户端职位页接入后端真实筛选：新增公开职位类型树/行业树接口，扩展 /public/jobs 支持职位类别叶子、行业叶子、城市多选、jobType、学历、公司规模筛选，并重构职位页为三类弹窗筛选交互（类别/行业/地点）

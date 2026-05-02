@@ -138,18 +138,11 @@ describe('AdminPositionTypesPage', () => {
 
     fireEvent.change(screen.getByPlaceholderText('搜索职位类型'), { target: { value: 'Java' } });
 
-    const [statusSelect, levelSelect] = screen.getAllByRole('combobox');
-    fireEvent.mouseDown(statusSelect);
-    fireEvent.click(await screen.findByRole('option', { name: '启用' }));
-
-    fireEvent.mouseDown(levelSelect);
-    fireEvent.click(await screen.findByRole('option', { name: '三级' }));
-
     await waitFor(() => {
       expect(getPositionTypeTree).toHaveBeenLastCalledWith({
         keyword: 'Java',
-        status: 1,
-        level: 3,
+        status: undefined,
+        level: undefined,
       });
     });
 

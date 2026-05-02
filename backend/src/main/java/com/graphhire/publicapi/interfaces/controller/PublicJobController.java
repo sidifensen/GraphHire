@@ -1,8 +1,11 @@
 package com.graphhire.publicapi.interfaces.controller;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import com.graphhire.common.vo.PageResult;
 import com.graphhire.common.vo.Result;
+import com.graphhire.industry.application.service.IndustryAppService;
+import com.graphhire.industry.domain.model.Industry;
 import com.graphhire.job.domain.model.Company;
 import com.graphhire.job.domain.model.Job;
 import com.graphhire.job.domain.repository.CompanyRepository;
@@ -10,13 +13,18 @@ import com.graphhire.job.domain.repository.JobRepository;
 import com.graphhire.job.domain.vo.JobStatus;
 import com.graphhire.job.domain.vo.Location;
 import com.graphhire.job.domain.vo.SalaryRange;
+import com.graphhire.positiontype.application.service.PositionTypeAppService;
+import com.graphhire.positiontype.domain.model.PositionType;
 import com.graphhire.publicapi.interfaces.dto.response.PublicJobCardResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.function.Function;
 
@@ -30,24 +38,50 @@ public class PublicJobController {
     @Autowired
     private CompanyRepository companyRepository;
 
+    @Autowired
+    private PositionTypeAppService positionTypeAppService;
+
+    @Autowired
+    private IndustryAppService industryAppService;
+
     @GetMapping
     public Result<PageResult<PublicJobCardResponse>> searchJobs(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Long companyId,
             @RequestParam(required = false) String city,
+            @RequestParam(required = false) List<String> cityList,
             @RequestParam(required = false) Integer salaryMin,
             @RequestParam(required = false) Integer salaryMax,
             @RequestParam(required = false) List<String> skills,
+            @RequestParam(required = false) List<Long> positionTypeLeafIds,
+            @RequestParam(required = false) List<Long> industryLeafIds,
+            @RequestParam(required = false) Integer jobType,
+            @RequestParam(required = false) Integer educationCode,
+            @RequestParam(required = false) String companyScaleCode,
             @RequestParam(required = false, defaultValue = "createTime") String sortBy,
             @RequestParam(required = false, defaultValue = "1") Integer page,
             @RequestParam(required = false, defaultValue = "10") Integer size) {
 
         List<Job> allPublishedJobs = jobRepository.findByStatus(JobStatus.PUBLISHED);
+        List<String> normalizedCityList = normalizeCityList(cityList, city);
+        List<Long> normalizedPositionTypeLeafIds = normalizePositionTypeLeafIds(positionTypeLeafIds);
+        List<Long> normalizedIndustryLeafIds = normalizeIndustryLeafIds(industryLeafIds);
+        String normalizedCompanyScaleCode = StrUtil.trim(companyScaleCode);
+
+        boolean hasAdvancedFilter = CollUtil.isNotEmpty(skills)
+                || companyId != null
+                || CollUtil.isNotEmpty(normalizedPositionTypeLeafIds)
+                || CollUtil.isNotEmpty(normalizedIndustryLeafIds)
+                || CollUtil.isNotEmpty(normalizedCityList)
+                || jobType != null
+                || educationCode != null
+                || StrUtil.isNotBlank(normalizedCompanyScaleCode);
+
         int safePage = Math.max(page, 1);
         int safeSize = Math.max(size, 1);
         int offset = (safePage - 1) * safeSize;
 
-        if (CollUtil.isEmpty(skills) && companyId == null) {
+        if (!hasAdvancedFilter) {
             List<Job> pagedJobs = jobRepository.searchPublishedJobs(keyword, city, salaryMin, salaryMax, sortBy, offset, safeSize);
             long total = jobRepository.countPublishedJobs(keyword, city, salaryMin, salaryMax);
             Map<Long, Company> companyMap = companyRepository.findByIds(
@@ -57,12 +91,21 @@ public class PublicJobController {
             return Result.success(new PageResult<>(records, total, safePage, safeSize));
         }
 
+        Map<Long, Company> companyMap = companyRepository.findByIds(
+                allPublishedJobs.stream().map(Job::getCompanyId).filter(Objects::nonNull).distinct().toList()
+        ).stream().collect(Collectors.toMap(Company::getId, Function.identity()));
+
         List<Job> filteredJobs = allPublishedJobs.stream()
                 .filter(job -> matchesKeyword(job, keyword))
                 .filter(job -> matchesCompany(job, companyId))
-                .filter(job -> matchesCity(job, city))
+                .filter(job -> matchesCityList(job, normalizedCityList))
                 .filter(job -> matchesSalaryRange(job, salaryMin, salaryMax))
                 .filter(job -> matchesSkills(job, skills))
+                .filter(job -> matchesPositionType(job, normalizedPositionTypeLeafIds))
+                .filter(job -> matchesIndustry(job, normalizedIndustryLeafIds, companyMap))
+                .filter(job -> matchesCompanyScale(job, normalizedCompanyScaleCode, companyMap))
+                .filter(job -> matchesJobType(job, jobType))
+                .filter(job -> matchesEducation(job, educationCode))
                 .collect(Collectors.toList());
 
         List<Job> sortedJobs = applySort(filteredJobs, sortBy);
@@ -71,11 +114,11 @@ public class PublicJobController {
         int fromIndex = Math.max((safePage - 1) * safeSize, 0);
         int toIndex = Math.min(fromIndex + safeSize, total);
 
-        Map<Long, Company> companyMap = companyRepository.findByIds(
+        Map<Long, Company> pagedCompanyMap = companyRepository.findByIds(
                 sortedJobs.stream().skip(fromIndex).limit(Math.max(toIndex - fromIndex, 0)).map(Job::getCompanyId).distinct().toList()
         ).stream().collect(Collectors.toMap(Company::getId, Function.identity()));
         List<PublicJobCardResponse> pagedJobs = fromIndex < total
-                ? sortedJobs.subList(fromIndex, toIndex).stream().map(job -> toCard(job, companyMap)).toList()
+                ? sortedJobs.subList(fromIndex, toIndex).stream().map(job -> toCard(job, pagedCompanyMap)).toList()
                 : List.of();
 
         return Result.success(new PageResult<>(pagedJobs, (long) total, safePage, safeSize));
@@ -126,12 +169,15 @@ public class PublicJobController {
                 || (job.getDescription() != null && job.getDescription().toLowerCase().contains(lowerKeyword));
     }
 
-    private boolean matchesCity(Job job, String city) {
-        if (city == null || city.isBlank()) {
+    private boolean matchesCityList(Job job, List<String> cityList) {
+        if (CollUtil.isEmpty(cityList)) {
             return true;
         }
         Location location = job.getLocation();
-        return location != null && city.equals(location.getCity());
+        if (location == null || StrUtil.isBlank(location.getCity())) {
+            return false;
+        }
+        return cityList.contains(location.getCity());
     }
 
     private boolean matchesCompany(Job job, Long companyId) {
@@ -163,6 +209,101 @@ public class PublicJobController {
             return true;
         }
         return skills.stream().anyMatch(skill -> requiredSkills.stream().anyMatch(required -> required.equalsIgnoreCase(skill)));
+    }
+
+    private boolean matchesPositionType(Job job, List<Long> positionTypeLeafIds) {
+        if (CollUtil.isEmpty(positionTypeLeafIds)) {
+            return true;
+        }
+        return job.getPositionTypeId() != null && positionTypeLeafIds.contains(job.getPositionTypeId());
+    }
+
+    private boolean matchesIndustry(Job job, List<Long> industryLeafIds, Map<Long, Company> companyMap) {
+        if (CollUtil.isEmpty(industryLeafIds)) {
+            return true;
+        }
+        Company company = companyMap.get(job.getCompanyId());
+        return company != null && company.getIndustryId() != null && industryLeafIds.contains(company.getIndustryId());
+    }
+
+    private boolean matchesCompanyScale(Job job, String companyScaleCode, Map<Long, Company> companyMap) {
+        if (StrUtil.isBlank(companyScaleCode)) {
+            return true;
+        }
+        Company company = companyMap.get(job.getCompanyId());
+        return company != null && StrUtil.equals(companyScaleCode, StrUtil.trim(company.getScale()));
+    }
+
+    private boolean matchesJobType(Job job, Integer jobType) {
+        if (jobType == null) {
+            return true;
+        }
+        return Objects.equals(job.getJobType(), jobType);
+    }
+
+    private boolean matchesEducation(Job job, Integer educationCode) {
+        if (educationCode == null) {
+            return true;
+        }
+        return Objects.equals(job.getEducation(), educationCode);
+    }
+
+    private List<String> normalizeCityList(List<String> cityList, String city) {
+        List<String> source = CollUtil.isNotEmpty(cityList) ? cityList : (StrUtil.isNotBlank(city) ? List.of(city) : List.of());
+        if (CollUtil.isEmpty(source)) {
+            return List.of();
+        }
+        return source.stream()
+                .filter(StrUtil::isNotBlank)
+                .map(StrUtil::trim)
+                .distinct()
+                .toList();
+    }
+
+    private List<Long> normalizePositionTypeLeafIds(List<Long> requestedIds) {
+        if (CollUtil.isEmpty(requestedIds)) {
+            return List.of();
+        }
+        List<PositionType> enabled = positionTypeAppService.listAll().stream()
+                .filter(item -> item.getStatus() != null && item.getStatus() == 1)
+                .toList();
+        Set<Long> parentIds = enabled.stream()
+                .map(PositionType::getParentId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        Set<Long> enabledLeafIds = enabled.stream()
+                .map(PositionType::getId)
+                .filter(Objects::nonNull)
+                .filter(id -> !parentIds.contains(id))
+                .collect(Collectors.toSet());
+        return requestedIds.stream()
+                .filter(Objects::nonNull)
+                .filter(enabledLeafIds::contains)
+                .distinct()
+                .toList();
+    }
+
+    private List<Long> normalizeIndustryLeafIds(List<Long> requestedIds) {
+        if (CollUtil.isEmpty(requestedIds)) {
+            return List.of();
+        }
+        List<Industry> enabled = industryAppService.listIndustries(1);
+        Set<Long> parentIds = new HashSet<>();
+        for (Industry item : enabled) {
+            if (item.getParentId() != null) {
+                parentIds.add(item.getParentId());
+            }
+        }
+        Set<Long> enabledLeafIds = enabled.stream()
+                .filter(item -> item.getId() != null)
+                .filter(item -> !parentIds.contains(item.getId()))
+                .map(Industry::getId)
+                .collect(Collectors.toSet());
+        return requestedIds.stream()
+                .filter(Objects::nonNull)
+                .filter(enabledLeafIds::contains)
+                .distinct()
+                .toList();
     }
 
     private List<Job> applySort(List<Job> jobs, String sortBy) {
