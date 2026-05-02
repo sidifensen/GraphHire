@@ -112,3 +112,7 @@
 - feat: 新增职位类型初始化 SQL 生成脚本，基于 `docs/抓包/boss-position-type-tree-names.json` 生成全量幂等 seed SQL
 - refactor: 更新岗位领域模型/命令/持久化映射以支持学历编码与职位类型ID，公共职位接口返回 `educationCode` 与 `positionTypeId`
 - test: 新增并更新岗位 schema/seed/仓储与公共职位集成测试，补充测试基类对历史测试库 schema 的兼容迁移逻辑
+- feat: 管理端新增职位类型管理能力：后端新增 `/admin/position-type/*` 树查询/新增/编辑/启停/同级移动接口，支持三层节点维护与祖先/后代状态联动
+- feat: 管理端新增页面 `/admin/position-types` 与侧边栏“职位类型管理”入口，支持“树+详情 / 树形表格”双视图、关键字/状态/层级筛选和节点操作
+- test: 新增职位类型领域服务单测 `PositionTypeAppServiceTest`，并扩展 `AdminAppServiceTest`、`AdminControllerTest`、`admin-position-types-page.test.tsx` 覆盖树过滤与交互动作
+- docs: 新增 Position Type 管理设计、验收标准与实现计划文档（`docs/superpowers/specs|acceptance|plans`）

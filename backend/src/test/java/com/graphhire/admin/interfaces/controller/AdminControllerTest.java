@@ -7,6 +7,7 @@ import com.graphhire.admin.interfaces.dto.request.AdminBatchRejectRequest;
 import com.graphhire.admin.interfaces.dto.request.AdminBatchRetryTaskRequest;
 import com.graphhire.admin.interfaces.dto.request.AdminCompanyAuthUpdateRequest;
 import com.graphhire.admin.interfaces.dto.request.AdminIndustryMoveRequest;
+import com.graphhire.admin.interfaces.dto.request.AdminPositionTypeMoveRequest;
 import com.graphhire.admin.interfaces.dto.request.AdminSkillTagUpsertRequest;
 import com.graphhire.admin.interfaces.dto.request.UpdateUserStatusRequest;
 import com.graphhire.admin.interfaces.dto.response.*;
@@ -169,6 +170,41 @@ class AdminControllerTest {
             assertEquals(200, result.getCode());
             assertEquals(1L, result.getData().getId());
             verify(adminAppService).moveIndustry(1L, "UP");
+        }
+    }
+
+    @Nested
+    @DisplayName("职位类型")
+    class PositionTypeTests {
+        @Test
+        @DisplayName("职位类型树查询参数透传")
+        void getPositionTypeTreeSuccess() {
+            AdminPositionTypeTreeItemResponse item = new AdminPositionTypeTreeItemResponse();
+            item.setId(1000000L);
+            item.setName("技术");
+            when(adminAppService.getPositionTypeTree("Java", 1, 3)).thenReturn(List.of(item));
+
+            var result = adminController.getPositionTypeTree("Java", 1, 3);
+
+            assertEquals(200, result.getCode());
+            assertEquals(1, result.getData().size());
+            verify(adminAppService).getPositionTypeTree("Java", 1, 3);
+        }
+
+        @Test
+        @DisplayName("职位类型移动调用应用服务")
+        void movePositionTypeSuccess() {
+            AdminPositionTypeMoveRequest request = new AdminPositionTypeMoveRequest();
+            request.setDirection("UP");
+            AdminPositionTypeTreeItemResponse response = new AdminPositionTypeTreeItemResponse();
+            response.setId(1001000L);
+            when(adminAppService.movePositionType(1001000L, "UP")).thenReturn(response);
+
+            var result = adminController.movePositionType(1001000L, request);
+
+            assertEquals(200, result.getCode());
+            assertEquals(1001000L, result.getData().getId());
+            verify(adminAppService).movePositionType(1001000L, "UP");
         }
     }
 

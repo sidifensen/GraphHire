@@ -31,6 +31,8 @@ import com.graphhire.resume.domain.repository.ResumeRepository;
 import com.graphhire.resume.domain.vo.ParseStatus;
 import com.graphhire.industry.application.service.IndustryAppService;
 import com.graphhire.industry.domain.model.Industry;
+import com.graphhire.positiontype.application.service.PositionTypeAppService;
+import com.graphhire.positiontype.domain.model.PositionType;
 import com.graphhire.skill.application.service.SkillTagAppService;
 import com.graphhire.skill.domain.model.SkillTag;
 import org.junit.jupiter.api.DisplayName;
@@ -81,6 +83,8 @@ class AdminAppServiceTest {
     private CompanyAvatarUrlResolver companyAvatarUrlResolver;
     @Mock
     private IndustryAppService industryAppService;
+    @Mock
+    private PositionTypeAppService positionTypeAppService;
 
     @InjectMocks
     private AdminAppService adminAppService;
@@ -315,6 +319,52 @@ class AdminAppServiceTest {
             assertEquals(9L, response.getId());
             assertEquals(3, response.getSortOrder());
             verify(industryAppService).moveIndustry(9L, "DOWN");
+        }
+    }
+
+    @Nested
+    @DisplayName("职位类型")
+    class PositionTypeTests {
+        @Test
+        @DisplayName("职位类型树查询可按关键字与层级过滤")
+        void getPositionTypeTreeWithFilters() {
+            PositionType root = new PositionType();
+            root.setId(1000000L);
+            root.setCode(1000000L);
+            root.setName("技术");
+            root.setLevel(1);
+            root.setStatus(1);
+            root.setSortNo(0);
+
+            PositionType child = new PositionType();
+            child.setId(1001000L);
+            child.setCode(1001000L);
+            child.setName("后端开发");
+            child.setParentId(1000000L);
+            child.setLevel(2);
+            child.setStatus(1);
+            child.setSortNo(0);
+
+            PositionType leaf = new PositionType();
+            leaf.setId(1001002L);
+            leaf.setCode(1001002L);
+            leaf.setName("Java");
+            leaf.setParentId(1001000L);
+            leaf.setLevel(3);
+            leaf.setStatus(1);
+            leaf.setSortNo(0);
+
+            when(positionTypeAppService.listAll()).thenReturn(List.of(root, child, leaf));
+
+            List<AdminPositionTypeTreeItemResponse> tree = adminAppService.getPositionTypeTree("Java", 1, 3);
+
+            assertEquals(1, tree.size());
+            assertEquals("技术", tree.get(0).getName());
+            assertEquals(1, tree.get(0).getChildren().size());
+            assertEquals("后端开发", tree.get(0).getChildren().get(0).getName());
+            assertEquals(1, tree.get(0).getChildren().get(0).getChildren().size());
+            assertEquals("Java", tree.get(0).getChildren().get(0).getChildren().get(0).getName());
+            verify(positionTypeAppService).listAll();
         }
     }
 

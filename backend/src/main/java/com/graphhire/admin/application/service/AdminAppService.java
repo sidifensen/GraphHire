@@ -15,6 +15,7 @@ import com.graphhire.admin.interfaces.dto.response.AdminTaskListResponse;
 import com.graphhire.admin.interfaces.dto.response.AdminTaskSummaryResponse;
 import com.graphhire.admin.interfaces.dto.response.AdminUserDetailResponse;
 import com.graphhire.admin.interfaces.dto.response.AdminUserItemResponse;
+import com.graphhire.admin.interfaces.dto.response.AdminPositionTypeTreeItemResponse;
 import com.graphhire.admin.interfaces.dto.response.DashboardStatsResponse;
 import com.graphhire.auth.domain.model.User;
 import com.graphhire.auth.domain.repository.UserRepository;
@@ -42,6 +43,8 @@ import com.graphhire.skill.application.command.CreateSkillTagCmd;
 import com.graphhire.skill.domain.model.SkillTag;
 import com.graphhire.industry.application.service.IndustryAppService;
 import com.graphhire.industry.domain.model.Industry;
+import com.graphhire.positiontype.application.service.PositionTypeAppService;
+import com.graphhire.positiontype.domain.model.PositionType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,6 +61,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.LinkedHashSet;
+import java.util.Objects;
+import java.util.Set;
 import java.util.Optional;
 import com.graphhire.resume.domain.vo.ParseStatus;
 
@@ -112,6 +118,9 @@ public class AdminAppService {
     @Autowired
     private IndustryAppService industryAppService;
 
+    @Autowired
+    private PositionTypeAppService positionTypeAppService;
+
     
     public AdminPageResponse<AdminIndustryItemResponse> getIndustryList(Integer enabled, String keyword, String sortBy, String sortDir, int page, int pageSize) {
         List<Industry> industries = industryAppService.listIndustries(enabled, sortBy, sortDir).stream()
@@ -149,6 +158,84 @@ public class AdminAppService {
     @Transactional
     public AdminIndustryItemResponse moveIndustry(Long id, String direction) {
         return toAdminIndustryItem(industryAppService.moveIndustry(id, direction));
+    }
+
+    public List<AdminPositionTypeTreeItemResponse> getPositionTypeTree(String keyword, Integer status, Integer level) {
+        List<PositionType> all = positionTypeAppService.listAll();
+        Set<Long> matchedIds = new LinkedHashSet<>();
+        for (PositionType item : all) {
+            if (!matchesPositionType(item, keyword, status, level)) {
+                continue;
+            }
+            matchedIds.add(item.getId());
+        }
+        if (keyword == null && status == null && level == null) {
+            matchedIds.clear();
+            for (PositionType item : all) {
+                matchedIds.add(item.getId());
+            }
+        }
+
+        Map<Long, PositionType> byId = new HashMap<>();
+        for (PositionType item : all) {
+            byId.put(item.getId(), item);
+        }
+
+        Set<Long> includeIds = new LinkedHashSet<>(matchedIds);
+        for (Long matchedId : matchedIds) {
+            Long parentId = byId.get(matchedId) == null ? null : byId.get(matchedId).getParentId();
+            while (parentId != null) {
+                includeIds.add(parentId);
+                PositionType parent = byId.get(parentId);
+                parentId = parent == null ? null : parent.getParentId();
+            }
+        }
+
+        if (includeIds.isEmpty()) {
+            return List.of();
+        }
+
+        Map<Long, AdminPositionTypeTreeItemResponse> responseMap = new HashMap<>();
+        for (PositionType item : all) {
+            if (!includeIds.contains(item.getId())) {
+                continue;
+            }
+            responseMap.put(item.getId(), toAdminPositionTypeTreeItem(item));
+        }
+
+        List<AdminPositionTypeTreeItemResponse> roots = new ArrayList<>();
+        for (PositionType item : all) {
+            if (!includeIds.contains(item.getId())) {
+                continue;
+            }
+            AdminPositionTypeTreeItemResponse current = responseMap.get(item.getId());
+            if (item.getParentId() == null || !responseMap.containsKey(item.getParentId())) {
+                roots.add(current);
+                continue;
+            }
+            responseMap.get(item.getParentId()).getChildren().add(current);
+        }
+        return roots;
+    }
+
+    @Transactional
+    public AdminPositionTypeTreeItemResponse createPositionType(String name, Long parentId, Integer status) {
+        return toAdminPositionTypeTreeItem(positionTypeAppService.createPositionType(name, parentId, status));
+    }
+
+    @Transactional
+    public AdminPositionTypeTreeItemResponse updatePositionType(Long id, String name) {
+        return toAdminPositionTypeTreeItem(positionTypeAppService.updatePositionType(id, name));
+    }
+
+    @Transactional
+    public AdminPositionTypeTreeItemResponse updatePositionTypeStatus(Long id, Integer status) {
+        return toAdminPositionTypeTreeItem(positionTypeAppService.updatePositionTypeStatus(id, status));
+    }
+
+    @Transactional
+    public AdminPositionTypeTreeItemResponse movePositionType(Long id, String direction) {
+        return toAdminPositionTypeTreeItem(positionTypeAppService.movePositionType(id, direction));
     }
 
     public DashboardStatsResponse getDashboardStats() {
@@ -921,6 +1008,37 @@ public class AdminAppService {
         item.setCreatedAt(formatDateTime(industry.getCreateTime()));
         item.setUpdatedAt(formatDateTime(industry.getUpdateTime()));
         return item;
+    }
+
+    private AdminPositionTypeTreeItemResponse toAdminPositionTypeTreeItem(PositionType positionType) {
+        AdminPositionTypeTreeItemResponse item = new AdminPositionTypeTreeItemResponse();
+        item.setId(positionType.getId());
+        item.setCode(positionType.getCode());
+        item.setName(positionType.getName());
+        item.setParentId(positionType.getParentId());
+        item.setLevel(positionType.getLevel());
+        item.setSortNo(positionType.getSortNo());
+        item.setStatus(positionType.getStatus());
+        item.setCreatedAt(formatDateTime(positionType.getCreateTime()));
+        item.setUpdatedAt(formatDateTime(positionType.getUpdateTime()));
+        return item;
+    }
+
+    private boolean matchesPositionType(PositionType item, String keyword, Integer status, Integer level) {
+        if (keyword != null && !keyword.isBlank()) {
+            String lowered = keyword.toLowerCase();
+            String name = item.getName() == null ? "" : item.getName().toLowerCase();
+            if (!name.contains(lowered)) {
+                return false;
+            }
+        }
+        if (status != null && !Objects.equals(item.getStatus(), status)) {
+            return false;
+        }
+        if (level != null && !Objects.equals(item.getLevel(), level)) {
+            return false;
+        }
+        return true;
     }
 
     private String resolveIndustryName(Long industryId) {

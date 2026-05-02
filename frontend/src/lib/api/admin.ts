@@ -133,6 +133,19 @@ export interface AdminIndustryListResponse {
 export type IndustrySortBy = 'name' | 'sortOrder' | 'updatedAt';
 export type IndustrySortDir = 'asc' | 'desc';
 
+export interface AdminPositionTypeItem {
+  id: number;
+  code: number;
+  name: string;
+  parentId: number | null;
+  level: number;
+  sortNo: number;
+  status: number;
+  createdAt?: string;
+  updatedAt?: string;
+  children: AdminPositionTypeItem[];
+}
+
 // ============ User Management ============
 export interface UserItem {
   id: number;
@@ -309,6 +322,31 @@ export const adminApi = {
 
   moveIndustry: async (id: number, direction: 'UP' | 'DOWN'): Promise<AdminIndustryItem> => {
     const response = await apiClient.put(`/admin/industry/${id}/move`, { direction });
+    return response.data;
+  },
+
+  getPositionTypeTree: async (params?: { keyword?: string; status?: number; level?: number }): Promise<AdminPositionTypeItem[]> => {
+    const response = await apiClient.get('/admin/position-type/tree', { params });
+    return response.data;
+  },
+
+  createPositionType: async (data: { name: string; parentId?: number | null; status?: number }): Promise<AdminPositionTypeItem> => {
+    const response = await apiClient.post('/admin/position-type', data);
+    return response.data;
+  },
+
+  updatePositionType: async (id: number, data: { name?: string }): Promise<AdminPositionTypeItem> => {
+    const response = await apiClient.put(`/admin/position-type/${id}`, data);
+    return response.data;
+  },
+
+  updatePositionTypeStatus: async (id: number, status: number): Promise<AdminPositionTypeItem> => {
+    const response = await apiClient.put(`/admin/position-type/${id}/status`, { status });
+    return response.data;
+  },
+
+  movePositionType: async (id: number, direction: 'UP' | 'DOWN'): Promise<AdminPositionTypeItem> => {
+    const response = await apiClient.put(`/admin/position-type/${id}/move`, { direction });
     return response.data;
   },
 

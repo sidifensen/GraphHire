@@ -170,6 +170,34 @@ public class AdminController {
         return Result.success(adminAppService.moveIndustry(id, request.getDirection()));
     }
 
+    @GetMapping("/position-type/tree")
+    public Result<java.util.List<AdminPositionTypeTreeItemResponse>> getPositionTypeTree(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) Integer level) {
+        return Result.success(adminAppService.getPositionTypeTree(keyword, status, level));
+    }
+
+    @PostMapping("/position-type")
+    public Result<AdminPositionTypeTreeItemResponse> createPositionType(@RequestBody AdminPositionTypeCreateRequest request) {
+        return Result.success(adminAppService.createPositionType(request.getName(), request.getParentId(), request.getStatus()));
+    }
+
+    @PutMapping("/position-type/{id}")
+    public Result<AdminPositionTypeTreeItemResponse> updatePositionType(@PathVariable Long id, @RequestBody AdminPositionTypeUpdateRequest request) {
+        return Result.success(adminAppService.updatePositionType(id, request.getName()));
+    }
+
+    @PutMapping("/position-type/{id}/status")
+    public Result<AdminPositionTypeTreeItemResponse> updatePositionTypeStatus(@PathVariable Long id, @RequestBody AdminPositionTypeStatusUpdateRequest request) {
+        return Result.success(adminAppService.updatePositionTypeStatus(id, request.getStatus()));
+    }
+
+    @PutMapping("/position-type/{id}/move")
+    public Result<AdminPositionTypeTreeItemResponse> movePositionType(@PathVariable Long id, @RequestBody AdminPositionTypeMoveRequest request) {
+        return Result.success(adminAppService.movePositionType(id, request.getDirection()));
+    }
+
     @GetMapping("/task/list")
     public Result<AdminTaskListResponse> getTaskList(
             @RequestParam(required = false) String type,

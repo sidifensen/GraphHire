@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, ShieldCheck, Users, Tags, Activity, Building2 } from 'lucide-react';
+import { LayoutDashboard, ShieldCheck, Users, Tags, Activity, Building2, Network } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -12,6 +12,7 @@ const navItems = [
   { icon: Users, label: '用户管理', path: '/admin/users' },
   { icon: Tags, label: '标签管理', path: '/admin/skill-tags' },
   { icon: Building2, label: '行业管理', path: '/admin/industry' },
+  { icon: Network, label: '职位类型管理', path: '/admin/position-types' },
   { icon: Activity, label: '任务监控', path: '/admin/task-monitor' },
 ];
 
