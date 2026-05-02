@@ -117,10 +117,13 @@ export interface CompanyAuthListResponse {
 export interface AdminIndustryItem {
   id: number;
   name: string;
+  parentId: number | null;
+  level: number;
   enabled: number;
-  sortOrder: number;
+  sort: number;
   createdAt?: string;
   updatedAt?: string;
+  children: AdminIndustryItem[];
 }
 
 export interface AdminIndustryListResponse {
@@ -130,7 +133,7 @@ export interface AdminIndustryListResponse {
   pageSize: number;
 }
 
-export type IndustrySortBy = 'name' | 'sortOrder' | 'updatedAt';
+export type IndustrySortBy = 'name' | 'sort' | 'updatedAt';
 export type IndustrySortDir = 'asc' | 'desc';
 
 export interface AdminPositionTypeItem {
@@ -305,12 +308,17 @@ export const adminApi = {
     return response.data;
   },
 
-  createIndustry: async (data: { name: string; enabled?: number; sortOrder?: number }): Promise<AdminIndustryItem> => {
+  getIndustryTree: async (params?: { keyword?: string; enabled?: number; level?: number }): Promise<AdminIndustryItem[]> => {
+    const response = await apiClient.get('/admin/industry/tree', { params });
+    return response.data;
+  },
+
+  createIndustry: async (data: { name: string; parentId?: number | null; enabled?: number; sort?: number }): Promise<AdminIndustryItem> => {
     const response = await apiClient.post('/admin/industry', data);
     return response.data;
   },
 
-  updateIndustry: async (id: number, data: { name?: string; sortOrder?: number }): Promise<AdminIndustryItem> => {
+  updateIndustry: async (id: number, data: { name?: string; sort?: number }): Promise<AdminIndustryItem> => {
     const response = await apiClient.put(`/admin/industry/${id}`, data);
     return response.data;
   },
@@ -323,6 +331,10 @@ export const adminApi = {
   moveIndustry: async (id: number, direction: 'UP' | 'DOWN'): Promise<AdminIndustryItem> => {
     const response = await apiClient.put(`/admin/industry/${id}/move`, { direction });
     return response.data;
+  },
+
+  deleteIndustry: async (id: number): Promise<void> => {
+    await apiClient.delete(`/admin/industry/${id}`);
   },
 
   getPositionTypeTree: async (params?: { keyword?: string; status?: number; level?: number }): Promise<AdminPositionTypeItem[]> => {

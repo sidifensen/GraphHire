@@ -43,6 +43,7 @@ import com.graphhire.skill.application.command.CreateSkillTagCmd;
 import com.graphhire.skill.domain.model.SkillTag;
 import com.graphhire.industry.application.service.IndustryAppService;
 import com.graphhire.industry.domain.model.Industry;
+import com.graphhire.industry.domain.repository.IndustryRepository;
 import com.graphhire.positiontype.application.service.PositionTypeAppService;
 import com.graphhire.positiontype.domain.model.PositionType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -136,18 +137,72 @@ public class AdminAppService {
         return paginateList(list, page, pageSize);
     }
 
-    @Transactional
-    public AdminIndustryItemResponse createIndustry(String name, Integer enabled, Integer sortOrder) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("行业名称不能为空");
+    public List<AdminIndustryItemResponse> getIndustryTree(String keyword, Integer enabled, Integer level) {
+        List<Industry> all = industryAppService.listIndustries(enabled, IndustryRepository.SORT_BY_SORT, "asc");
+        Set<Long> matchedIds = new LinkedHashSet<>();
+        for (Industry item : all) {
+            if (!matchesIndustry(item, keyword, enabled, level)) {
+                continue;
+            }
+            matchedIds.add(item.getId());
         }
-        return toAdminIndustryItem(industryAppService.createIndustry(name.trim(), enabled, sortOrder));
+        if (keyword == null && enabled == null && level == null) {
+            matchedIds.clear();
+            for (Industry item : all) {
+                matchedIds.add(item.getId());
+            }
+        }
+        if (matchedIds.isEmpty()) {
+            return List.of();
+        }
+        Map<Long, Industry> byId = new HashMap<>();
+        for (Industry item : all) {
+            byId.put(item.getId(), item);
+        }
+        Set<Long> includeIds = new LinkedHashSet<>(matchedIds);
+        for (Long id : matchedIds) {
+            Industry current = byId.get(id);
+            Long parentId = current == null ? null : current.getParentId();
+            while (parentId != null) {
+                includeIds.add(parentId);
+                Industry parent = byId.get(parentId);
+                parentId = parent == null ? null : parent.getParentId();
+            }
+        }
+        Map<Long, AdminIndustryItemResponse> responseMap = new HashMap<>();
+        for (Industry item : all) {
+            if (!includeIds.contains(item.getId())) {
+                continue;
+            }
+            responseMap.put(item.getId(), toAdminIndustryItem(item));
+        }
+        List<AdminIndustryItemResponse> roots = new ArrayList<>();
+        for (Industry item : all) {
+            if (!includeIds.contains(item.getId())) {
+                continue;
+            }
+            AdminIndustryItemResponse current = responseMap.get(item.getId());
+            if (item.getParentId() == null || !responseMap.containsKey(item.getParentId())) {
+                roots.add(current);
+                continue;
+            }
+            responseMap.get(item.getParentId()).getChildren().add(current);
+        }
+        return roots;
     }
 
     @Transactional
-    public AdminIndustryItemResponse updateIndustry(Long id, String name, Integer sortOrder) {
+    public AdminIndustryItemResponse createIndustry(String name, Long parentId, Integer enabled, Integer sort) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("行业名称不能为空");
+        }
+        return toAdminIndustryItem(industryAppService.createIndustry(name.trim(), parentId, enabled, sort));
+    }
+
+    @Transactional
+    public AdminIndustryItemResponse updateIndustry(Long id, String name, Integer sort) {
         String nextName = name == null ? null : name.trim();
-        return toAdminIndustryItem(industryAppService.updateIndustry(id, nextName, sortOrder));
+        return toAdminIndustryItem(industryAppService.updateIndustry(id, nextName, sort));
     }
 
     @Transactional
@@ -158,6 +213,11 @@ public class AdminAppService {
     @Transactional
     public AdminIndustryItemResponse moveIndustry(Long id, String direction) {
         return toAdminIndustryItem(industryAppService.moveIndustry(id, direction));
+    }
+
+    @Transactional
+    public void deleteIndustry(Long id) {
+        industryAppService.deleteIndustry(id);
     }
 
     public List<AdminPositionTypeTreeItemResponse> getPositionTypeTree(String keyword, Integer status, Integer level) {
@@ -1003,8 +1063,10 @@ public class AdminAppService {
         AdminIndustryItemResponse item = new AdminIndustryItemResponse();
         item.setId(industry.getId());
         item.setName(industry.getName());
+        item.setParentId(industry.getParentId());
+        item.setLevel(industry.getLevel());
         item.setEnabled(industry.getEnabled());
-        item.setSortOrder(industry.getSortOrder());
+        item.setSort(industry.getSort());
         item.setCreatedAt(formatDateTime(industry.getCreateTime()));
         item.setUpdatedAt(formatDateTime(industry.getUpdateTime()));
         return item;
@@ -1033,6 +1095,23 @@ public class AdminAppService {
             }
         }
         if (status != null && !Objects.equals(item.getStatus(), status)) {
+            return false;
+        }
+        if (level != null && !Objects.equals(item.getLevel(), level)) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean matchesIndustry(Industry item, String keyword, Integer enabled, Integer level) {
+        if (keyword != null && !keyword.isBlank()) {
+            String lowered = keyword.toLowerCase();
+            String name = item.getName() == null ? "" : item.getName().toLowerCase();
+            if (!name.contains(lowered)) {
+                return false;
+            }
+        }
+        if (enabled != null && !Objects.equals(item.getEnabled(), enabled)) {
             return false;
         }
         if (level != null && !Objects.equals(item.getLevel(), level)) {

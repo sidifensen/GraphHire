@@ -8,9 +8,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 @Service
 public class IndustryAppService {
@@ -19,15 +24,19 @@ public class IndustryAppService {
     private IndustryRepository industryRepository;
 
     public List<Industry> listIndustries(Integer enabled) {
-        return listIndustries(enabled, IndustryRepository.SORT_BY_SORT_ORDER, "asc");
+        return listIndustries(enabled, IndustryRepository.SORT_BY_SORT, "asc");
     }
 
     public List<Industry> listIndustries(Integer enabled, String sortBy, String sortDir) {
-        normalizeAllSortOrders();
+        normalizeAllSortByParent();
         if (enabled == null) {
             return industryRepository.findAllOrdered(sortBy, sortDir);
         }
         return industryRepository.findByEnabledOrdered(enabled, sortBy, sortDir);
+    }
+
+    public List<Industry> listTree(Integer enabled) {
+        return listIndustries(enabled, IndustryRepository.SORT_BY_SORT, "asc");
     }
 
     public Industry getIndustryById(Long id) {
@@ -40,63 +49,146 @@ public class IndustryAppService {
         if (industry.getEnabled() == null || industry.getEnabled() != 1) {
             throw Exceptions.BusinessException.of("行业已停用");
         }
+        if (!isLeaf(industry)) {
+            throw Exceptions.BusinessException.of("请选择二级行业");
+        }
         return industry;
     }
 
     @Transactional
-    public Industry createIndustry(String name, Integer enabled, Integer sortOrder) {
-        industryRepository.findByName(name).ifPresent(existing -> {
-            throw Exceptions.BusinessException.of("行业名称已存在");
-        });
-        List<Industry> all = industryRepository.findAllOrdered(IndustryRepository.SORT_BY_SORT_ORDER, "asc");
-        boolean changed = normalizeSortOrderForList(all);
-        if (changed) {
-            persistIndustryOrder(all);
+    public Industry createIndustry(String name, Long parentId, Integer enabled, Integer sort) {
+        String normalizedName = normalizeName(name);
+        Industry parent = null;
+        int level = 1;
+        if (parentId != null) {
+            parent = getIndustryById(parentId);
+            if (parent.getLevel() == null || parent.getLevel() != 1) {
+                throw Exceptions.BusinessException.of("仅支持创建两级行业");
+            }
+            level = 2;
         }
+        ensureNoDuplicateName(parentId, normalizedName, null);
+
+        List<Industry> siblings = getSiblings(parentId);
+        normalizeSortOrderForList(siblings);
+        persistIndustryOrder(siblings);
+
         Industry industry = new Industry();
-        industry.setName(name);
+        industry.setName(normalizedName);
+        industry.setParentId(parent == null ? null : parent.getId());
+        industry.setLevel(level);
         industry.setEnabled(enabled == null ? 1 : enabled);
-        industry.setSortOrder(sortOrder == null ? all.size() : sortOrder);
+        industry.setSort(sort == null ? siblings.size() : Math.max(sort, 0));
+        industry.setDeleted(0);
         return industryRepository.save(industry);
     }
 
     @Transactional
-    public Industry updateIndustry(Long id, String name, Integer sortOrder) {
+    public Industry updateIndustry(Long id, String name, Integer sort) {
         Industry industry = getIndustryById(id);
-        if (name != null && !name.isBlank() && !name.equals(industry.getName())) {
-            industryRepository.findByName(name).ifPresent(existing -> {
-                throw Exceptions.BusinessException.of("行业名称已存在");
-            });
-            industry.setName(name);
+        if (name != null && !name.isBlank()) {
+            String normalizedName = normalizeName(name);
+            ensureNoDuplicateName(industry.getParentId(), normalizedName, id);
+            industry.setName(normalizedName);
         }
-        if (sortOrder != null) {
-            industry.setSortOrder(sortOrder);
+        if (sort != null) {
+            industry.setSort(Math.max(0, sort));
         }
         return industryRepository.save(industry);
     }
 
     @Transactional
     public Industry updateIndustryStatus(Long id, Integer enabled) {
+        int next = enabled == null ? 1 : enabled;
         Industry industry = getIndustryById(id);
-        industry.setEnabled(enabled == null ? 1 : enabled);
+        List<Industry> all = new ArrayList<>(industryRepository.findAllOrdered(IndustryRepository.SORT_BY_SORT, "asc"));
+        Map<Long, Industry> byId = toMap(all);
+
+        if (industry.getLevel() != null && industry.getLevel() == 1) {
+            // 父类状态变更级联子类
+            industry.setEnabled(next);
+            industryRepository.save(industry);
+            for (Industry child : all) {
+                if (Objects.equals(child.getParentId(), industry.getId())) {
+                    child.setEnabled(next);
+                    industryRepository.save(child);
+                }
+            }
+            return industry;
+        }
+
+        if (next == 1 && industry.getParentId() != null) {
+            Industry parent = byId.get(industry.getParentId());
+            if (parent != null && (parent.getEnabled() == null || parent.getEnabled() != 1)) {
+                parent.setEnabled(1);
+                industryRepository.save(parent);
+            }
+        }
+        industry.setEnabled(next);
         return industryRepository.save(industry);
     }
 
     @Transactional
     public Industry moveIndustry(Long id, String direction) {
-        List<Industry> current = new ArrayList<>(industryRepository.findAllOrdered(IndustryRepository.SORT_BY_SORT_ORDER, "asc"));
-        int currentIndex = findIndexById(current, id);
-        Industry target = current.get(currentIndex);
-        int nextIndex = resolveTargetIndex(currentIndex, current.size(), direction);
+        Industry target = getIndustryById(id);
+        List<Industry> siblings = new ArrayList<>(getSiblings(target.getParentId()));
+        siblings.sort(Comparator.comparing(item -> item.getSort() == null ? Integer.MAX_VALUE : item.getSort()));
+
+        int currentIndex = findIndexById(siblings, id);
+        int nextIndex = resolveTargetIndex(currentIndex, siblings.size(), direction);
         if (nextIndex == currentIndex) {
-            persistIndustryOrder(current);
+            persistIndustryOrder(siblings);
             return target;
         }
-        Industry swap = current.get(nextIndex);
-        current.set(currentIndex, swap);
-        current.set(nextIndex, target);
-        persistIndustryOrder(current);
-        return current.stream().filter(item -> Objects.equals(item.getId(), id)).findFirst().orElse(target);
+        Industry swap = siblings.get(nextIndex);
+        siblings.set(nextIndex, siblings.get(currentIndex));
+        siblings.set(currentIndex, swap);
+        persistIndustryOrder(siblings);
+        return siblings.get(nextIndex);
+    }
+
+    @Transactional
+    public void deleteIndustry(Long id) {
+        Industry target = getIndustryById(id);
+        List<Industry> all = new ArrayList<>(industryRepository.findAllOrdered(IndustryRepository.SORT_BY_SORT, "asc"));
+        if (target.getLevel() != null && target.getLevel() == 1) {
+            for (Industry child : all) {
+                if (Objects.equals(child.getParentId(), target.getId())) {
+                    industryRepository.softDeleteById(child.getId());
+                }
+            }
+        }
+        industryRepository.softDeleteById(id);
+    }
+
+    public Map<Long, List<Industry>> groupByParent(List<Industry> list) {
+        Map<Long, List<Industry>> grouped = new HashMap<>();
+        for (Industry item : list) {
+            Long parentId = item.getParentId() == null ? 0L : item.getParentId();
+            grouped.computeIfAbsent(parentId, key -> new ArrayList<>()).add(item);
+        }
+        for (List<Industry> siblings : grouped.values()) {
+            siblings.sort(Comparator.comparing(ind -> ind.getSort() == null ? Integer.MAX_VALUE : ind.getSort()));
+        }
+        return grouped;
+    }
+
+    private List<Industry> getSiblings(Long parentId) {
+        List<Industry> all = new ArrayList<>(industryRepository.findAllOrdered(IndustryRepository.SORT_BY_SORT, "asc"));
+        List<Industry> siblings = new ArrayList<>();
+        for (Industry item : all) {
+            if (Objects.equals(item.getParentId(), parentId)) {
+                siblings.add(item);
+            }
+        }
+        return siblings;
+    }
+
+    private void ensureNoDuplicateName(Long parentId, String name, Long excludeId) {
+        Industry found = industryRepository.findByNameAndParentId(name, parentId).orElse(null);
+        if (found != null && !Objects.equals(found.getId(), excludeId)) {
+            throw Exceptions.BusinessException.of("同级行业名称已存在");
+        }
     }
 
     private int findIndexById(List<Industry> industries, Long id) {
@@ -119,19 +211,26 @@ public class IndustryAppService {
         return currentIndex;
     }
 
-    private void normalizeAllSortOrders() {
-        List<Industry> all = new ArrayList<>(industryRepository.findAllOrdered(IndustryRepository.SORT_BY_SORT_ORDER, "asc"));
-        if (normalizeSortOrderForList(all)) {
-            persistIndustryOrder(all);
+    private void normalizeAllSortByParent() {
+        List<Industry> all = new ArrayList<>(industryRepository.findAllOrdered(IndustryRepository.SORT_BY_SORT, "asc"));
+        Map<Long, List<Industry>> grouped = groupByParent(all);
+        boolean changed = false;
+        for (List<Industry> siblings : grouped.values()) {
+            changed |= normalizeSortOrderForList(siblings);
+        }
+        if (changed) {
+            for (List<Industry> siblings : grouped.values()) {
+                persistIndustryOrder(siblings);
+            }
         }
     }
 
     private boolean normalizeSortOrderForList(List<Industry> industries) {
         boolean changed = false;
         for (int i = 0; i < industries.size(); i++) {
-            Industry industry = industries.get(i);
-            if (industry.getSortOrder() == null || industry.getSortOrder() != i) {
-                industry.setSortOrder(i);
+            Industry item = industries.get(i);
+            if (item.getSort() == null || item.getSort() != i) {
+                item.setSort(i);
                 changed = true;
             }
         }
@@ -139,10 +238,36 @@ public class IndustryAppService {
     }
 
     private void persistIndustryOrder(List<Industry> industries) {
-        normalizeSortOrderForList(industries);
-        for (int i = 0; i < industries.size(); i++) {
-            Industry industry = industries.get(i);
-            industryRepository.save(industry);
+        // preserve order uniqueness and compactness
+        Set<Long> seen = new LinkedHashSet<>();
+        int idx = 0;
+        for (Industry item : industries) {
+            if (item.getId() == null || seen.contains(item.getId())) {
+                continue;
+            }
+            seen.add(item.getId());
+            item.setSort(idx++);
+            industryRepository.save(item);
         }
     }
+
+    private Map<Long, Industry> toMap(List<Industry> all) {
+        Map<Long, Industry> byId = new HashMap<>();
+        for (Industry item : all) {
+            byId.put(item.getId(), item);
+        }
+        return byId;
+    }
+
+    private String normalizeName(String name) {
+        if (name == null || name.isBlank()) {
+            throw Exceptions.BusinessException.of("行业名称不能为空");
+        }
+        return name.trim();
+    }
+
+    private boolean isLeaf(Industry industry) {
+        return industry.getLevel() != null && industry.getLevel() == 2;
+    }
 }
+

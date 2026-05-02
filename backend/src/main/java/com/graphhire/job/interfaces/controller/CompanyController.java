@@ -186,14 +186,31 @@ public class CompanyController {
     
     @GetMapping("/industry/options")
     public Result<List<Map<String, Object>>> listIndustryOptions() {
-        List<Map<String, Object>> list = industryAppService.listIndustries(1).stream().map(industry -> {
-            Map<String, Object> item = new HashMap<>();
-            item.put("id", industry.getId());
-            item.put("name", industry.getName());
-            item.put("enabled", industry.getEnabled());
-            item.put("sortOrder", industry.getSortOrder());
-            return item;
-        }).toList();
+        List<Industry> all = industryAppService.listIndustries(1);
+        Map<Long, List<Industry>> grouped = industryAppService.groupByParent(all);
+        List<Map<String, Object>> list = new java.util.ArrayList<>();
+        List<Industry> roots = grouped.getOrDefault(0L, List.of());
+        for (Industry root : roots) {
+            Map<String, Object> parent = new HashMap<>();
+            parent.put("id", root.getId());
+            parent.put("name", root.getName());
+            parent.put("level", root.getLevel());
+            parent.put("enabled", root.getEnabled());
+            parent.put("sort", root.getSort());
+            List<Map<String, Object>> children = new java.util.ArrayList<>();
+            for (Industry child : grouped.getOrDefault(root.getId(), List.of())) {
+                Map<String, Object> item = new HashMap<>();
+                item.put("id", child.getId());
+                item.put("name", child.getName());
+                item.put("parentId", child.getParentId());
+                item.put("level", child.getLevel());
+                item.put("enabled", child.getEnabled());
+                item.put("sort", child.getSort());
+                children.add(item);
+            }
+            parent.put("children", children);
+            list.add(parent);
+        }
         return Result.success(list);
     }
 

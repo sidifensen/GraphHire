@@ -20,16 +20,34 @@ CREATE INDEX IF NOT EXISTS idx_position_type_level ON position_type(level);
 ALTER TABLE job ADD COLUMN IF NOT EXISTS position_type_id BIGINT;
 ALTER TABLE job ADD COLUMN IF NOT EXISTS education_code SMALLINT;
 
-UPDATE job
-SET education_code = CASE
-    WHEN education IN ('中专', '中专/中技') THEN 1
-    WHEN education = '大专' THEN 2
-    WHEN education = '本科' THEN 3
-    WHEN education = '硕士' THEN 4
-    WHEN education = '博士' THEN 5
-    ELSE NULL
-END
-WHERE education_code IS NULL;
+DO $$
+DECLARE
+    edu_type TEXT;
+BEGIN
+    SELECT data_type
+    INTO edu_type
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'job'
+      AND column_name = 'education';
+
+    IF edu_type = 'smallint' THEN
+        UPDATE job
+        SET education_code = education
+        WHERE education_code IS NULL;
+    ELSIF edu_type IS NOT NULL THEN
+        UPDATE job
+        SET education_code = CASE
+            WHEN education IN ('中专', '中专/中技') THEN 1
+            WHEN education = '大专' THEN 2
+            WHEN education = '本科' THEN 3
+            WHEN education = '硕士' THEN 4
+            WHEN education = '博士' THEN 5
+            ELSE NULL
+        END
+        WHERE education_code IS NULL;
+    END IF;
+END $$;
 
 ALTER TABLE job DROP CONSTRAINT IF EXISTS chk_job_education;
 

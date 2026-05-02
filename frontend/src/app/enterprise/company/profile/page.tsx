@@ -7,6 +7,7 @@ export default function EnterpriseCompanyProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [industries, setIndustries] = useState<IndustryOption[]>([]);
+  const [selectedParentId, setSelectedParentId] = useState<number>(0);
   const [message, setMessage] = useState<string | null>(null);
 
   const [form, setForm] = useState<CompanyProfileUpdateRequest>({
@@ -27,7 +28,14 @@ export default function EnterpriseCompanyProfilePage() {
     setLoading(true);
     try {
       const [info, options] = await Promise.all([companyApi.getInfo(), companyApi.listIndustryOptions()]);
-      setIndustries(options.filter((item) => item.enabled === 1));
+      const enabledTree = options.filter((item) => item.enabled === 1);
+      setIndustries(enabledTree);
+      const fallbackParentId = enabledTree[0]?.id ?? 0;
+      const fallbackChildId = enabledTree[0]?.children?.[0]?.id ?? 0;
+      const currentIndustryId = info.industryId ?? fallbackChildId;
+      const currentParent = enabledTree.find((p) => (p.children ?? []).some((c) => c.id === currentIndustryId));
+      const currentParentId = currentParent?.id ?? fallbackParentId;
+      setSelectedParentId(currentParentId);
       setForm({
         name: info.name ?? '',
         contactName: info.contactName ?? '',
@@ -35,7 +43,7 @@ export default function EnterpriseCompanyProfilePage() {
         contactEmail: info.contactEmail ?? '',
         description: info.description ?? '',
         website: info.website ?? '',
-        industryId: info.industryId ?? (options[0]?.id ?? 0),
+        industryId: currentIndustryId,
         scale: info.scale ?? '',
         address: info.address ?? '',
       });
@@ -68,6 +76,9 @@ export default function EnterpriseCompanyProfilePage() {
     return <div className="p-8 text-sm text-outline">加载中...</div>;
   }
 
+  const selectedParent = industries.find((item) => item.id === selectedParentId) ?? null;
+  const childOptions = selectedParent?.children?.filter((item) => item.enabled === 1) ?? [];
+
   return (
     <main className="w-full max-w-3xl mx-auto px-4 md:px-8 py-6 md:py-8">
       <h1 className="text-2xl font-bold text-on-surface mb-2">公司资料</h1>
@@ -81,11 +92,32 @@ export default function EnterpriseCompanyProfilePage() {
 
         <label className="block text-sm">
           <span className="mb-1 block text-on-surface-variant">所属行业</span>
-          <select value={form.industryId} onChange={(e) => setForm((prev) => ({ ...prev, industryId: Number(e.target.value) }))} className="w-full rounded-lg border border-outline-variant/40 px-3 py-2 text-sm">
-            {industries.map((industry) => (
-              <option key={industry.id} value={industry.id}>{industry.name}</option>
-            ))}
-          </select>
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+            <select
+              value={selectedParentId}
+              onChange={(e) => {
+                const nextParentId = Number(e.target.value);
+                setSelectedParentId(nextParentId);
+                const nextParent = industries.find((item) => item.id === nextParentId);
+                const firstChild = nextParent?.children?.find((child) => child.enabled === 1);
+                setForm((prev) => ({ ...prev, industryId: firstChild?.id ?? 0 }));
+              }}
+              className="w-full rounded-lg border border-outline-variant/40 px-3 py-2 text-sm"
+            >
+              {industries.map((industry) => (
+                <option key={industry.id} value={industry.id}>{industry.name}</option>
+              ))}
+            </select>
+            <select
+              value={form.industryId}
+              onChange={(e) => setForm((prev) => ({ ...prev, industryId: Number(e.target.value) }))}
+              className="w-full rounded-lg border border-outline-variant/40 px-3 py-2 text-sm"
+            >
+              {childOptions.map((industry) => (
+                <option key={industry.id} value={industry.id}>{industry.name}</option>
+              ))}
+            </select>
+          </div>
         </label>
 
         <label className="block text-sm">

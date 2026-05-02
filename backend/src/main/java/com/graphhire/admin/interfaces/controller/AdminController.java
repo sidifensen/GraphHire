@@ -150,14 +150,22 @@ public class AdminController {
         return Result.success(adminAppService.getIndustryList(enabled, keyword, sortBy, sortDir, page, pageSize));
     }
 
+    @GetMapping("/industry/tree")
+    public Result<java.util.List<AdminIndustryItemResponse>> getIndustryTree(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Integer enabled,
+            @RequestParam(required = false) Integer level) {
+        return Result.success(adminAppService.getIndustryTree(keyword, enabled, level));
+    }
+
     @PostMapping("/industry")
     public Result<AdminIndustryItemResponse> createIndustry(@RequestBody AdminIndustryCreateRequest request) {
-        return Result.success(adminAppService.createIndustry(request.getName(), request.getEnabled(), request.getSortOrder()));
+        return Result.success(adminAppService.createIndustry(request.getName(), request.getParentId(), request.getEnabled(), request.getSort()));
     }
 
     @PutMapping("/industry/{id}")
     public Result<AdminIndustryItemResponse> updateIndustry(@PathVariable Long id, @RequestBody AdminIndustryUpdateRequest request) {
-        return Result.success(adminAppService.updateIndustry(id, request.getName(), request.getSortOrder()));
+        return Result.success(adminAppService.updateIndustry(id, request.getName(), request.getSort()));
     }
 
     @PutMapping("/industry/{id}/status")
@@ -168,6 +176,12 @@ public class AdminController {
     @PutMapping("/industry/{id}/move")
     public Result<AdminIndustryItemResponse> moveIndustry(@PathVariable Long id, @RequestBody AdminIndustryMoveRequest request) {
         return Result.success(adminAppService.moveIndustry(id, request.getDirection()));
+    }
+
+    @DeleteMapping("/industry/{id}")
+    public Result<Void> deleteIndustry(@PathVariable Long id) {
+        adminAppService.deleteIndustry(id);
+        return Result.success();
     }
 
     @GetMapping("/position-type/tree")

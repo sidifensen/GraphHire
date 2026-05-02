@@ -21,29 +21,37 @@ public class IndustryRepositoryImpl implements IndustryRepository {
 
     @Override
     public Optional<Industry> findById(Long id) {
-        return Optional.ofNullable(industryMapper.selectById(id)).map(this::toDomain);
-    }
-
-    @Override
-    public Optional<Industry> findByName(String name) {
         LambdaQueryWrapper<IndustryPO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(IndustryPO::getName, name);
+        wrapper.eq(IndustryPO::getId, id).eq(IndustryPO::getDeleted, 0);
         return Optional.ofNullable(industryMapper.selectOne(wrapper)).map(this::toDomain);
     }
 
     @Override
-    public List<Industry> findAll() {
-        return findAllOrdered(IndustryRepository.SORT_BY_SORT_ORDER, "asc");
+    public Optional<Industry> findByNameAndParentId(String name, Long parentId) {
+        LambdaQueryWrapper<IndustryPO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(IndustryPO::getName, name).eq(IndustryPO::getDeleted, 0);
+        if (parentId == null) {
+            wrapper.isNull(IndustryPO::getParentId);
+        } else {
+            wrapper.eq(IndustryPO::getParentId, parentId);
+        }
+        return Optional.ofNullable(industryMapper.selectOne(wrapper)).map(this::toDomain);
     }
 
     @Override
-    public List<Industry> findByEnabled(Integer enabled) {
-        return findByEnabledOrdered(enabled, IndustryRepository.SORT_BY_SORT_ORDER, "asc");
+    public List<Industry> findAllNotDeleted() {
+        return findAllOrdered(IndustryRepository.SORT_BY_SORT, "asc");
+    }
+
+    @Override
+    public List<Industry> findByEnabledNotDeleted(Integer enabled) {
+        return findByEnabledOrdered(enabled, IndustryRepository.SORT_BY_SORT, "asc");
     }
 
     @Override
     public List<Industry> findAllOrdered(String sortBy, String sortDir) {
         LambdaQueryWrapper<IndustryPO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(IndustryPO::getDeleted, 0);
         applyOrder(wrapper, sortBy, sortDir);
         return industryMapper.selectList(wrapper).stream().map(this::toDomain).toList();
     }
@@ -51,7 +59,7 @@ public class IndustryRepositoryImpl implements IndustryRepository {
     @Override
     public List<Industry> findByEnabledOrdered(Integer enabled, String sortBy, String sortDir) {
         LambdaQueryWrapper<IndustryPO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(IndustryPO::getEnabled, enabled);
+        wrapper.eq(IndustryPO::getEnabled, enabled).eq(IndustryPO::getDeleted, 0);
         applyOrder(wrapper, sortBy, sortDir);
         return industryMapper.selectList(wrapper).stream().map(this::toDomain).toList();
     }
@@ -68,6 +76,14 @@ public class IndustryRepositoryImpl implements IndustryRepository {
         return industry;
     }
 
+    @Override
+    public void softDeleteById(Long id) {
+        IndustryPO po = new IndustryPO();
+        po.setId(id);
+        po.setDeleted(1);
+        industryMapper.updateById(po);
+    }
+
     private Industry toDomain(IndustryPO po) {
         Industry industry = new Industry();
         BeanUtil.copyProperties(po, industry);
@@ -81,7 +97,7 @@ public class IndustryRepositoryImpl implements IndustryRepository {
     }
 
     private void applyOrder(LambdaQueryWrapper<IndustryPO> wrapper, String sortBy, String sortDir) {
-        String normalizedSortBy = sortBy == null ? IndustryRepository.SORT_BY_SORT_ORDER : sortBy.trim();
+        String normalizedSortBy = sortBy == null ? IndustryRepository.SORT_BY_SORT : sortBy.trim();
         String normalizedSortDir = sortDir == null ? "asc" : sortDir.trim().toLowerCase(Locale.ROOT);
         boolean isAsc = !"desc".equals(normalizedSortDir);
 
@@ -102,9 +118,9 @@ public class IndustryRepositoryImpl implements IndustryRepository {
             }
             default -> {
                 if (isAsc) {
-                    wrapper.orderByAsc(IndustryPO::getSortOrder, IndustryPO::getId);
+                    wrapper.orderByAsc(IndustryPO::getSort, IndustryPO::getId);
                 } else {
-                    wrapper.orderByDesc(IndustryPO::getSortOrder, IndustryPO::getId);
+                    wrapper.orderByDesc(IndustryPO::getSort, IndustryPO::getId);
                 }
             }
         }

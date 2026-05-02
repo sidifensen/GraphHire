@@ -291,11 +291,11 @@ class AdminAppServiceTest {
             Industry a = new Industry();
             a.setId(1L);
             a.setName("互联网");
-            a.setSortOrder(2);
+            a.setSort(2);
             Industry b = new Industry();
             b.setId(2L);
             b.setName("AI");
-            b.setSortOrder(1);
+            b.setSort(1);
             when(industryAppService.listIndustries(1, "name", "desc")).thenReturn(List.of(a, b));
 
             AdminPageResponse<AdminIndustryItemResponse> response = adminAppService.getIndustryList(1, null, "name", "desc", 1, 10);
@@ -311,13 +311,13 @@ class AdminAppServiceTest {
             Industry moved = new Industry();
             moved.setId(9L);
             moved.setName("金融科技");
-            moved.setSortOrder(3);
+            moved.setSort(3);
             when(industryAppService.moveIndustry(9L, "DOWN")).thenReturn(moved);
 
             AdminIndustryItemResponse response = adminAppService.moveIndustry(9L, "DOWN");
 
             assertEquals(9L, response.getId());
-            assertEquals(3, response.getSortOrder());
+            assertEquals(3, response.getSort());
             verify(industryAppService).moveIndustry(9L, "DOWN");
         }
     }
@@ -574,3 +574,4 @@ class AdminAppServiceTest {
         }
     }
 }
+

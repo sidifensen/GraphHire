@@ -121,3 +121,4 @@
 - feat: 管理端新增页面 `/admin/position-types` 与侧边栏“职位类型管理”入口，支持“树+详情 / 树形表格”双视图、关键字/状态/层级筛选和节点操作
 - test: 新增职位类型领域服务单测 `PositionTypeAppServiceTest`，并扩展 `AdminAppServiceTest`、`AdminControllerTest`、`admin-position-types-page.test.tsx` 覆盖树过滤与交互动作
 - docs: 新增 Position Type 管理设计、验收标准与实现计划文档（`docs/superpowers/specs|acceptance|plans`）
+- chore: 提交行业与职位类型相关在途改动快照（含企业资料联动与测试更新）

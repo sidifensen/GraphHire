@@ -389,3 +389,4 @@ class AdminControllerTest {
         verify(adminAppService).batchApproveCompany(List.of(1L, 2L));
     }
 }
+

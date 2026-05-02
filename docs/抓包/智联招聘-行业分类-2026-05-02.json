@@ -1,0 +1,3179 @@
+﻿{
+  "vendor": "智联招聘",
+  "source": "https://fe-api.zhaopin.com/c/i/search/base/data",
+  "capturedAt": "2026-05-02T07:01:11.888Z",
+  "totalTopLevel": 18,
+  "totalFlattened": 198,
+  "tree": [
+    {
+      "code": "-1",
+      "parentCode": null,
+      "name": "不限",
+      "en_name": "",
+      "deleted": false,
+      "sublist": [
+      ]
+    },
+    {
+      "code": "1600000000",
+      "parentCode": null,
+      "name": "汽车/摩托车/电动车",
+      "en_name": "Automobile",
+      "deleted": false,
+      "sublist": [
+        {
+          "code": "1600000000",
+          "parentCode": "1600000000",
+          "name": "不限",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "500110000",
+          "parentCode": "1600000000",
+          "name": "新能源/燃油整车研发制造",
+          "en_name": "Automotive Research or Manufacturing",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1600000400",
+          "parentCode": "1600000000",
+          "name": "汽车智能网联",
+          "en_name": "Automotive Intelligent Iinterconnection",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1600020000",
+          "parentCode": "1600000000",
+          "name": "新能源/燃油车零部件",
+          "en_name": "Auto parts",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1600010000",
+          "parentCode": "1600000000",
+          "name": "汽车4S店/经销商",
+          "en_name": "Automotive 4S Stores or Dealers",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1600000500",
+          "parentCode": "1600000000",
+          "name": "汽车后市场",
+          "en_name": "Automotive Aftermarket",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "500000260",
+          "parentCode": "1600000000",
+          "name": "摩托车/电动自行车",
+          "en_name": "Motorcycle or Bicycle Manufacturing",
+          "deleted": false,
+          "sublist": [
+          ]
+        }
+      ]
+    },
+    {
+      "code": "1300000000",
+      "parentCode": null,
+      "name": "生物/制药/医疗/医美",
+      "en_name": "Biomedical or medical",
+      "deleted": false,
+      "sublist": [
+        {
+          "code": "1300000000",
+          "parentCode": "1300000000",
+          "name": "不限",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1300040000",
+          "parentCode": "1300000000",
+          "name": "生物/制药",
+          "en_name": "bioengineering",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1300090000",
+          "parentCode": "1300000000",
+          "name": "医药研发/生产外包（CXO）",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "500210000",
+          "parentCode": "1300000000",
+          "name": "医疗设备/器械/耗材",
+          "en_name": "Manufacture of Medical Equipment \u0026 Facilities",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1300000800",
+          "parentCode": "1300000000",
+          "name": "IVD（体外诊断）",
+          "en_name": "IVD",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1300060000",
+          "parentCode": "1300000000",
+          "name": "医药批发/零售",
+          "en_name": "Pharmaceutical wholesale or retail",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1300030000",
+          "parentCode": "1300000000",
+          "name": "医院/诊所服务",
+          "en_name": "Hospitals",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1300000700",
+          "parentCode": "1300000000",
+          "name": "医美/健康服务",
+          "en_name": "Medical Beauty or Health Services",
+          "deleted": false,
+          "sublist": [
+          ]
+        }
+      ]
+    },
+    {
+      "code": "1700000000",
+      "parentCode": null,
+      "name": "电子/通信/半导体",
+      "en_name": "",
+      "deleted": false,
+      "sublist": [
+        {
+          "code": "1700000000",
+          "parentCode": "1700000000",
+          "name": "不限",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "100010000",
+          "parentCode": "1700000000",
+          "name": "半导体/芯片",
+          "en_name": "Electronics/Semiconductor/IC",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "100000240",
+          "parentCode": "1700000000",
+          "name": "电子电路基础元件/模组",
+          "en_name": "Optoelectronics Industry",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "100000230",
+          "parentCode": "1700000000",
+          "name": "消费电子/智能硬件",
+          "en_name": "Consumer Electronics",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "100060000",
+          "parentCode": "1700000000",
+          "name": "计算机硬件",
+          "en_name": "Computer Hardware",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "100180000",
+          "parentCode": "1700000000",
+          "name": "物联网",
+          "en_name": "Internet of things",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "100090000",
+          "parentCode": "1700000000",
+          "name": "通信/网络设备",
+          "en_name": "Telecom \u0026 Network Equipment",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1700090000",
+          "parentCode": "1700000000",
+          "name": "通信工程/技术服务",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "100140000",
+          "parentCode": "1700000000",
+          "name": "通信运营商/电信增值服务",
+          "en_name": "Telecom Operators/Service Providers",
+          "deleted": false,
+          "sublist": [
+          ]
+        }
+      ]
+    },
+    {
+      "code": "1800000000",
+      "parentCode": null,
+      "name": "互联网/AI/软件/IT服务",
+      "en_name": "",
+      "deleted": false,
+      "sublist": [
+        {
+          "code": "1800000000",
+          "parentCode": "1800000000",
+          "name": "不限",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "100150000",
+          "parentCode": "1800000000",
+          "name": "互联网医疗",
+          "en_name": "Online healthcare",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "100160000",
+          "parentCode": "1800000000",
+          "name": "互联网教育",
+          "en_name": "Online education",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "100000260",
+          "parentCode": "1800000000",
+          "name": "互联网招聘",
+          "en_name": "Online Recruitment or Job Search",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "100210000",
+          "parentCode": "1800000000",
+          "name": "互联网生活服务(O2O)",
+          "en_name": "Online life service (o2o)",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1800090000",
+          "parentCode": "1800000000",
+          "name": "互联网广告/营销",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "100000250",
+          "parentCode": "1800000000",
+          "name": "互联网社交/数字内容",
+          "en_name": "Social Networks",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1800080000",
+          "parentCode": "1800000000",
+          "name": "互联网金融",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "100190000",
+          "parentCode": "1800000000",
+          "name": "互联网新零售",
+          "en_name": "New retail",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "100020000",
+          "parentCode": "1800000000",
+          "name": "互联网电商",
+          "en_name": "E-commerce",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "100120000",
+          "parentCode": "1800000000",
+          "name": "互联网游戏",
+          "en_name": "Game",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "100030000",
+          "parentCode": "1800000000",
+          "name": "产业互联网平台",
+          "en_name": "Internet",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "100130000",
+          "parentCode": "1800000000",
+          "name": "云计算",
+          "en_name": "Cloud Computing/Big Data",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1800020000",
+          "parentCode": "1800000000",
+          "name": "大数据",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "100100000",
+          "parentCode": "1800000000",
+          "name": "信息安全",
+          "en_name": "Network/Information Security",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "100080000",
+          "parentCode": "1800000000",
+          "name": "人工智能",
+          "en_name": "AI/Artificial Intelligence",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "100040000",
+          "parentCode": "1800000000",
+          "name": "软件/IT服务",
+          "en_name": "IT Services",
+          "deleted": false,
+          "sublist": [
+          ]
+        }
+      ]
+    },
+    {
+      "code": "1900000000",
+      "parentCode": null,
+      "name": "新能源/环保/能源供应",
+      "en_name": "",
+      "deleted": false,
+      "sublist": [
+        {
+          "code": "1900000000",
+          "parentCode": "1900000000",
+          "name": "不限",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1900010000",
+          "parentCode": "1900000000",
+          "name": "光伏",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1900020000",
+          "parentCode": "1900000000",
+          "name": "动力电池",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1900030000",
+          "parentCode": "1900000000",
+          "name": "储能",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1900040000",
+          "parentCode": "1900000000",
+          "name": "风电",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1900050000",
+          "parentCode": "1900000000",
+          "name": "氢能",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1900060000",
+          "parentCode": "1900000000",
+          "name": "核能",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1900070000",
+          "parentCode": "1900000000",
+          "name": "其他新能源",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1100010000",
+          "parentCode": "1900000000",
+          "name": "电力/水利/热力/燃气",
+          "en_name": "Electricity/Water Supply/Gas/Heating",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1100020000",
+          "parentCode": "1900000000",
+          "name": "环保",
+          "en_name": "Environmental Protection",
+          "deleted": false,
+          "sublist": [
+          ]
+        }
+      ]
+    },
+    {
+      "code": "2000000000",
+      "parentCode": null,
+      "name": "石油/矿产/化工/材料",
+      "en_name": "",
+      "deleted": false,
+      "sublist": [
+        {
+          "code": "2000000000",
+          "parentCode": "2000000000",
+          "name": "不限",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1100040000",
+          "parentCode": "2000000000",
+          "name": "石油/石化",
+          "en_name": "Petroleum \u0026 Petrochemical",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1100030000",
+          "parentCode": "2000000000",
+          "name": "矿产/冶金",
+          "en_name": "Mining",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1100060000",
+          "parentCode": "2000000000",
+          "name": "化工",
+          "en_name": "Chemical industry",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "500000250",
+          "parentCode": "2000000000",
+          "name": "新材料",
+          "en_name": "New Materials",
+          "deleted": false,
+          "sublist": [
+          ]
+        }
+      ]
+    },
+    {
+      "code": "400000000",
+      "parentCode": null,
+      "name": "房地产/建筑/工程",
+      "en_name": "Real estate or construction",
+      "deleted": false,
+      "sublist": [
+        {
+          "code": "400000000",
+          "parentCode": "400000000",
+          "name": "不限",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "400060000",
+          "parentCode": "400000000",
+          "name": "建筑材料",
+          "en_name": "Building material",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "200040000",
+          "parentCode": "400000000",
+          "name": "土地/公共设施管理",
+          "en_name": "Management of L\u0026 \u0026 Public Properties",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "200010000",
+          "parentCode": "400000000",
+          "name": "房地产开发经营",
+          "en_name": "Real Estate Development",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "400050000",
+          "parentCode": "400000000",
+          "name": "建筑/土木/市政设计",
+          "en_name": "Architectural design",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "400030000",
+          "parentCode": "400000000",
+          "name": "工程施工",
+          "en_name": "Engineering construction",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "400040000",
+          "parentCode": "400000000",
+          "name": "装饰装修",
+          "en_name": "Decoration",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "200020000",
+          "parentCode": "400000000",
+          "name": "房地产中介/租赁",
+          "en_name": "Real Estate Agency \u0026 Leasing",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "200050000",
+          "parentCode": "400000000",
+          "name": "物业管理",
+          "en_name": "Property Management",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "400070000",
+          "parentCode": "400000000",
+          "name": "工程专业服务",
+          "en_name": "Construction engineering inspection",
+          "deleted": false,
+          "sublist": [
+          ]
+        }
+      ]
+    },
+    {
+      "code": "600000000",
+      "parentCode": null,
+      "name": "农/林/牧/渔",
+      "en_name": "Agriculture or forestry or animal husbandry or fishing",
+      "deleted": false,
+      "sublist": [
+        {
+          "code": "600000000",
+          "parentCode": "600000000",
+          "name": "不限",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "600020000",
+          "parentCode": "600000000",
+          "name": "农业",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "600030000",
+          "parentCode": "600000000",
+          "name": "林业",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "600040000",
+          "parentCode": "600000000",
+          "name": "畜牧业",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "600050000",
+          "parentCode": "600000000",
+          "name": "渔业",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        }
+      ]
+    },
+    {
+      "code": "1400000000",
+      "parentCode": null,
+      "name": "政府/非盈利机构",
+      "en_name": "Government or nonprofit",
+      "deleted": false,
+      "sublist": [
+        {
+          "code": "1400000000",
+          "parentCode": "1400000000",
+          "name": "不限",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1400010000",
+          "parentCode": "1400000000",
+          "name": "政府/公共管理",
+          "en_name": "Government or Public Services",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1300020000",
+          "parentCode": "1400000000",
+          "name": "社会事业与服务",
+          "en_name": "Social Assistance",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1400020000",
+          "parentCode": "1400000000",
+          "name": "社会团体与公益组织",
+          "en_name": "Non-profit Organizations",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1400080000",
+          "parentCode": "1400000000",
+          "name": "国际组织与驻华机构",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        }
+      ]
+    },
+    {
+      "code": "1200000000",
+      "parentCode": null,
+      "name": "教育/培训/科研",
+      "en_name": "Educational \u0026 Scientific Research",
+      "deleted": false,
+      "sublist": [
+        {
+          "code": "1200000000",
+          "parentCode": "1200000000",
+          "name": "不限",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1200080000",
+          "parentCode": "1200000000",
+          "name": "学前教育",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1200040000",
+          "parentCode": "1200000000",
+          "name": "学校/学历教育",
+          "en_name": "School or Academic Education",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1200020000",
+          "parentCode": "1200000000",
+          "name": "课外培训与资格考试",
+          "en_name": "Training or Counselling",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1200070000",
+          "parentCode": "1200000000",
+          "name": "职业培训",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1200030000",
+          "parentCode": "1200000000",
+          "name": "学术/科研",
+          "en_name": "Research \u0026 experimental development",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1200010000",
+          "parentCode": "1200000000",
+          "name": "教育科技/教育软件",
+          "en_name": "Science and Technology Promotion",
+          "deleted": false,
+          "sublist": [
+          ]
+        }
+      ]
+    },
+    {
+      "code": "300000000",
+      "parentCode": null,
+      "name": "金融业",
+      "en_name": "Finance",
+      "deleted": false,
+      "sublist": [
+        {
+          "code": "300000000",
+          "parentCode": "300000000",
+          "name": "不限",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "300070000",
+          "parentCode": "300000000",
+          "name": "银行",
+          "en_name": "Bank",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "300040000",
+          "parentCode": "300000000",
+          "name": "基金",
+          "en_name": "Fund",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "300010000",
+          "parentCode": "300000000",
+          "name": "保险",
+          "en_name": "Insurance",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "300060000",
+          "parentCode": "300000000",
+          "name": "信托",
+          "en_name": "Trust",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "300080000",
+          "parentCode": "300000000",
+          "name": "证券/期货",
+          "en_name": "Securities \u0026 Futures",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "300090000",
+          "parentCode": "300000000",
+          "name": "投资与资产管理",
+          "en_name": "Investment or financing",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "300120000",
+          "parentCode": "300000000",
+          "name": "财富管理",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "300020000",
+          "parentCode": "300000000",
+          "name": "租赁/拍卖/典当/担保",
+          "en_name": "Lease or auction or pawn or guarantee",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "300030000",
+          "parentCode": "300000000",
+          "name": "金融科技/数字金融",
+          "en_name": "Internet Finance",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "300110000",
+          "parentCode": "300000000",
+          "name": "消费金融",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "300050000",
+          "parentCode": "300000000",
+          "name": "汽车金融",
+          "en_name": "Auto Finance",
+          "deleted": false,
+          "sublist": [
+          ]
+        }
+      ]
+    },
+    {
+      "code": "900000000",
+      "parentCode": null,
+      "name": "广告/传媒/文化/体育",
+      "en_name": "Advertising or media or culture or sports",
+      "deleted": false,
+      "sublist": [
+        {
+          "code": "900000000",
+          "parentCode": "900000000",
+          "name": "不限",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "800040000",
+          "parentCode": "900000000",
+          "name": "广告/公关/营销",
+          "en_name": "Advertising or Marketing",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "800050000",
+          "parentCode": "900000000",
+          "name": "会议/展览/活动",
+          "en_name": "Exhibition Services",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "900040000",
+          "parentCode": "900000000",
+          "name": "新闻/出版",
+          "en_name": "News/Publishing",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "900030000",
+          "parentCode": "900000000",
+          "name": "文化艺术/娱乐",
+          "en_name": "Arts/Entertainment",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "900020000",
+          "parentCode": "900000000",
+          "name": "体育",
+          "en_name": "Sports",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "900090000",
+          "parentCode": "900000000",
+          "name": "新媒体/MCN",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "900010000",
+          "parentCode": "900000000",
+          "name": "广播/电视/影视",
+          "en_name": "Broadcast or Movies",
+          "deleted": false,
+          "sublist": [
+          ]
+        }
+      ]
+    },
+    {
+      "code": "1000000000",
+      "parentCode": null,
+      "name": "交通/运输/仓储/物流",
+      "en_name": "Transportation \u0026 Warehousing",
+      "deleted": false,
+      "sublist": [
+        {
+          "code": "1000000000",
+          "parentCode": "1000000000",
+          "name": "不限",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1000030000",
+          "parentCode": "1000000000",
+          "name": "客运服务",
+          "en_name": "Passenger Services",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1000040000",
+          "parentCode": "1000000000",
+          "name": "快递服务",
+          "en_name": "Postal \u0026 Express Services",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1000090000",
+          "parentCode": "1000000000",
+          "name": "即时配送服务",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1000020000",
+          "parentCode": "1000000000",
+          "name": "货运物流",
+          "en_name": "Freight or Logistics or Warehousing",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1000060000",
+          "parentCode": "1000000000",
+          "name": "装卸搬运/仓储业",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1000010000",
+          "parentCode": "1000000000",
+          "name": "交通枢纽运营",
+          "en_name": "L\u0026 Transportation for Passengers",
+          "deleted": false,
+          "sublist": [
+          ]
+        }
+      ]
+    },
+    {
+      "code": "800000000",
+      "parentCode": null,
+      "name": "专业服务",
+      "en_name": "Professional Services",
+      "deleted": false,
+      "sublist": [
+        {
+          "code": "800000000",
+          "parentCode": "800000000",
+          "name": "不限",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "800020000",
+          "parentCode": "800000000",
+          "name": "法律",
+          "en_name": "Legal Services",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "800010000",
+          "parentCode": "800000000",
+          "name": "财务/审计/税务",
+          "en_name": "Accounting/Auditing/Tax",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "800080000",
+          "parentCode": "800000000",
+          "name": "人力资源",
+          "en_name": "Human Resources",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "800140000",
+          "parentCode": "800000000",
+          "name": "翻译",
+          "en_name": "Translation services",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "800100000",
+          "parentCode": "800000000",
+          "name": "专利/商标/知识产权",
+          "en_name": "Patents/Trademarks/Copyrights",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "800060000",
+          "parentCode": "800000000",
+          "name": "检测/认证/计量",
+          "en_name": "Testing/Certification",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "800120000",
+          "parentCode": "800000000",
+          "name": "咨询服务",
+          "en_name": "Consultancy",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "800110000",
+          "parentCode": "800000000",
+          "name": "技术服务",
+          "en_name": "Technique Services",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "800090000",
+          "parentCode": "800000000",
+          "name": "商务服务业",
+          "en_name": "Agency Services",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "800130000",
+          "parentCode": "800000000",
+          "name": "其他专业服务",
+          "en_name": "Leasing Services",
+          "deleted": false,
+          "sublist": [
+          ]
+        }
+      ]
+    },
+    {
+      "code": "1500000000",
+      "parentCode": null,
+      "name": "生活服务",
+      "en_name": "Residential Services",
+      "deleted": false,
+      "sublist": [
+        {
+          "code": "1500000000",
+          "parentCode": "1500000000",
+          "name": "不限",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1500050000",
+          "parentCode": "1500000000",
+          "name": "美发/美容",
+          "en_name": "Hairdressing or Beauty or Healthcare",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1500080000",
+          "parentCode": "1500000000",
+          "name": "保健/养生",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1500010000",
+          "parentCode": "1500000000",
+          "name": "餐饮服务",
+          "en_name": "Catering Services",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1500020000",
+          "parentCode": "1500000000",
+          "name": "酒店/民宿",
+          "en_name": "Accommodation",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1500040000",
+          "parentCode": "1500000000",
+          "name": "旅游服务",
+          "en_name": "Tourism Services",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1500060000",
+          "parentCode": "1500000000",
+          "name": "婚庆/摄影",
+          "en_name": "Wedding or photography",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1500000800",
+          "parentCode": "1500000000",
+          "name": "休闲/娱乐",
+          "en_name": "Leisure or Amusement",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1500000900",
+          "parentCode": "1500000000",
+          "name": "宠物服务",
+          "en_name": "Pet Services",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1500001000",
+          "parentCode": "1500000000",
+          "name": "家政服务",
+          "en_name": "Housekeeping Services",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1500001100",
+          "parentCode": "1500000000",
+          "name": "回收/维修",
+          "en_name": "Recycling or Maintenance",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1500150000",
+          "parentCode": "1500000000",
+          "name": "运动/健身",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1500000700",
+          "parentCode": "1500000000",
+          "name": "搬家/生活配送",
+          "en_name": "Moving or Living Delivery",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1500140000",
+          "parentCode": "1500000000",
+          "name": "养老服务",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1500130000",
+          "parentCode": "1500000000",
+          "name": "殡葬服务",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1500120000",
+          "parentCode": "1500000000",
+          "name": "出行服务",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "1500030000",
+          "parentCode": "1500000000",
+          "name": "其他生活服务",
+          "en_name": "Personal Care \u0026 Services",
+          "deleted": false,
+          "sublist": [
+          ]
+        }
+      ]
+    },
+    {
+      "code": "500000000",
+      "parentCode": null,
+      "name": "制造业",
+      "en_name": "Manufacturing",
+      "deleted": false,
+      "sublist": [
+        {
+          "code": "500000000",
+          "parentCode": "500000000",
+          "name": "不限",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "500180000",
+          "parentCode": "500000000",
+          "name": "仪器仪表",
+          "en_name": "Manufacture of Instruments \u0026 Appliances",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "500090000",
+          "parentCode": "500000000",
+          "name": "金属制品/机加工",
+          "en_name": "Manufacture of Metallic Mineral Products",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "500050000",
+          "parentCode": "500000000",
+          "name": "非金属矿物制品",
+          "en_name": "Manufacture of Non-metallic Mineral Products",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "500140000",
+          "parentCode": "500000000",
+          "name": "通用设备制造",
+          "en_name": "Manufacture of General-purpose Machinery",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "500220000",
+          "parentCode": "500000000",
+          "name": "专用设备制造",
+          "en_name": "Manufacture of Specific-purpose Machinery",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "500230000",
+          "parentCode": "500000000",
+          "name": "工业自动化/机器人",
+          "en_name": "Tndustrial automation",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "500190000",
+          "parentCode": "500000000",
+          "name": "印刷/包装/造纸",
+          "en_name": "Printing or packaging or paper making",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "500010000",
+          "parentCode": "500000000",
+          "name": "船舶/航空/航天/军工",
+          "en_name": "Manufacture of Other Transport Equipment",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "500250000",
+          "parentCode": "500000000",
+          "name": "轨道交通制造",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "500020000",
+          "parentCode": "500000000",
+          "name": "电气机械/电力设备",
+          "en_name": "Electrical Machinery or Electrical Equipment",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "500150000",
+          "parentCode": "500000000",
+          "name": "橡胶/塑料制品",
+          "en_name": "Manufacture of Rubber \u0026 Plastic Products",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "500080000",
+          "parentCode": "500000000",
+          "name": "化学原料/化学制品",
+          "en_name": "Manufacture of Chemicals \u0026 Chemical Products ",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "500130000",
+          "parentCode": "500000000",
+          "name": "日化制造",
+          "en_name": "Manufacture of Household Chemical Products",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "500200000",
+          "parentCode": "500000000",
+          "name": "家具/家居/办公制造",
+          "en_name": "Furniture manufacturing",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "500240000",
+          "parentCode": "500000000",
+          "name": "文体/玩具/礼品制造",
+          "en_name": "Sports or office equipment manufacturing",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "500040000",
+          "parentCode": "500000000",
+          "name": "服装/纺织/皮革制造",
+          "en_name": "Manufacture of Textiles \u0026 Wearing Apparel",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "500100000",
+          "parentCode": "500000000",
+          "name": "食品/饮品/烟酒制造",
+          "en_name": "Agricultural Processing",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "500120000",
+          "parentCode": "500000000",
+          "name": "其他制造业",
+          "en_name": "Fuel Manufacturing \u0026 Processing",
+          "deleted": false,
+          "sublist": [
+          ]
+        }
+      ]
+    },
+    {
+      "code": "700000000",
+      "parentCode": null,
+      "name": "批发/零售/贸易",
+      "en_name": "Wholesale \u0026 Retail Trade",
+      "deleted": false,
+      "sublist": [
+        {
+          "code": "700000000",
+          "parentCode": "700000000",
+          "name": "不限",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "700040000",
+          "parentCode": "700000000",
+          "name": "综合商贸",
+          "en_name": "Retail/Wholesale",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "700250000",
+          "parentCode": "700000000",
+          "name": "生鲜农产品批发/零售/贸易",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "700050000",
+          "parentCode": "700000000",
+          "name": "食品/饮料/酒水批发/零售/贸易",
+          "en_name": "Food or beverage",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "700110000",
+          "parentCode": "700000000",
+          "name": "鞋服箱包批发/零售/贸易",
+          "en_name": "Clothing or textile or leather",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "700260000",
+          "parentCode": "700000000",
+          "name": "运动户外用品批发/零售/贸易",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "700270000",
+          "parentCode": "700000000",
+          "name": "3C数码批发/零售/贸易",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "700120000",
+          "parentCode": "700000000",
+          "name": "家电批发/零售/贸易",
+          "en_name": "Furniture or home or home appliances",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "700290000",
+          "parentCode": "700000000",
+          "name": "家居建材批发/零售/贸易",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "700070000",
+          "parentCode": "700000000",
+          "name": "日化批发/零售/贸易",
+          "en_name": "Chemicals for daily use",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "700090000",
+          "parentCode": "700000000",
+          "name": "珠宝/首饰/钟表/眼镜批发/零售/贸易",
+          "en_name": "Jewelry or jewelry",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "700080000",
+          "parentCode": "700000000",
+          "name": "母婴玩具批发/零售/贸易",
+          "en_name": "Toys or gifts",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "700130000",
+          "parentCode": "700000000",
+          "name": "文体办公图书批发/零售/贸易",
+          "en_name": "Office Supplies or Equipment",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "700140000",
+          "parentCode": "700000000",
+          "name": "宠物用品批发/零售/贸易",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "700150000",
+          "parentCode": "700000000",
+          "name": "农资农机批发/零售/贸易",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "700160000",
+          "parentCode": "700000000",
+          "name": "工业原材料批发/零售/贸易",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "700170000",
+          "parentCode": "700000000",
+          "name": "化工原料/化学品批发/零售/贸易",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "700180000",
+          "parentCode": "700000000",
+          "name": "工业五金与工具批发/零售/贸易",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "700190000",
+          "parentCode": "700000000",
+          "name": "工控与自动化设备批发/零售/贸易",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "700200000",
+          "parentCode": "700000000",
+          "name": "机械设备与配件批发/零售/贸易",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "700210000",
+          "parentCode": "700000000",
+          "name": "工业耗材/劳保用品批发/零售/贸易",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "700220000",
+          "parentCode": "700000000",
+          "name": "工业包装材料批发/零售/贸易",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        },
+        {
+          "code": "700230000",
+          "parentCode": "700000000",
+          "name": "其他批发/零售/贸易",
+          "en_name": "",
+          "deleted": false,
+          "sublist": [
+          ]
+        }
+      ]
+    }
+  ],
+  "flat": [
+    {
+      "code": "-1",
+      "name": "不限",
+      "en_name": "",
+      "parentCode": null,
+      "level": 1
+    },
+    {
+      "code": "1600000000",
+      "name": "汽车/摩托车/电动车",
+      "en_name": "Automobile",
+      "parentCode": null,
+      "level": 1
+    },
+    {
+      "code": "1600000000",
+      "name": "不限",
+      "en_name": "",
+      "parentCode": "1600000000",
+      "level": 2
+    },
+    {
+      "code": "500110000",
+      "name": "新能源/燃油整车研发制造",
+      "en_name": "Automotive Research or Manufacturing",
+      "parentCode": "1600000000",
+      "level": 2
+    },
+    {
+      "code": "1600000400",
+      "name": "汽车智能网联",
+      "en_name": "Automotive Intelligent Iinterconnection",
+      "parentCode": "1600000000",
+      "level": 2
+    },
+    {
+      "code": "1600020000",
+      "name": "新能源/燃油车零部件",
+      "en_name": "Auto parts",
+      "parentCode": "1600000000",
+      "level": 2
+    },
+    {
+      "code": "1600010000",
+      "name": "汽车4S店/经销商",
+      "en_name": "Automotive 4S Stores or Dealers",
+      "parentCode": "1600000000",
+      "level": 2
+    },
+    {
+      "code": "1600000500",
+      "name": "汽车后市场",
+      "en_name": "Automotive Aftermarket",
+      "parentCode": "1600000000",
+      "level": 2
+    },
+    {
+      "code": "500000260",
+      "name": "摩托车/电动自行车",
+      "en_name": "Motorcycle or Bicycle Manufacturing",
+      "parentCode": "1600000000",
+      "level": 2
+    },
+    {
+      "code": "1300000000",
+      "name": "生物/制药/医疗/医美",
+      "en_name": "Biomedical or medical",
+      "parentCode": null,
+      "level": 1
+    },
+    {
+      "code": "1300000000",
+      "name": "不限",
+      "en_name": "",
+      "parentCode": "1300000000",
+      "level": 2
+    },
+    {
+      "code": "1300040000",
+      "name": "生物/制药",
+      "en_name": "bioengineering",
+      "parentCode": "1300000000",
+      "level": 2
+    },
+    {
+      "code": "1300090000",
+      "name": "医药研发/生产外包（CXO）",
+      "en_name": "",
+      "parentCode": "1300000000",
+      "level": 2
+    },
+    {
+      "code": "500210000",
+      "name": "医疗设备/器械/耗材",
+      "en_name": "Manufacture of Medical Equipment \u0026 Facilities",
+      "parentCode": "1300000000",
+      "level": 2
+    },
+    {
+      "code": "1300000800",
+      "name": "IVD（体外诊断）",
+      "en_name": "IVD",
+      "parentCode": "1300000000",
+      "level": 2
+    },
+    {
+      "code": "1300060000",
+      "name": "医药批发/零售",
+      "en_name": "Pharmaceutical wholesale or retail",
+      "parentCode": "1300000000",
+      "level": 2
+    },
+    {
+      "code": "1300030000",
+      "name": "医院/诊所服务",
+      "en_name": "Hospitals",
+      "parentCode": "1300000000",
+      "level": 2
+    },
+    {
+      "code": "1300000700",
+      "name": "医美/健康服务",
+      "en_name": "Medical Beauty or Health Services",
+      "parentCode": "1300000000",
+      "level": 2
+    },
+    {
+      "code": "1700000000",
+      "name": "电子/通信/半导体",
+      "en_name": "",
+      "parentCode": null,
+      "level": 1
+    },
+    {
+      "code": "1700000000",
+      "name": "不限",
+      "en_name": "",
+      "parentCode": "1700000000",
+      "level": 2
+    },
+    {
+      "code": "100010000",
+      "name": "半导体/芯片",
+      "en_name": "Electronics/Semiconductor/IC",
+      "parentCode": "1700000000",
+      "level": 2
+    },
+    {
+      "code": "100000240",
+      "name": "电子电路基础元件/模组",
+      "en_name": "Optoelectronics Industry",
+      "parentCode": "1700000000",
+      "level": 2
+    },
+    {
+      "code": "100000230",
+      "name": "消费电子/智能硬件",
+      "en_name": "Consumer Electronics",
+      "parentCode": "1700000000",
+      "level": 2
+    },
+    {
+      "code": "100060000",
+      "name": "计算机硬件",
+      "en_name": "Computer Hardware",
+      "parentCode": "1700000000",
+      "level": 2
+    },
+    {
+      "code": "100180000",
+      "name": "物联网",
+      "en_name": "Internet of things",
+      "parentCode": "1700000000",
+      "level": 2
+    },
+    {
+      "code": "100090000",
+      "name": "通信/网络设备",
+      "en_name": "Telecom \u0026 Network Equipment",
+      "parentCode": "1700000000",
+      "level": 2
+    },
+    {
+      "code": "1700090000",
+      "name": "通信工程/技术服务",
+      "en_name": "",
+      "parentCode": "1700000000",
+      "level": 2
+    },
+    {
+      "code": "100140000",
+      "name": "通信运营商/电信增值服务",
+      "en_name": "Telecom Operators/Service Providers",
+      "parentCode": "1700000000",
+      "level": 2
+    },
+    {
+      "code": "1800000000",
+      "name": "互联网/AI/软件/IT服务",
+      "en_name": "",
+      "parentCode": null,
+      "level": 1
+    },
+    {
+      "code": "1800000000",
+      "name": "不限",
+      "en_name": "",
+      "parentCode": "1800000000",
+      "level": 2
+    },
+    {
+      "code": "100150000",
+      "name": "互联网医疗",
+      "en_name": "Online healthcare",
+      "parentCode": "1800000000",
+      "level": 2
+    },
+    {
+      "code": "100160000",
+      "name": "互联网教育",
+      "en_name": "Online education",
+      "parentCode": "1800000000",
+      "level": 2
+    },
+    {
+      "code": "100000260",
+      "name": "互联网招聘",
+      "en_name": "Online Recruitment or Job Search",
+      "parentCode": "1800000000",
+      "level": 2
+    },
+    {
+      "code": "100210000",
+      "name": "互联网生活服务(O2O)",
+      "en_name": "Online life service (o2o)",
+      "parentCode": "1800000000",
+      "level": 2
+    },
+    {
+      "code": "1800090000",
+      "name": "互联网广告/营销",
+      "en_name": "",
+      "parentCode": "1800000000",
+      "level": 2
+    },
+    {
+      "code": "100000250",
+      "name": "互联网社交/数字内容",
+      "en_name": "Social Networks",
+      "parentCode": "1800000000",
+      "level": 2
+    },
+    {
+      "code": "1800080000",
+      "name": "互联网金融",
+      "en_name": "",
+      "parentCode": "1800000000",
+      "level": 2
+    },
+    {
+      "code": "100190000",
+      "name": "互联网新零售",
+      "en_name": "New retail",
+      "parentCode": "1800000000",
+      "level": 2
+    },
+    {
+      "code": "100020000",
+      "name": "互联网电商",
+      "en_name": "E-commerce",
+      "parentCode": "1800000000",
+      "level": 2
+    },
+    {
+      "code": "100120000",
+      "name": "互联网游戏",
+      "en_name": "Game",
+      "parentCode": "1800000000",
+      "level": 2
+    },
+    {
+      "code": "100030000",
+      "name": "产业互联网平台",
+      "en_name": "Internet",
+      "parentCode": "1800000000",
+      "level": 2
+    },
+    {
+      "code": "100130000",
+      "name": "云计算",
+      "en_name": "Cloud Computing/Big Data",
+      "parentCode": "1800000000",
+      "level": 2
+    },
+    {
+      "code": "1800020000",
+      "name": "大数据",
+      "en_name": "",
+      "parentCode": "1800000000",
+      "level": 2
+    },
+    {
+      "code": "100100000",
+      "name": "信息安全",
+      "en_name": "Network/Information Security",
+      "parentCode": "1800000000",
+      "level": 2
+    },
+    {
+      "code": "100080000",
+      "name": "人工智能",
+      "en_name": "AI/Artificial Intelligence",
+      "parentCode": "1800000000",
+      "level": 2
+    },
+    {
+      "code": "100040000",
+      "name": "软件/IT服务",
+      "en_name": "IT Services",
+      "parentCode": "1800000000",
+      "level": 2
+    },
+    {
+      "code": "1900000000",
+      "name": "新能源/环保/能源供应",
+      "en_name": "",
+      "parentCode": null,
+      "level": 1
+    },
+    {
+      "code": "1900000000",
+      "name": "不限",
+      "en_name": "",
+      "parentCode": "1900000000",
+      "level": 2
+    },
+    {
+      "code": "1900010000",
+      "name": "光伏",
+      "en_name": "",
+      "parentCode": "1900000000",
+      "level": 2
+    },
+    {
+      "code": "1900020000",
+      "name": "动力电池",
+      "en_name": "",
+      "parentCode": "1900000000",
+      "level": 2
+    },
+    {
+      "code": "1900030000",
+      "name": "储能",
+      "en_name": "",
+      "parentCode": "1900000000",
+      "level": 2
+    },
+    {
+      "code": "1900040000",
+      "name": "风电",
+      "en_name": "",
+      "parentCode": "1900000000",
+      "level": 2
+    },
+    {
+      "code": "1900050000",
+      "name": "氢能",
+      "en_name": "",
+      "parentCode": "1900000000",
+      "level": 2
+    },
+    {
+      "code": "1900060000",
+      "name": "核能",
+      "en_name": "",
+      "parentCode": "1900000000",
+      "level": 2
+    },
+    {
+      "code": "1900070000",
+      "name": "其他新能源",
+      "en_name": "",
+      "parentCode": "1900000000",
+      "level": 2
+    },
+    {
+      "code": "1100010000",
+      "name": "电力/水利/热力/燃气",
+      "en_name": "Electricity/Water Supply/Gas/Heating",
+      "parentCode": "1900000000",
+      "level": 2
+    },
+    {
+      "code": "1100020000",
+      "name": "环保",
+      "en_name": "Environmental Protection",
+      "parentCode": "1900000000",
+      "level": 2
+    },
+    {
+      "code": "2000000000",
+      "name": "石油/矿产/化工/材料",
+      "en_name": "",
+      "parentCode": null,
+      "level": 1
+    },
+    {
+      "code": "2000000000",
+      "name": "不限",
+      "en_name": "",
+      "parentCode": "2000000000",
+      "level": 2
+    },
+    {
+      "code": "1100040000",
+      "name": "石油/石化",
+      "en_name": "Petroleum \u0026 Petrochemical",
+      "parentCode": "2000000000",
+      "level": 2
+    },
+    {
+      "code": "1100030000",
+      "name": "矿产/冶金",
+      "en_name": "Mining",
+      "parentCode": "2000000000",
+      "level": 2
+    },
+    {
+      "code": "1100060000",
+      "name": "化工",
+      "en_name": "Chemical industry",
+      "parentCode": "2000000000",
+      "level": 2
+    },
+    {
+      "code": "500000250",
+      "name": "新材料",
+      "en_name": "New Materials",
+      "parentCode": "2000000000",
+      "level": 2
+    },
+    {
+      "code": "400000000",
+      "name": "房地产/建筑/工程",
+      "en_name": "Real estate or construction",
+      "parentCode": null,
+      "level": 1
+    },
+    {
+      "code": "400000000",
+      "name": "不限",
+      "en_name": "",
+      "parentCode": "400000000",
+      "level": 2
+    },
+    {
+      "code": "400060000",
+      "name": "建筑材料",
+      "en_name": "Building material",
+      "parentCode": "400000000",
+      "level": 2
+    },
+    {
+      "code": "200040000",
+      "name": "土地/公共设施管理",
+      "en_name": "Management of L\u0026 \u0026 Public Properties",
+      "parentCode": "400000000",
+      "level": 2
+    },
+    {
+      "code": "200010000",
+      "name": "房地产开发经营",
+      "en_name": "Real Estate Development",
+      "parentCode": "400000000",
+      "level": 2
+    },
+    {
+      "code": "400050000",
+      "name": "建筑/土木/市政设计",
+      "en_name": "Architectural design",
+      "parentCode": "400000000",
+      "level": 2
+    },
+    {
+      "code": "400030000",
+      "name": "工程施工",
+      "en_name": "Engineering construction",
+      "parentCode": "400000000",
+      "level": 2
+    },
+    {
+      "code": "400040000",
+      "name": "装饰装修",
+      "en_name": "Decoration",
+      "parentCode": "400000000",
+      "level": 2
+    },
+    {
+      "code": "200020000",
+      "name": "房地产中介/租赁",
+      "en_name": "Real Estate Agency \u0026 Leasing",
+      "parentCode": "400000000",
+      "level": 2
+    },
+    {
+      "code": "200050000",
+      "name": "物业管理",
+      "en_name": "Property Management",
+      "parentCode": "400000000",
+      "level": 2
+    },
+    {
+      "code": "400070000",
+      "name": "工程专业服务",
+      "en_name": "Construction engineering inspection",
+      "parentCode": "400000000",
+      "level": 2
+    },
+    {
+      "code": "600000000",
+      "name": "农/林/牧/渔",
+      "en_name": "Agriculture or forestry or animal husbandry or fishing",
+      "parentCode": null,
+      "level": 1
+    },
+    {
+      "code": "600000000",
+      "name": "不限",
+      "en_name": "",
+      "parentCode": "600000000",
+      "level": 2
+    },
+    {
+      "code": "600020000",
+      "name": "农业",
+      "en_name": "",
+      "parentCode": "600000000",
+      "level": 2
+    },
+    {
+      "code": "600030000",
+      "name": "林业",
+      "en_name": "",
+      "parentCode": "600000000",
+      "level": 2
+    },
+    {
+      "code": "600040000",
+      "name": "畜牧业",
+      "en_name": "",
+      "parentCode": "600000000",
+      "level": 2
+    },
+    {
+      "code": "600050000",
+      "name": "渔业",
+      "en_name": "",
+      "parentCode": "600000000",
+      "level": 2
+    },
+    {
+      "code": "1400000000",
+      "name": "政府/非盈利机构",
+      "en_name": "Government or nonprofit",
+      "parentCode": null,
+      "level": 1
+    },
+    {
+      "code": "1400000000",
+      "name": "不限",
+      "en_name": "",
+      "parentCode": "1400000000",
+      "level": 2
+    },
+    {
+      "code": "1400010000",
+      "name": "政府/公共管理",
+      "en_name": "Government or Public Services",
+      "parentCode": "1400000000",
+      "level": 2
+    },
+    {
+      "code": "1300020000",
+      "name": "社会事业与服务",
+      "en_name": "Social Assistance",
+      "parentCode": "1400000000",
+      "level": 2
+    },
+    {
+      "code": "1400020000",
+      "name": "社会团体与公益组织",
+      "en_name": "Non-profit Organizations",
+      "parentCode": "1400000000",
+      "level": 2
+    },
+    {
+      "code": "1400080000",
+      "name": "国际组织与驻华机构",
+      "en_name": "",
+      "parentCode": "1400000000",
+      "level": 2
+    },
+    {
+      "code": "1200000000",
+      "name": "教育/培训/科研",
+      "en_name": "Educational \u0026 Scientific Research",
+      "parentCode": null,
+      "level": 1
+    },
+    {
+      "code": "1200000000",
+      "name": "不限",
+      "en_name": "",
+      "parentCode": "1200000000",
+      "level": 2
+    },
+    {
+      "code": "1200080000",
+      "name": "学前教育",
+      "en_name": "",
+      "parentCode": "1200000000",
+      "level": 2
+    },
+    {
+      "code": "1200040000",
+      "name": "学校/学历教育",
+      "en_name": "School or Academic Education",
+      "parentCode": "1200000000",
+      "level": 2
+    },
+    {
+      "code": "1200020000",
+      "name": "课外培训与资格考试",
+      "en_name": "Training or Counselling",
+      "parentCode": "1200000000",
+      "level": 2
+    },
+    {
+      "code": "1200070000",
+      "name": "职业培训",
+      "en_name": "",
+      "parentCode": "1200000000",
+      "level": 2
+    },
+    {
+      "code": "1200030000",
+      "name": "学术/科研",
+      "en_name": "Research \u0026 experimental development",
+      "parentCode": "1200000000",
+      "level": 2
+    },
+    {
+      "code": "1200010000",
+      "name": "教育科技/教育软件",
+      "en_name": "Science and Technology Promotion",
+      "parentCode": "1200000000",
+      "level": 2
+    },
+    {
+      "code": "300000000",
+      "name": "金融业",
+      "en_name": "Finance",
+      "parentCode": null,
+      "level": 1
+    },
+    {
+      "code": "300000000",
+      "name": "不限",
+      "en_name": "",
+      "parentCode": "300000000",
+      "level": 2
+    },
+    {
+      "code": "300070000",
+      "name": "银行",
+      "en_name": "Bank",
+      "parentCode": "300000000",
+      "level": 2
+    },
+    {
+      "code": "300040000",
+      "name": "基金",
+      "en_name": "Fund",
+      "parentCode": "300000000",
+      "level": 2
+    },
+    {
+      "code": "300010000",
+      "name": "保险",
+      "en_name": "Insurance",
+      "parentCode": "300000000",
+      "level": 2
+    },
+    {
+      "code": "300060000",
+      "name": "信托",
+      "en_name": "Trust",
+      "parentCode": "300000000",
+      "level": 2
+    },
+    {
+      "code": "300080000",
+      "name": "证券/期货",
+      "en_name": "Securities \u0026 Futures",
+      "parentCode": "300000000",
+      "level": 2
+    },
+    {
+      "code": "300090000",
+      "name": "投资与资产管理",
+      "en_name": "Investment or financing",
+      "parentCode": "300000000",
+      "level": 2
+    },
+    {
+      "code": "300120000",
+      "name": "财富管理",
+      "en_name": "",
+      "parentCode": "300000000",
+      "level": 2
+    },
+    {
+      "code": "300020000",
+      "name": "租赁/拍卖/典当/担保",
+      "en_name": "Lease or auction or pawn or guarantee",
+      "parentCode": "300000000",
+      "level": 2
+    },
+    {
+      "code": "300030000",
+      "name": "金融科技/数字金融",
+      "en_name": "Internet Finance",
+      "parentCode": "300000000",
+      "level": 2
+    },
+    {
+      "code": "300110000",
+      "name": "消费金融",
+      "en_name": "",
+      "parentCode": "300000000",
+      "level": 2
+    },
+    {
+      "code": "300050000",
+      "name": "汽车金融",
+      "en_name": "Auto Finance",
+      "parentCode": "300000000",
+      "level": 2
+    },
+    {
+      "code": "900000000",
+      "name": "广告/传媒/文化/体育",
+      "en_name": "Advertising or media or culture or sports",
+      "parentCode": null,
+      "level": 1
+    },
+    {
+      "code": "900000000",
+      "name": "不限",
+      "en_name": "",
+      "parentCode": "900000000",
+      "level": 2
+    },
+    {
+      "code": "800040000",
+      "name": "广告/公关/营销",
+      "en_name": "Advertising or Marketing",
+      "parentCode": "900000000",
+      "level": 2
+    },
+    {
+      "code": "800050000",
+      "name": "会议/展览/活动",
+      "en_name": "Exhibition Services",
+      "parentCode": "900000000",
+      "level": 2
+    },
+    {
+      "code": "900040000",
+      "name": "新闻/出版",
+      "en_name": "News/Publishing",
+      "parentCode": "900000000",
+      "level": 2
+    },
+    {
+      "code": "900030000",
+      "name": "文化艺术/娱乐",
+      "en_name": "Arts/Entertainment",
+      "parentCode": "900000000",
+      "level": 2
+    },
+    {
+      "code": "900020000",
+      "name": "体育",
+      "en_name": "Sports",
+      "parentCode": "900000000",
+      "level": 2
+    },
+    {
+      "code": "900090000",
+      "name": "新媒体/MCN",
+      "en_name": "",
+      "parentCode": "900000000",
+      "level": 2
+    },
+    {
+      "code": "900010000",
+      "name": "广播/电视/影视",
+      "en_name": "Broadcast or Movies",
+      "parentCode": "900000000",
+      "level": 2
+    },
+    {
+      "code": "1000000000",
+      "name": "交通/运输/仓储/物流",
+      "en_name": "Transportation \u0026 Warehousing",
+      "parentCode": null,
+      "level": 1
+    },
+    {
+      "code": "1000000000",
+      "name": "不限",
+      "en_name": "",
+      "parentCode": "1000000000",
+      "level": 2
+    },
+    {
+      "code": "1000030000",
+      "name": "客运服务",
+      "en_name": "Passenger Services",
+      "parentCode": "1000000000",
+      "level": 2
+    },
+    {
+      "code": "1000040000",
+      "name": "快递服务",
+      "en_name": "Postal \u0026 Express Services",
+      "parentCode": "1000000000",
+      "level": 2
+    },
+    {
+      "code": "1000090000",
+      "name": "即时配送服务",
+      "en_name": "",
+      "parentCode": "1000000000",
+      "level": 2
+    },
+    {
+      "code": "1000020000",
+      "name": "货运物流",
+      "en_name": "Freight or Logistics or Warehousing",
+      "parentCode": "1000000000",
+      "level": 2
+    },
+    {
+      "code": "1000060000",
+      "name": "装卸搬运/仓储业",
+      "en_name": "",
+      "parentCode": "1000000000",
+      "level": 2
+    },
+    {
+      "code": "1000010000",
+      "name": "交通枢纽运营",
+      "en_name": "L\u0026 Transportation for Passengers",
+      "parentCode": "1000000000",
+      "level": 2
+    },
+    {
+      "code": "800000000",
+      "name": "专业服务",
+      "en_name": "Professional Services",
+      "parentCode": null,
+      "level": 1
+    },
+    {
+      "code": "800000000",
+      "name": "不限",
+      "en_name": "",
+      "parentCode": "800000000",
+      "level": 2
+    },
+    {
+      "code": "800020000",
+      "name": "法律",
+      "en_name": "Legal Services",
+      "parentCode": "800000000",
+      "level": 2
+    },
+    {
+      "code": "800010000",
+      "name": "财务/审计/税务",
+      "en_name": "Accounting/Auditing/Tax",
+      "parentCode": "800000000",
+      "level": 2
+    },
+    {
+      "code": "800080000",
+      "name": "人力资源",
+      "en_name": "Human Resources",
+      "parentCode": "800000000",
+      "level": 2
+    },
+    {
+      "code": "800140000",
+      "name": "翻译",
+      "en_name": "Translation services",
+      "parentCode": "800000000",
+      "level": 2
+    },
+    {
+      "code": "800100000",
+      "name": "专利/商标/知识产权",
+      "en_name": "Patents/Trademarks/Copyrights",
+      "parentCode": "800000000",
+      "level": 2
+    },
+    {
+      "code": "800060000",
+      "name": "检测/认证/计量",
+      "en_name": "Testing/Certification",
+      "parentCode": "800000000",
+      "level": 2
+    },
+    {
+      "code": "800120000",
+      "name": "咨询服务",
+      "en_name": "Consultancy",
+      "parentCode": "800000000",
+      "level": 2
+    },
+    {
+      "code": "800110000",
+      "name": "技术服务",
+      "en_name": "Technique Services",
+      "parentCode": "800000000",
+      "level": 2
+    },
+    {
+      "code": "800090000",
+      "name": "商务服务业",
+      "en_name": "Agency Services",
+      "parentCode": "800000000",
+      "level": 2
+    },
+    {
+      "code": "800130000",
+      "name": "其他专业服务",
+      "en_name": "Leasing Services",
+      "parentCode": "800000000",
+      "level": 2
+    },
+    {
+      "code": "1500000000",
+      "name": "生活服务",
+      "en_name": "Residential Services",
+      "parentCode": null,
+      "level": 1
+    },
+    {
+      "code": "1500000000",
+      "name": "不限",
+      "en_name": "",
+      "parentCode": "1500000000",
+      "level": 2
+    },
+    {
+      "code": "1500050000",
+      "name": "美发/美容",
+      "en_name": "Hairdressing or Beauty or Healthcare",
+      "parentCode": "1500000000",
+      "level": 2
+    },
+    {
+      "code": "1500080000",
+      "name": "保健/养生",
+      "en_name": "",
+      "parentCode": "1500000000",
+      "level": 2
+    },
+    {
+      "code": "1500010000",
+      "name": "餐饮服务",
+      "en_name": "Catering Services",
+      "parentCode": "1500000000",
+      "level": 2
+    },
+    {
+      "code": "1500020000",
+      "name": "酒店/民宿",
+      "en_name": "Accommodation",
+      "parentCode": "1500000000",
+      "level": 2
+    },
+    {
+      "code": "1500040000",
+      "name": "旅游服务",
+      "en_name": "Tourism Services",
+      "parentCode": "1500000000",
+      "level": 2
+    },
+    {
+      "code": "1500060000",
+      "name": "婚庆/摄影",
+      "en_name": "Wedding or photography",
+      "parentCode": "1500000000",
+      "level": 2
+    },
+    {
+      "code": "1500000800",
+      "name": "休闲/娱乐",
+      "en_name": "Leisure or Amusement",
+      "parentCode": "1500000000",
+      "level": 2
+    },
+    {
+      "code": "1500000900",
+      "name": "宠物服务",
+      "en_name": "Pet Services",
+      "parentCode": "1500000000",
+      "level": 2
+    },
+    {
+      "code": "1500001000",
+      "name": "家政服务",
+      "en_name": "Housekeeping Services",
+      "parentCode": "1500000000",
+      "level": 2
+    },
+    {
+      "code": "1500001100",
+      "name": "回收/维修",
+      "en_name": "Recycling or Maintenance",
+      "parentCode": "1500000000",
+      "level": 2
+    },
+    {
+      "code": "1500150000",
+      "name": "运动/健身",
+      "en_name": "",
+      "parentCode": "1500000000",
+      "level": 2
+    },
+    {
+      "code": "1500000700",
+      "name": "搬家/生活配送",
+      "en_name": "Moving or Living Delivery",
+      "parentCode": "1500000000",
+      "level": 2
+    },
+    {
+      "code": "1500140000",
+      "name": "养老服务",
+      "en_name": "",
+      "parentCode": "1500000000",
+      "level": 2
+    },
+    {
+      "code": "1500130000",
+      "name": "殡葬服务",
+      "en_name": "",
+      "parentCode": "1500000000",
+      "level": 2
+    },
+    {
+      "code": "1500120000",
+      "name": "出行服务",
+      "en_name": "",
+      "parentCode": "1500000000",
+      "level": 2
+    },
+    {
+      "code": "1500030000",
+      "name": "其他生活服务",
+      "en_name": "Personal Care \u0026 Services",
+      "parentCode": "1500000000",
+      "level": 2
+    },
+    {
+      "code": "500000000",
+      "name": "制造业",
+      "en_name": "Manufacturing",
+      "parentCode": null,
+      "level": 1
+    },
+    {
+      "code": "500000000",
+      "name": "不限",
+      "en_name": "",
+      "parentCode": "500000000",
+      "level": 2
+    },
+    {
+      "code": "500180000",
+      "name": "仪器仪表",
+      "en_name": "Manufacture of Instruments \u0026 Appliances",
+      "parentCode": "500000000",
+      "level": 2
+    },
+    {
+      "code": "500090000",
+      "name": "金属制品/机加工",
+      "en_name": "Manufacture of Metallic Mineral Products",
+      "parentCode": "500000000",
+      "level": 2
+    },
+    {
+      "code": "500050000",
+      "name": "非金属矿物制品",
+      "en_name": "Manufacture of Non-metallic Mineral Products",
+      "parentCode": "500000000",
+      "level": 2
+    },
+    {
+      "code": "500140000",
+      "name": "通用设备制造",
+      "en_name": "Manufacture of General-purpose Machinery",
+      "parentCode": "500000000",
+      "level": 2
+    },
+    {
+      "code": "500220000",
+      "name": "专用设备制造",
+      "en_name": "Manufacture of Specific-purpose Machinery",
+      "parentCode": "500000000",
+      "level": 2
+    },
+    {
+      "code": "500230000",
+      "name": "工业自动化/机器人",
+      "en_name": "Tndustrial automation",
+      "parentCode": "500000000",
+      "level": 2
+    },
+    {
+      "code": "500190000",
+      "name": "印刷/包装/造纸",
+      "en_name": "Printing or packaging or paper making",
+      "parentCode": "500000000",
+      "level": 2
+    },
+    {
+      "code": "500010000",
+      "name": "船舶/航空/航天/军工",
+      "en_name": "Manufacture of Other Transport Equipment",
+      "parentCode": "500000000",
+      "level": 2
+    },
+    {
+      "code": "500250000",
+      "name": "轨道交通制造",
+      "en_name": "",
+      "parentCode": "500000000",
+      "level": 2
+    },
+    {
+      "code": "500020000",
+      "name": "电气机械/电力设备",
+      "en_name": "Electrical Machinery or Electrical Equipment",
+      "parentCode": "500000000",
+      "level": 2
+    },
+    {
+      "code": "500150000",
+      "name": "橡胶/塑料制品",
+      "en_name": "Manufacture of Rubber \u0026 Plastic Products",
+      "parentCode": "500000000",
+      "level": 2
+    },
+    {
+      "code": "500080000",
+      "name": "化学原料/化学制品",
+      "en_name": "Manufacture of Chemicals \u0026 Chemical Products ",
+      "parentCode": "500000000",
+      "level": 2
+    },
+    {
+      "code": "500130000",
+      "name": "日化制造",
+      "en_name": "Manufacture of Household Chemical Products",
+      "parentCode": "500000000",
+      "level": 2
+    },
+    {
+      "code": "500200000",
+      "name": "家具/家居/办公制造",
+      "en_name": "Furniture manufacturing",
+      "parentCode": "500000000",
+      "level": 2
+    },
+    {
+      "code": "500240000",
+      "name": "文体/玩具/礼品制造",
+      "en_name": "Sports or office equipment manufacturing",
+      "parentCode": "500000000",
+      "level": 2
+    },
+    {
+      "code": "500040000",
+      "name": "服装/纺织/皮革制造",
+      "en_name": "Manufacture of Textiles \u0026 Wearing Apparel",
+      "parentCode": "500000000",
+      "level": 2
+    },
+    {
+      "code": "500100000",
+      "name": "食品/饮品/烟酒制造",
+      "en_name": "Agricultural Processing",
+      "parentCode": "500000000",
+      "level": 2
+    },
+    {
+      "code": "500120000",
+      "name": "其他制造业",
+      "en_name": "Fuel Manufacturing \u0026 Processing",
+      "parentCode": "500000000",
+      "level": 2
+    },
+    {
+      "code": "700000000",
+      "name": "批发/零售/贸易",
+      "en_name": "Wholesale \u0026 Retail Trade",
+      "parentCode": null,
+      "level": 1
+    },
+    {
+      "code": "700000000",
+      "name": "不限",
+      "en_name": "",
+      "parentCode": "700000000",
+      "level": 2
+    },
+    {
+      "code": "700040000",
+      "name": "综合商贸",
+      "en_name": "Retail/Wholesale",
+      "parentCode": "700000000",
+      "level": 2
+    },
+    {
+      "code": "700250000",
+      "name": "生鲜农产品批发/零售/贸易",
+      "en_name": "",
+      "parentCode": "700000000",
+      "level": 2
+    },
+    {
+      "code": "700050000",
+      "name": "食品/饮料/酒水批发/零售/贸易",
+      "en_name": "Food or beverage",
+      "parentCode": "700000000",
+      "level": 2
+    },
+    {
+      "code": "700110000",
+      "name": "鞋服箱包批发/零售/贸易",
+      "en_name": "Clothing or textile or leather",
+      "parentCode": "700000000",
+      "level": 2
+    },
+    {
+      "code": "700260000",
+      "name": "运动户外用品批发/零售/贸易",
+      "en_name": "",
+      "parentCode": "700000000",
+      "level": 2
+    },
+    {
+      "code": "700270000",
+      "name": "3C数码批发/零售/贸易",
+      "en_name": "",
+      "parentCode": "700000000",
+      "level": 2
+    },
+    {
+      "code": "700120000",
+      "name": "家电批发/零售/贸易",
+      "en_name": "Furniture or home or home appliances",
+      "parentCode": "700000000",
+      "level": 2
+    },
+    {
+      "code": "700290000",
+      "name": "家居建材批发/零售/贸易",
+      "en_name": "",
+      "parentCode": "700000000",
+      "level": 2
+    },
+    {
+      "code": "700070000",
+      "name": "日化批发/零售/贸易",
+      "en_name": "Chemicals for daily use",
+      "parentCode": "700000000",
+      "level": 2
+    },
+    {
+      "code": "700090000",
+      "name": "珠宝/首饰/钟表/眼镜批发/零售/贸易",
+      "en_name": "Jewelry or jewelry",
+      "parentCode": "700000000",
+      "level": 2
+    },
+    {
+      "code": "700080000",
+      "name": "母婴玩具批发/零售/贸易",
+      "en_name": "Toys or gifts",
+      "parentCode": "700000000",
+      "level": 2
+    },
+    {
+      "code": "700130000",
+      "name": "文体办公图书批发/零售/贸易",
+      "en_name": "Office Supplies or Equipment",
+      "parentCode": "700000000",
+      "level": 2
+    },
+    {
+      "code": "700140000",
+      "name": "宠物用品批发/零售/贸易",
+      "en_name": "",
+      "parentCode": "700000000",
+      "level": 2
+    },
+    {
+      "code": "700150000",
+      "name": "农资农机批发/零售/贸易",
+      "en_name": "",
+      "parentCode": "700000000",
+      "level": 2
+    },
+    {
+      "code": "700160000",
+      "name": "工业原材料批发/零售/贸易",
+      "en_name": "",
+      "parentCode": "700000000",
+      "level": 2
+    },
+    {
+      "code": "700170000",
+      "name": "化工原料/化学品批发/零售/贸易",
+      "en_name": "",
+      "parentCode": "700000000",
+      "level": 2
+    },
+    {
+      "code": "700180000",
+      "name": "工业五金与工具批发/零售/贸易",
+      "en_name": "",
+      "parentCode": "700000000",
+      "level": 2
+    },
+    {
+      "code": "700190000",
+      "name": "工控与自动化设备批发/零售/贸易",
+      "en_name": "",
+      "parentCode": "700000000",
+      "level": 2
+    },
+    {
+      "code": "700200000",
+      "name": "机械设备与配件批发/零售/贸易",
+      "en_name": "",
+      "parentCode": "700000000",
+      "level": 2
+    },
+    {
+      "code": "700210000",
+      "name": "工业耗材/劳保用品批发/零售/贸易",
+      "en_name": "",
+      "parentCode": "700000000",
+      "level": 2
+    },
+    {
+      "code": "700220000",
+      "name": "工业包装材料批发/零售/贸易",
+      "en_name": "",
+      "parentCode": "700000000",
+      "level": 2
+    },
+    {
+      "code": "700230000",
+      "name": "其他批发/零售/贸易",
+      "en_name": "",
+      "parentCode": "700000000",
+      "level": 2
+    }
+  ]
+}

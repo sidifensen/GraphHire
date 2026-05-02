@@ -47,8 +47,11 @@ export interface CompanyProfileUpdateRequest {
 export interface IndustryOption {
   id: number;
   name: string;
+  parentId?: number | null;
+  level?: number;
   enabled: number;
-  sortOrder: number;
+  sort: number;
+  children?: IndustryOption[];
 }
 
 export const companyApi = {
