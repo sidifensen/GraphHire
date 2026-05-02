@@ -12,7 +12,6 @@ const FILTER_CATEGORIES = [
 ];
 
 const ADVANCED_FILTERS = [
-  { id: 'stage', name: '融资阶段', options: ['不限', '未融资', '天使轮', 'A轮', 'B轮', 'C轮', 'D轮及以上', '已上市', '不需要融资'] },
   { id: 'size', name: '公司规模', options: ['不限', '0-20人', '20-99人', '100-499人', '500-999人', '1000-9999人', '10000人以上'] }
 ];
 
@@ -51,7 +50,6 @@ export default function CompanyList() {
     selectedFilters.every(filter => {
       if (filter.id.startsWith('location:')) return c.headquarters.includes(filter.id.split(':')[1]);
       if (filter.id.startsWith('industry:')) return c.industry.includes(filter.id.split(':')[1]);
-      if (filter.id.startsWith('stage:')) return c.stage.includes(filter.id.split(':')[1]);
       if (filter.id.startsWith('size:')) return c.size.includes(filter.id.split(':')[1]);
       return true;
     })
@@ -231,12 +229,9 @@ export default function CompanyList() {
           {/* Search Box */}
           <div className="flex w-full md:w-3/4 mx-auto md:mx-0">
             <div className="flex flex-1 items-center bg-surface-lowest border border-primary md:border-2 md:border-r-0 md:border-primary md:rounded-l-lg overflow-hidden h-12 md:h-12 shadow-sm">
-              <div className="px-4 text-sm font-bold text-on-surface border-r border-surface-mid hidden md:flex items-center gap-1 cursor-pointer hover:bg-surface-low transition-colors h-full">
-                职位类型 <ChevronDown size={14} className="text-outline" />
-              </div>
               <input 
                 type="text" 
-                placeholder="搜索职位、公司" 
+                placeholder="搜索公司" 
                 className="flex-1 h-full px-4 bg-transparent outline-none text-body-md"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}

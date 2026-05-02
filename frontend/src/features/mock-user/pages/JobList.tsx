@@ -14,9 +14,7 @@ const FILTER_CATEGORIES = [
 
 const ADVANCED_FILTERS = [
   { id: 'education', name: '学历要求', options: ['不限', '初中及以下', '高中', '大专', '本科', '硕士', '博士'] },
-  { id: 'source', name: '职位来源', options: ['不限', '企业直招', '猎头转推'] },
   { id: 'industry', name: '公司行业', options: ['不限', '移动互联网', '电子商务', '游戏', '社交网络与媒体', '广告营销', '大数据', '医疗健康'] },
-  { id: 'nature', name: '公司性质', options: ['不限', '国企', '外企', '民营', '合资', '上市公司'] },
   { id: 'size', name: '公司规模', options: ['不限', '少于50人', '50-150人', '150-500人', '500-1000人', '1000-5000人', '10000人以上'] },
 ];
 
@@ -294,7 +292,7 @@ export default function JobList() {
               <div className="flex items-center text-sm">
                 <div className="w-24 text-on-surface-variant font-bold shrink-0 tracking-widest">其他筛选</div>
                 <div className="flex gap-3">
-                   {['学历', '职位来源', '公司行业', '公司性质', '公司规模'].map(filter => (
+                   {['学历', '公司行业', '公司规模'].map(filter => (
                       <button key={filter} className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-low rounded-[12px] text-on-surface hover:bg-surface-mid transition-colors">
                         {filter} <ChevronDown size={14} className="text-outline" />
                       </button>
