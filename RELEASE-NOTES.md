@@ -172,3 +172,6 @@
 
 - refactor: 企业端公司资料页“所属行业”一级/二级下拉切换为 shadcn Select，保留父子行业联动与默认二级行业回填逻辑
 - test: 新增企业端公司资料页测试，覆盖 shadcn Select 渲染形态与行业切换后的提交参数
+- feat: 企业端团队管理页 `/enterprise/employees` 接入真实后端接口，员工列表/统计/待审批区改为读取 `companyApi` 数据并保持原有页面结构
+- feat: 团队管理页新增真实操作对接：成员禁用/启用、重置密码、加入审批通过/拒绝，并补充加载态与最小反馈文案
+- test: 新增 `enterprise-employees-page` 页面测试，覆盖后端数据渲染与禁用/审批交互调用
