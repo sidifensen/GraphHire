@@ -91,10 +91,10 @@ export default function CompanyDetail() {
           </Link>
         </div>
 
-        <section className="rounded-3xl border border-surface-mid bg-surface-lowest p-6 md:p-10">
+        <section className="border-b border-surface-mid bg-surface-lowest px-1 pb-5 pt-2 md:px-0 md:pb-6 md:pt-3">
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div className="flex items-start gap-4">
-              <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-surface-mid/70 bg-white md:h-20 md:w-20">
+              <div className="h-16 w-16 shrink-0 overflow-hidden rounded-md border border-surface-mid/70 bg-white md:h-20 md:w-20">
                 <img src={resolveLogoUrl(company.avatarUrl)} className="h-full w-full object-cover" alt={company.name} />
               </div>
               <div>
@@ -105,22 +105,22 @@ export default function CompanyDetail() {
                 </div>
               </div>
             </div>
-            <div className="rounded-xl bg-primary/10 px-4 py-2 text-sm font-bold text-primary">在招 {company.jobCount ?? jobs.length}</div>
+            <div className="px-2 py-1 text-sm font-bold text-primary">在招 {company.jobCount ?? jobs.length}</div>
           </div>
 
           <div className="mt-6 flex flex-wrap gap-2">
-            <span className="rounded-xl bg-surface-low px-4 py-1.5 text-xs font-black uppercase tracking-wider text-on-surface-variant">
+            <span className="bg-surface-low px-3 py-1 text-xs font-bold text-on-surface-variant">
               {company.industryName || '未知行业'}
             </span>
-            <span className="rounded-xl bg-surface-low px-4 py-1.5 text-xs font-black uppercase tracking-wider text-on-surface-variant">
+            <span className="bg-surface-low px-3 py-1 text-xs font-bold text-on-surface-variant">
               {formatCompanyScale(company.scale)}
             </span>
-            <span className="rounded-xl bg-surface-low px-4 py-1.5 text-xs font-black uppercase tracking-wider text-on-surface-variant">
+            <span className="bg-surface-low px-3 py-1 text-xs font-bold text-on-surface-variant">
               {company.city || '地点待补充'}
             </span>
           </div>
 
-          <div className="mt-8 border-b border-surface-mid">
+          <div className="mt-7 border-b border-surface-mid">
             <div role="tablist" aria-label="公司详情内容切换" className="flex items-center gap-8">
               <button
                 type="button"
@@ -152,11 +152,11 @@ export default function CompanyDetail() {
           </div>
         </section>
 
-        <section className="mt-8 rounded-3xl border border-surface-mid bg-surface-lowest p-6 md:p-10">
+        <section className="mt-5 bg-surface-lowest px-1 py-2 md:px-0">
           {activeTab === 'intro' ? (
             <>
               <h2 className="mb-4 flex items-center gap-3 text-2xl font-black text-on-surface">
-                <span className="h-6 w-1.5 rounded-full bg-primary" />
+                <span className="h-6 w-1 bg-primary" />
                 公司介绍
               </h2>
               <p className="leading-relaxed whitespace-pre-wrap text-on-surface-variant">{companyDescription}</p>
@@ -174,16 +174,16 @@ export default function CompanyDetail() {
               </div>
 
               {jobs.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-surface-mid p-4 text-sm text-on-surface-variant">暂无在招职位</div>
+                <div className="border border-dashed border-surface-mid px-4 py-5 text-sm text-on-surface-variant">暂无在招职位</div>
               ) : (
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col border-t border-surface-mid">
                   {jobs.map((job) => (
                     <Link
                       key={job.id}
                       href={`/jobs/${job.id}`}
-                      className="block rounded-2xl border border-surface-mid bg-surface-lowest p-5 shadow-sm transition-transform active:scale-[0.98]"
+                      className="block border-b border-surface-mid px-1 py-4 transition-colors hover:bg-surface-low"
                     >
-                      <div className="mb-2 flex items-start justify-between">
+                      <div className="mb-2 flex items-start justify-between gap-4">
                         <h3 className="truncate pr-4 font-bold text-on-surface">{job.title}</h3>
                         <span className="whitespace-nowrap font-bold text-primary">{formatSalary(job.salaryMin, job.salaryMax)}</span>
                       </div>

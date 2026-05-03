@@ -119,6 +119,23 @@ describe('user company detail page real api integration', () => {
     expect(screen.getByText('25k-38k')).toBeInTheDocument();
   });
 
+  it('uses linear layout and row-based job list instead of stacked cards', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<CompanyDetailPage />);
+
+    await screen.findByText('星河科技');
+
+    expect(container.querySelectorAll('.rounded-3xl')).toHaveLength(0);
+
+    const jobsTab = screen.getByRole('tab', { name: '在招职位' });
+    await user.click(jobsTab);
+
+    const jobLink = screen.getByRole('link', { name: /后端开发工程师/ });
+    expect(jobLink).toHaveClass('border-b');
+    expect(jobLink).not.toHaveClass('rounded-2xl');
+    expect(jobLink).not.toHaveClass('shadow-sm');
+  });
+
   it('does not force viewport-height overflow on detail root container', async () => {
     const { container } = render(<CompanyDetailPage />);
 
