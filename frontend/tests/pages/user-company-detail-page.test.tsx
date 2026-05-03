@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import CompanyDetailPage from '@/app/(user)/companies/[id]/page';
 
 const hoisted = vi.hoisted(() => ({
@@ -93,7 +94,27 @@ describe('user company detail page real api integration', () => {
     expect(await screen.findByText('星河科技')).toBeInTheDocument();
     expect(screen.getByText('杭州市滨江区江南大道3888号')).toBeInTheDocument();
     expect(screen.queryByText('已认证企业，当前开放 2 个职位')).not.toBeInTheDocument();
+  });
+
+  it('shows intro tab by default and switches to jobs tab after clicking', async () => {
+    const user = userEvent.setup();
+
+    render(<CompanyDetailPage />);
+
+    await screen.findByText('星河科技');
+
+    const introTab = screen.getByRole('tab', { name: '公司介绍' });
+    const jobsTab = screen.getByRole('tab', { name: '在招职位' });
+
+    expect(introTab).toHaveAttribute('aria-selected', 'true');
+    expect(jobsTab).toHaveAttribute('aria-selected', 'false');
     expect(screen.getByText('星河科技是一家专注企业数字化的技术公司。')).toBeInTheDocument();
+    expect(screen.queryByText('后端开发工程师')).not.toBeInTheDocument();
+
+    await user.click(jobsTab);
+
+    expect(jobsTab).toHaveAttribute('aria-selected', 'true');
+    expect(introTab).toHaveAttribute('aria-selected', 'false');
     expect(screen.getByText('后端开发工程师')).toBeInTheDocument();
     expect(screen.getByText('25k-38k')).toBeInTheDocument();
   });

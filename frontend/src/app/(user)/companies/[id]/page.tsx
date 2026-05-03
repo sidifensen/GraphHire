@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
@@ -17,6 +17,8 @@ function formatSalary(min?: number | null, max?: number | null) {
 
 const DEFAULT_AVATAR = '/default-avatar.svg';
 
+type DetailTab = 'intro' | 'jobs';
+
 function resolveLogoUrl(url?: string | null) {
   if (!url) return DEFAULT_AVATAR;
   if (/^https?:\/\//i.test(url)) return url;
@@ -31,6 +33,7 @@ export default function CompanyDetail() {
 
   const [company, setCompany] = useState<Company | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [activeTab, setActiveTab] = useState<DetailTab>('intro');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -88,55 +91,84 @@ export default function CompanyDetail() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 gap-8 md:gap-12 lg:grid-cols-3">
-          <div className="space-y-8 lg:col-span-2">
-            <section className="rounded-3xl border border-surface-mid bg-surface-lowest p-6 md:p-10">
-              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                <div className="flex items-start gap-4">
-                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-surface-mid/70 bg-white md:h-20 md:w-20">
-                    <img src={resolveLogoUrl(company.avatarUrl)} className="h-full w-full object-cover" alt={company.name} />
-                  </div>
-                  <div>
-                    <h1 className="text-3xl font-black text-on-surface md:text-4xl">{company.name}</h1>
-                    <div className="mt-2 flex items-center gap-2 text-sm text-on-surface-variant">
-                      <MapPin size={14} />
-                      <span>{company.address || company.city || '地址待补充'}</span>
-                    </div>
-                  </div>
+        <section className="rounded-3xl border border-surface-mid bg-surface-lowest p-6 md:p-10">
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div className="flex items-start gap-4">
+              <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-surface-mid/70 bg-white md:h-20 md:w-20">
+                <img src={resolveLogoUrl(company.avatarUrl)} className="h-full w-full object-cover" alt={company.name} />
+              </div>
+              <div>
+                <h1 className="text-3xl font-black text-on-surface md:text-4xl">{company.name}</h1>
+                <div className="mt-2 flex items-center gap-2 text-sm text-on-surface-variant">
+                  <MapPin size={14} />
+                  <span>{company.address || company.city || '地址待补充'}</span>
                 </div>
-                <div className="rounded-xl bg-primary/10 px-4 py-2 text-sm font-bold text-primary">在招 {company.jobCount ?? jobs.length}</div>
               </div>
+            </div>
+            <div className="rounded-xl bg-primary/10 px-4 py-2 text-sm font-bold text-primary">在招 {company.jobCount ?? jobs.length}</div>
+          </div>
 
-              <div className="mt-6 flex flex-wrap gap-2">
-                <span className="rounded-xl bg-surface-low px-4 py-1.5 text-xs font-black uppercase tracking-wider text-on-surface-variant">
-                  {company.industryName || '未知行业'}
-                </span>
-                <span className="rounded-xl bg-surface-low px-4 py-1.5 text-xs font-black uppercase tracking-wider text-on-surface-variant">
-                  {formatCompanyScale(company.scale)}
-                </span>
-                <span className="rounded-xl bg-surface-low px-4 py-1.5 text-xs font-black uppercase tracking-wider text-on-surface-variant">
-                  {company.city || '地点待补充'}
-                </span>
-              </div>
-            </section>
+          <div className="mt-6 flex flex-wrap gap-2">
+            <span className="rounded-xl bg-surface-low px-4 py-1.5 text-xs font-black uppercase tracking-wider text-on-surface-variant">
+              {company.industryName || '未知行业'}
+            </span>
+            <span className="rounded-xl bg-surface-low px-4 py-1.5 text-xs font-black uppercase tracking-wider text-on-surface-variant">
+              {formatCompanyScale(company.scale)}
+            </span>
+            <span className="rounded-xl bg-surface-low px-4 py-1.5 text-xs font-black uppercase tracking-wider text-on-surface-variant">
+              {company.city || '地点待补充'}
+            </span>
+          </div>
 
-            <section className="rounded-3xl border border-surface-mid bg-surface-lowest p-6 md:p-10">
+          <div className="mt-8 border-b border-surface-mid">
+            <div role="tablist" aria-label="公司详情内容切换" className="flex items-center gap-8">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === 'intro'}
+                className={`border-b-2 pb-3 text-sm font-bold transition-colors ${
+                  activeTab === 'intro'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-on-surface-variant hover:text-on-surface'
+                }`}
+                onClick={() => setActiveTab('intro')}
+              >
+                公司介绍
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === 'jobs'}
+                className={`border-b-2 pb-3 text-sm font-bold transition-colors ${
+                  activeTab === 'jobs'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-on-surface-variant hover:text-on-surface'
+                }`}
+                onClick={() => setActiveTab('jobs')}
+              >
+                在招职位
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-8 rounded-3xl border border-surface-mid bg-surface-lowest p-6 md:p-10">
+          {activeTab === 'intro' ? (
+            <>
               <h2 className="mb-4 flex items-center gap-3 text-2xl font-black text-on-surface">
                 <span className="h-6 w-1.5 rounded-full bg-primary" />
                 公司介绍
               </h2>
               <p className="leading-relaxed whitespace-pre-wrap text-on-surface-variant">{companyDescription}</p>
-            </section>
-          </div>
-
-          <div className="lg:col-span-1">
-            <section className="sticky top-24 space-y-4">
-              <div className="mb-2 flex items-center justify-between">
+            </>
+          ) : (
+            <>
+              <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <h3 className="text-xl font-black text-on-surface">在招职位</h3>
+                  <h2 className="text-2xl font-black text-on-surface">在招职位</h2>
                   <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-black text-primary">{jobs.length}</span>
                 </div>
-                <Link href="/jobs" className="flex items-center gap-1 text-sm font-black text-primary hover:gap-2 transition-all">
+                <Link href="/jobs" className="flex items-center gap-1 text-sm font-black text-primary transition-all hover:gap-2">
                   全部职位 <ChevronRight size={16} />
                 </Link>
               </div>
@@ -152,7 +184,7 @@ export default function CompanyDetail() {
                       className="block rounded-2xl border border-surface-mid bg-surface-lowest p-5 shadow-sm transition-transform active:scale-[0.98]"
                     >
                       <div className="mb-2 flex items-start justify-between">
-                        <h4 className="truncate pr-4 font-bold text-on-surface">{job.title}</h4>
+                        <h3 className="truncate pr-4 font-bold text-on-surface">{job.title}</h3>
                         <span className="whitespace-nowrap font-bold text-primary">{formatSalary(job.salaryMin, job.salaryMax)}</span>
                       </div>
                       <div className="flex items-center gap-2 text-xs text-on-surface-variant">
@@ -167,9 +199,9 @@ export default function CompanyDetail() {
                   ))}
                 </div>
               )}
-            </section>
-          </div>
-        </div>
+            </>
+          )}
+        </section>
       </main>
     </div>
   );
