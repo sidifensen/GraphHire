@@ -9,7 +9,9 @@ import com.graphhire.match.domain.service.MatchDomainService;
 import com.graphhire.match.domain.vo.MatchScore;
 import com.graphhire.match.interfaces.dto.response.MatchDetailResponse;
 import com.graphhire.notification.application.service.NotificationAppService;
+import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.model.Resume;
+import com.graphhire.resume.domain.repository.PersonInfoRepository;
 import com.graphhire.resume.domain.repository.ResumeRepository;
 import com.graphhire.resume.domain.vo.ParseStatus;
 import org.junit.jupiter.api.Test;
@@ -38,6 +40,8 @@ class MatchAppServiceTest {
     private MatchDomainService matchDomainService;
     @Mock
     private NotificationAppService notificationAppService;
+    @Mock
+    private PersonInfoRepository personInfoRepository;
 
     @InjectMocks
     private MatchAppService matchAppService;
@@ -97,12 +101,18 @@ class MatchAppServiceTest {
 
         Resume resume = new Resume();
         resume.setId(101L);
+        resume.setUserId(1001L);
         resume.setFileName("candidate-a.pdf");
         resume.setParseResult("{" +
             "\"skills\":[\"Java\",\"Spring Boot\"]," +
             "\"education\":[{\"degree\":\"本科\"}]," +
             "\"experience\":[{\"company\":\"A\"},{\"company\":\"B\"}]" +
             "}");
+
+        PersonInfo personInfo = new PersonInfo();
+        personInfo.setUserId(1001L);
+        personInfo.setRealName("张三");
+        personInfo.setAvatarUrl("avatar/user_1001.png");
 
         Job job = new Job();
         job.setId(jobId);
@@ -111,12 +121,15 @@ class MatchAppServiceTest {
         when(matchRecordRepository.findByJobId(jobId)).thenReturn(List.of(record));
         when(jobRepository.findById(jobId)).thenReturn(Optional.of(job));
         when(resumeRepository.findById(101L)).thenReturn(Optional.of(resume));
+        when(personInfoRepository.findByUserId(1001L)).thenReturn(Optional.of(personInfo));
 
         List<MatchDetailResponse> responses = matchAppService.getMatchListForJob(jobId);
 
         assertEquals(1, responses.size());
         MatchDetailResponse.ResumeBasicInfo resumeInfo = responses.get(0).getResume();
         assertNotNull(resumeInfo);
+        assertEquals("张三", resumeInfo.getUserName());
+        assertEquals("/person/avatar/public/1001", resumeInfo.getAvatarUrl());
         assertEquals(List.of("Java", "Spring Boot"), resumeInfo.getSkills());
         assertEquals("本科", resumeInfo.getEducation());
         assertEquals("2段经历", resumeInfo.getExperience());

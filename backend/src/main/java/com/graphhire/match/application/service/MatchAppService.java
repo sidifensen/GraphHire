@@ -12,7 +12,9 @@ import com.graphhire.match.interfaces.dto.response.MatchDetailResponse;
 import com.graphhire.notification.application.service.NotificationAppService;
 import com.graphhire.notification.domain.model.Notification;
 import com.graphhire.notification.domain.vo.NotificationType;
+import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.model.Resume;
+import com.graphhire.resume.domain.repository.PersonInfoRepository;
 import com.graphhire.resume.domain.repository.ResumeRepository;
 import com.graphhire.resume.domain.vo.ParseStatus;
 import org.slf4j.Logger;
@@ -25,6 +27,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,6 +49,9 @@ public class MatchAppService {
 
     @Autowired
     private NotificationAppService notificationAppService;
+
+    @Autowired
+    private PersonInfoRepository personInfoRepository;
 
     /**
      * 触发匹配
@@ -158,7 +164,7 @@ public class MatchAppService {
         Job job = jobRepository.findById(record.getJobId())
             .orElseThrow(() -> new RuntimeException("Job not found"));
         // 步骤4：组装并返回匹配详情响应
-        return new MatchDetailResponse(record, resume, job);
+        return new MatchDetailResponse(record, resume, job, resolvePersonInfo(resume));
     }
 
     /**
@@ -177,7 +183,7 @@ public class MatchAppService {
             .map(r -> {
                 Job job = jobRepository.findById(r.getJobId()).orElse(null);
                 Resume resume = resumeRepository.findById(r.getResumeId()).orElse(null);
-                return new MatchDetailResponse(r, resume, job);
+                return new MatchDetailResponse(r, resume, job, resolvePersonInfo(resume));
             })
             .toList();
     }
@@ -198,7 +204,7 @@ public class MatchAppService {
             .map(r -> {
                 Job job = jobRepository.findById(r.getJobId()).orElse(null);
                 Resume resume = resumeRepository.findById(r.getResumeId()).orElse(null);
-                return new MatchDetailResponse(r, resume, job);
+                return new MatchDetailResponse(r, resume, job, resolvePersonInfo(resume));
             })
             .sorted(recommendationScoreDescComparator())
             .toList();
@@ -229,7 +235,7 @@ public class MatchAppService {
             for (MatchRecord record : records) {
                 Job job = jobRepository.findById(record.getJobId()).orElse(null);
                 if (job != null) {
-                    recommendations.add(new MatchDetailResponse(record, resume, job));
+                    recommendations.add(new MatchDetailResponse(record, resume, job, resolvePersonInfo(resume)));
                 }
             }
         }
@@ -265,7 +271,7 @@ public class MatchAppService {
             for (MatchRecord record : records) {
                 Resume resume = resumeRepository.findById(record.getResumeId()).orElse(null);
                 if (resume != null) {
-                    recommendations.add(new MatchDetailResponse(record, resume, job));
+                    recommendations.add(new MatchDetailResponse(record, resume, job, resolvePersonInfo(resume)));
                 }
             }
         }
@@ -283,6 +289,13 @@ public class MatchAppService {
             return Double.NEGATIVE_INFINITY;
         }
         return response.getScore().getTotal();
+    }
+
+    private PersonInfo resolvePersonInfo(Resume resume) {
+        if (resume == null || resume.getUserId() == null) {
+            return null;
+        }
+        return personInfoRepository.findByUserId(resume.getUserId()).orElse(null);
     }
 
     /**
@@ -310,7 +323,7 @@ public class MatchAppService {
                 // 步骤4：找到匹配记录后查询职位信息并返回匹配详情
                 MatchRecord record = records.get(0);
                 Job job = jobRepository.findById(jobId).orElse(null);
-                return new MatchDetailResponse(record, resume, job);
+                return new MatchDetailResponse(record, resume, job, resolvePersonInfo(resume));
             }
         }
         // 步骤5：未找到匹配记录时即时计算并落库（避免前端首次进入详情报错）
@@ -321,7 +334,7 @@ public class MatchAppService {
         MatchRecord generatedRecord = matchDomainService.calculateMatch(targetResume.getId(), jobId);
         MatchRecord savedRecord = matchRecordRepository.save(generatedRecord);
         Job job = jobRepository.findById(jobId).orElse(null);
-        return new MatchDetailResponse(savedRecord, targetResume, job);
+        return new MatchDetailResponse(savedRecord, targetResume, job, resolvePersonInfo(targetResume));
     }
 
     /**
@@ -365,7 +378,7 @@ public class MatchAppService {
         );
 
         // 步骤6：组装并返回匹配详情响应
-        return new MatchDetailResponse(record, resume, job);
+        return new MatchDetailResponse(record, resume, job, resolvePersonInfo(resume));
     }
 
     /**

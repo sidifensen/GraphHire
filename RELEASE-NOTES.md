@@ -2,7 +2,9 @@
 
 ## 2026-05-03
 
-- feat: 企业端推荐页 `/enterprise/recommendations` 完成真实后端接口对接，左侧职位列表改为企业真实职位数据，右侧候选人列表按当前职位实时拉取推荐结果
+- feat: 企业端推荐卡片展示升级：主标题改为候选人真实姓名，副标题保留简历文件名；头像优先显示候选人真实头像（`/person/avatar/public/{userId}`）
+- refactor: 推荐接口响应 `resume` 新增 `avatarUrl` 字段，并在后端聚合时注入 `userName/avatarUrl`（基于 `person_info`）
+- test: 扩展推荐页与匹配服务测试，覆盖姓名与头像渲染以及后端头像字段返回- feat: 企业端推荐页 `/enterprise/recommendations` 完成真实后端接口对接，左侧职位列表改为企业真实职位数据，右侧候选人列表按当前职位实时拉取推荐结果
 - feat: 推荐页主操作从“一键邀请”升级为“一键匹配所有候选人”，接入 `POST /company/job/{id}/match/trigger`，并在触发后自动刷新当前职位推荐列表
 - feat: 推荐候选人卡片新增真实匹配指标展示（综合匹配度/技能匹配度/岗位要求匹配度）并展示候选人技能标签、学历与经验摘要
 - refactor: 扩展企业端推荐类型定义 `EnterpriseRecommendation.resume` 字段（`skills/education/experience`）以对齐后端响应契约
@@ -11,7 +13,9 @@
 
 ## 2026-05-03
 
-- fix: 统一用户端“我的”子页面桌面主容器布局结构（外层横向留白 + 内层 max-width），修复从个人资料切换到简历管理/投递记录/我的图谱时左侧菜单栏视觉右移问题
+- feat: 企业端推荐卡片展示升级：主标题改为候选人真实姓名，副标题保留简历文件名；头像优先显示候选人真实头像（`/person/avatar/public/{userId}`）
+- refactor: 推荐接口响应 `resume` 新增 `avatarUrl` 字段，并在后端聚合时注入 `userName/avatarUrl`（基于 `person_info`）
+- test: 扩展推荐页与匹配服务测试，覆盖姓名与头像渲染以及后端头像字段返回- fix: 统一用户端“我的”子页面桌面主容器布局结构（外层横向留白 + 内层 max-width），修复从个人资料切换到简历管理/投递记录/我的图谱时左侧菜单栏视觉右移问题
 - test: 新增 `user-workbench-layout-consistency` 回归测试，校验“我的页面”侧边栏所在桌面容器在各子页面保持一致，防止布局偏移回归
 - refactor: 删除投递记录表 `application.note` 字段，新增迁移脚本 `V2026_05_03_022__drop_application_note_column.sql` 并同步更新 `schema.sql` 与初始建表脚本
 - refactor: 清理投递模块对 `note` 的代码依赖（Application 领域模型、ApplicationPO、ApplicationMapper、企业端状态更新接口签名）
@@ -162,3 +166,4 @@
 - test: 更新个人主页相关测试（`user-profile-auth-info`、`user-profile-links`）以匹配后端真实 favorites 数据结构，并补充新增档案字段展示断言
 - refactor: 用户端个人主页桌面档案区由“字段碎卡片”改为行式信息排版（基础信息/教育与城市/求职意向），提升信息扫描效率与整体观感
 - test: 补充个人主页行式档案区结构断言，覆盖 `profile-info-row-*` 行分组渲染
+

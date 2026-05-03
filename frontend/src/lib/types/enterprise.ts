@@ -1,4 +1,4 @@
-﻿export interface EnterpriseDashboardJobItem {
+export interface EnterpriseDashboardJobItem {
   id: number;
   title: string;
   department?: string | null;
@@ -78,6 +78,7 @@ export interface EnterpriseRecommendation {
     id: number;
     fileName?: string | null;
     userName?: string | null;
+    avatarUrl?: string | null;
     skills?: string[] | null;
     education?: string | null;
     experience?: string | null;

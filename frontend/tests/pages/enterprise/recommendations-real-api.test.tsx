@@ -1,4 +1,4 @@
-﻿import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import RecommendationsPage from '@/app/enterprise/recommendations/page';
@@ -70,6 +70,7 @@ describe('enterprise recommendations real api integration', () => {
           id: 101,
           fileName: 'candidate-a.pdf',
           userName: '张三',
+          avatarUrl: '/person/avatar/public/101',
           skills: ['Java', 'Spring Boot'],
           education: '本科',
           experience: '3年',
@@ -98,6 +99,11 @@ describe('enterprise recommendations real api integration', () => {
     expect(screen.getByText('Java')).toBeInTheDocument();
     expect(screen.getByText('Spring Boot')).toBeInTheDocument();
 
+    // 主标题应为用户姓名
+    expect(screen.getByRole('heading', { name: '张三' })).toBeInTheDocument();
+    // 头像应使用真实头像 URL
+    expect(screen.getByAltText('张三')).toHaveAttribute('src', '/person/avatar/public/101');
+
     await user.click(screen.getByRole('button', { name: /一键匹配所有候选人/ }));
 
     await waitFor(() => {
@@ -108,4 +114,3 @@ describe('enterprise recommendations real api integration', () => {
     });
   });
 });
-

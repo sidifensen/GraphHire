@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -51,6 +51,7 @@ export default function Recommendations() {
   const [loadingCandidates, setLoadingCandidates] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [matchingAll, setMatchingAll] = useState(false);
+  const [mobileJobOpen, setMobileJobOpen] = useState(false);
   const [error, setError] = useState('');
 
   const selectedJob = useMemo(
@@ -155,6 +156,7 @@ export default function Recommendations() {
       return;
     }
     setSelectedJobId(jobId);
+    setMobileJobOpen(false);
     await loadRecommendations(jobId);
   };
 
@@ -189,13 +191,41 @@ export default function Recommendations() {
     <div className="flex flex-col h-screen bg-surface overflow-hidden">
       <main className="w-full max-w-none md:max-w-7xl mx-auto flex-1 flex flex-col md:flex-row md:gap-8 px-3 md:px-8 pt-stack-gap-md md:pt-8 overflow-hidden pb-[80px] md:pb-8">
         <div className="md:hidden flex flex-col gap-stack-gap-sm shrink-0 mb-4">
-          <div className="relative bg-surface-container-lowest border border-outline-variant rounded-lg px-inline-padding-md py-stack-gap-sm flex items-center justify-between shadow-[0_2px_8px_rgba(0,0,0,0.04)] cursor-pointer">
+          <button
+            type="button"
+            onClick={() => setMobileJobOpen((prev) => !prev)}
+            className="relative w-full text-left bg-surface-container-lowest border border-outline-variant rounded-lg px-inline-padding-md py-stack-gap-sm flex items-center justify-between shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+          >
             <div className="flex flex-col">
               <span className="font-label-md text-label-md text-on-surface-variant">当前推荐职位</span>
               <span className="font-body-lg text-body-lg text-on-surface font-medium">{selectedJob?.title || '暂无职位'}</span>
             </div>
-            <span className="material-symbols-outlined text-outline">expand_more</span>
-          </div>
+            <span className={cn('material-symbols-outlined text-outline transition-transform', mobileJobOpen && 'rotate-180')}>expand_more</span>
+          </button>
+          {mobileJobOpen && (
+            <div className="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.06)] overflow-hidden">
+              {jobs.length > 0 ? (
+                jobs.map((job) => (
+                  <button
+                    key={job.id}
+                    type="button"
+                    onClick={() => handleSelectJob(job.id)}
+                    className={cn(
+                      'w-full text-left px-4 py-3 border-b last:border-b-0 border-surface-variant',
+                      selectedJobId === job.id ? 'bg-primary/8' : 'bg-transparent',
+                    )}
+                  >
+                    <div className={cn('text-[15px] font-medium', selectedJobId === job.id ? 'text-primary' : 'text-on-surface')}>
+                      {job.title}
+                    </div>
+                    <div className="text-[12px] text-on-surface-variant mt-1">{formatJobMeta(job)} · {job.matchCount ?? 0} 匹配</div>
+                  </button>
+                ))
+              ) : (
+                <div className="px-4 py-3 text-sm text-on-surface-variant">暂无可展示职位</div>
+              )}
+            </div>
+          )}
         </div>
 
         <aside className="hidden md:flex flex-col w-[320px] lg:w-[360px] shrink-0 h-full gap-5 overflow-hidden">
@@ -339,6 +369,7 @@ export default function Recommendations() {
                   const candidateEducation = candidate.resume?.education || '学历待补充';
                   const candidateExperience = candidate.resume?.experience || '经验待补充';
                   const name = recommendationName(candidate);
+                  const avatarUrl = candidate.resume?.avatarUrl || null;
 
                   return (
                     <article
@@ -361,8 +392,14 @@ export default function Recommendations() {
                       </div>
 
                       <div className="flex items-start gap-4 mt-2">
-                        <div className="w-14 h-14 rounded-full overflow-hidden bg-surface-variant border-2 border-surface-container-lowest shadow-sm shrink-0 flex items-center justify-center text-on-surface font-semibold">
-                          {name.slice(0, 1)}
+                        <div className="w-14 h-14 rounded-full overflow-hidden bg-surface-variant border-2 border-surface-container-lowest shadow-sm shrink-0">
+                          {avatarUrl ? (
+                            <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-on-surface font-semibold">
+                              {name.slice(0, 1)}
+                            </div>
+                          )}
                         </div>
                         <div className="flex flex-col flex-1 pt-0.5 pr-20">
                           <h2 className="font-headline-sm text-lg font-bold text-on-surface truncate">{name}</h2>
@@ -377,7 +414,6 @@ export default function Recommendations() {
                         </div>
                         <div className="flex items-center justify-between">
                           <span>岗位要求匹配度 {requirementScore}%</span>
-                          <span className="truncate ml-2">{candidate.matchReason || '匹配理由待补充'}</span>
                         </div>
                       </div>
 
@@ -429,3 +465,4 @@ export default function Recommendations() {
     </div>
   );
 }
+

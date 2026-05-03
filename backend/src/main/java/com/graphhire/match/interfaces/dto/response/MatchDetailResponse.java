@@ -8,6 +8,7 @@ import com.graphhire.job.domain.model.Job;
 import com.graphhire.match.domain.model.MatchRecord;
 import com.graphhire.match.domain.vo.MatchLevel;
 import com.graphhire.match.domain.vo.MatchScore;
+import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.model.Resume;
 
 import java.util.ArrayList;
@@ -27,13 +28,17 @@ public class MatchDetailResponse {
     }
 
     public MatchDetailResponse(MatchRecord record, Resume resume, Job job) {
+        this(record, resume, job, null);
+    }
+
+    public MatchDetailResponse(MatchRecord record, Resume resume, Job job, PersonInfo personInfo) {
         this.matchId = record.getId();
         this.resumeId = record.getResumeId();
         this.jobId = record.getJobId();
         this.score = record.getScore();
         this.level = record.getLevel();
         this.matchReason = record.getMatchReason();
-        this.resume = resume != null ? new ResumeBasicInfo(resume) : null;
+        this.resume = resume != null ? new ResumeBasicInfo(resume, personInfo) : null;
         this.job = job != null ? new JobBasicInfo(job) : null;
     }
 
@@ -50,13 +55,21 @@ public class MatchDetailResponse {
         private Long id;
         private String fileName;
         private String userName;
+        private String avatarUrl;
         private List<String> skills;
         private String education;
         private String experience;
 
-        public ResumeBasicInfo(Resume resume) {
+        public ResumeBasicInfo(Resume resume, PersonInfo personInfo) {
             this.id = resume.getId();
             this.fileName = resume.getFileName();
+            if (personInfo != null) {
+                this.userName = StrUtil.emptyToNull(StrUtil.trim(personInfo.getRealName()));
+                String avatarPath = StrUtil.emptyToNull(StrUtil.trim(personInfo.getAvatarUrl()));
+                if (avatarPath != null) {
+                    this.avatarUrl = "/person/avatar/public/" + resume.getUserId();
+                }
+            }
 
             ParseResultSummary summary = ParseResultSummary.from(resume.getParseResult());
             this.skills = summary.skills();
@@ -67,6 +80,7 @@ public class MatchDetailResponse {
         public Long getId() { return id; }
         public String getFileName() { return fileName; }
         public String getUserName() { return userName; }
+        public String getAvatarUrl() { return avatarUrl; }
         public List<String> getSkills() { return skills; }
         public String getEducation() { return education; }
         public String getExperience() { return experience; }
