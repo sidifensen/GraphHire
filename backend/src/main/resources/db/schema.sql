@@ -446,7 +446,6 @@ CREATE TABLE application
     status      VARCHAR(20)  NOT NULL DEFAULT 'PENDING',
     applied_at  TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at  TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    note        TEXT,
 
     CONSTRAINT uk_application_resume_job UNIQUE (resume_id, job_id),
     CONSTRAINT chk_application_status CHECK (status IN ('PENDING', 'VIEWED', 'INTERVIEW_INVITED', 'REJECTED', 'ACCEPTED', 'WITHDRAWN'))
@@ -461,7 +460,6 @@ COMMENT ON COLUMN application.company_id IS '目标公司ID';
 COMMENT ON COLUMN application.status IS '投递状态：PENDING-待处理 VIEWED-已查看 INTERVIEW_INVITED-面试邀请 REJECTED-已拒绝 ACCEPTED-已接受 WITHDRAWN-已撤回';
 COMMENT ON COLUMN application.applied_at IS '投递时间';
 COMMENT ON COLUMN application.updated_at IS '更新时间';
-COMMENT ON COLUMN application.note IS 'HR备注';
 
 CREATE INDEX idx_application_user_id ON application (user_id);
 CREATE INDEX idx_application_job_id ON application (job_id);

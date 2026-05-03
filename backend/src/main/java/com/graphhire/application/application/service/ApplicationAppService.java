@@ -271,17 +271,16 @@ public class ApplicationAppService {
 
     /**
      * 更新投递状态
-     * 【功能说明】企业更新投递状态和备注。
+     * 【功能说明】企业更新投递状态。
      */
     @Transactional
-    public Application updateApplicationStatus(Long companyId, Long applicationId, ApplicationStatus status, String note) {
+    public Application updateApplicationStatus(Long companyId, Long applicationId, ApplicationStatus status) {
         Application application = applicationRepository.findById(applicationId)
             .orElseThrow(() -> new RuntimeException("Application not found: " + applicationId));
         if (!application.getCompanyId().equals(companyId)) {
             throw new RuntimeException("Application does not belong to company");
         }
         application.setStatus(status);
-        application.setNote(note);
         application.setUpdatedAt(LocalDateTime.now());
         return applicationRepository.save(application);
     }
@@ -307,7 +306,6 @@ public class ApplicationAppService {
         // 步骤2：更新投递状态为INTERVIEW_INVITED
         application.setStatus(ApplicationStatus.INTERVIEW_INVITED);
         application.setUpdatedAt(LocalDateTime.now());
-        application.setNote(remark != null ? remark : application.getNote());
         application = applicationRepository.save(application);
 
         // 步骤3：发送面试邀请通知

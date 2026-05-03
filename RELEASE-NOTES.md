@@ -4,6 +4,9 @@
 
 - fix: 统一用户端“我的”子页面桌面主容器布局结构（外层横向留白 + 内层 max-width），修复从个人资料切换到简历管理/投递记录/我的图谱时左侧菜单栏视觉右移问题
 - test: 新增 `user-workbench-layout-consistency` 回归测试，校验“我的页面”侧边栏所在桌面容器在各子页面保持一致，防止布局偏移回归
+- refactor: 删除投递记录表 `application.note` 字段，新增迁移脚本 `V2026_05_03_022__drop_application_note_column.sql` 并同步更新 `schema.sql` 与初始建表脚本
+- refactor: 清理投递模块对 `note` 的代码依赖（Application 领域模型、ApplicationPO、ApplicationMapper、企业端状态更新接口签名）
+- test: 新增 `ApplicationAppServiceTest` 用例覆盖“更新投递状态不依赖备注字段”，并完成后端编译与全量测试通过验证
 
 ## 2026-05-01
 

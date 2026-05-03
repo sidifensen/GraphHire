@@ -11,7 +11,6 @@ public class Application {
     private ApplicationStatus status;
     private LocalDateTime appliedAt;
     private LocalDateTime updatedAt;
-    private String note;  // HR备注
 
     public Application() {}
 
@@ -31,6 +30,4 @@ public class Application {
     public void setAppliedAt(LocalDateTime appliedAt) { this.appliedAt = appliedAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
-    public String getNote() { return note; }
-    public void setNote(String note) { this.note = note; }
 }

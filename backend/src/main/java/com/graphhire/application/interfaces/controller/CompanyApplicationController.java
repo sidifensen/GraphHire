@@ -46,11 +46,10 @@ public class CompanyApplicationController {
     @PutMapping("/applications/{id}/status")
     public Result<Void> updateStatus(
             @PathVariable Long id,
-            @RequestParam ApplicationStatus status,
-            @RequestParam(required = false) String note) {
+            @RequestParam ApplicationStatus status) {
         Long userId = StpUtil.getLoginIdAsLong();
         Long companyId = companyAppService.getCompanyIdByUserId(userId);
-        applicationAppService.updateApplicationStatus(companyId, id, status, note);
+        applicationAppService.updateApplicationStatus(companyId, id, status);
         return Result.success();
     }
 
@@ -71,7 +70,7 @@ public class CompanyApplicationController {
     public Result<Void> rejectApplication(@PathVariable Long id) {
         Long userId = StpUtil.getLoginIdAsLong();
         Long companyId = companyAppService.getCompanyIdByUserId(userId);
-        applicationAppService.updateApplicationStatus(companyId, id, ApplicationStatus.REJECTED, null);
+        applicationAppService.updateApplicationStatus(companyId, id, ApplicationStatus.REJECTED);
         return Result.success();
     }
 
@@ -79,7 +78,7 @@ public class CompanyApplicationController {
     public Result<Void> acceptApplication(@PathVariable Long id) {
         Long userId = StpUtil.getLoginIdAsLong();
         Long companyId = companyAppService.getCompanyIdByUserId(userId);
-        applicationAppService.updateApplicationStatus(companyId, id, ApplicationStatus.ACCEPTED, null);
+        applicationAppService.updateApplicationStatus(companyId, id, ApplicationStatus.ACCEPTED);
         return Result.success();
     }
 

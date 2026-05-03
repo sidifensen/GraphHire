@@ -31,6 +31,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -151,5 +152,30 @@ class ApplicationAppServiceTest {
             eq("您的简历已成功投递至职位：运营专员（校招）"),
             eq(1L)
         );
+    }
+
+    @Test
+    @DisplayName("企业更新投递状态时不再依赖备注字段")
+    void updateApplicationStatus_shouldUpdateWithoutNote() {
+        Long companyId = 30L;
+        Long applicationId = 1L;
+
+        Application application = new Application();
+        application.setId(applicationId);
+        application.setCompanyId(companyId);
+        application.setStatus(ApplicationStatus.PENDING);
+
+        when(applicationRepository.findById(applicationId)).thenReturn(Optional.of(application));
+        when(applicationRepository.save(application)).thenReturn(application);
+
+        Application updated = applicationAppService.updateApplicationStatus(
+            companyId,
+            applicationId,
+            ApplicationStatus.REJECTED
+        );
+
+        assertNotNull(updated.getUpdatedAt());
+        assertEquals(ApplicationStatus.REJECTED, updated.getStatus());
+        verify(applicationRepository).save(application);
     }
 }

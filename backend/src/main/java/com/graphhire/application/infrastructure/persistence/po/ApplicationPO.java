@@ -3,7 +3,6 @@ package com.graphhire.application.infrastructure.persistence.po;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.graphhire.application.domain.model.ApplicationStatus;
 import lombok.Data;
 import java.time.LocalDateTime;
 
@@ -19,5 +18,4 @@ public class ApplicationPO {
     private String status;
     private LocalDateTime appliedAt;
     private LocalDateTime updatedAt;
-    private String note;
 }
