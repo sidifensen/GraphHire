@@ -1,4 +1,4 @@
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, X } from 'lucide-react';
 import type { PublicTreeNode } from '@/lib/api/public';
 import { treeChildrenById, treeNodeById } from './tree';
 
@@ -15,6 +15,7 @@ interface IndustryFilterModalProps {
   onSelectMid: (id: number, isLeaf: boolean, name: string) => void;
   onToggleLeaf: (name: string) => void;
   onRemoveSelected: (name: string) => void;
+  onClearSelected?: () => void;
 }
 
 export function IndustryFilterModal({
@@ -30,6 +31,7 @@ export function IndustryFilterModal({
   onSelectMid,
   onToggleLeaf,
   onRemoveSelected,
+  onClearSelected,
 }: IndustryFilterModalProps) {
   if (!open) return null;
 
@@ -49,9 +51,10 @@ export function IndustryFilterModal({
                     key={name}
                     type="button"
                     onClick={() => onRemoveSelected(name)}
-                    className="inline-flex h-7 items-center rounded-full border border-primary/30 bg-white px-3 text-xs text-primary hover:bg-primary/10"
+                    className="inline-flex h-7 items-center gap-1 rounded-full border border-primary/30 bg-white px-3 text-xs text-primary hover:bg-primary/10"
                   >
-                    {name}
+                    <span>{name}</span>
+                    <X size={12} />
                   </button>
                 ))
               )}
@@ -120,6 +123,7 @@ export function IndustryFilterModal({
           </div>
         </div>
         <div className="px-6 py-3 border-t flex justify-end gap-2">
+          <button onClick={() => onClearSelected?.()} className="px-5 h-10 rounded-full border border-surface-mid text-on-surface">清空筛选</button>
           <button onClick={onClose} className="px-5 h-10 rounded-full border border-surface-mid text-on-surface">取消</button>
           <button onClick={onApply} className="px-5 h-10 rounded-full bg-primary text-white hover:bg-primary-container transition-colors">确定</button>
         </div>
@@ -127,4 +131,3 @@ export function IndustryFilterModal({
     </div>
   );
 }
-

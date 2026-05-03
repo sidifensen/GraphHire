@@ -148,4 +148,27 @@ describe('user companies page real api filters', () => {
       );
     });
   });
+
+  it('opens embedded location panel inside mobile dropdown when clicking 工作地点', async () => {
+    render(<CompanyListPage />);
+    await waitFor(() => expect(hoisted.companiesSearchMock).toHaveBeenCalledTimes(1));
+
+    fireEvent.click(screen.getByRole('button', { name: /^工作地点$/ }));
+
+    const embeddedPanel = await screen.findByTestId('mobile-company-location-dropdown');
+    expect(within(embeddedPanel).getByText('选择公司地点')).toBeInTheDocument();
+    const provinceList = within(embeddedPanel).getByTestId('mobile-company-location-province-list');
+    expect(within(provinceList).getByRole('button', { name: '北京市' })).toBeInTheDocument();
+  });
+
+  it('opens embedded industry panel inside mobile dropdown when clicking 行业类型', async () => {
+    render(<CompanyListPage />);
+    await waitFor(() => expect(hoisted.companiesSearchMock).toHaveBeenCalledTimes(1));
+
+    fireEvent.click(screen.getByRole('button', { name: /^行业类型$/ }));
+
+    const embeddedPanel = await screen.findByTestId('mobile-company-industry-dropdown');
+    expect(within(embeddedPanel).getByText('选择公司行业')).toBeInTheDocument();
+    expect(within(embeddedPanel).getByRole('button', { name: '互联网' })).toBeInTheDocument();
+  });
 });

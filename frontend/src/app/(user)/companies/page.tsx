@@ -2,7 +2,8 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Search } from 'lucide-react';
+import { Search, ChevronDown, CheckCircle, X } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   Select,
   SelectContent,
@@ -22,7 +23,7 @@ import {
 import { IndustryFilterModal } from '@/features/user-filters/IndustryFilterModal';
 import { LocationFilterModal } from '@/features/user-filters/LocationFilterModal';
 import { buildHotCityOptions, normalizeCityName } from '@/features/user-filters/location';
-import { collectLeafNameSet, flattenLeafNameMap } from '@/features/user-filters/tree';
+import { collectLeafNameSet, flattenLeafNameMap, treeChildrenById } from '@/features/user-filters/tree';
 
 const STORAGE_KEY = 'graphhire.user.companies.filters.v1';
 const DEFAULT_AVATAR = '/default-avatar.svg';
@@ -67,6 +68,7 @@ export default function CompanyList() {
 
   const [showIndustryModal, setShowIndustryModal] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<'city' | 'industry' | 'scale' | null>(null);
   const [draftIndustryNames, setDraftIndustryNames] = useState<string[]>([]);
   const [draftCityNames, setDraftCityNames] = useState<string[]>([]);
   const [activeIndustryRootId, setActiveIndustryRootId] = useState<number | null>(null);
@@ -216,10 +218,340 @@ export default function CompanyList() {
     setSelectedCityNames((prev) => (prev.includes(name) ? prev.filter((item) => item !== name) : [...prev, name]));
   };
 
+  const selectedScaleLabel = selectedScaleCode ? '公司规模·1' : '公司规模';
+  const selectedCityLabel = selectedCityNames.length > 0 ? `工作地点·${selectedCityNames.length}` : '工作地点';
+  const selectedIndustryLabel = selectedIndustryNames.length > 0 ? `行业类型·${selectedIndustryNames.length}` : '行业类型';
+
+  const clearAllFilters = () => {
+    setSearch('');
+    setSelectedCityNames([]);
+    setSelectedIndustryNames([]);
+    setSelectedScaleCode(undefined);
+  };
+
+  const mobileDropdownOptions = {
+    city: ['全国', ...cityQuickOptions.filter((city) => city !== '全国').slice(0, 10)],
+    industry: hotIndustryOptions,
+    scale: ['不限', ...COMPANY_SCALE_OPTIONS.map((item) => item.label)],
+  } as const;
+
+  const openEmbeddedLocationDropdown = () => {
+    setDraftCityNames(selectedCityNames);
+    setOpenDropdown('city');
+  };
+
+  const openEmbeddedIndustryDropdown = () => {
+    setDraftIndustryNames(selectedIndustryNames);
+    setOpenDropdown('industry');
+  };
+
+  const mobileIndustryLeafOptions = useMemo(() => {
+    const roots = treeChildrenById(industryTree, activeIndustryRootId);
+    return roots.flatMap((node) => (node.children && node.children.length > 0 ? node.children : [node]));
+  }, [industryTree, activeIndustryRootId]);
+
   return (
     <div className="flex min-h-screen flex-col bg-surface-background pb-24 md:pb-12">
-      <main className="mx-auto mt-6 flex w-full max-w-[1200px] flex-col gap-6 px-5 md:px-8">
-        <div className="flex w-full md:w-3/4 md:mx-0">
+      <header className="sticky top-0 z-50 bg-surface-lowest shadow-sm md:hidden">
+        <div className="border-b border-surface-mid px-4 py-2">
+          <div className="flex h-9 items-center rounded-full bg-surface-low px-3">
+            <Search className="mr-2 shrink-0 text-outline" size={16} />
+            <input
+              type="text"
+              placeholder="搜索公司"
+              className="min-w-0 flex-1 bg-transparent text-sm text-on-surface outline-none"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className="relative z-10 flex items-center justify-between bg-surface-lowest px-4 py-2 text-sm text-on-surface-variant">
+          <div className="hide-scrollbar flex w-full items-center gap-6 overflow-x-auto">
+            <button
+              onClick={() => {
+                if (openDropdown === 'city') {
+                  setOpenDropdown(null);
+                } else {
+                  openEmbeddedLocationDropdown();
+                }
+              }}
+              className={`flex shrink-0 items-center gap-1 ${openDropdown === 'city' || selectedCityNames.length > 0 ? 'font-bold text-primary' : ''}`}
+            >
+              {selectedCityLabel}
+              <ChevronDown size={14} className={`opacity-60 transition-transform ${openDropdown === 'city' ? 'rotate-180' : ''}`} />
+            </button>
+            <button
+              onClick={() => {
+                if (openDropdown === 'industry') {
+                  setOpenDropdown(null);
+                } else {
+                  openEmbeddedIndustryDropdown();
+                }
+              }}
+              className={`flex shrink-0 items-center gap-1 ${openDropdown === 'industry' || selectedIndustryNames.length > 0 ? 'font-bold text-primary' : ''}`}
+            >
+              {selectedIndustryLabel}
+              <ChevronDown size={14} className={`opacity-60 transition-transform ${openDropdown === 'industry' ? 'rotate-180' : ''}`} />
+            </button>
+            <button
+              onClick={() => {
+                setOpenDropdown(openDropdown === 'scale' ? null : 'scale');
+              }}
+              className={`flex shrink-0 items-center gap-1 ${openDropdown === 'scale' || selectedScaleCode ? 'font-bold text-primary' : ''}`}
+            >
+              {selectedScaleLabel}
+              <ChevronDown size={14} className={`opacity-60 transition-transform ${openDropdown === 'scale' ? 'rotate-180' : ''}`} />
+            </button>
+          </div>
+        </div>
+
+        <AnimatePresence>
+          {openDropdown && (
+            <div className="absolute left-0 top-full z-[60] flex h-[calc(100vh-80px)] w-full flex-col bg-black/40">
+              <motion.div
+                initial={{ y: -10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -10, opacity: 0 }}
+                className={`w-full rounded-b-2xl bg-surface-lowest shadow-md overflow-hidden ${
+                  openDropdown === 'city' || openDropdown === 'industry'
+                    ? 'h-[50vh] p-0'
+                    : 'max-h-[50vh] flex flex-wrap gap-2 overflow-y-auto p-4'
+                }`}
+              >
+                {openDropdown === 'city' ? (
+                  <div
+                    data-testid="mobile-company-location-dropdown"
+                    className="w-full h-full rounded-none bg-surface-lowest border border-surface-mid/70 overflow-hidden flex flex-col"
+                  >
+                    <div className="px-4 py-3 border-b bg-surface-lowest text-base font-bold">选择公司地点</div>
+                    <div className="px-4 py-2 border-b bg-primary/5 text-sm">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium text-primary">已选（{draftCityNames.length}）：</span>
+                        <div data-testid="mobile-company-city-selected-tags" className="flex items-center gap-2 flex-wrap">
+                          {draftCityNames.length === 0 ? (
+                            <span className="text-on-surface-variant">暂无</span>
+                          ) : (
+                            draftCityNames.map((name) => (
+                              <button
+                                key={name}
+                                type="button"
+                                onClick={() => setDraftCityNames((prev) => prev.filter((item) => item !== name))}
+                                className="inline-flex h-7 items-center gap-1 rounded-full border border-primary/30 bg-white px-3 text-xs text-primary hover:bg-primary/10"
+                              >
+                                <span>{name}</span>
+                                <X size={12} />
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 flex-1 min-h-0 bg-surface-lowest">
+                      <div data-testid="mobile-company-location-province-list" className="border-r overflow-y-auto p-2 min-h-0">
+                        {provinceCities.map((item) => (
+                          <button
+                            key={item.province}
+                            onClick={() => setActiveProvince(item.province)}
+                            className={`flex h-9 w-full items-center rounded-lg border px-2 mb-1 text-xs transition-colors ${
+                              activeProvince === item.province
+                                ? 'border-primary/30 bg-primary/10 text-primary'
+                                : 'border-transparent text-on-surface hover:border-primary/20 hover:bg-primary/5'
+                            }`}
+                          >
+                            {item.province}
+                          </button>
+                        ))}
+                      </div>
+                      <div data-testid="mobile-company-location-city-list" className="overflow-y-auto p-2 min-h-0">
+                        {(provinceCities.find((item) => item.province === activeProvince)?.cities ?? []).map((city) => {
+                          const active = draftCityNames.includes(city);
+                          return (
+                            <button
+                              key={city}
+                              aria-pressed={active}
+                              onClick={() =>
+                                setDraftCityNames((prev) =>
+                                  active ? prev.filter((item) => item !== city) : [...prev, city],
+                                )
+                              }
+                              className={`inline-flex mr-2 mb-2 px-2 h-8 items-center justify-between min-w-[72px] rounded-lg border text-xs transition-colors ${
+                                active
+                                  ? 'border-primary bg-primary/10 text-primary'
+                                  : 'border-surface-mid text-on-surface hover:border-primary/20 hover:bg-primary/5'
+                              }`}
+                            >
+                              <span>{city}</span>
+                              {active && <CheckCircle size={12} className="ml-1 text-primary" />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div className="px-3 py-2 border-t flex justify-end gap-2 bg-surface-lowest shrink-0">
+                      <button
+                        onClick={() => setDraftCityNames([])}
+                        className="px-3 h-8 rounded-full border border-surface-mid text-on-surface text-xs"
+                      >
+                        清空筛选
+                      </button>
+                      <button
+                        onClick={() => setOpenDropdown(null)}
+                        className="px-3 h-8 rounded-full border border-surface-mid text-on-surface text-xs"
+                      >
+                        取消
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedCityNames(Array.from(new Set(draftCityNames)));
+                          setOpenDropdown(null);
+                        }}
+                        className="px-3 h-8 rounded-full bg-primary text-white hover:bg-primary-container transition-colors text-xs"
+                      >
+                        确定
+                      </button>
+                    </div>
+                  </div>
+                ) : openDropdown === 'industry' ? (
+                  <div
+                    data-testid="mobile-company-industry-dropdown"
+                    className="w-full h-full rounded-none bg-surface-lowest border border-surface-mid/70 overflow-hidden flex flex-col"
+                  >
+                    <div className="px-4 py-3 border-b bg-surface-lowest text-base font-bold">选择公司行业</div>
+                    <div className="px-4 py-2 border-b bg-primary/5 text-sm">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium text-primary">已选（{draftIndustryNames.length}）：</span>
+                        <div data-testid="mobile-company-industry-selected-tags" className="flex items-center gap-2 flex-wrap">
+                          {draftIndustryNames.length === 0 ? (
+                            <span className="text-on-surface-variant">暂无</span>
+                          ) : (
+                            draftIndustryNames.map((name) => (
+                              <button
+                                key={name}
+                                type="button"
+                                onClick={() => setDraftIndustryNames((prev) => prev.filter((item) => item !== name))}
+                                className="inline-flex h-7 items-center gap-1 rounded-full border border-primary/30 bg-white px-3 text-xs text-primary hover:bg-primary/10"
+                              >
+                                <span>{name}</span>
+                                <X size={12} />
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 flex-1 min-h-0 bg-surface-lowest">
+                      <div className="border-r overflow-y-auto p-2 min-h-0">
+                        {industryTree.map((root) => (
+                          <button
+                            key={root.id}
+                            onClick={() => {
+                              setActiveIndustryRootId(root.id);
+                            }}
+                            className={`flex h-9 w-full items-center rounded-lg border px-2 mb-1 text-xs transition-colors ${
+                              activeIndustryRootId === root.id
+                                ? 'border-primary/30 bg-primary/10 text-primary'
+                                : 'border-transparent text-on-surface hover:border-primary/20 hover:bg-primary/5'
+                            }`}
+                          >
+                            {root.name}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="overflow-y-auto p-2 min-h-0">
+                        {mobileIndustryLeafOptions.map((leaf) => {
+                          const active = draftIndustryNames.includes(leaf.name);
+                          return (
+                            <button
+                              key={leaf.id}
+                              aria-pressed={active}
+                              onClick={() =>
+                                setDraftIndustryNames((prev) =>
+                                  active ? prev.filter((item) => item !== leaf.name) : [...prev, leaf.name],
+                                )
+                              }
+                              className={`flex h-9 w-full items-center justify-between rounded-lg border px-2 mb-1 text-xs transition-colors ${
+                                active
+                                  ? 'border-primary bg-primary/10 text-primary'
+                                  : 'border-transparent text-on-surface hover:border-primary/20 hover:bg-primary/5'
+                              }`}
+                            >
+                              <span className="truncate pr-1">{leaf.name}</span>
+                              {active && <CheckCircle size={12} className="text-primary shrink-0" />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div className="px-3 py-2 border-t flex justify-end gap-2 bg-surface-lowest shrink-0">
+                      <button
+                        onClick={() => setDraftIndustryNames([])}
+                        className="px-3 h-8 rounded-full border border-surface-mid text-on-surface text-xs"
+                      >
+                        清空筛选
+                      </button>
+                      <button
+                        onClick={() => setOpenDropdown(null)}
+                        className="px-3 h-8 rounded-full border border-surface-mid text-on-surface text-xs"
+                      >
+                        取消
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedIndustryNames(Array.from(new Set(draftIndustryNames)));
+                          setOpenDropdown(null);
+                        }}
+                        className="px-3 h-8 rounded-full bg-primary text-white hover:bg-primary-container transition-colors text-xs"
+                      >
+                        确定
+                      </button>
+                    </div>
+                  </div>
+                ) : mobileDropdownOptions[openDropdown].map((opt) => {
+                  const isActive = openDropdown === 'city'
+                    ? (opt === '全国' ? selectedCityNames.length === 0 : selectedCityNames.includes(opt))
+                    : openDropdown === 'industry'
+                      ? (opt === '不限' ? selectedIndustryNames.length === 0 : selectedIndustryNames.includes(opt))
+                      : (opt === '不限'
+                        ? !selectedScaleCode
+                        : COMPANY_SCALE_OPTIONS.find((item) => item.value === selectedScaleCode)?.label === opt);
+
+                  return (
+                    <button
+                      key={opt}
+                      onClick={() => {
+                        if (openDropdown === 'city') {
+                          toggleHotCity(opt);
+                        } else if (openDropdown === 'industry') {
+                          toggleHotIndustry(opt);
+                        } else {
+                          if (opt === '不限') {
+                            setSelectedScaleCode(undefined);
+                          } else {
+                            const matched = COMPANY_SCALE_OPTIONS.find((item) => item.label === opt);
+                            setSelectedScaleCode(matched?.value);
+                          }
+                        }
+                        setOpenDropdown(null);
+                      }}
+                      className={`flex h-9 items-center justify-center rounded-lg px-4 text-sm transition-colors ${
+                        isActive ? 'bg-primary/10 font-bold text-primary' : 'bg-surface-low text-on-surface'
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  );
+                })}
+              </motion.div>
+              <div className="flex-1" onClick={() => setOpenDropdown(null)} />
+            </div>
+          )}
+        </AnimatePresence>
+
+      </header>
+
+      <main className="mx-auto mt-2 flex w-full max-w-[1200px] flex-col gap-6 px-5 md:mt-6 md:px-8">
+        <div className="hidden w-full md:mx-0 md:flex md:w-3/4">
           <div className="flex h-12 flex-1 items-center overflow-hidden rounded-l-lg border border-primary bg-surface-lowest shadow-sm md:border-2 md:border-r-0 md:border-primary">
             <Search className="ml-3 mr-2 text-outline" size={16} />
             <input
@@ -235,7 +567,7 @@ export default function CompanyList() {
           </button>
         </div>
 
-        <div className="flex flex-col gap-4 rounded-2xl bg-surface-lowest p-4 shadow-sm md:p-6">
+        <div className="hidden flex-col gap-4 rounded-2xl bg-surface-lowest p-4 shadow-sm md:flex md:p-6">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm font-bold text-on-surface-variant">公司地点</span>
             {cityQuickOptions.slice(0, 10).map((city) => {
@@ -296,12 +628,7 @@ export default function CompanyList() {
               </Select>
             </div>
             <button
-              onClick={() => {
-                setSearch('');
-                setSelectedCityNames([]);
-                setSelectedIndustryNames([]);
-                setSelectedScaleCode(undefined);
-              }}
+              onClick={clearAllFilters}
               className="text-sm text-on-surface-variant hover:text-primary"
             >
               清空筛选
@@ -326,8 +653,8 @@ export default function CompanyList() {
                   className="flex flex-col rounded-2xl border border-surface-mid/80 bg-surface-lowest p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <div className="mb-4 flex items-center gap-3">
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-surface-mid/60 bg-white p-1.5">
-                      <img src={resolveLogoUrl(company.avatarUrl)} className="h-full w-full rounded object-contain" alt={company.name} />
+                    <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-surface-mid/60 bg-white">
+                      <img src={resolveLogoUrl(company.avatarUrl)} className="h-full w-full object-cover" alt={company.name} />
                     </div>
                     <div className="min-w-0 flex-1">
                       <h3 className="truncate text-base font-black text-on-surface">{company.name}</h3>
@@ -378,6 +705,7 @@ export default function CompanyList() {
         onRemoveSelected={(name) => {
           setDraftIndustryNames((prev) => prev.filter((item) => item !== name));
         }}
+        onClearSelected={() => setDraftIndustryNames([])}
       />
 
       <LocationFilterModal
@@ -398,6 +726,7 @@ export default function CompanyList() {
         onRemoveSelected={(city) => {
           setDraftCityNames((prev) => prev.filter((item) => item !== city));
         }}
+        onClearSelected={() => setDraftCityNames([])}
       />
     </div>
   );

@@ -209,6 +209,15 @@ describe('user jobs page filters', () => {
     expect(hoisted.getProvinceCitiesMock).toHaveBeenCalledTimes(1);
   });
 
+  it('highlights 全国 as default city filter on initial load', async () => {
+    render(<JobListPage />);
+    await waitFor(() => expect(hoisted.searchMock).toHaveBeenCalledTimes(1));
+
+    const nationwideBtn = screen.getByRole('button', { name: '全国' });
+    expect(nationwideBtn.className).toContain('bg-primary/10');
+    expect(nationwideBtn.className).toContain('text-primary');
+  });
+
   it('loads jobs from public api and opens category modal', async () => {
     render(<JobListPage />);
 
@@ -225,6 +234,29 @@ describe('user jobs page filters', () => {
     fireEvent.click(screen.getByRole('button', { name: /更多职类/i }));
     expect(await screen.findByText('选择职能')).toBeInTheDocument();
     expect(screen.getByText('技术')).toBeInTheDocument();
+  });
+
+  it('opens embedded category panel inside mobile dropdown when clicking 职位类别', async () => {
+    render(<JobListPage />);
+    await waitFor(() => expect(hoisted.searchMock).toHaveBeenCalledTimes(1));
+
+    fireEvent.click(screen.getByRole('button', { name: /^职位类别$/ }));
+
+    const embeddedPanel = await screen.findByTestId('mobile-category-dropdown');
+    expect(within(embeddedPanel).getByText('选择职位类别')).toBeInTheDocument();
+    expect(within(embeddedPanel).getByText('技术')).toBeInTheDocument();
+  });
+
+  it('opens embedded location panel inside mobile dropdown when clicking 工作地点', async () => {
+    render(<JobListPage />);
+    await waitFor(() => expect(hoisted.searchMock).toHaveBeenCalledTimes(1));
+
+    fireEvent.click(screen.getByRole('button', { name: /^工作地点$/ }));
+
+    const embeddedPanel = await screen.findByTestId('mobile-location-dropdown');
+    expect(within(embeddedPanel).getByText('选择工作地点')).toBeInTheDocument();
+    const provinceList = within(embeddedPanel).getByTestId('mobile-location-province-list');
+    expect(within(provinceList).getByRole('button', { name: '北京市' })).toBeInTheDocument();
   });
 
   it('shows featured category options from hot-priority list', async () => {
@@ -393,5 +425,21 @@ describe('user jobs page filters', () => {
 
     const selectedTags = screen.getByTestId('category-selected-tags');
     expect(within(selectedTags).getByRole('button', { name: '测试' })).toBeInTheDocument();
+  });
+
+  it('shows empty state hint when no jobs are returned', async () => {
+    hoisted.searchMock.mockResolvedValueOnce({
+      records: [],
+      total: 0,
+      page: 1,
+      pageSize: 10,
+      totalPages: 0,
+    });
+
+    render(<JobListPage />);
+
+    await waitFor(() => expect(hoisted.searchMock).toHaveBeenCalledTimes(1));
+    expect(await screen.findByText('暂无匹配职位')).toBeInTheDocument();
+    expect(screen.getByText('试试调整筛选条件或搜索关键词')).toBeInTheDocument();
   });
 });

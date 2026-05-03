@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { Search, ChevronDown, Zap, CheckCircle, SlidersHorizontal, MapPin, Briefcase, ChevronRight, X } from 'lucide-react';
+import { Search, ChevronDown, CheckCircle, SlidersHorizontal, ChevronRight, X } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { JobCardSkeleton, Skeleton } from '@/app/(user)/_mock/components/Skeleton';
+import { Skeleton } from '@/app/(user)/_mock/components/Skeleton';
 import { publicApi, type Job, type PublicTreeNode, type ProvinceCityItem } from '@/lib/api/public';
 import { getApiBaseUrl } from '@/lib/api/base-url';
 import {
@@ -52,24 +52,6 @@ const JOB_TYPE_TO_CODE: Record<string, number> = {
   全职: 1,
   '兼职/临时': 2,
   实习: 3,
-};
-
-const EDUCATION_TO_CODE: Record<string, number> = {
-  '初中及以下': 1,
-  高中: 1,
-  大专: 2,
-  本科: 3,
-  硕士: 4,
-  博士: 5,
-};
-
-const SIZE_TO_SCALE_CODE: Record<string, string> = {
-  少于50人: '1',
-  '50-150人': '2',
-  '150-500人': '3',
-  '500-1000人': '4',
-  '1000-5000人': '5',
-  '10000人以上': '6',
 };
 
 const SCALE_OPTIONS = [
@@ -254,7 +236,6 @@ export default function JobList() {
   const [activeAdvancedCategory, setActiveAdvancedCategory] = useState(ADVANCED_FILTERS[0].id);
   const [isLoading, setIsLoading] = useState(false);
   const [taxonomyReady, setTaxonomyReady] = useState(false);
-  const [activeTab, setActiveTab] = useState('按职类筛选');
   const [positionTree, setPositionTree] = useState<PublicTreeNode[]>([]);
   const [industryTree, setIndustryTree] = useState<PublicTreeNode[]>([]);
   const [showPositionModal, setShowPositionModal] = useState(false);
@@ -330,6 +311,16 @@ export default function JobList() {
   const openCategoryModal = () => {
     setDraftCategoryNames(currentCategoryNames);
     setShowPositionModal(true);
+  };
+
+  const openEmbeddedCategoryDropdown = () => {
+    setDraftCategoryNames(currentCategoryNames);
+    setOpenDropdown('category');
+  };
+
+  const openEmbeddedLocationDropdown = () => {
+    setDraftCityNames(currentCityNames);
+    setOpenDropdown('city');
   };
 
   const openIndustryModal = () => {
@@ -539,7 +530,6 @@ export default function JobList() {
   }, [selectedCompanyScaleCode]);
 
   const filteredJobs = jobs;
-
   const currentAdvancedOptions = ADVANCED_FILTERS.find(cat => cat.id === activeAdvancedCategory)?.options || [];
 
   return (
@@ -564,25 +554,42 @@ export default function JobList() {
         <div className="flex items-center px-4 py-2 text-sm text-on-surface-variant justify-between relative bg-surface-lowest z-10">
           <div className="flex items-center gap-6 overflow-x-auto hide-scrollbar flex-1 pr-4">
              {filterCategories.map(cat => {
-                const selectedForCat = selectedFilters.find(f => f.id.startsWith(`${cat.id}:`));
-                const label = selectedForCat ? selectedForCat.label.split(': ')[1] : cat.name;
+                const selectedForCatList = selectedFilters.filter(f => f.id.startsWith(`${cat.id}:`));
+                const label = selectedForCatList.length > 0 ? `${cat.name}·${selectedForCatList.length}` : cat.name;
                 const isOpen = openDropdown === cat.id;
                 return (
                    <button 
                      key={cat.id} 
                      onClick={() => {
+                        if (cat.id === 'category') {
+                          if (isOpen) {
+                            setOpenDropdown(null);
+                          } else {
+                            openEmbeddedCategoryDropdown();
+                          }
+                          setIsFilterOpen(false);
+                          return;
+                        }
+                        if (cat.id === 'city') {
+                          if (isOpen) {
+                            setOpenDropdown(null);
+                          } else {
+                            openEmbeddedLocationDropdown();
+                          }
+                          setIsFilterOpen(false);
+                          return;
+                        }
                         setOpenDropdown(isOpen ? null : cat.id);
                         setIsFilterOpen(false);
                      }}
-                     className={`flex items-center gap-1 shrink-0 ${selectedForCat || isOpen ? 'text-primary font-bold' : ''}`}
+                     className={`flex items-center gap-1 shrink-0 ${selectedForCatList.length > 0 || isOpen ? 'text-primary font-bold' : ''}`}
                    >
-                     {label === '不限' || label === '全国' ? cat.name : label} 
+                     {label}
                      <ChevronDown size={14} className={`opacity-50 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                    </button>
                 );
              })}
           </div>
-          
           <div className="flex items-center gap-2 shrink-0 pl-3 border-l border-surface-mid bg-surface-lowest">
             <button 
                onClick={() => {
@@ -600,34 +607,256 @@ export default function JobList() {
         <AnimatePresence>
           {openDropdown && (
              <div className="absolute top-full left-0 w-full h-[calc(100vh-80px)] z-[60] bg-black/40 flex flex-col pointer-events-auto">
-               <motion.div 
-                 initial={{ y: -10, opacity: 0 }}
-                 animate={{ y: 0, opacity: 1 }}
-                 exit={{ y: -10, opacity: 0 }}
-                 className="w-full bg-surface-lowest max-h-[50vh] overflow-y-auto rounded-b-2xl p-2 shadow-md flex flex-wrap gap-2"
-                 style={{ padding: '16px' }}
-               >
-                 {filterCategories.find(c => c.id === openDropdown)?.options.map(opt => {
-                    const filterId = `${openDropdown}:${opt}`;
-                    const isActive = opt === '不限' || opt === '全国'
-                      ? !selectedFilters.some(f => f.id.startsWith(`${openDropdown}:`))
-                      : selectedFilters.some(f => f.id === filterId);
-                    
-                    return (
+              <motion.div 
+                initial={{ y: -10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -10, opacity: 0 }}
+                className={`w-full rounded-b-2xl bg-surface-lowest shadow-md overflow-hidden ${
+                  openDropdown === 'category' || openDropdown === 'city'
+                    ? 'h-[50vh] p-0'
+                    : 'max-h-[50vh] overflow-y-auto p-4 flex flex-wrap gap-2'
+                }`}
+              >
+                {openDropdown === 'category' ? (
+                  <div
+                    data-testid="mobile-category-dropdown"
+                    className="w-full h-full rounded-none bg-surface-lowest border border-surface-mid/70 overflow-hidden flex flex-col"
+                  >
+                    <div className="px-4 py-3 border-b bg-surface-lowest text-base font-bold">选择职位类别</div>
+                     <div className="px-4 py-2 border-b bg-primary/5 text-sm">
+                       <div className="flex items-center gap-2 flex-wrap">
+                         <span className="font-medium text-primary">已选（{draftCategoryNames.length}）：</span>
+                        <div data-testid="mobile-category-selected-tags" className="flex items-center gap-2 flex-wrap">
+                          {draftCategoryNames.length === 0 ? (
+                            <span className="text-on-surface-variant">暂无</span>
+                          ) : (
+                            draftCategoryNames.map((name) => (
+                              <button
+                                key={name}
+                                type="button"
+                                onClick={() => setDraftCategoryNames((prev) => prev.filter((item) => item !== name))}
+                                className="inline-flex h-7 items-center gap-1 rounded-full border border-primary/30 bg-white px-3 text-xs text-primary hover:bg-primary/10"
+                              >
+                                <span>{name}</span>
+                                <X size={12} />
+                              </button>
+                            ))
+                          )}
+                        </div>
+                       </div>
+                     </div>
+                    <div className="grid grid-cols-3 flex-1 min-h-0 bg-surface-lowest">
+                      <div className="border-r overflow-y-auto hide-scrollbar p-2 min-h-0">
+                         {positionTree.map((root) => (
+                           <button
+                             key={root.id}
+                             onClick={() => {
+                               setActivePositionRootId(root.id);
+                               setActivePositionMidId(root.children?.[0]?.id ?? null);
+                             }}
+                             className={`flex h-9 w-full items-center rounded-lg border px-2 mb-1 text-xs transition-colors ${
+                               activePositionRootId === root.id
+                                 ? 'border-primary/30 bg-primary/10 text-primary'
+                                 : 'border-transparent text-on-surface hover:border-primary/20 hover:bg-primary/5'
+                             }`}
+                           >
+                             {root.name}
+                           </button>
+                         ))}
+                       </div>
+                      <div className="border-r overflow-y-auto hide-scrollbar p-2 min-h-0">
+                         {treeChildrenById(positionTree, activePositionRootId).map((mid) => (
+                           (() => {
+                             const isLeafMid = !mid.children || mid.children.length === 0;
+                             const active = draftCategoryNames.includes(mid.name);
+                             return (
+                               <button
+                                 key={mid.id}
+                                 onClick={() => {
+                                   setActivePositionMidId(mid.id);
+                                   if (isLeafMid) {
+                                     setDraftCategoryNames((prev) =>
+                                       active ? prev.filter((item) => item !== mid.name) : [...prev, mid.name],
+                                     );
+                                   }
+                                 }}
+                                 className={`flex h-9 w-full items-center rounded-lg border px-2 mb-1 text-xs transition-colors ${
+                                   activePositionMidId === mid.id || (isLeafMid && active)
+                                     ? 'border-primary bg-primary/10 text-primary'
+                                     : 'border-transparent text-on-surface hover:border-primary/20 hover:bg-primary/5'
+                                 }`}
+                               >
+                                 {mid.name}
+                               </button>
+                             );
+                           })()
+                         ))}
+                       </div>
+                      <div className="overflow-y-auto hide-scrollbar p-2 min-h-0">
+                         {treeChildrenById(positionTree, activePositionMidId).map((leaf) => {
+                           const active = draftCategoryNames.includes(leaf.name);
+                           return (
+                             <button
+                               key={leaf.id}
+                               aria-pressed={active}
+                               onClick={() =>
+                                 setDraftCategoryNames((prev) =>
+                                   active ? prev.filter((item) => item !== leaf.name) : [...prev, leaf.name],
+                                 )
+                               }
+                               className={`flex h-9 w-full items-center justify-between rounded-lg border px-2 mb-1 text-xs transition-colors ${
+                                 active
+                                   ? 'border-primary bg-primary/10 text-primary'
+                                   : 'border-transparent text-on-surface hover:border-primary/20 hover:bg-primary/5'
+                               }`}
+                             >
+                               <span className="truncate pr-1">{leaf.name}</span>
+                               {active && <CheckCircle size={12} className="text-primary shrink-0" />}
+                             </button>
+                           );
+                         })}
+                       </div>
+                     </div>
+                    <div className="px-3 py-2 border-t flex justify-end gap-2 bg-surface-lowest shrink-0">
                       <button
-                        key={opt}
-                        onClick={() => {
-                           toggleFilter(openDropdown, filterCategories.find(c => c.id === openDropdown)?.name || '', opt);
-                           setOpenDropdown(null);
-                        }}
-                        className={`h-9 px-4 rounded-lg text-sm flex items-center justify-center transition-colors ${
-                          isActive ? 'bg-primary/10 text-primary font-bold' : 'bg-surface-low text-on-surface'
-                        }`}
+                        onClick={() => setDraftCategoryNames([])}
+                        className="px-3 h-8 rounded-full border border-surface-mid text-on-surface text-xs"
                       >
-                        {opt}
+                        清空筛选
                       </button>
-                    )
-                 })}
+                      <button
+                        onClick={() => setOpenDropdown(null)}
+                        className="px-3 h-8 rounded-full border border-surface-mid text-on-surface text-xs"
+                       >
+                         取消
+                       </button>
+                       <button
+                         onClick={() => {
+                           applyCategoryDraft();
+                           setOpenDropdown(null);
+                         }}
+                         className="px-3 h-8 rounded-full bg-primary text-white hover:bg-primary-container transition-colors text-xs"
+                       >
+                         确定
+                       </button>
+                     </div>
+                   </div>
+                 ) : openDropdown === 'city' ? (
+                  <div
+                    data-testid="mobile-location-dropdown"
+                    className="w-full h-full rounded-none bg-surface-lowest border border-surface-mid/70 overflow-hidden flex flex-col"
+                  >
+                     <div className="px-4 py-3 border-b bg-surface-lowest text-base font-bold">选择工作地点</div>
+                     <div className="px-4 py-2 border-b bg-primary/5 text-sm">
+                       <div className="flex items-center gap-2 flex-wrap">
+                         <span className="font-medium text-primary">已选（{draftCityNames.length}）：</span>
+                        <div data-testid="mobile-city-selected-tags" className="flex items-center gap-2 flex-wrap">
+                          {draftCityNames.length === 0 ? (
+                            <span className="text-on-surface-variant">暂无</span>
+                          ) : (
+                            draftCityNames.map((name) => (
+                              <button
+                                key={name}
+                                type="button"
+                                onClick={() => setDraftCityNames((prev) => prev.filter((item) => item !== name))}
+                                className="inline-flex h-7 items-center gap-1 rounded-full border border-primary/30 bg-white px-3 text-xs text-primary hover:bg-primary/10"
+                              >
+                                <span>{name}</span>
+                                <X size={12} />
+                              </button>
+                            ))
+                          )}
+                        </div>
+                       </div>
+                     </div>
+                    <div className="grid grid-cols-2 flex-1 min-h-0 bg-surface-lowest">
+                      <div data-testid="mobile-location-province-list" className="border-r overflow-y-auto hide-scrollbar p-2 min-h-0">
+                         {provinceCities.map((item) => (
+                           <button
+                             key={item.province}
+                             onClick={() => setActiveProvince(item.province)}
+                             className={`flex h-9 w-full items-center rounded-lg border px-2 mb-1 text-xs transition-colors ${
+                               activeProvince === item.province
+                                 ? 'border-primary/30 bg-primary/10 text-primary'
+                                 : 'border-transparent text-on-surface hover:border-primary/20 hover:bg-primary/5'
+                             }`}
+                           >
+                             {item.province}
+                           </button>
+                         ))}
+                       </div>
+                      <div data-testid="mobile-location-city-list" className="overflow-y-auto hide-scrollbar p-2 min-h-0">
+                         {(provinceCities.find((item) => item.province === activeProvince)?.cities ?? []).map((city) => {
+                           const active = draftCityNames.includes(city);
+                           return (
+                             <button
+                               key={city}
+                               aria-pressed={active}
+                               onClick={() =>
+                                 setDraftCityNames((prev) =>
+                                   active ? prev.filter((item) => item !== city) : [...prev, city],
+                                 )
+                               }
+                               className={`inline-flex mr-2 mb-2 px-2 h-8 items-center justify-between min-w-[72px] rounded-lg border text-xs transition-colors ${
+                                 active
+                                   ? 'border-primary bg-primary/10 text-primary'
+                                   : 'border-surface-mid text-on-surface hover:border-primary/20 hover:bg-primary/5'
+                               }`}
+                             >
+                               <span>{city}</span>
+                               {active && <CheckCircle size={12} className="ml-1 text-primary" />}
+                             </button>
+                           );
+                         })}
+                       </div>
+                     </div>
+                    <div className="px-3 py-2 border-t flex justify-end gap-2 bg-surface-lowest shrink-0">
+                      <button
+                        onClick={() => setDraftCityNames([])}
+                        className="px-3 h-8 rounded-full border border-surface-mid text-on-surface text-xs"
+                      >
+                        清空筛选
+                      </button>
+                      <button
+                        onClick={() => setOpenDropdown(null)}
+                        className="px-3 h-8 rounded-full border border-surface-mid text-on-surface text-xs"
+                       >
+                         取消
+                       </button>
+                       <button
+                         onClick={() => {
+                           applyLocationDraft();
+                           setOpenDropdown(null);
+                         }}
+                         className="px-3 h-8 rounded-full bg-primary text-white hover:bg-primary-container transition-colors text-xs"
+                       >
+                         确定
+                       </button>
+                     </div>
+                   </div>
+                 ) : (
+                   filterCategories.find(c => c.id === openDropdown)?.options.map(opt => {
+                      const filterId = `${openDropdown}:${opt}`;
+                      const isActive = opt === '不限' || opt === '全国'
+                        ? !selectedFilters.some(f => f.id.startsWith(`${openDropdown}:`))
+                        : selectedFilters.some(f => f.id === filterId);
+                      
+                      return (
+                        <button
+                          key={opt}
+                          onClick={() => {
+                             toggleFilter(openDropdown, filterCategories.find(c => c.id === openDropdown)?.name || '', opt);
+                             setOpenDropdown(null);
+                          }}
+                          className={`h-9 px-4 rounded-lg text-sm flex items-center justify-center transition-colors ${
+                            isActive ? 'bg-primary/10 text-primary font-bold' : 'bg-surface-low text-on-surface'
+                          }`}
+                        >
+                          {opt}
+                        </button>
+                      )
+                   })
+                 )}
                </motion.div>
                <div className="flex-1" onClick={() => setOpenDropdown(null)} />
              </div>
@@ -645,7 +874,6 @@ export default function JobList() {
                 className="w-full bg-surface-lowest flex-1 flex flex-col max-h-[60vh] overflow-hidden rounded-b-2xl"
               >
                  <div className="flex flex-1 overflow-hidden">
-                    {/* Left Sidebar */}
                     <div className="w-[100px] bg-surface-low overflow-y-auto">
                        {ADVANCED_FILTERS.map(category => (
                          <button
@@ -659,7 +887,6 @@ export default function JobList() {
                          </button>
                        ))}
                     </div>
-                    {/* Right Options */}
                     <div className="flex-1 bg-surface-lowest overflow-y-auto p-4">
                        <h4 className="text-xs text-outline mb-3 font-bold">{ADVANCED_FILTERS.find(c => c.id === activeAdvancedCategory)?.name}</h4>
                        <div className="grid grid-cols-2 gap-2 pb-4">
@@ -684,7 +911,6 @@ export default function JobList() {
                        </div>
                     </div>
                  </div>
-                 {/* Footer */}
                  <div className="flex p-3 gap-3 border-t border-surface-mid bg-surface-lowest shrink-0 shadow-[0_-4px_10px_rgba(0,0,0,0.02)] z-10">
                     <button 
                       onClick={clearFilters}
@@ -700,16 +926,16 @@ export default function JobList() {
                     </button>
                  </div>
               </motion.div>
-              {/* Dimmed backdrop area (clickable to close) */}
               <div className="flex-1" onClick={() => setIsFilterOpen(false)} />
             </div>
           )}
         </AnimatePresence>
+
       </header>
 
-      <main className="flex flex-col gap-6 max-w-[1200px] mx-auto w-full px-5 md:px-8 mt-5 md:mt-8">
+      <main className="flex flex-col gap-6 max-w-[1200px] mx-auto w-full px-5 md:px-8 mt-2 md:mt-8">
         {/* Search Header Container */}
-        <div className="flex flex-col gap-4">
+        <div className="hidden md:flex flex-col gap-4">
           
           {/* Desktop Search Bar */}
           <div className="hidden md:flex w-full">
@@ -738,7 +964,8 @@ export default function JobList() {
                   <div className={`flex flex-1 items-center ${category.id === 'category' ? 'flex-nowrap overflow-x-auto hide-scrollbar gap-2' : 'flex-wrap gap-x-2 gap-y-2'}`}>
                     {category.options.map((opt, i) => {
                        const filterId = `${category.id}:${opt}`;
-                       const isActive = opt === '不限' 
+                       const isDefaultOption = (category.id === 'city' && opt === '全国') || opt === '不限';
+                       const isActive = isDefaultOption
                          ? !selectedFilters.some(f => f.id.startsWith(`${category.id}:`))
                          : selectedFilters.some(f => f.id === filterId);
                        return (
@@ -840,7 +1067,7 @@ export default function JobList() {
         </div>
 
         {/* Content Layout */}
-        <div className="flex gap-6 mt-2">
+        <div className="flex gap-6 md:mt-2">
           {/* Main Job List */}
           <div className="flex-1 flex flex-col gap-4">
              {isLoading ? (
@@ -857,6 +1084,11 @@ export default function JobList() {
                    </div>
                  </div>
                ))
+             ) : filteredJobs.length === 0 ? (
+               <div className="bg-surface-lowest rounded-[16px] p-6 md:p-8 border border-dashed border-surface-mid/70 text-center">
+                 <p className="text-base md:text-lg font-bold text-on-surface">暂无匹配职位</p>
+                 <p className="mt-2 text-sm text-on-surface-variant">试试调整筛选条件或搜索关键词</p>
+               </div>
              ) : (
                 filteredJobs.map((job, idx) => (
                   <motion.div
@@ -886,14 +1118,16 @@ export default function JobList() {
 
                       <div className="flex justify-between items-end mt-4">
                         <div className="flex items-center gap-3">
-                          <img
-                            src={job.companyLogo || job.hrAvatar || DEFAULT_COMPANY_LOGO}
-                            onError={(event) => {
-                              event.currentTarget.src = DEFAULT_COMPANY_LOGO;
-                            }}
-                            className="w-10 h-10 md:w-8 md:h-8 rounded object-contain border border-surface-low p-1 bg-white"
-                            alt="company logo"
-                          />
+                          <div className="w-10 h-10 md:w-8 md:h-8 shrink-0 overflow-hidden rounded border border-surface-low bg-white">
+                            <img
+                              src={job.companyLogo || job.hrAvatar || DEFAULT_COMPANY_LOGO}
+                              onError={(event) => {
+                                event.currentTarget.src = DEFAULT_COMPANY_LOGO;
+                              }}
+                              className="h-full w-full object-cover"
+                              alt="company logo"
+                            />
+                          </div>
                           <div className="flex items-center gap-2 text-xs md:text-sm text-on-surface-variant">
                              <span className="font-bold text-on-surface">{job.company}</span>
                              <span className="hidden md:inline text-surface-mid">|</span>
@@ -931,9 +1165,10 @@ export default function JobList() {
                         key={name}
                         type="button"
                         onClick={() => setDraftCategoryNames((prev) => prev.filter((item) => item !== name))}
-                        className="inline-flex h-7 items-center rounded-full border border-primary/30 bg-white px-3 text-xs text-primary hover:bg-primary/10"
+                        className="inline-flex h-7 items-center gap-1 rounded-full border border-primary/30 bg-white px-3 text-xs text-primary hover:bg-primary/10"
                       >
-                        {name}
+                        <span>{name}</span>
+                        <X size={12} />
                       </button>
                     ))
                   )}
@@ -1013,6 +1248,7 @@ export default function JobList() {
               </div>
             </div>
             <div className="px-6 py-3 border-t flex justify-end gap-2">
+              <button onClick={() => setDraftCategoryNames([])} className="px-5 h-10 rounded-full border border-surface-mid text-on-surface">清空筛选</button>
               <button onClick={() => setShowPositionModal(false)} className="px-5 h-10 rounded-full border border-surface-mid text-on-surface">取消</button>
               <button onClick={applyCategoryDraft} className="px-5 h-10 rounded-full bg-primary text-white hover:bg-primary-container transition-colors">确定</button>
             </div>
@@ -1036,9 +1272,10 @@ export default function JobList() {
                         key={name}
                         type="button"
                         onClick={() => setDraftIndustryNames((prev) => prev.filter((item) => item !== name))}
-                        className="inline-flex h-7 items-center rounded-full border border-primary/30 bg-white px-3 text-xs text-primary hover:bg-primary/10"
+                        className="inline-flex h-7 items-center gap-1 rounded-full border border-primary/30 bg-white px-3 text-xs text-primary hover:bg-primary/10"
                       >
-                        {name}
+                        <span>{name}</span>
+                        <X size={12} />
                       </button>
                     ))
                   )}
@@ -1119,6 +1356,7 @@ export default function JobList() {
               </div>
             </div>
             <div className="px-6 py-3 border-t flex justify-end gap-2">
+              <button onClick={() => setDraftIndustryNames([])} className="px-5 h-10 rounded-full border border-surface-mid text-on-surface">清空筛选</button>
               <button onClick={() => setShowIndustryModal(false)} className="px-5 h-10 rounded-full border border-surface-mid text-on-surface">取消</button>
               <button onClick={applyIndustryDraft} className="px-5 h-10 rounded-full bg-primary text-white hover:bg-primary-container transition-colors">确定</button>
             </div>
@@ -1142,9 +1380,10 @@ export default function JobList() {
                         key={name}
                         type="button"
                         onClick={() => setDraftCityNames((prev) => prev.filter((item) => item !== name))}
-                        className="inline-flex h-7 items-center rounded-full border border-primary/30 bg-white px-3 text-xs text-primary hover:bg-primary/10"
+                        className="inline-flex h-7 items-center gap-1 rounded-full border border-primary/30 bg-white px-3 text-xs text-primary hover:bg-primary/10"
                       >
-                        {name}
+                        <span>{name}</span>
+                        <X size={12} />
                       </button>
                     ))
                   )}
@@ -1193,6 +1432,7 @@ export default function JobList() {
               </div>
             </div>
             <div className="px-6 py-3 border-t flex justify-end gap-2">
+              <button onClick={() => setDraftCityNames([])} className="px-5 h-10 rounded-full border border-surface-mid text-on-surface">清空筛选</button>
               <button onClick={() => setShowLocationModal(false)} className="px-5 h-10 rounded-full border border-surface-mid text-on-surface">取消</button>
               <button onClick={applyLocationDraft} className="px-5 h-10 rounded-full bg-primary text-white hover:bg-primary-container transition-colors">确定</button>
             </div>
