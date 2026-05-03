@@ -126,8 +126,6 @@
 
 ## 2026-05-03
 
-- feat: 登录页升级为简约现代视觉风格（桌面双栏品牌区+表单区、移动端单栏自适应），保留原有登录表单字段、角色切换与提交逻辑不变
-- test: 新增登录页布局壳层测试断言，验证视觉改造后表单核心输入仍保持 `email/password` 类型与既有交互
 - feat: 用户端公司列表页 `/companies` 完成真实接口对接，移除 `MOCK_COMPANIES`，支持关键词、热门地点+更多地点、热门行业+更多行业、公司规模（1-6 编码）筛选，并新增本地筛选持久化（`localStorage`）
 - feat: 用户端公司详情页 `/companies/[id]` 完成真实接口对接，移除 `MOCK_COMPANIES/MOCK_JOBS`，改为聚合 `publicApi.companies.getById` 与 `publicApi.jobs.search({ companyId })` 展示公司信息与在招职位
 - feat: 后端公开公司接口增强：`GET /public/companies` 新增 `industryLeafIds/companyScaleCode/cityList` 筛选参数，响应新增 `industryId/industryName/scale` 字段
