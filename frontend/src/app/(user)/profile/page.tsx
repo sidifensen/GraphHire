@@ -7,6 +7,35 @@ import { userAuthStore } from '@/lib/stores/auth-store';
 import { personApi, type PersonProfile } from '@/lib/api/person';
 import UserWorkbenchSidebar from '@/app/(user)/_components/UserWorkbenchSidebar';
 
+function formatGender(gender?: number | null): string {
+  if (gender === 1) {
+    return '男';
+  }
+  if (gender === 2) {
+    return '女';
+  }
+  return '未完善';
+}
+
+function formatAge(age?: number | null): string {
+  if (age == null) {
+    return '未完善';
+  }
+  return `${age} 岁`;
+}
+
+function formatExpectedSalary(expectedSalary?: number | null): string {
+  if (expectedSalary == null) {
+    return '未完善';
+  }
+  return `${expectedSalary} 元/月`;
+}
+
+function displayField(value?: string | null): string {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : '未完善';
+}
+
 export default function Profile() {
   const [authState, setAuthState] = useState(() => userAuthStore.getState());
   const authUser = authState.user;
@@ -54,7 +83,7 @@ export default function Profile() {
     Promise.all([
       personApi.getProfile(),
       personApi.getApplications(),
-      personApi.getFavorites({ page: 1, size: 1 }),
+      personApi.getFavorites(),
     ])
       .then(([nextProfile, applications, favorites]) => {
         if (!active) {
@@ -82,7 +111,7 @@ export default function Profile() {
         }
         const viewedCount = applications.filter((item) => item.status === 'VIEWED').length;
         const interviewCount = applications.filter((item) => item.status === 'INTERVIEW_INVITED').length;
-        const favoriteCount = Number.isFinite(favorites.total) ? favorites.total : 0;
+        const favoriteCount = Array.isArray(favorites) ? favorites.length : 0;
         setStats({ viewedCount, interviewCount, favoriteCount });
       })
       .catch(() => {
@@ -125,11 +154,6 @@ export default function Profile() {
               <div className="flex-1 w-full flex flex-col items-center">
                 <h2 className="mb-1 text-2xl font-black text-on-surface">{displayName}</h2>
                 <p className="text-body-md text-on-surface-variant mb-4">{contactText}</p>
-                <div className="flex flex-wrap gap-2 justify-center">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-secondary-container/30 text-primary text-xs font-bold">
-                    离职-随时到岗
-                  </span>
-                </div>
               </div>
             </div>
 
@@ -146,6 +170,20 @@ export default function Profile() {
                 <div data-testid="profile-stat-favorite" className="text-xl font-bold text-on-surface group-hover:text-primary transition-colors">{stats.favoriteCount}</div>
                 <div className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">收藏</div>
               </div>
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-surface-mid bg-surface-lowest p-6 md:p-8">
+            <h3 className="text-lg font-black text-on-surface">个人档案</h3>
+            <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <InfoItem label="性别" value={formatGender(profile?.gender)} />
+              <InfoItem label="年龄" value={formatAge(profile?.age)} />
+              <InfoItem label="电话" value={displayField(profile?.phone)} />
+              <InfoItem label="学历" value={displayField(profile?.education)} />
+              <InfoItem label="学校" value={displayField(profile?.school)} />
+              <InfoItem label="所在城市" value={displayField(profile?.city)} />
+              <InfoItem label="目标城市" value={displayField(profile?.targetCity)} />
+              <InfoItem label="期望薪资" value={formatExpectedSalary(profile?.expectedSalary)} />
             </div>
           </section>
 
@@ -170,6 +208,20 @@ export default function Profile() {
       </div>
       
       <div className="h-24 md:hidden"></div>
+    </div>
+  );
+}
+
+type InfoItemProps = {
+  label: string;
+  value: string;
+};
+
+function InfoItem({ label, value }: InfoItemProps) {
+  return (
+    <div className="rounded-xl border border-surface-mid bg-surface-low px-4 py-3">
+      <div className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">{label}</div>
+      <div className="mt-1 text-sm font-semibold text-on-surface">{value}</div>
     </div>
   );
 }

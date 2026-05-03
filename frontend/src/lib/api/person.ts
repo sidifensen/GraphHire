@@ -88,6 +88,13 @@ export interface FavoriteJob extends Job {
   favoritedAt: string;
 }
 
+export interface Favorite {
+  id: number;
+  userId: number;
+  jobId: number;
+  createdAt: string;
+}
+
 export const personApi = {
   getProfile: async (): Promise<PersonProfile | null> => {
     const response = await apiClient.get<PersonProfile | null>('/person/info');
@@ -165,8 +172,8 @@ export const personApi = {
     await apiClient.delete(`/person/application/favorite/${jobId}`);
   },
 
-  getFavorites: async (params?: { page?: number; size?: number }): Promise<{ list: FavoriteJob[]; total: number; page: number; size: number }> => {
-    const response = await apiClient.get('/person/application/favorites', { params });
+  getFavorites: async (): Promise<Favorite[]> => {
+    const response = await apiClient.get('/person/application/favorites');
     return response.data;
   },
 };

@@ -65,7 +65,15 @@ describe('User Profile auth info', () => {
     vi.clearAllMocks();
     getProfileMock.mockResolvedValue({
       realName: '测试姓名',
+      gender: 1,
+      age: 27,
+      phone: '13800138000',
       email: 'test-user@example.com',
+      education: '本科',
+      school: '北京大学',
+      city: '北京',
+      targetCity: '上海',
+      expectedSalary: 35000,
       avatarUrl: 'https://picsum.photos/100',
     });
     getApplicationsMock.mockResolvedValue([
@@ -73,12 +81,14 @@ describe('User Profile auth info', () => {
       { id: 2, jobId: 2, status: 'INTERVIEW_INVITED', appliedAt: '2026-05-01T00:00:00.000Z' },
       { id: 3, jobId: 3, status: 'VIEWED', appliedAt: '2026-05-01T00:00:00.000Z' },
     ]);
-    getFavoritesMock.mockResolvedValue({
-      list: [],
-      total: 7,
-      page: 1,
-      size: 10,
-    });
+    getFavoritesMock.mockResolvedValue(
+      Array.from({ length: 7 }, (_, index) => ({
+        id: index + 1,
+        userId: 301,
+        jobId: 1000 + index,
+        createdAt: '2026-05-01T00:00:00.000Z',
+      })),
+    );
   });
 
   test('显示当前登录用户对应资料', async () => {
@@ -104,6 +114,14 @@ describe('User Profile auth info', () => {
     expect(await screen.findByTestId('profile-stat-viewed')).toHaveTextContent('2');
     expect(screen.getByTestId('profile-stat-interview')).toHaveTextContent('1');
     expect(screen.getByTestId('profile-stat-favorite')).toHaveTextContent('7');
+    expect(screen.getByText('男')).toBeInTheDocument();
+    expect(screen.getByText('27 岁')).toBeInTheDocument();
+    expect(screen.getByText('13800138000')).toBeInTheDocument();
+    expect(screen.getByText('本科')).toBeInTheDocument();
+    expect(screen.getByText('北京大学')).toBeInTheDocument();
+    expect(screen.getByText('北京')).toBeInTheDocument();
+    expect(screen.getByText('上海')).toBeInTheDocument();
+    expect(screen.getByText('35000 元/月')).toBeInTheDocument();
   });
 
   test('未登录时不请求统计接口并显示0', async () => {
