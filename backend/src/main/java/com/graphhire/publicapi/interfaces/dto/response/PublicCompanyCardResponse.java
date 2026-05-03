@@ -6,6 +6,8 @@ public record PublicCompanyCardResponse(
     String city,
     Integer jobCount,
     String summary,
+    String description,
+    String address,
     String authStatus,
     String avatarUrl,
     Long industryId,

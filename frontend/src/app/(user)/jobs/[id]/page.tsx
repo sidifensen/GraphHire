@@ -1,107 +1,290 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, Share2, MapPin, Briefcase, GraduationCap, Zap, ChevronRight } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { MOCK_JOBS } from '@/app/(user)/_mock/mockData';
-import { TopNav } from '@/app/(user)/_mock/components/TopNav';
+import { ArrowLeft, Briefcase, ChevronRight, GraduationCap, MapPin, Share2, Zap } from 'lucide-react';
+import { publicApi, type Company, type Job } from '@/lib/api/public';
+import { formatCompanyScale } from '@/features/user-filters/constants';
+import { getApiBaseUrl } from '@/lib/api/base-url';
 
-export default function JobDetail() {
-  const { id } = useParams();
-  const job = MOCK_JOBS.find(j => j.id === id) || MOCK_JOBS[0];
+const DEFAULT_COMPANY_LOGO = '/default-avatar.svg';
+
+function resolveLogoUrl(url?: string | null) {
+  if (!url) return DEFAULT_COMPANY_LOGO;
+  if (/^https?:\/\//i.test(url)) return url;
+  if (url.startsWith('//')) return `${window.location.protocol}${url}`;
+  if (url.startsWith('/')) return `${getApiBaseUrl()}${url}`;
+  return `${getApiBaseUrl()}/${url}`;
+}
+
+function formatSalary(min?: number | null, max?: number | null) {
+  if (!min && !max) return '薪资面议';
+  const minText = min ? `${Math.round(min / 1000)}k` : '';
+  const maxText = max ? `${Math.round(max / 1000)}k` : '';
+  return minText && maxText ? `${minText}-${maxText}` : minText || maxText;
+}
+
+function formatEducation(code?: number | null) {
+  const educationMap: Record<number, string> = {
+    1: '中专',
+    2: '大专',
+    3: '本科',
+    4: '硕士',
+    5: '博士',
+  };
+  if (!code) return '学历不限';
+  return educationMap[code] ?? '学历不限';
+}
+
+function formatExperience(experience?: string | null) {
+  if (!experience) return '经验不限';
+  return experience;
+}
+
+function formatJobType(jobType?: number | null) {
+  const typeMap: Record<number, string> = {
+    1: '全职',
+    2: '兼职/临时',
+    3: '实习',
+  };
+  if (!jobType) return '不限';
+  return typeMap[jobType] ?? `类型${jobType}`;
+}
+
+function formatCompanyAuthStatus(status?: string | null) {
+  if (!status) return '未知';
+  const upper = status.toUpperCase();
+  if (upper === 'VERIFIED') return '已认证';
+  if (upper === 'PENDING') return '待认证';
+  if (upper === 'REJECTED') return '认证未通过';
+  return status;
+}
+
+function formatAnnualSalaryTag(salaryMin?: number | null, salaryMax?: number | null) {
+  if (!salaryMin && !salaryMax) return '薪资面议';
+  return '15薪';
+}
+
+function buildJobDescriptionSections(job: Job) {
+  const sections: Array<{ title: string; items: string[] }> = [];
+  const responsibilities = (job.description ?? '')
+    .split('\n')
+    .map((item) => item.trim())
+    .filter(Boolean);
+  if (responsibilities.length > 0) {
+    sections.push({ title: '岗位职责', items: responsibilities });
+  }
+  if (job.requiredSkills && job.requiredSkills.length > 0) {
+    sections.push({
+      title: '任职要求',
+      items: job.requiredSkills.map((skill) => `熟悉 ${skill}`),
+    });
+  }
+  if (sections.length === 0) {
+    sections.push({
+      title: '岗位职责',
+      items: ['职位描述待补充'],
+    });
+  }
+  return sections;
+}
+
+export default function JobDetailPage() {
+  const params = useParams<{ id: string }>();
+  const jobId = Number(params?.id);
+
+  const [job, setJob] = useState<Job | null>(null);
+  const [company, setCompany] = useState<Company | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!Number.isFinite(jobId)) {
+      setError('无效职位ID');
+      setLoading(false);
+      return;
+    }
+
+    let active = true;
+    void (async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const jobResult = await publicApi.jobs.getById(jobId);
+        if (!active) return;
+        setJob(jobResult);
+
+        const companyId = jobResult.companyId;
+        if (companyId && Number.isFinite(companyId)) {
+          const companyResult = await publicApi.companies.getById(companyId);
+          if (!active) return;
+          setCompany(companyResult);
+        } else {
+          setCompany(null);
+        }
+      } catch (err) {
+        if (!active) return;
+        setError(err instanceof Error ? err.message : '职位详情加载失败');
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [jobId]);
+
+  const descriptionSections = useMemo(() => {
+    if (!job) return [];
+    return buildJobDescriptionSections(job);
+  }, [job]);
+
+  const companyLink = useMemo(() => {
+    if (company?.id) return `/companies/${company.id}`;
+    if (job?.companyId) return `/companies/${job.companyId}`;
+    return '/companies';
+  }, [company, job]);
+
+  const companyName = company?.name || job?.companyName || '未知企业';
+  const companyIndustry = company?.industryName || job?.companyIndustryName || '未知行业';
+  const companyScale = formatCompanyScale(company?.scale ?? job?.companyScale ?? null);
+  const companyLogoUrl = resolveLogoUrl(company?.avatarUrl ?? job?.companyAvatarUrl ?? null);
+  const companyAuthStatusText = formatCompanyAuthStatus(company?.authStatus ?? job?.companyAuthStatus ?? null);
+
+  if (loading) {
+    return <div className="p-6 text-on-surface-variant">职位详情加载中...</div>;
+  }
+
+  if (error || !job) {
+    return <div className="p-6 text-error">{error || '职位不存在'}</div>;
+  }
 
   return (
     <div className="flex flex-col">
-      <TopNav title="" showShare />
+      <header className="sticky top-0 md:top-16 z-50 h-16 bg-surface-lowest/90 backdrop-blur-md border-b border-surface-mid flex items-center justify-center shadow-[0_2px_10px_rgba(0,0,0,0.02)] w-full">
+        <div className="max-w-7xl mx-auto w-full px-5 flex items-center justify-between relative h-full">
+          <div className="flex items-center gap-2">
+            <Link
+              href="/jobs"
+              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-low transition-colors text-on-surface"
+            >
+              <ArrowLeft size={24} />
+            </Link>
+          </div>
+          <h1 className="font-h3 text-h3 text-on-surface absolute left-1/2 -translate-x-1/2 whitespace-nowrap" />
+          <div className="flex items-center gap-1 min-w-[40px] justify-end">
+            <button className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-low transition-colors text-on-surface">
+              <Share2 size={24} />
+            </button>
+          </div>
+        </div>
+      </header>
 
       <main className="max-w-7xl mx-auto w-full px-5 md:px-8 pt-6 md:pt-12 pb-8 md:pb-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
-          {/* Left Column: Job Info */}
           <div className="lg:col-span-2 space-y-8">
             <section>
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                <h1 className="text-3xl md:text-4xl font-black text-on-surface tracking-tight">{job.title}</h1>
+                <h1 className="text-3xl md:text-4xl font-black text-on-surface tracking-tight">{job.title || '未知职位'}</h1>
                 <div className="flex items-center gap-4">
-                  <span className="text-2xl md:text-3xl font-black text-primary">{job.salary}</span>
-                  <span className="text-sm font-bold text-outline bg-surface-low px-3 py-1 rounded-lg">15薪</span>
+                  <span className="text-2xl md:text-3xl font-black text-primary">{formatSalary(job.salaryMin, job.salaryMax)}</span>
+                  <span className="text-sm font-bold text-outline bg-surface-low px-3 py-1 rounded-lg">
+                    {formatAnnualSalaryTag(job.salaryMin, job.salaryMax)}
+                  </span>
                 </div>
               </div>
-              
+
               <div className="flex flex-wrap gap-3">
-                <Tag icon={MapPin} text={job.location} />
-                <Tag icon={Briefcase} text={job.experience} />
-                <Tag icon={GraduationCap} text={job.education} />
+                <Tag icon={MapPin} text={[job.city, job.district].filter(Boolean).join(' · ') || '地点待补充'} />
+                <Tag icon={Briefcase} text={formatJobType(job.jobType)} />
+                <Tag icon={GraduationCap} text={formatEducation(job.educationCode)} />
+              </div>
+
+              <div className="mt-6 rounded-2xl border border-primary/15 bg-gradient-to-br from-primary/10 via-primary/5 to-white px-4 py-4 md:px-5">
+                <div className="mb-3 flex items-center justify-between">
+                  <h2 className="text-sm font-black text-on-surface">所需技能</h2>
+                  <span className="rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-black text-primary shadow-sm">
+                    {(job.requiredSkills ?? []).length} 项
+                  </span>
+                </div>
+                {job.requiredSkills && job.requiredSkills.length > 0 ? (
+                  <div className="flex flex-wrap gap-2.5">
+                    {job.requiredSkills.map((skill) => (
+                      <span
+                        key={skill}
+                        data-testid={`job-required-skill-${skill}`}
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-primary/20 bg-white px-3.5 py-2 text-xs font-bold text-primary shadow-[0_3px_12px_rgba(37,99,235,0.12)]"
+                      >
+                        <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-on-surface-variant">暂无技能要求</p>
+                )}
               </div>
             </section>
 
             <section className="space-y-8 bg-surface-lowest md:p-8 md:rounded-3xl md:border md:border-surface-mid">
               <div>
                 <h2 className="text-xl font-black mb-6 flex items-center gap-3 text-on-surface">
-                   <span className="w-1.5 h-6 bg-primary rounded-full"></span>
-                   职位描述
+                  <span className="w-1.5 h-6 bg-primary rounded-full" />
+                  职位描述
                 </h2>
                 <div className="space-y-8">
-                  <div>
-                    <h4 className="font-black text-base mb-4 text-on-surface flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 bg-primary rounded-full"></span>
-                      岗位职责
-                    </h4>
-                    <ul className="text-body-lg text-on-surface-variant leading-relaxed space-y-3 list-none">
-                      {["负责大规模语言模型（LLM）的微调与优化，提升在特定垂直领域的表现。", 
-                        "设计并实现高效的推荐算法架构，解决海量数据下的高并发推荐问题。", 
-                        "跟进业内最新的AI技术动态，将前沿研究成果转化为实际产品落地。"].map((item, i) => (
-                        <li key={i} className="flex gap-3">
-                          <span className="text-primary font-black mt-1">0{i+1}.</span>
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div>
-                    <h4 className="font-black text-base mb-4 text-on-surface flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 bg-primary rounded-full"></span>
-                      任职要求
-                    </h4>
-                    <ul className="text-body-lg text-on-surface-variant leading-relaxed space-y-3 list-none">
-                      {["计算机、数学或相关专业硕士及以上学历，具有扎实的机器学习基础。", 
-                        "熟练掌握Python/C++，熟悉PyTorch、TensorFlow。"].map((item, i) => (
-                        <li key={i} className="flex gap-3">
-                          <span className="text-primary font-black mt-1">0{i+1}.</span>
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  {descriptionSections.map((section) => (
+                    <div key={section.title}>
+                      <h4 className="font-black text-base mb-4 text-on-surface flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 bg-primary rounded-full" />
+                        {section.title}
+                      </h4>
+                      <ul className="text-body-lg text-on-surface-variant leading-relaxed space-y-3 list-none">
+                        {section.items.map((item, index) => (
+                          <li key={`${section.title}-${index}`} className="flex gap-3">
+                            <span className="text-primary font-black mt-1">{String(index + 1).padStart(2, '0')}.</span>
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
                 </div>
               </div>
             </section>
           </div>
 
-          {/* Right Column: Company & Actions */}
           <div className="lg:col-span-1 space-y-6">
             <section className="sticky top-24">
-              <Link 
-                href="/companies/bytedance"
+              <Link
+                href={companyLink}
                 className="flex flex-col gap-6 p-6 md:p-8 bg-surface-lowest rounded-3xl shadow-sm border border-surface-mid hover:border-primary/20 hover:shadow-xl transition-all group"
               >
                 <div className="flex items-center gap-4">
-                  <img src={job.companyLogo} className="w-16 h-16 md:w-20 md:h-20 rounded-2xl border border-surface-mid object-contain bg-white p-2 group-hover:scale-105 transition-transform" alt="logo" />
+                  <img
+                    src={companyLogoUrl}
+                    className="w-16 h-16 md:w-20 md:h-20 rounded-2xl border border-surface-mid object-contain bg-white p-2 group-hover:scale-105 transition-transform"
+                    alt="company logo"
+                    onError={(event) => {
+                      event.currentTarget.src = DEFAULT_COMPANY_LOGO;
+                    }}
+                  />
                   <div className="flex-1 overflow-hidden">
-                    <h3 className="text-lg font-black text-on-surface truncate group-hover:text-primary transition-colors">星辰未来科技有限公司</h3>
-                    <p className="text-xs font-bold text-on-surface-variant mt-1">D轮及以上 · 1000+人</p>
+                    <h3 className="text-lg font-black text-on-surface truncate group-hover:text-primary transition-colors">{companyName}</h3>
+                    <p className="text-xs font-bold text-on-surface-variant mt-1">{companyAuthStatusText} · {companyScale}</p>
                   </div>
                 </div>
-                
+
                 <div className="space-y-4 pt-4 border-t border-surface-mid">
                   <div className="flex justify-between text-xs font-bold">
                     <span className="text-outline">行业</span>
-                    <span className="text-on-surface">人工智能 / 大数据</span>
+                    <span className="text-on-surface">{companyIndustry}</span>
                   </div>
                   <div className="flex justify-between text-xs font-bold">
                     <span className="text-outline">规模</span>
-                    <span className="text-on-surface">1000-9999人</span>
+                    <span className="text-on-surface">{companyScale}</span>
                   </div>
                 </div>
 
@@ -110,7 +293,6 @@ export default function JobDetail() {
                 </div>
               </Link>
 
-              {/* Desktop Actions */}
               <div className="hidden lg:flex flex-col gap-4 mt-8">
                 <button className="flex items-center justify-center gap-3 h-14 w-full rounded-2xl bg-primary text-white font-black text-lg shadow-xl shadow-primary/20 hover:bg-primary/90 hover:-translate-y-0.5 active:translate-y-0 transition-all">
                   立即投递职位
@@ -125,7 +307,6 @@ export default function JobDetail() {
         </div>
       </main>
 
-      {/* Mobile Actions Only */}
       <div className="lg:hidden fixed bottom-0 left-0 w-full bg-surface-lowest flex gap-4 p-5 border-t border-surface-mid pb-safe z-50">
         <button className="flex-1 h-12 rounded-xl border border-primary text-primary font-bold flex items-center justify-center gap-2 active:bg-primary/5 transition-colors">
           <Zap size={18} fill="currentColor" />
@@ -139,7 +320,7 @@ export default function JobDetail() {
   );
 }
 
-function Tag({ icon: Icon, text }: { icon: any, text: string }) {
+function Tag({ icon: Icon, text }: { icon: React.ComponentType<{ size?: number }>; text: string }) {
   return (
     <div className="inline-flex items-center gap-1 px-3 py-1.5 bg-surface-low text-on-surface-variant rounded-full text-[10px] font-bold">
       <Icon size={14} />

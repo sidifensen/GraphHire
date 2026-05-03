@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ArrowLeft, Briefcase, ChevronRight, MapPin } from 'lucide-react';
 import { publicApi, type Company, type Job } from '@/lib/api/public';
+import { getApiBaseUrl } from '@/lib/api/base-url';
 import { formatCompanyScale } from '@/features/user-filters/constants';
 
 function formatSalary(min?: number | null, max?: number | null) {
@@ -12,6 +13,16 @@ function formatSalary(min?: number | null, max?: number | null) {
   const minText = min ? `${Math.round(min / 1000)}k` : '';
   const maxText = max ? `${Math.round(max / 1000)}k` : '';
   return minText && maxText ? `${minText}-${maxText}` : minText || maxText;
+}
+
+const DEFAULT_AVATAR = '/default-avatar.svg';
+
+function resolveLogoUrl(url?: string | null) {
+  if (!url) return DEFAULT_AVATAR;
+  if (/^https?:\/\//i.test(url)) return url;
+  if (url.startsWith('//')) return `${window.location.protocol}${url}`;
+  if (url.startsWith('/')) return `${getApiBaseUrl()}${url}`;
+  return `${getApiBaseUrl()}/${url}`;
 }
 
 export default function CompanyDetail() {
@@ -55,9 +66,9 @@ export default function CompanyDetail() {
     };
   }, [companyId]);
 
-  const summary = useMemo(() => {
+  const companyDescription = useMemo(() => {
     if (!company) return '';
-    return company.summary || '已认证企业';
+    return company.description?.trim() || '暂无公司介绍';
   }, [company]);
 
   if (loading) {
@@ -81,9 +92,17 @@ export default function CompanyDetail() {
           <div className="space-y-8 lg:col-span-2">
             <section className="rounded-3xl border border-surface-mid bg-surface-lowest p-6 md:p-10">
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                <div>
-                  <h1 className="text-3xl font-black text-on-surface md:text-4xl">{company.name}</h1>
-                  <p className="mt-2 text-sm text-on-surface-variant">{summary}</p>
+                <div className="flex items-start gap-4">
+                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-surface-mid/70 bg-white md:h-20 md:w-20">
+                    <img src={resolveLogoUrl(company.avatarUrl)} className="h-full w-full object-cover" alt={company.name} />
+                  </div>
+                  <div>
+                    <h1 className="text-3xl font-black text-on-surface md:text-4xl">{company.name}</h1>
+                    <div className="mt-2 flex items-center gap-2 text-sm text-on-surface-variant">
+                      <MapPin size={14} />
+                      <span>{company.address || company.city || '地址待补充'}</span>
+                    </div>
+                  </div>
                 </div>
                 <div className="rounded-xl bg-primary/10 px-4 py-2 text-sm font-bold text-primary">在招 {company.jobCount ?? jobs.length}</div>
               </div>
@@ -106,7 +125,7 @@ export default function CompanyDetail() {
                 <span className="h-6 w-1.5 rounded-full bg-primary" />
                 公司介绍
               </h2>
-              <p className="leading-relaxed text-on-surface-variant">{summary}</p>
+              <p className="leading-relaxed whitespace-pre-wrap text-on-surface-variant">{companyDescription}</p>
             </section>
           </div>
 

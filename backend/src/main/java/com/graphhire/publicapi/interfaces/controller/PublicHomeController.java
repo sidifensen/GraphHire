@@ -121,6 +121,8 @@ public class PublicHomeController {
                 city,
                 jobCount,
                 summary,
+                company.getDescription(),
+                company.getAddress(),
                 company.getAuthStatus().name(),
                 companyAvatarUrlResolver.resolve(company.getAvatarPath()),
                 company.getIndustryId(),

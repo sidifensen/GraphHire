@@ -1,7 +1,9 @@
-﻿# Release Notes
+# Release Notes
 
 ## 2026-05-01
 
+- feat: 用户端公司详情页新增公司头像与具体地址展示，移除“已认证企业，当前开放X个职位”文案；公开公司接口同步返回 `address` 字段
+- feat: company 表新增企业简介字段 `description`（含迁移脚本与 schema 同步），并补齐 CompanyPO 映射，支持企业简介落库与查询
 - fix: 首页首屏求职入口按钮文案调整为“开始找工作”，并同步更新相关页面测试断言
 - feat: 首页首屏“免费发布职位”按钮替换为新独立组件样式（黄黑渐变 + 图标动效），保留原有跳转地址与组件化引用
 - feat: 首页首屏“立即找工作”替换为独立组件 `HeroJobButton`（渐变描边动效样式，保留 `/jobs` 跳转），底部 CTA 保持不变
@@ -124,9 +126,7 @@
 - chore: 提交行业与职位类型相关在途改动快照（含企业资料联动与测试更新）
 - feat: 用户端职位页接入后端真实筛选：新增公开职位类型树/行业树接口，扩展 /public/jobs 支持职位类别叶子、行业叶子、城市多选、jobType、学历、公司规模筛选，并重构职位页为三类弹窗筛选交互（类别/行业/地点）
 
-## 2026-05-03
-
-- feat: 用户端公司列表页 `/companies` 完成真实接口对接，移除 `MOCK_COMPANIES`，支持关键词、热门地点+更多地点、热门行业+更多行业、公司规模（1-6 编码）筛选，并新增本地筛选持久化（`localStorage`）
+- fix: 修复用户端公司页移动端公司规模筛选分支的 TypeScript 类型窄化错误，恢复前端构建通过`r`n- feat: 用户端公司列表页 `/companies` 完成真实接口对接，移除 `MOCK_COMPANIES`，支持关键词、热门地点+更多地点、热门行业+更多行业、公司规模（1-6 编码）筛选，并新增本地筛选持久化（`localStorage`）
 - feat: 用户端公司详情页 `/companies/[id]` 完成真实接口对接，移除 `MOCK_COMPANIES/MOCK_JOBS`，改为聚合 `publicApi.companies.getById` 与 `publicApi.jobs.search({ companyId })` 展示公司信息与在招职位
 - feat: 后端公开公司接口增强：`GET /public/companies` 新增 `industryLeafIds/companyScaleCode/cityList` 筛选参数，响应新增 `industryId/industryName/scale` 字段
 - refactor: 抽取用户端共享筛选模块 `frontend/src/features/user-filters/*`（行业树弹窗、地点弹窗、城市与规模工具），为职位页与公司页复用做基础

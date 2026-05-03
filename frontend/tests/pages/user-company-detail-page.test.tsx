@@ -42,10 +42,12 @@ describe('user company detail page real api integration', () => {
       id: 101,
       name: '星河科技',
       city: '杭州',
+      address: '杭州市滨江区江南大道3888号',
       jobCount: 2,
       summary: '已认证企业，当前开放 2 个职位',
+      description: '星河科技是一家专注企业数字化的技术公司。',
       authStatus: 'VERIFIED',
-      avatarUrl: null,
+      avatarUrl: '/files/company/avatar_101.png',
       industryName: '电子商务',
       scale: '5',
     });
@@ -89,8 +91,9 @@ describe('user company detail page real api integration', () => {
     });
 
     expect(await screen.findByText('星河科技')).toBeInTheDocument();
-    expect(screen.getByText('杭州')).toBeInTheDocument();
-    expect(screen.getAllByText('已认证企业，当前开放 2 个职位').length).toBeGreaterThan(0);
+    expect(screen.getByText('杭州市滨江区江南大道3888号')).toBeInTheDocument();
+    expect(screen.queryByText('已认证企业，当前开放 2 个职位')).not.toBeInTheDocument();
+    expect(screen.getByText('星河科技是一家专注企业数字化的技术公司。')).toBeInTheDocument();
     expect(screen.getByText('后端开发工程师')).toBeInTheDocument();
     expect(screen.getByText('25k-38k')).toBeInTheDocument();
   });

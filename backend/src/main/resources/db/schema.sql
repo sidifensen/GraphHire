@@ -103,6 +103,7 @@ CREATE TABLE company
     address      VARCHAR(300),
     contact      VARCHAR(50),
     phone        VARCHAR(20),
+    description  VARCHAR(2000),
     avatar_path  VARCHAR(500),
     create_time  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     update_time  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -123,6 +124,7 @@ COMMENT ON COLUMN company.scale IS '企业规模编码：1-0-20人 2-20-99人 3-
 COMMENT ON COLUMN company.address IS '详细地址';
 COMMENT ON COLUMN company.contact IS '联系人姓名';
 COMMENT ON COLUMN company.phone IS '联系电话';
+COMMENT ON COLUMN company.description IS '企业简介';
 COMMENT ON COLUMN company.avatar_path IS '企业头像对象路径';
 COMMENT ON COLUMN company.create_time IS '创建时间';
 COMMENT ON COLUMN company.update_time IS '更新时间';

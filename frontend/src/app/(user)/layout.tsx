@@ -1,11 +1,14 @@
-'use client';
+import type { Metadata } from 'next';
+import UserRouteLayoutClient from '@/app/(user)/UserRouteLayoutClient';
 
-import MockUserShell from '@/app/(user)/_mock/components/MockUserShell';
+export const metadata: Metadata = {
+  title: 'GraphHire 图谱智聘 - 用户端',
+};
 
 export default function UserRouteLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <MockUserShell>{children}</MockUserShell>;
+  return <UserRouteLayoutClient>{children}</UserRouteLayoutClient>;
 }

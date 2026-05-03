@@ -1,16 +1,9 @@
 ﻿'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Search, ChevronDown, CheckCircle, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Skeleton } from '@/app/(user)/_mock/components/Skeleton';
 import { publicApi, type Company, type ProvinceCityItem } from '@/lib/api/public';
 import { getApiBaseUrl } from '@/lib/api/base-url';
@@ -27,6 +20,7 @@ import { collectLeafNameSet, flattenLeafNameMap, treeChildrenById } from '@/feat
 
 const STORAGE_KEY = 'graphhire.user.companies.filters.v1';
 const DEFAULT_AVATAR = '/default-avatar.svg';
+const FILTER_ROW_GAP_PX = 8;
 const FALLBACK_PROVINCE_CITIES: ProvinceCityItem[] = [
   { province: '北京市', cities: ['北京市'] },
   { province: '上海市', cities: ['上海市'] },
@@ -73,6 +67,15 @@ export default function CompanyList() {
   const [draftCityNames, setDraftCityNames] = useState<string[]>([]);
   const [activeIndustryRootId, setActiveIndustryRootId] = useState<number | null>(null);
   const [activeIndustryMidId, setActiveIndustryMidId] = useState<number | null>(null);
+  const [visibleCityOptions, setVisibleCityOptions] = useState<string[]>(['全国']);
+  const [visibleIndustryOptions, setVisibleIndustryOptions] = useState<string[]>(['不限']);
+
+  const cityRowRef = useRef<HTMLDivElement | null>(null);
+  const cityLabelRef = useRef<HTMLSpanElement | null>(null);
+  const cityMoreRef = useRef<HTMLButtonElement | null>(null);
+  const industryRowRef = useRef<HTMLDivElement | null>(null);
+  const industryLabelRef = useRef<HTMLSpanElement | null>(null);
+  const industryMoreRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -114,8 +117,78 @@ export default function CompanyList() {
   const industryLeafSet = useMemo(() => collectLeafNameSet(industryTree), [industryTree]);
   const hotIndustryOptions = useMemo(() => {
     const hot = HOT_INDUSTRY_PRIORITY.filter((name) => industryLeafSet.has(name));
-    return ['不限', ...hot];
+    const allLeafNames = Array.from(industryLeafSet).sort((a, b) => a.localeCompare(b, 'zh-CN'));
+    const others = allLeafNames.filter((name) => !hot.includes(name));
+    return ['不限', ...hot, ...others];
   }, [industryLeafSet]);
+
+  useEffect(() => {
+    const measureOptionWidth = (text: string) => {
+      const probe = document.createElement('span');
+      probe.textContent = text;
+      probe.style.position = 'absolute';
+      probe.style.visibility = 'hidden';
+      probe.style.whiteSpace = 'nowrap';
+      probe.style.fontSize = '14px';
+      probe.style.fontWeight = '500';
+      probe.style.lineHeight = '20px';
+      probe.style.padding = '4px 12px';
+      document.body.appendChild(probe);
+      const width = probe.getBoundingClientRect().width;
+      document.body.removeChild(probe);
+      return Math.ceil(width) + 2;
+    };
+
+    const fitOneLine = (
+      options: string[],
+      rowRef: React.RefObject<HTMLDivElement | null>,
+      labelRef: React.RefObject<HTMLElement | null>,
+      moreRef: React.RefObject<HTMLElement | null>,
+      setVisible: React.Dispatch<React.SetStateAction<string[]>>,
+    ) => {
+      const row = rowRef.current;
+      const label = labelRef.current;
+      const more = moreRef.current;
+      if (!row || !label || !more) return;
+
+      const available =
+        row.clientWidth - label.getBoundingClientRect().width - more.getBoundingClientRect().width - FILTER_ROW_GAP_PX * 3;
+
+      if (available <= 0) {
+        setVisible(options.slice(0, 1));
+        return;
+      }
+
+      const fitted: string[] = [];
+      let used = 0;
+
+      for (const option of options) {
+        const optionWidth = measureOptionWidth(option);
+        const nextUsed = fitted.length === 0 ? optionWidth : used + FILTER_ROW_GAP_PX + optionWidth;
+        if (nextUsed > available) break;
+        fitted.push(option);
+        used = nextUsed;
+      }
+
+      setVisible(fitted.length > 0 ? fitted : options.slice(0, 1));
+    };
+
+    const updateVisibleOptions = () => {
+      fitOneLine(cityQuickOptions, cityRowRef, cityLabelRef, cityMoreRef, setVisibleCityOptions);
+      fitOneLine(hotIndustryOptions, industryRowRef, industryLabelRef, industryMoreRef, setVisibleIndustryOptions);
+    };
+
+    updateVisibleOptions();
+    const observer = new ResizeObserver(updateVisibleOptions);
+    if (cityRowRef.current) observer.observe(cityRowRef.current);
+    if (industryRowRef.current) observer.observe(industryRowRef.current);
+    window.addEventListener('resize', updateVisibleOptions);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', updateVisibleOptions);
+    };
+  }, [cityQuickOptions, hotIndustryOptions]);
 
   useEffect(() => {
     if (!metadataReady || restored) return;
@@ -221,12 +294,50 @@ export default function CompanyList() {
   const selectedScaleLabel = selectedScaleCode ? '公司规模·1' : '公司规模';
   const selectedCityLabel = selectedCityNames.length > 0 ? `工作地点·${selectedCityNames.length}` : '工作地点';
   const selectedIndustryLabel = selectedIndustryNames.length > 0 ? `行业类型·${selectedIndustryNames.length}` : '行业类型';
+  const selectedScaleText = COMPANY_SCALE_OPTIONS.find((item) => item.value === selectedScaleCode)?.label;
+
+  const selectedFilterTags = useMemo(() => {
+    const tags: Array<{ id: string; label: string }> = [];
+    if (search.trim()) {
+      tags.push({ id: 'keyword', label: `关键词: ${search.trim()}` });
+    }
+    for (const city of selectedCityNames) {
+      tags.push({ id: `city:${city}`, label: `工作地点: ${city}` });
+    }
+    for (const industry of selectedIndustryNames) {
+      tags.push({ id: `industry:${industry}`, label: `行业类型: ${industry}` });
+    }
+    if (selectedScaleCode && selectedScaleText) {
+      tags.push({ id: `scale:${selectedScaleCode}`, label: `公司规模: ${selectedScaleText}` });
+    }
+    return tags;
+  }, [search, selectedCityNames, selectedIndustryNames, selectedScaleCode, selectedScaleText]);
 
   const clearAllFilters = () => {
     setSearch('');
     setSelectedCityNames([]);
     setSelectedIndustryNames([]);
     setSelectedScaleCode(undefined);
+  };
+
+  const removeSelectedFilter = (id: string) => {
+    if (id === 'keyword') {
+      setSearch('');
+      return;
+    }
+    if (id.startsWith('city:')) {
+      const value = id.slice('city:'.length);
+      setSelectedCityNames((prev) => prev.filter((city) => city !== value));
+      return;
+    }
+    if (id.startsWith('industry:')) {
+      const value = id.slice('industry:'.length);
+      setSelectedIndustryNames((prev) => prev.filter((name) => name !== value));
+      return;
+    }
+    if (id.startsWith('scale:')) {
+      setSelectedScaleCode(undefined);
+    }
   };
 
   const mobileDropdownOptions = {
@@ -508,29 +619,19 @@ export default function CompanyList() {
                     </div>
                   </div>
                 ) : mobileDropdownOptions[openDropdown].map((opt) => {
-                  const isActive = openDropdown === 'city'
-                    ? (opt === '全国' ? selectedCityNames.length === 0 : selectedCityNames.includes(opt))
-                    : openDropdown === 'industry'
-                      ? (opt === '不限' ? selectedIndustryNames.length === 0 : selectedIndustryNames.includes(opt))
-                      : (opt === '不限'
-                        ? !selectedScaleCode
-                        : COMPANY_SCALE_OPTIONS.find((item) => item.value === selectedScaleCode)?.label === opt);
+                  const isActive = opt === '不限'
+                    ? !selectedScaleCode
+                    : COMPANY_SCALE_OPTIONS.find((item) => item.value === selectedScaleCode)?.label === opt;
 
                   return (
                     <button
                       key={opt}
                       onClick={() => {
-                        if (openDropdown === 'city') {
-                          toggleHotCity(opt);
-                        } else if (openDropdown === 'industry') {
-                          toggleHotIndustry(opt);
+                        if (opt === '不限') {
+                          setSelectedScaleCode(undefined);
                         } else {
-                          if (opt === '不限') {
-                            setSelectedScaleCode(undefined);
-                          } else {
-                            const matched = COMPANY_SCALE_OPTIONS.find((item) => item.label === opt);
-                            setSelectedScaleCode(matched?.value);
-                          }
+                          const matched = COMPANY_SCALE_OPTIONS.find((item) => item.label === opt);
+                          setSelectedScaleCode(matched?.value);
                         }
                         setOpenDropdown(null);
                       }}
@@ -568,15 +669,15 @@ export default function CompanyList() {
         </div>
 
         <div className="hidden flex-col gap-4 rounded-2xl bg-surface-lowest p-4 shadow-sm md:flex md:p-6">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-bold text-on-surface-variant">公司地点</span>
-            {cityQuickOptions.slice(0, 10).map((city) => {
+          <div ref={cityRowRef} className="flex items-center gap-2 overflow-hidden">
+            <span ref={cityLabelRef} className="shrink-0 text-sm font-bold text-on-surface-variant">公司地点</span>
+            {visibleCityOptions.map((city) => {
               const active = city === '全国' ? selectedCityNames.length === 0 : selectedCityNames.includes(city);
               return (
                 <button
                   key={city}
                   onClick={() => toggleHotCity(city)}
-                  className={`rounded-lg px-3 py-1 text-sm transition-colors ${
+                  className={`shrink-0 whitespace-nowrap rounded-lg px-3 py-1 text-sm transition-colors ${
                     active ? 'bg-primary/10 text-primary font-bold' : 'text-on-surface hover:bg-primary/5 hover:text-primary'
                   }`}
                 >
@@ -584,20 +685,24 @@ export default function CompanyList() {
                 </button>
               );
             })}
-            <button onClick={() => { setDraftCityNames(selectedCityNames); setShowLocationModal(true); }} className="rounded-lg px-3 py-1 text-sm text-primary hover:bg-primary/5">
+            <button
+              ref={cityMoreRef}
+              onClick={() => { setDraftCityNames(selectedCityNames); setShowLocationModal(true); }}
+              className="shrink-0 whitespace-nowrap rounded-lg px-3 py-1 text-sm text-primary hover:bg-primary/5"
+            >
               更多地点
             </button>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-bold text-on-surface-variant">行业类型</span>
-            {hotIndustryOptions.map((name) => {
+          <div ref={industryRowRef} className="flex items-center gap-2 overflow-hidden">
+            <span ref={industryLabelRef} className="shrink-0 text-sm font-bold text-on-surface-variant">行业类型</span>
+            {visibleIndustryOptions.map((name) => {
               const active = name === '不限' ? selectedIndustryNames.length === 0 : selectedIndustryNames.includes(name);
               return (
                 <button
                   key={name}
                   onClick={() => toggleHotIndustry(name)}
-                  className={`rounded-lg px-3 py-1 text-sm transition-colors ${
+                  className={`shrink-0 whitespace-nowrap rounded-lg px-3 py-1 text-sm transition-colors ${
                     active ? 'bg-primary/10 text-primary font-bold' : 'text-on-surface hover:bg-primary/5 hover:text-primary'
                   }`}
                 >
@@ -605,35 +710,78 @@ export default function CompanyList() {
                 </button>
               );
             })}
-            <button onClick={() => { setDraftIndustryNames(selectedIndustryNames); setShowIndustryModal(true); }} className="rounded-lg px-3 py-1 text-sm text-primary hover:bg-primary/5">
+            <button
+              ref={industryMoreRef}
+              onClick={() => { setDraftIndustryNames(selectedIndustryNames); setShowIndustryModal(true); }}
+              className="shrink-0 whitespace-nowrap rounded-lg px-3 py-1 text-sm text-primary hover:bg-primary/5"
+            >
               更多行业
             </button>
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-bold text-on-surface-variant">公司规模</span>
-            <div className="w-56">
-              <Select value={selectedScaleCode ?? 'all'} onValueChange={(value) => setSelectedScaleCode(value === 'all' ? undefined : value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="不限" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">不限</SelectItem>
-                  {COMPANY_SCALE_OPTIONS.map((item) => (
-                    <SelectItem key={item.value} value={item.value}>
-                      {item.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          <div data-testid="desktop-company-scale-row" className="flex items-center gap-3 overflow-hidden">
+            <span className="shrink-0 text-sm font-bold text-on-surface-variant">公司规模</span>
+            <div className="hide-scrollbar flex min-w-0 flex-1 items-center gap-2 overflow-x-auto">
+              <button
+                onClick={() => setSelectedScaleCode(undefined)}
+                className={`shrink-0 whitespace-nowrap rounded-lg px-3 py-1 text-sm transition-colors ${
+                  !selectedScaleCode ? 'bg-primary/10 text-primary font-bold' : 'text-on-surface hover:bg-primary/5 hover:text-primary'
+                }`}
+              >
+                不限
+              </button>
+              {COMPANY_SCALE_OPTIONS.map((item) => (
+                <button
+                  key={item.value}
+                  onClick={() => setSelectedScaleCode(item.value)}
+                  className={`shrink-0 whitespace-nowrap rounded-lg px-3 py-1 text-sm transition-colors ${
+                    selectedScaleCode === item.value
+                      ? 'bg-primary/10 text-primary font-bold'
+                      : 'text-on-surface hover:bg-primary/5 hover:text-primary'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
             </div>
             <button
               onClick={clearAllFilters}
-              className="text-sm text-on-surface-variant hover:text-primary"
+              className="shrink-0 text-sm text-on-surface-variant hover:text-primary"
             >
               清空筛选
             </button>
           </div>
+
+          {selectedFilterTags.length > 0 && (
+            <div className="flex items-center gap-3 border-t border-surface-mid/50 pt-4">
+              <div className="shrink-0 text-sm font-bold text-on-surface-variant">已选条件</div>
+              <div className="hide-scrollbar flex min-w-0 flex-1 items-center gap-2 overflow-x-auto">
+                {selectedFilterTags.map((tag) => (
+                  <span
+                    key={tag.id}
+                    className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-primary px-3 py-1 text-xs font-medium text-primary bg-primary/5"
+                  >
+                    {tag.label}
+                    <button
+                      type="button"
+                      onClick={() => removeSelectedFilter(tag.id)}
+                      aria-label={`移除${tag.label}`}
+                      className="rounded-full text-primary hover:text-primary-container"
+                    >
+                      <X size={12} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={clearAllFilters}
+                className="shrink-0 text-sm text-on-surface-variant hover:text-primary"
+              >
+                清空筛选
+              </button>
+            </div>
+          )}
         </div>
 
         {error && <div className="rounded-lg bg-error/10 px-4 py-3 text-sm text-error">{error}</div>}
@@ -658,17 +806,28 @@ export default function CompanyList() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <h3 className="truncate text-base font-black text-on-surface">{company.name}</h3>
-                      <p className="mt-1 truncate text-xs text-on-surface-variant">{company.city || '地点待补充'}</p>
+                      <div className="mt-1 flex items-center justify-between gap-2">
+                        <p className="min-w-0 truncate text-xs text-on-surface-variant">{company.city || '地点待补充'}</p>
+                        <span className="shrink-0 inline-flex items-center whitespace-nowrap text-[11px] font-medium text-on-surface-variant">
+                          <span className="mr-1 h-1.5 w-1.5 rounded-full bg-primary/60" />
+                          {formatCompanyScale(company.scale)}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap gap-1.5">
-                    <span className="rounded bg-surface-low px-2 py-0.5 text-[11px] font-bold text-on-surface-variant">{company.industryName || '未知行业'}</span>
-                    <span className="rounded bg-surface-low px-2 py-0.5 text-[11px] font-bold text-on-surface-variant">{formatCompanyScale(company.scale)}</span>
-                    <span className="rounded bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary">在招 {company.jobCount ?? 0}</span>
+                  <div className="flex min-w-0 items-center gap-1.5">
+                    <span
+                      className="min-w-0 flex-1 truncate rounded-md border border-surface-mid/70 bg-surface-low px-2.5 py-0.5 text-[11px] font-medium text-on-surface-variant"
+                      title={company.industryName || '未知行业'}
+                    >
+                      {company.industryName || '未知行业'}
+                    </span>
+                    <span className="shrink-0 whitespace-nowrap rounded bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary">
+                      在招 {company.jobCount ?? 0}
+                    </span>
                   </div>
 
-                  <p className="mt-3 line-clamp-2 text-xs text-on-surface-variant">{company.summary || '已认证企业'}</p>
                 </Link>
               ))}
         </div>

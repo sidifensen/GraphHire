@@ -110,8 +110,7 @@ describe('user companies page real api filters', () => {
     fireEvent.click(within(cityList).getByRole('button', { name: '杭州' }));
     fireEvent.click(screen.getByRole('button', { name: /^确定$/ }));
 
-    fireEvent.click(screen.getByRole('combobox'));
-    fireEvent.click(await screen.findByRole('option', { name: '1000-9999人' }));
+    fireEvent.click(screen.getByRole('button', { name: '1000-9999人' }));
 
     await waitFor(() => {
       expect(hoisted.companiesSearchMock).toHaveBeenLastCalledWith(

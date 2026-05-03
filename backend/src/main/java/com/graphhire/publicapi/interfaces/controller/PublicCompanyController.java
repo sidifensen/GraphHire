@@ -103,6 +103,8 @@ public class PublicCompanyController {
                 city,
                 jobCount,
                 summary,
+                StrUtil.trim(company.getDescription()),
+                StrUtil.trim(company.getAddress()),
                 company.getAuthStatus().name(),
                 companyAvatarUrlResolver.resolve(company.getAvatarPath()),
                 company.getIndustryId(),
