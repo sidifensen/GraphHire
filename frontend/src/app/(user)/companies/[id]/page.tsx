@@ -91,7 +91,7 @@ export default function CompanyDetail() {
           </Link>
         </div>
 
-        <section className="border-b border-surface-mid bg-surface-lowest px-1 pb-5 pt-2 md:px-0 md:pb-6 md:pt-3">
+        <section className="border-b border-surface-mid bg-surface-lowest px-4 pb-5 pt-3 md:px-6 md:pb-6 md:pt-4">
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div className="flex items-start gap-4">
               <div className="h-16 w-16 shrink-0 overflow-hidden rounded-md border border-surface-mid/70 bg-white md:h-20 md:w-20">
@@ -105,7 +105,7 @@ export default function CompanyDetail() {
                 </div>
               </div>
             </div>
-            <div className="px-2 py-1 text-sm font-bold text-primary">在招 {company.jobCount ?? jobs.length}</div>
+            <div className="px-3 py-1.5 text-sm font-bold text-primary">在招 {company.jobCount ?? jobs.length}</div>
           </div>
 
           <div className="mt-6 flex flex-wrap gap-2">
@@ -152,7 +152,7 @@ export default function CompanyDetail() {
           </div>
         </section>
 
-        <section className="mt-5 bg-surface-lowest px-1 py-2 md:px-0">
+        <section className="mt-5 bg-surface-lowest px-4 py-4 md:px-6 md:py-5">
           {activeTab === 'intro' ? (
             <>
               <h2 className="mb-4 flex items-center gap-3 text-2xl font-black text-on-surface">
@@ -181,7 +181,7 @@ export default function CompanyDetail() {
                     <Link
                       key={job.id}
                       href={`/jobs/${job.id}`}
-                      className="block border-b border-surface-mid px-1 py-4 transition-colors hover:bg-surface-low"
+                      className="block border-b border-surface-mid px-3 py-4 transition-colors hover:bg-surface-low"
                     >
                       <div className="mb-2 flex items-start justify-between gap-4">
                         <h3 className="truncate pr-4 font-bold text-on-surface">{job.title}</h3>
