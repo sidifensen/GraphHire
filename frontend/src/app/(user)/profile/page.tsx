@@ -175,15 +175,33 @@ export default function Profile() {
 
           <section className="rounded-2xl border border-surface-mid bg-surface-lowest p-6 md:p-8">
             <h3 className="text-lg font-black text-on-surface">个人档案</h3>
-            <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <InfoItem label="性别" value={formatGender(profile?.gender)} />
-              <InfoItem label="年龄" value={formatAge(profile?.age)} />
-              <InfoItem label="电话" value={displayField(profile?.phone)} />
-              <InfoItem label="学历" value={displayField(profile?.education)} />
-              <InfoItem label="学校" value={displayField(profile?.school)} />
-              <InfoItem label="所在城市" value={displayField(profile?.city)} />
-              <InfoItem label="目标城市" value={displayField(profile?.targetCity)} />
-              <InfoItem label="期望薪资" value={formatExpectedSalary(profile?.expectedSalary)} />
+            <div className="mt-5 overflow-hidden rounded-xl border border-surface-mid">
+              <ProfileInfoRow
+                testId="profile-info-row-basic"
+                label="性别 / 年龄 / 电话"
+                values={[
+                  formatGender(profile?.gender),
+                  formatAge(profile?.age),
+                  displayField(profile?.phone),
+                ]}
+              />
+              <ProfileInfoRow
+                testId="profile-info-row-education"
+                label="学历 / 学校 / 所在城市"
+                values={[
+                  displayField(profile?.education),
+                  displayField(profile?.school),
+                  displayField(profile?.city),
+                ]}
+              />
+              <ProfileInfoRow
+                testId="profile-info-row-intention"
+                label="目标城市 / 期望薪资"
+                values={[
+                  displayField(profile?.targetCity),
+                  formatExpectedSalary(profile?.expectedSalary),
+                ]}
+              />
             </div>
           </section>
 
@@ -212,16 +230,24 @@ export default function Profile() {
   );
 }
 
-type InfoItemProps = {
+type ProfileInfoRowProps = {
+  testId: string;
   label: string;
-  value: string;
+  values: string[];
 };
 
-function InfoItem({ label, value }: InfoItemProps) {
+function ProfileInfoRow({ testId, label, values }: ProfileInfoRowProps) {
   return (
-    <div className="rounded-xl border border-surface-mid bg-surface-low px-4 py-3">
-      <div className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">{label}</div>
-      <div className="mt-1 text-sm font-semibold text-on-surface">{value}</div>
+    <div
+      data-testid={testId}
+      className="grid grid-cols-1 gap-3 border-b border-surface-mid px-4 py-4 last:border-b-0 md:grid-cols-[220px_1fr]"
+    >
+      <div className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{label}</div>
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm font-semibold text-on-surface">
+        {values.map((value, index) => (
+          <span key={`${label}-${index}`}>{value}</span>
+        ))}
+      </div>
     </div>
   );
 }

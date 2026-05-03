@@ -122,6 +122,12 @@ describe('User Profile auth info', () => {
     expect(screen.getByText('北京')).toBeInTheDocument();
     expect(screen.getByText('上海')).toBeInTheDocument();
     expect(screen.getByText('35000 元/月')).toBeInTheDocument();
+    expect(screen.getByTestId('profile-info-row-basic')).toBeInTheDocument();
+    expect(screen.getByTestId('profile-info-row-education')).toBeInTheDocument();
+    expect(screen.getByTestId('profile-info-row-intention')).toBeInTheDocument();
+    expect(screen.getByText('性别 / 年龄 / 电话')).toBeInTheDocument();
+    expect(screen.getByText('学历 / 学校 / 所在城市')).toBeInTheDocument();
+    expect(screen.getByText('目标城市 / 期望薪资')).toBeInTheDocument();
   });
 
   test('未登录时不请求统计接口并显示0', async () => {
