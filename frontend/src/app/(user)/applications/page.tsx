@@ -121,8 +121,9 @@ export default function ApplicationRecords() {
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto w-full p-5 pb-12 md:px-8 md:py-12">
-        <div className="flex gap-6 lg:gap-8">
+      <main className="px-5 pb-12 pt-5 md:px-8 md:py-12">
+        <div className="mx-auto w-full max-w-7xl">
+          <div className="flex gap-6 lg:gap-8">
           <UserWorkbenchSidebar />
           <section className="flex-1">
             <div className="mb-4 hidden overflow-x-auto border-b border-surface-mid md:block">
@@ -205,6 +206,7 @@ export default function ApplicationRecords() {
               })}
             </div>
           </section>
+          </div>
         </div>
       </main>
     </div>

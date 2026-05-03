@@ -240,8 +240,9 @@ export default function ResumeManageContent() {
         <TopNav title="简历管理" />
       </div>
 
-      <main className="flex-1 px-5 pt-6 pb-16 md:pt-12 md:pb-16 md:px-8 max-w-7xl mx-auto w-full">
-        <div className="flex gap-6 lg:gap-8">
+      <main className="flex-1 px-5 pt-6 pb-16 md:px-8 md:pt-12 md:pb-16">
+        <div className="mx-auto w-full max-w-7xl">
+          <div className="flex gap-6 lg:gap-8">
           <UserWorkbenchSidebar />
           <section className="flex-1">
             {error ? (
@@ -365,6 +366,7 @@ export default function ResumeManageContent() {
               </div>
             </section>
           </section>
+          </div>
         </div>
       </main>
 

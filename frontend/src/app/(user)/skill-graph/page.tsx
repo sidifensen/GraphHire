@@ -13,9 +13,10 @@ export default function KnowledgeGraph() {
         <TopNav title="我的图谱" />
       </div>
 
-      <main className="mx-auto flex w-full max-w-7xl flex-1 gap-6 p-5 pb-28 md:px-8 md:py-12 md:pb-32 lg:gap-8">
-        <UserWorkbenchSidebar />
-        <div className="flex-1 grid gap-6 md:grid-cols-12 md:gap-8">
+      <main className="flex-1 px-5 pb-28 pt-5 md:px-8 md:py-12 md:pb-32">
+        <div className="mx-auto flex w-full max-w-7xl gap-6 lg:gap-8">
+          <UserWorkbenchSidebar />
+          <div className="flex-1 grid gap-6 md:grid-cols-12 md:gap-8">
           {/* Graph Canvas */}
           <section className="md:col-span-8 bg-surface-lowest rounded-2xl border border-surface-mid h-[400px] md:h-[600px] relative flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/10 via-surface-lowest to-surface-lowest"></div>
@@ -117,6 +118,7 @@ export default function KnowledgeGraph() {
             </div>
           </div>
           </section>
+          </div>
         </div>
       </main>
 
