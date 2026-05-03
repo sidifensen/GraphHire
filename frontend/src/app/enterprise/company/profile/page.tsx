@@ -1,7 +1,8 @@
-﻿'use client';
+'use client';
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { companyApi, type CompanyProfileUpdateRequest, type IndustryOption } from '@/lib/api/company';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function EnterpriseCompanyProfilePage() {
   const [loading, setLoading] = useState(true);
@@ -93,30 +94,38 @@ export default function EnterpriseCompanyProfilePage() {
         <label className="block text-sm">
           <span className="mb-1 block text-on-surface-variant">所属行业</span>
           <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-            <select
-              value={selectedParentId}
-              onChange={(e) => {
-                const nextParentId = Number(e.target.value);
+            <Select
+              value={String(selectedParentId)}
+              onValueChange={(value) => {
+                const nextParentId = Number(value);
                 setSelectedParentId(nextParentId);
                 const nextParent = industries.find((item) => item.id === nextParentId);
                 const firstChild = nextParent?.children?.find((child) => child.enabled === 1);
                 setForm((prev) => ({ ...prev, industryId: firstChild?.id ?? 0 }));
               }}
-              className="w-full rounded-lg border border-outline-variant/40 px-3 py-2 text-sm"
             >
-              {industries.map((industry) => (
-                <option key={industry.id} value={industry.id}>{industry.name}</option>
-              ))}
-            </select>
-            <select
-              value={form.industryId}
-              onChange={(e) => setForm((prev) => ({ ...prev, industryId: Number(e.target.value) }))}
-              className="w-full rounded-lg border border-outline-variant/40 px-3 py-2 text-sm"
+              <SelectTrigger className="w-full rounded-lg border border-outline-variant/40 px-3 py-2 text-sm">
+                <SelectValue placeholder="选择一级行业" />
+              </SelectTrigger>
+              <SelectContent>
+                {industries.map((industry) => (
+                  <SelectItem key={industry.id} value={String(industry.id)}>{industry.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={String(form.industryId)}
+              onValueChange={(value) => setForm((prev) => ({ ...prev, industryId: Number(value) }))}
             >
-              {childOptions.map((industry) => (
-                <option key={industry.id} value={industry.id}>{industry.name}</option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full rounded-lg border border-outline-variant/40 px-3 py-2 text-sm">
+                <SelectValue placeholder="选择二级行业" />
+              </SelectTrigger>
+              <SelectContent>
+                {childOptions.map((industry) => (
+                  <SelectItem key={industry.id} value={String(industry.id)}>{industry.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </label>
 
