@@ -6,6 +6,8 @@ import com.graphhire.job.domain.vo.JobStatus;
 import com.graphhire.match.domain.model.MatchRecord;
 import com.graphhire.match.domain.repository.MatchRecordRepository;
 import com.graphhire.match.domain.service.MatchDomainService;
+import com.graphhire.match.domain.vo.MatchScore;
+import com.graphhire.match.interfaces.dto.response.MatchDetailResponse;
 import com.graphhire.notification.application.service.NotificationAppService;
 import com.graphhire.resume.domain.model.Resume;
 import com.graphhire.resume.domain.repository.ResumeRepository;
@@ -17,7 +19,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -84,5 +89,64 @@ class MatchAppServiceTest {
         verify(matchDomainService, never()).calculateMatch(resumeId, 202L);
         verify(matchRecordRepository, times(2)).save(any(MatchRecord.class));
     }
-}
 
+    @Test
+    void getMatchListForJob_shouldIncludeResumeSummaryFields() {
+        Long jobId = 300L;
+        MatchRecord record = MatchRecord.create(101L, jobId, MatchScore.of(90, 80));
+
+        Resume resume = new Resume();
+        resume.setId(101L);
+        resume.setFileName("candidate-a.pdf");
+        resume.setParseResult("{" +
+            "\"skills\":[\"Java\",\"Spring Boot\"]," +
+            "\"education\":[{\"degree\":\"本科\"}]," +
+            "\"experience\":[{\"company\":\"A\"},{\"company\":\"B\"}]" +
+            "}");
+
+        Job job = new Job();
+        job.setId(jobId);
+        job.setTitle("后端工程师");
+
+        when(matchRecordRepository.findByJobId(jobId)).thenReturn(List.of(record));
+        when(jobRepository.findById(jobId)).thenReturn(Optional.of(job));
+        when(resumeRepository.findById(101L)).thenReturn(Optional.of(resume));
+
+        List<MatchDetailResponse> responses = matchAppService.getMatchListForJob(jobId);
+
+        assertEquals(1, responses.size());
+        MatchDetailResponse.ResumeBasicInfo resumeInfo = responses.get(0).getResume();
+        assertNotNull(resumeInfo);
+        assertEquals(List.of("Java", "Spring Boot"), resumeInfo.getSkills());
+        assertEquals("本科", resumeInfo.getEducation());
+        assertEquals("2段经历", resumeInfo.getExperience());
+    }
+
+    @Test
+    void getMatchListForJob_shouldGracefullyHandleBrokenParseResult() {
+        Long jobId = 301L;
+        MatchRecord record = MatchRecord.create(102L, jobId, MatchScore.of(80, 70));
+
+        Resume resume = new Resume();
+        resume.setId(102L);
+        resume.setFileName("candidate-b.pdf");
+        resume.setParseResult("not-json");
+
+        Job job = new Job();
+        job.setId(jobId);
+        job.setTitle("前端工程师");
+
+        when(matchRecordRepository.findByJobId(jobId)).thenReturn(List.of(record));
+        when(jobRepository.findById(jobId)).thenReturn(Optional.of(job));
+        when(resumeRepository.findById(102L)).thenReturn(Optional.of(resume));
+
+        List<MatchDetailResponse> responses = matchAppService.getMatchListForJob(jobId);
+
+        assertEquals(1, responses.size());
+        MatchDetailResponse.ResumeBasicInfo resumeInfo = responses.get(0).getResume();
+        assertNotNull(resumeInfo);
+        assertEquals(List.of(), resumeInfo.getSkills());
+        assertEquals(null, resumeInfo.getEducation());
+        assertEquals(null, resumeInfo.getExperience());
+    }
+}

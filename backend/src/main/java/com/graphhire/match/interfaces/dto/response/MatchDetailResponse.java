@@ -1,10 +1,17 @@
 package com.graphhire.match.interfaces.dto.response;
 
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import com.graphhire.job.domain.model.Job;
 import com.graphhire.match.domain.model.MatchRecord;
 import com.graphhire.match.domain.vo.MatchLevel;
 import com.graphhire.match.domain.vo.MatchScore;
 import com.graphhire.resume.domain.model.Resume;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MatchDetailResponse {
     private Long matchId;
@@ -43,15 +50,26 @@ public class MatchDetailResponse {
         private Long id;
         private String fileName;
         private String userName;
+        private List<String> skills;
+        private String education;
+        private String experience;
 
         public ResumeBasicInfo(Resume resume) {
             this.id = resume.getId();
             this.fileName = resume.getFileName();
+
+            ParseResultSummary summary = ParseResultSummary.from(resume.getParseResult());
+            this.skills = summary.skills();
+            this.education = summary.education();
+            this.experience = summary.experience();
         }
 
         public Long getId() { return id; }
         public String getFileName() { return fileName; }
         public String getUserName() { return userName; }
+        public List<String> getSkills() { return skills; }
+        public String getEducation() { return education; }
+        public String getExperience() { return experience; }
     }
 
     public static class JobBasicInfo {
@@ -67,5 +85,82 @@ public class MatchDetailResponse {
         public Long getId() { return id; }
         public String getTitle() { return title; }
         public String getCompanyName() { return companyName; }
+    }
+
+    private record ParseResultSummary(List<String> skills, String education, String experience) {
+
+        private static ParseResultSummary empty() {
+            return new ParseResultSummary(List.of(), null, null);
+        }
+
+        static ParseResultSummary from(String parseResultJson) {
+            if (StrUtil.isBlank(parseResultJson)) {
+                return empty();
+            }
+            try {
+                JSONObject root = JSONUtil.parseObj(parseResultJson);
+                List<String> skills = extractSkills(root);
+                String education = extractEducation(root);
+                String experience = extractExperience(root);
+                return new ParseResultSummary(skills, education, experience);
+            } catch (Exception ignored) {
+                return empty();
+            }
+        }
+
+        private static List<String> extractSkills(JSONObject root) {
+            JSONArray skillsArray = root.getJSONArray("skills");
+            if (skillsArray == null || skillsArray.isEmpty()) {
+                return List.of();
+            }
+            List<String> result = new ArrayList<>();
+            for (int i = 0; i < skillsArray.size(); i++) {
+                Object item = skillsArray.get(i);
+                String value = item == null ? null : item.toString().trim();
+                if (StrUtil.isNotBlank(value)) {
+                    result.add(value);
+                }
+            }
+            return result;
+        }
+
+        private static String extractEducation(JSONObject root) {
+            Object education = root.get("education");
+            if (education == null) {
+                return null;
+            }
+            if (education instanceof CharSequence text) {
+                return StrUtil.emptyToNull(text.toString().trim());
+            }
+            if (education instanceof JSONArray educationArray && !educationArray.isEmpty()) {
+                Object first = educationArray.get(0);
+                if (first == null) {
+                    return null;
+                }
+                if (first instanceof JSONObject firstObject) {
+                    return StrUtil.emptyToNull(firstObject.getStr("degree"));
+                }
+                return StrUtil.emptyToNull(first.toString().trim());
+            }
+            return null;
+        }
+
+        private static String extractExperience(JSONObject root) {
+            Object experience = root.get("experience");
+            if (experience == null) {
+                return null;
+            }
+            if (experience instanceof CharSequence text) {
+                return StrUtil.emptyToNull(text.toString().trim());
+            }
+            if (experience instanceof JSONArray experienceArray) {
+                int size = experienceArray.size();
+                if (size == 0) {
+                    return null;
+                }
+                return size + "段经历";
+            }
+            return null;
+        }
     }
 }
