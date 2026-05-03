@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 
@@ -13,19 +12,6 @@ interface RouteTransitionProps {
 export default function RouteTransition({ children, className = '', testId }: RouteTransitionProps) {
   const pathname = usePathname();
   const shouldReduceMotion = useReducedMotion();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return (
-      <div className={className} data-testid={testId}>
-        {children}
-      </div>
-    );
-  }
 
   return (
     <AnimatePresence mode="wait" initial={false}>

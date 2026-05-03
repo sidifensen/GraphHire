@@ -13,6 +13,7 @@ import com.graphhire.job.domain.repository.JobRepository;
 import com.graphhire.job.domain.vo.JobStatus;
 import com.graphhire.job.domain.vo.Location;
 import com.graphhire.job.domain.vo.SalaryRange;
+import com.graphhire.job.interfaces.dto.response.CompanyAvatarUrlResolver;
 import com.graphhire.positiontype.application.service.PositionTypeAppService;
 import com.graphhire.positiontype.domain.model.PositionType;
 import com.graphhire.publicapi.interfaces.dto.response.PublicJobCardResponse;
@@ -43,6 +44,9 @@ public class PublicJobController {
 
     @Autowired
     private IndustryAppService industryAppService;
+
+    @Autowired
+    private CompanyAvatarUrlResolver companyAvatarUrlResolver;
 
     @GetMapping
     public Result<PageResult<PublicJobCardResponse>> searchJobs(
@@ -80,6 +84,7 @@ public class PublicJobController {
         int safePage = Math.max(page, 1);
         int safeSize = Math.max(size, 1);
         int offset = (safePage - 1) * safeSize;
+        Map<Long, String> industryNameMap = loadIndustryNameMap();
 
         if (!hasAdvancedFilter) {
             List<Job> pagedJobs = jobRepository.searchPublishedJobs(keyword, city, salaryMin, salaryMax, sortBy, offset, safeSize);
@@ -87,7 +92,7 @@ public class PublicJobController {
             Map<Long, Company> companyMap = companyRepository.findByIds(
                     pagedJobs.stream().map(Job::getCompanyId).distinct().toList()
             ).stream().collect(Collectors.toMap(Company::getId, Function.identity()));
-            List<PublicJobCardResponse> records = pagedJobs.stream().map(job -> toCard(job, companyMap)).toList();
+            List<PublicJobCardResponse> records = pagedJobs.stream().map(job -> toCard(job, companyMap, industryNameMap)).toList();
             return Result.success(new PageResult<>(records, total, safePage, safeSize));
         }
 
@@ -118,7 +123,7 @@ public class PublicJobController {
                 sortedJobs.stream().skip(fromIndex).limit(Math.max(toIndex - fromIndex, 0)).map(Job::getCompanyId).distinct().toList()
         ).stream().collect(Collectors.toMap(Company::getId, Function.identity()));
         List<PublicJobCardResponse> pagedJobs = fromIndex < total
-                ? sortedJobs.subList(fromIndex, toIndex).stream().map(job -> toCard(job, pagedCompanyMap)).toList()
+                ? sortedJobs.subList(fromIndex, toIndex).stream().map(job -> toCard(job, pagedCompanyMap, industryNameMap)).toList()
                 : List.of();
 
         return Result.success(new PageResult<>(pagedJobs, (long) total, safePage, safeSize));
@@ -133,10 +138,10 @@ public class PublicJobController {
         }
         Map<Long, Company> companyMap = companyRepository.findByIds(List.of(job.getCompanyId())).stream()
                 .collect(Collectors.toMap(Company::getId, Function.identity()));
-        return Result.success(toCard(job, companyMap));
+        return Result.success(toCard(job, companyMap, loadIndustryNameMap()));
     }
 
-    private PublicJobCardResponse toCard(Job job, Map<Long, Company> companyMap) {
+    private PublicJobCardResponse toCard(Job job, Map<Long, Company> companyMap, Map<Long, String> industryNameMap) {
         Company company = companyMap.get(job.getCompanyId());
         Location location = job.getLocation();
         SalaryRange salaryRange = job.getSalaryRange();
@@ -144,6 +149,10 @@ public class PublicJobController {
                 job.getId(),
                 job.getCompanyId(),
                 company != null ? company.getName() : "未知企业",
+                company != null ? industryNameMap.get(company.getIndustryId()) : null,
+                company != null ? StrUtil.trim(company.getScale()) : null,
+                company != null && company.getAuthStatus() != null ? company.getAuthStatus().name() : null,
+                company != null ? companyAvatarUrlResolver.resolve(company.getAvatarPath()) : null,
                 job.getTitle(),
                 location != null ? location.getCity() : null,
                 location != null ? location.getDistrict() : null,
@@ -158,6 +167,12 @@ public class PublicJobController {
                 job.getJobType(),
                 job.getPublishedAt()
         );
+    }
+
+    private Map<Long, String> loadIndustryNameMap() {
+        return industryAppService.listIndustries(1).stream()
+                .filter(industry -> industry.getId() != null)
+                .collect(Collectors.toMap(Industry::getId, Industry::getName, (left, right) -> left));
     }
 
     private boolean matchesKeyword(Job job, String keyword) {

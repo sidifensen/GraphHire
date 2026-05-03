@@ -7,12 +7,20 @@ export interface Company {
   jobCount?: number;
   summary?: string;
   authStatus?: string;
+  avatarUrl?: string | null;
+  industryId?: number | null;
+  industryName?: string | null;
+  scale?: string | null;
 }
 
 export interface Job {
   id: number;
   companyId: number;
   companyName?: string;
+  companyIndustryName?: string | null;
+  companyScale?: string | null;
+  companyAuthStatus?: string | null;
+  companyAvatarUrl?: string | null;
   title: string;
   city?: string | null;
   district?: string | null;
@@ -36,6 +44,11 @@ export interface PublicTreeNode {
   children: PublicTreeNode[];
 }
 
+export interface ProvinceCityItem {
+  province: string;
+  cities: string[];
+}
+
 export interface BackendPageResult<T> {
   records: T[];
   total: number;
@@ -50,6 +63,30 @@ export interface HomeOverviewResponse {
   hotCities: string[];
 }
 
+const inFlightRequests = new Map<string, Promise<unknown>>();
+
+function withInFlightDedupe<T>(key: string, factory: () => Promise<T>): Promise<T> {
+  const existing = inFlightRequests.get(key);
+  if (existing) {
+    return existing as Promise<T>;
+  }
+
+  const request = factory().finally(() => {
+    inFlightRequests.delete(key);
+  });
+
+  inFlightRequests.set(key, request);
+  return request;
+}
+
+function buildStableParamsKey(params?: Record<string, unknown>): string {
+  if (!params) return '';
+  const entries = Object.entries(params)
+    .filter(([, value]) => value !== undefined)
+    .sort(([a], [b]) => a.localeCompare(b));
+  return JSON.stringify(entries);
+}
+
 export const publicApi = {
   home: {
     getOverview: async (): Promise<HomeOverviewResponse> => {
@@ -61,6 +98,9 @@ export const publicApi = {
   companies: {
     search: async (params?: {
       keyword?: string;
+      industryLeafIds?: number[];
+      companyScaleCode?: string;
+      cityList?: string[];
       page?: number;
       size?: number;
     }): Promise<BackendPageResult<Company>> => {
@@ -92,18 +132,32 @@ export const publicApi = {
       page?: number;
       size?: number;
     }): Promise<BackendPageResult<Job>> => {
-      const response = await apiClient.get<BackendPageResult<Job>>('/public/jobs', { params });
-      return response.data;
+      const key = `GET:/public/jobs?${buildStableParamsKey(params as Record<string, unknown> | undefined)}`;
+      return withInFlightDedupe(key, async () => {
+        const response = await apiClient.get<BackendPageResult<Job>>('/public/jobs', { params });
+        return response.data;
+      });
     },
 
     getPositionTypeTree: async (): Promise<PublicTreeNode[]> => {
-      const response = await apiClient.get<PublicTreeNode[]>('/public/position-types/tree');
-      return response.data;
+      return withInFlightDedupe('GET:/public/position-types/tree', async () => {
+        const response = await apiClient.get<PublicTreeNode[]>('/public/position-types/tree');
+        return response.data;
+      });
     },
 
     getIndustryTree: async (): Promise<PublicTreeNode[]> => {
-      const response = await apiClient.get<PublicTreeNode[]>('/public/industries/tree');
-      return response.data;
+      return withInFlightDedupe('GET:/public/industries/tree', async () => {
+        const response = await apiClient.get<PublicTreeNode[]>('/public/industries/tree');
+        return response.data;
+      });
+    },
+
+    getProvinceCities: async (): Promise<ProvinceCityItem[]> => {
+      return withInFlightDedupe('GET:/public/geo/province-cities', async () => {
+        const response = await apiClient.get<ProvinceCityItem[]>('/public/geo/province-cities');
+        return response.data;
+      });
     },
 
     getById: async (id: number): Promise<Job> => {

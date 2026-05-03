@@ -1,5 +1,30 @@
 ﻿import apiClient from './client';
 
+const inFlightRequests = new Map<string, Promise<unknown>>();
+
+function withInFlightDedupe<T>(key: string, factory: () => Promise<T>): Promise<T> {
+  const existing = inFlightRequests.get(key);
+  if (existing) {
+    return existing as Promise<T>;
+  }
+
+  const request = factory().finally(() => {
+    inFlightRequests.delete(key);
+  });
+
+  inFlightRequests.set(key, request);
+  return request;
+}
+
+function buildStableParamsKey(params?: Record<string, unknown>): string {
+  if (!params) return '';
+  const entries = Object.entries(params)
+    .filter(([, value]) => value !== undefined)
+    .sort(([a], [b]) => a.localeCompare(b));
+  return JSON.stringify(entries);
+}
+
+
 // ============ Admin Login ============
 export interface AdminLoginRequest {
   username: string;
@@ -309,8 +334,11 @@ export const adminApi = {
   },
 
   getIndustryTree: async (params?: { keyword?: string; enabled?: number; level?: number }): Promise<AdminIndustryItem[]> => {
-    const response = await apiClient.get('/admin/industry/tree', { params });
-    return response.data;
+    const key = `GET:/admin/industry/tree?${buildStableParamsKey(params as Record<string, unknown> | undefined)}`;
+    return withInFlightDedupe(key, async () => {
+      const response = await apiClient.get('/admin/industry/tree', { params });
+      return response.data;
+    });
   },
 
   createIndustry: async (data: { name: string; parentId?: number | null; enabled?: number; sort?: number }): Promise<AdminIndustryItem> => {
@@ -338,8 +366,11 @@ export const adminApi = {
   },
 
   getPositionTypeTree: async (params?: { keyword?: string; status?: number; level?: number }): Promise<AdminPositionTypeItem[]> => {
-    const response = await apiClient.get('/admin/position-type/tree', { params });
-    return response.data;
+    const key = `GET:/admin/position-type/tree?${buildStableParamsKey(params as Record<string, unknown> | undefined)}`;
+    return withInFlightDedupe(key, async () => {
+      const response = await apiClient.get('/admin/position-type/tree', { params });
+      return response.data;
+    });
   },
 
   createPositionType: async (data: { name: string; parentId?: number | null; status?: number }): Promise<AdminPositionTypeItem> => {
@@ -439,3 +470,4 @@ export const adminApi = {
     return response.data;
   },
 };
+

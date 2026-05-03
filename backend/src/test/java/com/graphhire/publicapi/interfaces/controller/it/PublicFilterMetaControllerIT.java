@@ -5,6 +5,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -45,6 +46,17 @@ class PublicFilterMetaControllerIT extends BaseControllerIT {
             .andExpect(jsonPath("$.code").value(200))
             .andExpect(jsonPath("$.data[?(@.name=='PUBLIC_FILTER_META_IT_行业父类')]").isNotEmpty())
             .andExpect(jsonPath("$.data[?(@.name=='PUBLIC_FILTER_META_IT_行业父类')].children[0][?(@.name=='PUBLIC_FILTER_META_IT_行业子类_启用')]").isNotEmpty());
+    }
+
+    @Test
+    @DisplayName("公开省市接口返回后端 geo JSON 数据")
+    void getProvinceCities_returnsGeoJsonData() throws Exception {
+        mockMvc.perform(get("/public/geo/province-cities"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value(200))
+            .andExpect(jsonPath("$.data").isArray())
+            .andExpect(jsonPath("$.data[*].province", hasItem("北京市")))
+            .andExpect(jsonPath("$.data[*].province", hasItem("广东省")));
     }
 
     private long createPositionType(Long parentId, String name, int level, int status) {

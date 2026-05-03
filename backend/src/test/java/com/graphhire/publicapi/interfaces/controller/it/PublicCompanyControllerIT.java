@@ -19,6 +19,7 @@ class PublicCompanyControllerIT extends BaseControllerIT {
     void cleanup() {
         jdbcTemplate.update("DELETE FROM job WHERE title LIKE 'PUBLIC_COMPANY_IT_%'");
         jdbcTemplate.update("DELETE FROM company WHERE name LIKE 'PUBLIC_COMPANY_IT_%'");
+        jdbcTemplate.update("DELETE FROM industry WHERE name LIKE 'PUBLIC_COMPANY_IT_%'");
         jdbcTemplate.update("DELETE FROM sys_user WHERE username LIKE 'public_company_it_%@graphhire.com'");
     }
 
@@ -73,6 +74,43 @@ class PublicCompanyControllerIT extends BaseControllerIT {
             .andExpect(jsonPath("$.data.records[0].avatarUrl").value(nullValue()));
     }
 
+    @Test
+    @DisplayName("公开企业列表支持行业、规模、城市筛选并返回行业规模字段")
+    void searchCompanies_supportsIndustryScaleCityFilters() throws Exception {
+        String suffix = String.valueOf(Math.abs(System.nanoTime() % 1_000_000_000L));
+        String industryRootName = "PUBLIC_COMPANY_IT_互联网_" + suffix;
+        String industryAiName = "PUBLIC_COMPANY_IT_AI_" + suffix;
+        String industryGameName = "PUBLIC_COMPANY_IT_游戏_" + suffix;
+        long industryRootId = createIndustry(null, industryRootName, 1, 1);
+        long industryLeafAiId = createIndustry(industryRootId, industryAiName, 2, 1);
+        long industryLeafGameId = createIndustry(industryRootId, industryGameName, 2, 1);
+
+        Long companyAUserId = createUser("public_company_it_filter_a@graphhire.com");
+        Long companyAId = createCompany(companyAUserId, "PUBLIC_COMPANY_IT_FILTER_AI公司", industryLeafAiId, "5");
+        createJob(companyAId, "PUBLIC_COMPANY_IT_FILTER_算法工程师", "杭州", 35000, 50000, 1);
+
+        Long companyBUserId = createUser("public_company_it_filter_b@graphhire.com");
+        Long companyBId = createCompany(companyBUserId, "PUBLIC_COMPANY_IT_FILTER_游戏公司", industryLeafGameId, "3");
+        createJob(companyBId, "PUBLIC_COMPANY_IT_FILTER_游戏策划", "上海", 22000, 32000, 1);
+
+        mockMvc.perform(get("/public/companies")
+                .param("keyword", "PUBLIC_COMPANY_IT_FILTER")
+                .param("industryLeafIds", String.valueOf(industryLeafAiId))
+                .param("companyScaleCode", "5")
+                .param("cityList", "杭州")
+                .param("cityList", "深圳")
+                .param("size", "10"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value(200))
+            .andExpect(jsonPath("$.data.total").value(1))
+            .andExpect(jsonPath("$.data.records.length()").value(1))
+            .andExpect(jsonPath("$.data.records[0].name").value("PUBLIC_COMPANY_IT_FILTER_AI公司"))
+            .andExpect(jsonPath("$.data.records[0].city").value("杭州"))
+            .andExpect(jsonPath("$.data.records[0].industryId").value(industryLeafAiId))
+            .andExpect(jsonPath("$.data.records[0].industryName").value(industryAiName))
+            .andExpect(jsonPath("$.data.records[0].scale").value("5"));
+    }
+
     private Long createUser(String username) {
         jdbcTemplate.update(
             "INSERT INTO sys_user (username, password, user_type, status, deleted, create_time, update_time) VALUES (?, 'pwd', 2, 1, 0, NOW(), NOW())",
@@ -82,9 +120,19 @@ class PublicCompanyControllerIT extends BaseControllerIT {
     }
 
     private Long createCompany(Long userId, String name) {
+        String uniqueCode = "911100" + Math.abs(System.nanoTime() % 1_000_000_000L);
         jdbcTemplate.update(
             "INSERT INTO company (user_id, name, code, auth_status, create_time, update_time) VALUES (?, ?, ?, 1, NOW(), NOW())",
-            userId, name, "911100000000000003"
+            userId, name, uniqueCode
+        );
+        return jdbcTemplate.queryForObject("SELECT LASTVAL()", Long.class);
+    }
+
+    private Long createCompany(Long userId, String name, Long industryId, String scaleCode) {
+        String uniqueCode = "911100" + Math.abs(System.nanoTime() % 1_000_000_000L);
+        jdbcTemplate.update(
+            "INSERT INTO company (user_id, name, code, auth_status, industry_id, scale, create_time, update_time) VALUES (?, ?, ?, 1, ?, ?, NOW(), NOW())",
+            userId, name, uniqueCode, industryId, scaleCode
         );
         return jdbcTemplate.queryForObject("SELECT LASTVAL()", Long.class);
     }
@@ -93,6 +141,14 @@ class PublicCompanyControllerIT extends BaseControllerIT {
         jdbcTemplate.update(
             "INSERT INTO job (company_id, title, city, salary_min, salary_max, salary_unit, status, experience, education, create_time, update_time, deleted) VALUES (?, ?, ?, ?, ?, 'MONTH', ?, '3-5年', 3, NOW(), NOW(), 0)",
             companyId, title, city, salaryMin, salaryMax, status
+        );
+        return jdbcTemplate.queryForObject("SELECT LASTVAL()", Long.class);
+    }
+
+    private long createIndustry(Long parentId, String name, int level, int enabled) {
+        jdbcTemplate.update(
+            "INSERT INTO industry (name, parent_id, level, enabled, sort, deleted, create_time, update_time) VALUES (?, ?, ?, ?, 1, 0, NOW(), NOW())",
+            name, parentId, level, enabled
         );
         return jdbcTemplate.queryForObject("SELECT LASTVAL()", Long.class);
     }

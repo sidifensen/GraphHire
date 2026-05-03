@@ -7,6 +7,9 @@ public record PublicCompanyCardResponse(
     Integer jobCount,
     String summary,
     String authStatus,
-    String avatarUrl
+    String avatarUrl,
+    Long industryId,
+    String industryName,
+    String scale
 ) {
 }

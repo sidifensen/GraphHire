@@ -123,3 +123,11 @@
 - docs: 新增 Position Type 管理设计、验收标准与实现计划文档（`docs/superpowers/specs|acceptance|plans`）
 - chore: 提交行业与职位类型相关在途改动快照（含企业资料联动与测试更新）
 - feat: 用户端职位页接入后端真实筛选：新增公开职位类型树/行业树接口，扩展 /public/jobs 支持职位类别叶子、行业叶子、城市多选、jobType、学历、公司规模筛选，并重构职位页为三类弹窗筛选交互（类别/行业/地点）
+
+## 2026-05-03
+
+- feat: 用户端公司列表页 `/companies` 完成真实接口对接，移除 `MOCK_COMPANIES`，支持关键词、热门地点+更多地点、热门行业+更多行业、公司规模（1-6 编码）筛选，并新增本地筛选持久化（`localStorage`）
+- feat: 用户端公司详情页 `/companies/[id]` 完成真实接口对接，移除 `MOCK_COMPANIES/MOCK_JOBS`，改为聚合 `publicApi.companies.getById` 与 `publicApi.jobs.search({ companyId })` 展示公司信息与在招职位
+- feat: 后端公开公司接口增强：`GET /public/companies` 新增 `industryLeafIds/companyScaleCode/cityList` 筛选参数，响应新增 `industryId/industryName/scale` 字段
+- refactor: 抽取用户端共享筛选模块 `frontend/src/features/user-filters/*`（行业树弹窗、地点弹窗、城市与规模工具），为职位页与公司页复用做基础
+- test: 新增/更新后端 `PublicCompanyControllerIT` 与前端公司页/详情页测试，验证真实接口筛选参数映射、本地持久化恢复、详情页数据聚合；全量前后端测试通过

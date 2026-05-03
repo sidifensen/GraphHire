@@ -13,10 +13,10 @@ export default function JobDetail() {
   const job = MOCK_JOBS.find(j => j.id === id) || MOCK_JOBS[0];
 
   return (
-    <div className="flex flex-col min-h-screen pb-safe">
+    <div className="flex flex-col">
       <TopNav title="" showShare />
 
-      <main className="max-w-7xl mx-auto w-full px-5 md:px-8 pt-6 md:pt-12 pb-24">
+      <main className="max-w-7xl mx-auto w-full px-5 md:px-8 pt-6 md:pt-12 pb-8 md:pb-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
           {/* Left Column: Job Info */}
           <div className="lg:col-span-2 space-y-8">
