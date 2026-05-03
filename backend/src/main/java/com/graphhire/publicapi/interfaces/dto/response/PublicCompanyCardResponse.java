@@ -12,6 +12,9 @@ public record PublicCompanyCardResponse(
     String avatarUrl,
     Long industryId,
     String industryName,
-    String scale
+    String scale,
+    String unifiedSocialCreditCode,
+    String contactName,
+    String contactPhone
 ) {
 }

@@ -160,6 +160,40 @@ export default function CompanyDetail() {
                 公司介绍
               </h2>
               <p className="leading-relaxed whitespace-pre-wrap text-on-surface-variant">{companyDescription}</p>
+
+              <div className="mt-8 border-t border-surface-mid pt-6">
+                <h3 className="mb-4 text-lg font-black text-on-surface">工商信息</h3>
+                <dl className="grid grid-cols-1 gap-x-10 gap-y-3 text-sm md:grid-cols-2">
+                  <div className="flex gap-3">
+                    <dt className="w-28 shrink-0 text-on-surface-variant">统一社会信用代码</dt>
+                    <dd className="text-on-surface">{company.unifiedSocialCreditCode || '未披露'}</dd>
+                  </div>
+                  <div className="flex gap-3">
+                    <dt className="w-28 shrink-0 text-on-surface-variant">公司名称</dt>
+                    <dd className="text-on-surface">{company.name || '未披露'}</dd>
+                  </div>
+                  <div className="flex gap-3">
+                    <dt className="w-28 shrink-0 text-on-surface-variant">行业</dt>
+                    <dd className="text-on-surface">{company.industryName || '未披露'}</dd>
+                  </div>
+                  <div className="flex gap-3">
+                    <dt className="w-28 shrink-0 text-on-surface-variant">企业规模</dt>
+                    <dd className="text-on-surface">{formatCompanyScale(company.scale)}</dd>
+                  </div>
+                  <div className="flex gap-3">
+                    <dt className="w-28 shrink-0 text-on-surface-variant">联系人</dt>
+                    <dd className="text-on-surface">{company.contactName || '未披露'}</dd>
+                  </div>
+                  <div className="flex gap-3">
+                    <dt className="w-28 shrink-0 text-on-surface-variant">联系电话</dt>
+                    <dd className="text-on-surface">{company.contactPhone || '未披露'}</dd>
+                  </div>
+                  <div className="flex gap-3 md:col-span-2">
+                    <dt className="w-28 shrink-0 text-on-surface-variant">企业地址</dt>
+                    <dd className="text-on-surface">{company.address || '未披露'}</dd>
+                  </div>
+                </dl>
+              </div>
             </>
           ) : (
             <>

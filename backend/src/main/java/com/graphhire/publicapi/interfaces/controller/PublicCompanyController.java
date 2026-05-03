@@ -109,7 +109,10 @@ public class PublicCompanyController {
                 companyAvatarUrlResolver.resolve(company.getAvatarPath()),
                 company.getIndustryId(),
                 company.getIndustryId() == null ? null : industryNameMap.get(company.getIndustryId()),
-                StrUtil.trim(company.getScale())
+                StrUtil.trim(company.getScale()),
+                StrUtil.trim(company.getUnifiedSocialCreditCode()),
+                StrUtil.trim(company.getContactName()),
+                StrUtil.trim(company.getContactPhone())
         );
     }
 

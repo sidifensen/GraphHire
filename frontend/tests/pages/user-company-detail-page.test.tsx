@@ -44,6 +44,9 @@ describe('user company detail page real api integration', () => {
       name: '星河科技',
       city: '杭州',
       address: '杭州市滨江区江南大道3888号',
+      unifiedSocialCreditCode: '91330100123456789A',
+      contactName: '李四',
+      contactPhone: '13900001111',
       jobCount: 2,
       summary: '已认证企业，当前开放 2 个职位',
       description: '星河科技是一家专注企业数字化的技术公司。',
@@ -91,9 +94,23 @@ describe('user company detail page real api integration', () => {
       );
     });
 
-    expect(await screen.findByText('星河科技')).toBeInTheDocument();
-    expect(screen.getByText('杭州市滨江区江南大道3888号')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: '星河科技', level: 1 })).toBeInTheDocument();
+    expect(screen.getAllByText('杭州市滨江区江南大道3888号')).not.toHaveLength(0);
     expect(screen.queryByText('已认证企业，当前开放 2 个职位')).not.toBeInTheDocument();
+  });
+
+  it('shows business registration info under company intro with real api fields', async () => {
+    render(<CompanyDetailPage />);
+
+    await screen.findByRole('heading', { name: '星河科技', level: 1 });
+
+    expect(screen.getByText('工商信息')).toBeInTheDocument();
+    expect(screen.getByText('统一社会信用代码')).toBeInTheDocument();
+    expect(screen.getByText('91330100123456789A')).toBeInTheDocument();
+    expect(screen.getByText('联系人')).toBeInTheDocument();
+    expect(screen.getByText('李四')).toBeInTheDocument();
+    expect(screen.getByText('联系电话')).toBeInTheDocument();
+    expect(screen.getByText('13900001111')).toBeInTheDocument();
   });
 
   it('shows intro tab by default and switches to jobs tab after clicking', async () => {
@@ -101,7 +118,7 @@ describe('user company detail page real api integration', () => {
 
     render(<CompanyDetailPage />);
 
-    await screen.findByText('星河科技');
+    await screen.findByRole('heading', { name: '星河科技', level: 1 });
 
     const introTab = screen.getByRole('tab', { name: '公司介绍' });
     const jobsTab = screen.getByRole('tab', { name: '在招职位' });
@@ -123,7 +140,7 @@ describe('user company detail page real api integration', () => {
     const user = userEvent.setup();
     const { container } = render(<CompanyDetailPage />);
 
-    await screen.findByText('星河科技');
+    await screen.findByRole('heading', { name: '星河科技', level: 1 });
 
     expect(container.querySelectorAll('.rounded-3xl')).toHaveLength(0);
 
@@ -139,7 +156,7 @@ describe('user company detail page real api integration', () => {
   it('does not force viewport-height overflow on detail root container', async () => {
     const { container } = render(<CompanyDetailPage />);
 
-    await screen.findByText('星河科技');
+    await screen.findByRole('heading', { name: '星河科技', level: 1 });
 
     expect(container.firstElementChild).not.toHaveClass('min-h-screen');
   });

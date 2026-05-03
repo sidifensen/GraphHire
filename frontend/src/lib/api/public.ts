@@ -5,6 +5,9 @@ export interface Company {
   name: string;
   city?: string | null;
   address?: string | null;
+  unifiedSocialCreditCode?: string | null;
+  contactName?: string | null;
+  contactPhone?: string | null;
   jobCount?: number;
   summary?: string;
   description?: string | null;

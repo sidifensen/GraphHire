@@ -64,6 +64,31 @@ class PublicCompanyControllerIT extends BaseControllerIT {
     }
 
     @Test
+    @DisplayName("公开企业详情返回工商信息字段")
+    void getCompany_returnsBusinessRegistrationFields() throws Exception {
+        Long companyUserId = createUser("public_company_it_business@graphhire.com");
+        Long companyId = createCompany(companyUserId, "PUBLIC_COMPANY_IT_工商企业");
+        jdbcTemplate.update(
+            "UPDATE company SET code = ?, contact = ?, phone = ?, address = ?, scale = ? WHERE id = ?",
+            "91310000123456789X",
+            "张三",
+            "13800138000",
+            "上海市浦东新区世纪大道100号",
+            "4",
+            companyId
+        );
+
+        mockMvc.perform(get("/public/companies/{id}", companyId))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value(200))
+            .andExpect(jsonPath("$.data.unifiedSocialCreditCode").value("91310000123456789X"))
+            .andExpect(jsonPath("$.data.contactName").value("张三"))
+            .andExpect(jsonPath("$.data.contactPhone").value("13800138000"))
+            .andExpect(jsonPath("$.data.address").value("上海市浦东新区世纪大道100号"))
+            .andExpect(jsonPath("$.data.scale").value("4"));
+    }
+
+    @Test
     @DisplayName("公开企业列表在无头像时返回 null")
     void searchCompanies_withoutAvatar_returnsNullAvatarUrl() throws Exception {
         Long companyUserId = createUser("public_company_it_no_avatar@graphhire.com");

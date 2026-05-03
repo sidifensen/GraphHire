@@ -127,7 +127,10 @@ public class PublicHomeController {
                 companyAvatarUrlResolver.resolve(company.getAvatarPath()),
                 company.getIndustryId(),
                 company.getIndustryId() == null ? null : industryNameMap.get(company.getIndustryId()),
-                company.getScale()
+                company.getScale(),
+                company.getUnifiedSocialCreditCode(),
+                company.getContactName(),
+                company.getContactPhone()
         );
     }
 }
