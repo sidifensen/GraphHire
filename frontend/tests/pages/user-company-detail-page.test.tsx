@@ -97,4 +97,12 @@ describe('user company detail page real api integration', () => {
     expect(screen.getByText('后端开发工程师')).toBeInTheDocument();
     expect(screen.getByText('25k-38k')).toBeInTheDocument();
   });
+
+  it('does not force viewport-height overflow on detail root container', async () => {
+    const { container } = render(<CompanyDetailPage />);
+
+    await screen.findByText('星河科技');
+
+    expect(container.firstElementChild).not.toHaveClass('min-h-screen');
+  });
 });

@@ -243,18 +243,22 @@ export default function AdminEnterpriseReviewPage() {
               ),
               className: 'w-[28%] normal-case tracking-normal text-[13px] font-semibold text-slate-600',
             },
-            { header: '联系人', accessor: (company) => company.contact ?? '-', className: 'normal-case tracking-normal text-[13px] font-semibold text-slate-600' },
+            {
+              header: '联系人',
+              accessor: (company) => company.contact ?? '-',
+              className: 'min-w-[96px] whitespace-nowrap normal-case tracking-normal text-[13px] font-semibold text-slate-600',
+            },
             { header: '企业主', accessor: (company) => company.ownerName ?? '-', className: 'normal-case tracking-normal text-[13px] font-semibold text-slate-600' },
             { header: '所属行业', accessor: (company) => company.industry ?? '-', className: 'normal-case tracking-normal text-[13px] font-semibold text-slate-600' },
             { header: '人员规模', accessor: (company) => company.size ?? '-', className: 'normal-case tracking-normal text-[13px] font-semibold text-slate-600' },
             { header: '申请时间', accessor: (company) => <span className="font-display text-sm text-outline">{company.applyDate}</span>, className: 'normal-case tracking-normal text-[13px] font-semibold text-slate-600' },
             {
               header: '状态',
-              className: 'normal-case tracking-normal text-[13px] font-semibold text-slate-600',
+              className: 'min-w-[88px] whitespace-nowrap normal-case tracking-normal text-[13px] font-semibold text-slate-600',
               accessor: (company) => (
                 <span
                   className={cn(
-                    'rounded-full px-2.5 py-1 text-[10px] font-bold ring-1 ring-inset',
+                    'inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-bold ring-1 ring-inset',
                     company.status === '待审核'
                       ? 'bg-amber-50 text-amber-700 ring-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:ring-amber-900/30'
                       : company.status === '已通过'
@@ -268,16 +272,16 @@ export default function AdminEnterpriseReviewPage() {
             },
             {
               header: '操作',
-              className: 'text-right normal-case tracking-normal text-[13px] font-semibold text-slate-600',
+              className: 'min-w-[120px] whitespace-nowrap text-right normal-case tracking-normal text-[13px] font-semibold text-slate-600',
               accessor: (company) => (
-                <div className="flex justify-end gap-3">
-                  <button className="text-xs font-bold text-primary hover:underline" onClick={() => setDetailCompany(company)}>详情</button>
+                <div className="flex justify-end gap-3 whitespace-nowrap">
+                  <button className="whitespace-nowrap text-xs font-bold text-primary hover:underline" onClick={() => setDetailCompany(company)}>详情</button>
                   {company.status === '待审核' ? (
                     <>
-                      <button className="text-xs font-bold text-secondary hover:underline" onClick={() => void handleApprove(company.id)}>
+                      <button className="whitespace-nowrap text-xs font-bold text-secondary hover:underline" onClick={() => void handleApprove(company.id)}>
                         通过
                       </button>
-                      <button className="text-xs font-bold text-rose-600 hover:underline" onClick={() => void handleReject(company.id)}>
+                      <button className="whitespace-nowrap text-xs font-bold text-rose-600 hover:underline" onClick={() => void handleReject(company.id)}>
                         拒绝
                       </button>
                     </>

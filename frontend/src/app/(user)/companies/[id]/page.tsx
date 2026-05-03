@@ -80,7 +80,7 @@ export default function CompanyDetail() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex flex-col">
       <main className="mx-auto mt-6 w-full max-w-7xl px-5 pb-24 md:mt-12 md:px-8">
         <div className="mb-5">
           <Link href="/companies" className="inline-flex items-center gap-2 text-sm text-on-surface-variant hover:text-primary">
