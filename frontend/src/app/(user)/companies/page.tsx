@@ -651,190 +651,197 @@ export default function CompanyList() {
 
       </header>
 
-      <main className="mx-auto mt-2 flex w-full max-w-[1200px] flex-col gap-6 px-5 md:mt-6 md:px-8">
-        <div className="hidden w-full md:mx-0 md:flex md:w-3/4">
-          <div className="flex h-12 flex-1 items-center overflow-hidden rounded-l-lg border border-primary bg-surface-lowest shadow-sm md:border-2 md:border-r-0 md:border-primary">
-            <Search className="ml-3 mr-2 text-outline" size={16} />
-            <input
-              type="text"
-              placeholder="搜索公司"
-              className="h-full flex-1 bg-transparent px-1 text-body-md outline-none"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <button className="h-12 rounded-r-lg bg-primary px-6 text-sm font-bold text-white shadow-sm transition-colors hover:bg-primary/90 md:px-10 md:text-base">
-            搜索
-          </button>
-        </div>
-
-        <div className="hidden flex-col gap-4 rounded-2xl bg-surface-lowest p-4 shadow-sm md:flex md:p-6">
-          <div ref={cityRowRef} className="flex items-center gap-2 overflow-hidden">
-            <span ref={cityLabelRef} className="shrink-0 text-sm font-bold text-on-surface-variant">公司地点</span>
-            {visibleCityOptions.map((city) => {
-              const active = city === '全国' ? selectedCityNames.length === 0 : selectedCityNames.includes(city);
-              return (
-                <button
-                  key={city}
-                  onClick={() => toggleHotCity(city)}
-                  className={`shrink-0 whitespace-nowrap rounded-lg px-3 py-1 text-sm transition-colors ${
-                    active ? 'bg-primary/10 text-primary font-bold' : 'text-on-surface hover:bg-primary/5 hover:text-primary'
-                  }`}
-                >
-                  {city}
-                </button>
-              );
-            })}
-            <button
-              ref={cityMoreRef}
-              onClick={() => { setDraftCityNames(selectedCityNames); setShowLocationModal(true); }}
-              className="shrink-0 whitespace-nowrap rounded-lg px-3 py-1 text-sm text-primary hover:bg-primary/5"
-            >
-              更多地点
-            </button>
-          </div>
-
-          <div ref={industryRowRef} className="flex items-center gap-2 overflow-hidden">
-            <span ref={industryLabelRef} className="shrink-0 text-sm font-bold text-on-surface-variant">行业类型</span>
-            {visibleIndustryOptions.map((name) => {
-              const active = name === '不限' ? selectedIndustryNames.length === 0 : selectedIndustryNames.includes(name);
-              return (
-                <button
-                  key={name}
-                  onClick={() => toggleHotIndustry(name)}
-                  className={`shrink-0 whitespace-nowrap rounded-lg px-3 py-1 text-sm transition-colors ${
-                    active ? 'bg-primary/10 text-primary font-bold' : 'text-on-surface hover:bg-primary/5 hover:text-primary'
-                  }`}
-                >
-                  {name}
-                </button>
-              );
-            })}
-            <button
-              ref={industryMoreRef}
-              onClick={() => { setDraftIndustryNames(selectedIndustryNames); setShowIndustryModal(true); }}
-              className="shrink-0 whitespace-nowrap rounded-lg px-3 py-1 text-sm text-primary hover:bg-primary/5"
-            >
-              更多行业
-            </button>
-          </div>
-
-          <div data-testid="desktop-company-scale-row" className="flex items-center gap-3 overflow-hidden">
-            <span className="shrink-0 text-sm font-bold text-on-surface-variant">公司规模</span>
-            <div className="hide-scrollbar flex min-w-0 flex-1 items-center gap-2 overflow-x-auto">
-              <button
-                onClick={() => setSelectedScaleCode(undefined)}
-                className={`shrink-0 whitespace-nowrap rounded-lg px-3 py-1 text-sm transition-colors ${
-                  !selectedScaleCode ? 'bg-primary/10 text-primary font-bold' : 'text-on-surface hover:bg-primary/5 hover:text-primary'
-                }`}
-              >
-                不限
-              </button>
-              {COMPANY_SCALE_OPTIONS.map((item) => (
-                <button
-                  key={item.value}
-                  onClick={() => setSelectedScaleCode(item.value)}
-                  className={`shrink-0 whitespace-nowrap rounded-lg px-3 py-1 text-sm transition-colors ${
-                    selectedScaleCode === item.value
-                      ? 'bg-primary/10 text-primary font-bold'
-                      : 'text-on-surface hover:bg-primary/5 hover:text-primary'
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={clearAllFilters}
-              className="shrink-0 text-sm text-on-surface-variant hover:text-primary"
-            >
-              清空筛选
-            </button>
-          </div>
-
-          {selectedFilterTags.length > 0 && (
-            <div className="flex items-center gap-3 border-t border-surface-mid/50 pt-4">
-              <div className="shrink-0 text-sm font-bold text-on-surface-variant">已选条件</div>
-              <div className="hide-scrollbar flex min-w-0 flex-1 items-center gap-2 overflow-x-auto">
-                {selectedFilterTags.map((tag) => (
-                  <span
-                    key={tag.id}
-                    className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-primary px-3 py-1 text-xs font-medium text-primary bg-primary/5"
-                  >
-                    {tag.label}
-                    <button
-                      type="button"
-                      onClick={() => removeSelectedFilter(tag.id)}
-                      aria-label={`移除${tag.label}`}
-                      className="rounded-full text-primary hover:text-primary-container"
-                    >
-                      <X size={12} />
-                    </button>
-                  </span>
-                ))}
+      <main className="mt-2 flex w-full flex-col gap-6 md:mt-6">
+        <section data-testid="desktop-company-filter-band" className="hidden w-full bg-surface-low md:block">
+          <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-4 px-5 py-6 md:px-8">
+            <div data-testid="desktop-company-search-row" className="flex w-full md:mx-0 md:w-full">
+              <div className="flex h-12 flex-1 items-center overflow-hidden rounded-l-lg border border-primary bg-surface-lowest shadow-sm md:border-2 md:border-r-0 md:border-primary">
+                <Search className="ml-3 mr-2 text-outline" size={16} />
+                <input
+                  type="text"
+                  placeholder="搜索公司"
+                  className="h-full flex-1 bg-transparent px-1 text-body-md outline-none"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
               </div>
-              <button
-                type="button"
-                onClick={clearAllFilters}
-                className="shrink-0 text-sm text-on-surface-variant hover:text-primary"
-              >
-                清空筛选
+              <button className="h-12 rounded-r-lg bg-primary px-6 text-sm font-bold text-white shadow-sm transition-colors hover:bg-primary/90 md:px-10 md:text-base">
+                搜索
               </button>
             </div>
-          )}
-        </div>
 
-        {error && <div className="rounded-lg bg-error/10 px-4 py-3 text-sm text-error">{error}</div>}
-
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {loading
-            ? [...Array(8)].map((_, i) => (
-                <div key={i} className="h-[160px] rounded-2xl border border-surface-mid/50 bg-surface-lowest p-5 shadow-sm">
-                  <Skeleton className="h-14 w-full rounded-lg" />
-                  <Skeleton className="mt-4 h-10 w-full rounded-lg" />
-                </div>
-              ))
-            : companies.map((company) => (
-                <Link
-                  key={company.id}
-                  href={`/companies/${company.id}`}
-                  className="flex flex-col rounded-2xl border border-surface-mid/80 bg-surface-lowest p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+            <div className="flex flex-col gap-4 rounded-2xl bg-surface-lowest p-4 shadow-sm md:p-6">
+              <div ref={cityRowRef} className="flex items-center gap-2 overflow-hidden">
+                <span ref={cityLabelRef} className="shrink-0 text-sm font-bold text-on-surface-variant">公司地点</span>
+                {visibleCityOptions.map((city) => {
+                  const active = city === '全国' ? selectedCityNames.length === 0 : selectedCityNames.includes(city);
+                  return (
+                    <button
+                      key={city}
+                      onClick={() => toggleHotCity(city)}
+                      className={`shrink-0 whitespace-nowrap rounded-lg px-3 py-1 text-sm transition-colors ${
+                        active ? 'bg-primary/10 text-primary font-bold' : 'text-on-surface hover:bg-primary/5 hover:text-primary'
+                      }`}
+                    >
+                      {city}
+                    </button>
+                  );
+                })}
+                <button
+                  ref={cityMoreRef}
+                  onClick={() => { setDraftCityNames(selectedCityNames); setShowLocationModal(true); }}
+                  className="shrink-0 whitespace-nowrap rounded-lg px-3 py-1 text-sm text-primary hover:bg-primary/5"
                 >
-                  <div className="mb-4 flex items-center gap-3">
-                    <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-surface-mid/60 bg-white">
-                      <img src={resolveLogoUrl(company.avatarUrl)} className="h-full w-full object-cover" alt={company.name} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="truncate text-base font-black text-on-surface">{company.name}</h3>
-                      <div className="mt-1 flex items-center justify-between gap-2">
-                        <p className="min-w-0 truncate text-xs text-on-surface-variant">{company.city || '地点待补充'}</p>
-                        <span className="shrink-0 inline-flex items-center whitespace-nowrap text-[11px] font-medium text-on-surface-variant">
-                          <span className="mr-1 h-1.5 w-1.5 rounded-full bg-primary/60" />
-                          {formatCompanyScale(company.scale)}
-                        </span>
+                  更多地点
+                </button>
+              </div>
+
+              <div ref={industryRowRef} className="flex items-center gap-2 overflow-hidden">
+                <span ref={industryLabelRef} className="shrink-0 text-sm font-bold text-on-surface-variant">行业类型</span>
+                {visibleIndustryOptions.map((name) => {
+                  const active = name === '不限' ? selectedIndustryNames.length === 0 : selectedIndustryNames.includes(name);
+                  return (
+                    <button
+                      key={name}
+                      onClick={() => toggleHotIndustry(name)}
+                      className={`shrink-0 whitespace-nowrap rounded-lg px-3 py-1 text-sm transition-colors ${
+                        active ? 'bg-primary/10 text-primary font-bold' : 'text-on-surface hover:bg-primary/5 hover:text-primary'
+                      }`}
+                    >
+                      {name}
+                    </button>
+                  );
+                })}
+                <button
+                  ref={industryMoreRef}
+                  onClick={() => { setDraftIndustryNames(selectedIndustryNames); setShowIndustryModal(true); }}
+                  className="shrink-0 whitespace-nowrap rounded-lg px-3 py-1 text-sm text-primary hover:bg-primary/5"
+                >
+                  更多行业
+                </button>
+              </div>
+
+              <div data-testid="desktop-company-scale-row" className="flex items-center gap-3 overflow-hidden">
+                <span className="shrink-0 text-sm font-bold text-on-surface-variant">公司规模</span>
+                <div className="hide-scrollbar flex min-w-0 flex-1 items-center gap-2 overflow-x-auto">
+                  <button
+                    onClick={() => setSelectedScaleCode(undefined)}
+                    className={`shrink-0 whitespace-nowrap rounded-lg px-3 py-1 text-sm transition-colors ${
+                      !selectedScaleCode ? 'bg-primary/10 text-primary font-bold' : 'text-on-surface hover:bg-primary/5 hover:text-primary'
+                    }`}
+                  >
+                    不限
+                  </button>
+                  {COMPANY_SCALE_OPTIONS.map((item) => (
+                    <button
+                      key={item.value}
+                      onClick={() => setSelectedScaleCode(item.value)}
+                      className={`shrink-0 whitespace-nowrap rounded-lg px-3 py-1 text-sm transition-colors ${
+                        selectedScaleCode === item.value
+                          ? 'bg-primary/10 text-primary font-bold'
+                          : 'text-on-surface hover:bg-primary/5 hover:text-primary'
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={clearAllFilters}
+                  className="shrink-0 text-sm text-on-surface-variant hover:text-primary"
+                >
+                  清空筛选
+                </button>
+              </div>
+
+              {selectedFilterTags.length > 0 && (
+                <div className="flex items-center gap-3 border-t border-surface-mid/50 pt-4">
+                  <div className="shrink-0 text-sm font-bold text-on-surface-variant">已选条件</div>
+                  <div className="hide-scrollbar flex min-w-0 flex-1 items-center gap-2 overflow-x-auto">
+                    {selectedFilterTags.map((tag) => (
+                      <span
+                        key={tag.id}
+                        className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-primary px-3 py-1 text-xs font-medium text-primary bg-primary/5"
+                      >
+                        {tag.label}
+                        <button
+                          type="button"
+                          onClick={() => removeSelectedFilter(tag.id)}
+                          aria-label={`移除${tag.label}`}
+                          className="rounded-full text-primary hover:text-primary-container"
+                        >
+                          <X size={12} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={clearAllFilters}
+                    className="shrink-0 text-sm text-on-surface-variant hover:text-primary"
+                  >
+                    清空筛选
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-6 px-5 md:px-8">
+
+          {error && <div className="rounded-lg bg-error/10 px-4 py-3 text-sm text-error">{error}</div>}
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {loading
+              ? [...Array(8)].map((_, i) => (
+                  <div key={i} className="h-[160px] rounded-2xl border border-surface-mid/50 dark:border-transparent bg-surface-lowest p-5 shadow-sm">
+                    <Skeleton className="h-14 w-full rounded-lg" />
+                    <Skeleton className="mt-4 h-10 w-full rounded-lg" />
+                  </div>
+                ))
+              : companies.map((company) => (
+                  <Link
+                    key={company.id}
+                    href={`/companies/${company.id}`}
+                    className="flex flex-col rounded-2xl border border-surface-mid/80 dark:border-transparent bg-surface-lowest p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+                  >
+                    <div className="mb-4 flex items-center gap-3">
+                      <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-surface-mid/60 dark:border-transparent bg-white dark:bg-surface-low">
+                        <img src={resolveLogoUrl(company.avatarUrl)} className="h-full w-full object-cover" alt={company.name} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="truncate text-base font-black text-on-surface">{company.name}</h3>
+                        <div className="mt-1 flex items-center justify-between gap-2">
+                          <p className="min-w-0 truncate text-xs text-on-surface-variant">{company.city || '地点待补充'}</p>
+                          <span className="shrink-0 inline-flex items-center whitespace-nowrap text-[11px] font-medium text-on-surface-variant">
+                            <span className="mr-1 h-1.5 w-1.5 rounded-full bg-primary/60" />
+                            {formatCompanyScale(company.scale)}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex min-w-0 items-center gap-1.5">
-                    <span
-                      className="min-w-0 flex-1 truncate rounded-md border border-surface-mid/70 bg-surface-low px-2.5 py-0.5 text-[11px] font-medium text-on-surface-variant"
-                      title={company.industryName || '未知行业'}
-                    >
-                      {company.industryName || '未知行业'}
-                    </span>
-                    <span className="shrink-0 whitespace-nowrap rounded bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary">
-                      在招 {company.jobCount ?? 0}
-                    </span>
-                  </div>
+                    <div className="flex min-w-0 items-center gap-1.5">
+                      <span
+                        className="min-w-0 flex-1 truncate rounded-md border border-surface-mid/70 dark:border-transparent bg-surface-low px-2.5 py-0.5 text-[11px] font-medium text-on-surface-variant"
+                        title={company.industryName || '未知行业'}
+                      >
+                        {company.industryName || '未知行业'}
+                      </span>
+                      <span className="shrink-0 whitespace-nowrap rounded bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary">
+                        在招 {company.jobCount ?? 0}
+                      </span>
+                    </div>
 
-                </Link>
-              ))}
+                  </Link>
+                ))}
+          </div>
+
+          {!loading && !error && companies.length === 0 && (
+            <div className="rounded-2xl border border-dashed border-surface-mid p-10 text-center text-on-surface-variant">暂无符合条件的公司</div>
+          )}
         </div>
-
-        {!loading && !error && companies.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-surface-mid p-10 text-center text-on-surface-variant">暂无符合条件的公司</div>
-        )}
       </main>
 
       <IndustryFilterModal
