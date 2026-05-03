@@ -3,6 +3,15 @@ import userEvent from '@testing-library/user-event';
 import LoginPage from '@/app/login/page';
 
 describe('LoginPage', () => {
+  test('渲染简约现代布局壳层并保留登录表单输入框', () => {
+    render(<LoginPage />);
+    expect(screen.getByTestId('login-layout-shell')).toBeInTheDocument();
+    expect(screen.getByTestId('login-brand-panel')).toBeInTheDocument();
+    expect(screen.getByTestId('login-form-panel')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('请输入邮箱')).toHaveAttribute('type', 'email');
+    expect(screen.getByPlaceholderText('请输入密码')).toHaveAttribute('type', 'password');
+  });
+
   test('显示邮箱与密码输入框', () => {
     render(<LoginPage />);
     expect(screen.getByPlaceholderText('请输入邮箱')).toHaveAttribute('type', 'email');
