@@ -4,10 +4,12 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
-@TableName("chat_message")
+@TableName(value = "chat_message", autoResultMap = true)
 public class ChatMessagePO {
     @TableId(type = IdType.AUTO)
     private Long id;
@@ -20,7 +22,8 @@ public class ChatMessagePO {
     @TableField("message_type")
     private Short messageType;
     private String content;
-    private String ext;
+    @TableField(value = "ext", typeHandler = JacksonTypeHandler.class)
+    private Map<String, Object> ext;
     private Integer recalled;
     @TableField("create_time")
     private LocalDateTime createTime;
@@ -76,11 +79,11 @@ public class ChatMessagePO {
         this.content = content;
     }
 
-    public String getExt() {
+    public Map<String, Object> getExt() {
         return ext;
     }
 
-    public void setExt(String ext) {
+    public void setExt(Map<String, Object> ext) {
         this.ext = ext;
     }
 

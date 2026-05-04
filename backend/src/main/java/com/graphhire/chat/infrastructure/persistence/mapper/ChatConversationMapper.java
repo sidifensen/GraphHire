@@ -71,7 +71,7 @@ public interface ChatConversationMapper extends BaseMapper<ChatConversationPO> {
         WHERE m.conversation_id = #{conversationId}
           AND m.receiver_user_id = #{currentUserId}
           AND m.deleted = 0
-          AND (#{lastReadId} IS NULL OR m.id > #{lastReadId})
+          AND m.id > COALESCE(#{lastReadId,jdbcType=BIGINT}, 0)
         """)
     long countUnread(@Param("conversationId") Long conversationId,
                      @Param("currentUserId") Long currentUserId,

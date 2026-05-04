@@ -39,7 +39,8 @@ export default function Navbar() {
   const [authState, setAuthState] = React.useState(() => userAuthStore.getState());
   const [avatarError, setAvatarError] = React.useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = React.useState(false);
-  const isAuthenticated = authState.isAuthenticated;
+  const [hydrated, setHydrated] = React.useState(false);
+  const isAuthenticated = hydrated && authState.isAuthenticated;
   const user = authState.user;
 
   const displayName = user?.displayName || user?.username || '求职者';
@@ -70,6 +71,10 @@ export default function Navbar() {
   React.useEffect(() => {
     setAccountMenuOpen(false);
   }, [isAuthenticated, user?.id]);
+
+  React.useEffect(() => {
+    setHydrated(true);
+  }, []);
 
   React.useEffect(() => {
     const unsubscribe = userAuthStore.subscribe((nextState) => {
