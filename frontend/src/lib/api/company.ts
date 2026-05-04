@@ -27,7 +27,6 @@ export interface Company {
   address?: string;
   contactName?: string;
   contactPhone?: string;
-  contactEmail?: string;
   authStatus: 'PENDING' | 'VERIFIED' | 'REJECTED';
   createdAt?: string;
 }
@@ -36,7 +35,6 @@ export interface CompanyProfileUpdateRequest {
   name?: string;
   contactName?: string;
   contactPhone?: string;
-  contactEmail?: string;
   description?: string;
   website?: string;
   industryId: number;

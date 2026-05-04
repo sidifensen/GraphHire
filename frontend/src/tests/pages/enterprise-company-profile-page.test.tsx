@@ -21,7 +21,6 @@ describe('Enterprise company profile page', () => {
       name: '测试企业',
       contactName: '张三',
       contactPhone: '13800138000',
-      contactEmail: 'hr@test.com',
       description: 'desc',
       website: 'https://example.com',
       industryId: 11,
@@ -41,5 +40,6 @@ describe('Enterprise company profile page', () => {
     render(<EnterpriseCompanyProfilePage />);
 
     expect(await screen.findByRole('button', { name: '返回上一页' })).toBeInTheDocument();
+    expect(screen.queryByText('联系邮箱')).not.toBeInTheDocument();
   });
 });

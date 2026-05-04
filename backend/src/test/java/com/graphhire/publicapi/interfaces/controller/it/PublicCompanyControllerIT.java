@@ -89,6 +89,20 @@ class PublicCompanyControllerIT extends BaseControllerIT {
     }
 
     @Test
+    @DisplayName("公开企业详情返回公司官网字段")
+    void getCompany_returnsWebsiteField() throws Exception {
+        Long companyUserId = createUser("public_company_it_website@graphhire.com");
+        Long companyId = createCompany(companyUserId, "PUBLIC_COMPANY_IT_官网企业");
+        String website = "https://public-company-" + Math.abs(System.nanoTime()) + ".example.com";
+        jdbcTemplate.update("UPDATE company SET website = ? WHERE id = ?", website, companyId);
+
+        mockMvc.perform(get("/public/companies/{id}", companyId))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value(200))
+            .andExpect(jsonPath("$.data.website").value(website));
+    }
+
+    @Test
     @DisplayName("公开企业列表在无头像时返回 null")
     void searchCompanies_withoutAvatar_returnsNullAvatarUrl() throws Exception {
         Long companyUserId = createUser("public_company_it_no_avatar@graphhire.com");

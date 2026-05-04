@@ -15,6 +15,7 @@ public record PublicCompanyCardResponse(
     String scale,
     String unifiedSocialCreditCode,
     String contactName,
-    String contactPhone
+    String contactPhone,
+    String website
 ) {
 }

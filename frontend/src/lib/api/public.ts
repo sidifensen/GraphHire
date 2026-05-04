@@ -8,6 +8,7 @@ export interface Company {
   unifiedSocialCreditCode?: string | null;
   contactName?: string | null;
   contactPhone?: string | null;
+  website?: string | null;
   jobCount?: number;
   summary?: string;
   description?: string | null;

@@ -118,12 +118,11 @@ public class CompanyController {
     public Result<Void> updateCompanyInfo(@RequestParam(required = false) String name,
                                           @RequestParam(required = false) String contactName,
                                           @RequestParam(required = false) String contactPhone,
-                                          @RequestParam(required = false) String contactEmail,
                                           @RequestParam(required = false) String description,
                                           @RequestParam(required = false) String website) {
         Long companyId = currentCompanyId();
         companyAppService.updateCompanyInfo(companyId, name, contactName, contactPhone,
-                contactEmail, description, website);
+                description, website);
         return Result.success();
     }
 
@@ -139,7 +138,6 @@ public class CompanyController {
                 request.getName(),
                 request.getContactName(),
                 request.getContactPhone(),
-                request.getContactEmail(),
                 request.getDescription(),
                 request.getWebsite(),
                 industry.getId(),
@@ -389,10 +387,9 @@ public class CompanyController {
                                       @RequestParam String unifiedSocialCreditCode,
                                       @RequestParam(required = false) String licenseUrl,
                                       @RequestParam(required = false) String contactName,
-                                      @RequestParam(required = false) String contactPhone,
-                                      @RequestParam(required = false) String contactEmail) {
+                                      @RequestParam(required = false) String contactPhone) {
         Company company = companyAppService.createCompany(name, unifiedSocialCreditCode,
-                licenseUrl, contactName, contactPhone, contactEmail);
+                licenseUrl, contactName, contactPhone);
         return Result.success(company.getId());
     }
 
@@ -401,7 +398,6 @@ public class CompanyController {
                                       @RequestParam(required = false) String name,
                                       @RequestParam(required = false) String contactName,
                                       @RequestParam(required = false) String contactPhone,
-                                      @RequestParam(required = false) String contactEmail,
                                       @RequestParam(required = false) String description,
                                       @RequestParam(required = false) String website) {
         Long companyId = currentCompanyId();
@@ -409,7 +405,7 @@ public class CompanyController {
             throw new Exceptions.ForbiddenException("无权修改其他企业信息");
         }
         companyAppService.updateCompanyInfo(id, name, contactName, contactPhone,
-                contactEmail, description, website);
+                description, website);
         return Result.success();
     }
 
@@ -660,7 +656,6 @@ public class CompanyController {
                 company.getLicenseUrl(),
                 company.getContactName(),
                 company.getContactPhone(),
-                company.getContactEmail(),
                 company.getDescription(),
                 company.getWebsite(),
                 company.getIndustryId(),

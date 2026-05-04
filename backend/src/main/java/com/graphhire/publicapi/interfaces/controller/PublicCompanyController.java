@@ -112,7 +112,8 @@ public class PublicCompanyController {
                 StrUtil.trim(company.getScale()),
                 StrUtil.trim(company.getUnifiedSocialCreditCode()),
                 StrUtil.trim(company.getContactName()),
-                StrUtil.trim(company.getContactPhone())
+                StrUtil.trim(company.getContactPhone()),
+                StrUtil.trim(company.getWebsite())
         );
     }
 

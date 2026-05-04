@@ -9,7 +9,6 @@ public record CompanyProfileResponse(
         String licenseUrl,
         String contactName,
         String contactPhone,
-        String contactEmail,
         String description,
         String website,
         Long industryId,

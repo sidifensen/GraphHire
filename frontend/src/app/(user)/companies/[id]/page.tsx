@@ -27,6 +27,14 @@ function resolveLogoUrl(url?: string | null) {
   return `${getApiBaseUrl()}/${url}`;
 }
 
+function resolveWebsiteUrl(url?: string | null) {
+  if (!url) return null;
+  const trimmed = url.trim();
+  if (!trimmed) return null;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+}
+
 export default function CompanyDetail() {
   const params = useParams<{ id: string }>();
   const companyId = Number(params?.id);
@@ -73,6 +81,7 @@ export default function CompanyDetail() {
     if (!company) return '';
     return company.description?.trim() || '暂无公司介绍';
   }, [company]);
+  const websiteUrl = resolveWebsiteUrl(company?.website);
 
   if (loading) {
     return <div className="p-6 text-on-surface-variant">公司详情加载中...</div>;
@@ -191,6 +200,23 @@ export default function CompanyDetail() {
                   <div className="flex gap-3 md:col-span-2">
                     <dt className="w-28 shrink-0 text-on-surface-variant">企业地址</dt>
                     <dd className="text-on-surface">{company.address || '未披露'}</dd>
+                  </div>
+                  <div className="flex gap-3 md:col-span-2">
+                    <dt className="w-28 shrink-0 text-on-surface-variant">公司官网</dt>
+                    <dd className="text-on-surface">
+                      {websiteUrl ? (
+                        <a
+                          href={websiteUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline"
+                        >
+                          {company.website}
+                        </a>
+                      ) : (
+                        '未披露'
+                      )}
+                    </dd>
                   </div>
                 </dl>
               </div>

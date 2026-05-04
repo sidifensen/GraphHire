@@ -35,8 +35,6 @@ public class Company extends BaseAggregateRoot {
     private String contactName;
     /** 联系人电话 */
     private String contactPhone;
-    /** 联系人邮箱 */
-    private String contactEmail;
     /** 企业简介 */
     private String description;
     /** 企业官网URL */
@@ -83,11 +81,10 @@ public class Company extends BaseAggregateRoot {
      * 【功能说明】批量更新企业的联系信息和简介描述。
      */
     public void updateInfo(String name, String contactName, String contactPhone,
-                          String contactEmail, String description, String website) {
+                          String description, String website) {
         this.name = name;
         this.contactName = contactName;
         this.contactPhone = contactPhone;
-        this.contactEmail = contactEmail;
         this.description = description;
         this.website = website;
     }
@@ -154,14 +151,6 @@ public class Company extends BaseAggregateRoot {
 
     public void setContactPhone(String contactPhone) {
         this.contactPhone = contactPhone;
-    }
-
-    public String getContactEmail() {
-        return contactEmail;
-    }
-
-    public void setContactEmail(String contactEmail) {
-        this.contactEmail = contactEmail;
     }
 
     public String getDescription() {

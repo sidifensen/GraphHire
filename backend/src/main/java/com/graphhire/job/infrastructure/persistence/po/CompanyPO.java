@@ -42,6 +42,8 @@ public class CompanyPO {
     private String phone;
     /** 企业简介 */
     private String description;
+    /** 企业官网 */
+    private String website;
     /** 企业头像对象路径 */
     @TableField("avatar_path")
     private String avatarPath;
@@ -152,6 +154,14 @@ public class CompanyPO {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getWebsite() {
+        return website;
+    }
+
+    public void setWebsite(String website) {
+        this.website = website;
     }
 
     public String getAvatarPath() {

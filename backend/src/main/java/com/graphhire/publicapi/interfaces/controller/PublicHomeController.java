@@ -130,7 +130,8 @@ public class PublicHomeController {
                 company.getScale(),
                 company.getUnifiedSocialCreditCode(),
                 company.getContactName(),
-                company.getContactPhone()
+                company.getContactPhone(),
+                company.getWebsite()
         );
     }
 }

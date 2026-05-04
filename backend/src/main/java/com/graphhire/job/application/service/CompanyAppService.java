@@ -37,7 +37,7 @@ public class CompanyAppService {
     @Transactional
     public Company createCompany(String name, String unifiedSocialCreditCode,
                                  String licenseUrl, String contactName,
-                                 String contactPhone, String contactEmail) {
+                                 String contactPhone) {
         companyRepository.findByName(name).ifPresent(existing -> {
             throw Exceptions.BusinessException.of("公司名称已存在");
         });
@@ -49,7 +49,6 @@ public class CompanyAppService {
         company.setLicenseUrl(licenseUrl);
         company.setContactName(contactName);
         company.setContactPhone(contactPhone);
-        company.setContactEmail(contactEmail);
 
         // 步骤2：设置初始认证状态为待审核
         company.setAuthStatus(AuthStatus.PENDING_VERIFY);
@@ -109,13 +108,13 @@ public class CompanyAppService {
      */
     @Transactional
     public Company updateCompanyInfo(Long companyId, String name, String contactName,
-                                     String contactPhone, String contactEmail,
+                                     String contactPhone,
                                      String description, String website) {
         // 步骤1：根据公司ID查询公司信息
         Company company = requireCompany(companyId);
 
         // 步骤2：调用公司领域模型更新方法修改信息
-        company.updateInfo(name, contactName, contactPhone, contactEmail, description, website);
+        company.updateInfo(name, contactName, contactPhone, description, website);
 
         // 步骤3：保存更新后的公司信息
         log.info("更新企业信息: companyId={}, name={}", companyId, name);
@@ -133,14 +132,14 @@ public class CompanyAppService {
     
     @Transactional
     public Company updateCompanyProfile(Long companyId, String name, String contactName,
-                                        String contactPhone, String contactEmail,
+                                        String contactPhone,
                                         String description, String website,
                                         Long industryId, String scale, String address) {
         Company company = requireCompany(companyId);
         String scaleCode = CompanyScale.fromInput(scale)
                 .map(CompanyScale::getCode)
                 .orElseThrow(() -> new Exceptions.ValidationException("公司规模编码不合法，仅支持1-6"));
-        company.updateInfo(name, contactName, contactPhone, contactEmail, description, website);
+        company.updateInfo(name, contactName, contactPhone, description, website);
         company.setIndustryId(industryId);
         company.setScale(scaleCode);
         company.setAddress(address);

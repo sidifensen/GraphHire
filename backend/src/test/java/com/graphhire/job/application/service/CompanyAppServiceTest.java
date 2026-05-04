@@ -45,8 +45,7 @@ class CompanyAppServiceTest {
             "911100000000000000",
             "license-path",
             "Alice",
-            "13800138000",
-            "alice@graphhire.com"
+            "13800138000"
         );
 
         assertEquals(AuthStatus.PENDING_VERIFY, company.getAuthStatus());
@@ -103,7 +102,6 @@ class CompanyAppServiceTest {
                 "GraphHire",
                 "Alice",
                 "13800138000",
-                "alice@graphhire.com",
                 "desc",
                 "https://graphhire.com",
                 10L,

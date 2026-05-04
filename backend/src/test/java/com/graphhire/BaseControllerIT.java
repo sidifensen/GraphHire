@@ -76,6 +76,7 @@ public abstract class BaseControllerIT {
     @BeforeEach
     protected void setupExternalMocks() {
         ensureCompanyAvatarPathColumn(jdbcTemplate);
+        ensureCompanyWebsiteColumn(jdbcTemplate);
         ensureResumeFileSizeColumn(jdbcTemplate);
         ensureJobEducationAndPositionTypeColumns(jdbcTemplate);
         Mockito.lenient().when(rustFSClient.upload(any(byte[].class), anyString()))
@@ -111,6 +112,7 @@ public abstract class BaseControllerIT {
                                                   MockMvc mockMvc,
                                                   ObjectMapper objectMapper) throws Exception {
         ensureCompanyStaffStatusColumn(jdbcTemplate);
+        ensureCompanyWebsiteColumn(jdbcTemplate);
 
         // Create test users via direct JDBC (avoids verifyCode requirement)
         personUserId = createUserViaJdbc(jdbcTemplate, TEST_PERSON_USERNAME, TEST_PERSON_PASSWORD, "PERSON");
@@ -185,6 +187,11 @@ public abstract class BaseControllerIT {
 
     private static void ensureCompanyAvatarPathColumn(JdbcTemplate jdbc) {
         jdbc.execute("ALTER TABLE company ADD COLUMN IF NOT EXISTS avatar_path VARCHAR(500)");
+    }
+
+    private static void ensureCompanyWebsiteColumn(JdbcTemplate jdbc) {
+        jdbc.execute("ALTER TABLE company ADD COLUMN IF NOT EXISTS website VARCHAR(500)");
+        jdbc.execute("ALTER TABLE company DROP COLUMN IF EXISTS contact_email");
     }
 
     private static void ensureResumeFileSizeColumn(JdbcTemplate jdbc) {

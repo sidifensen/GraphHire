@@ -892,18 +892,18 @@ class CompanyControllerTest {
             company.setName(name);
 
             when(companyAppService.createCompany(eq(name), eq(unifiedSocialCreditCode),
-                isNull(), isNull(), isNull(), isNull())).thenReturn(company);
+                isNull(), isNull(), isNull())).thenReturn(company);
 
             // When
             var result = companyController.createCompany(name, unifiedSocialCreditCode,
-                null, null, null, null);
+                null, null, null);
 
             // Then
             assertNotNull(result);
             assertEquals(200, result.getCode());
             assertEquals(1L, result.getData());
             verify(companyAppService).createCompany(eq(name), eq(unifiedSocialCreditCode),
-                isNull(), isNull(), isNull(), isNull());
+                isNull(), isNull(), isNull());
         }
     }
 

@@ -47,6 +47,7 @@ describe('user company detail page real api integration', () => {
       unifiedSocialCreditCode: '91330100123456789A',
       contactName: '李四',
       contactPhone: '13900001111',
+      website: 'example.com',
       jobCount: 2,
       summary: '已认证企业，当前开放 2 个职位',
       description: '星河科技是一家专注企业数字化的技术公司。',
@@ -111,6 +112,9 @@ describe('user company detail page real api integration', () => {
     expect(screen.getByText('李四')).toBeInTheDocument();
     expect(screen.getByText('联系电话')).toBeInTheDocument();
     expect(screen.getByText('13900001111')).toBeInTheDocument();
+    expect(screen.getByText('公司官网')).toBeInTheDocument();
+    const siteLink = screen.getByRole('link', { name: 'example.com' });
+    expect(siteLink).toHaveAttribute('href', 'https://example.com');
   });
 
   it('shows intro tab by default and switches to jobs tab after clicking', async () => {

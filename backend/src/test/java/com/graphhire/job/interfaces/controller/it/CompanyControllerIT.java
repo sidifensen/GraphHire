@@ -81,6 +81,37 @@ class CompanyControllerIT extends BaseControllerIT {
     }
 
     @Test
+    @DisplayName("02.1 - 企业资料更新与查询返回官网且不包含联系邮箱")
+    void updateCompanyProfile_websiteOnly() throws Exception {
+        String website = "https://corp-" + System.nanoTime() + ".example.com";
+        Long industryId = jdbcTemplate.queryForObject(
+                "SELECT id FROM industry WHERE enabled = 1 AND level = 2 ORDER BY id LIMIT 1",
+                Long.class
+        );
+        assertNotNull(industryId, "测试依赖启用二级行业数据");
+
+        String payload = String.format(
+                "{\"name\":\"Test Company\",\"contactName\":\"测试联系人\",\"contactPhone\":\"13800009999\",\"description\":\"desc\",\"website\":\"%s\",\"industryId\":%d,\"scale\":\"1\",\"address\":\"北京\"}",
+                website,
+                industryId
+        );
+
+        mockMvc.perform(put("/company/profile")
+                .headers(companyHeaders)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value(200));
+
+        mockMvc.perform(get("/company/info")
+                .headers(companyHeaders))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value(200))
+            .andExpect(jsonPath("$.data.website").value(website))
+            .andExpect(jsonPath("$.data.contactEmail").doesNotExist());
+    }
+
+    @Test
     @DisplayName("03 - 提交认证材料")
     void submitAuthMaterials_Success() throws Exception {
         mockMvc.perform(post("/company/auth")

@@ -194,3 +194,6 @@
 - feat: 企业端公司资料页新增左上“返回上一页”按钮，并统一表单输入与下拉的亮暗主题样式（背景、边框、focus ring）
 - fix: 后端 DeepSeek 匹配成功日志按重试次数分支输出，单次成功不再打印总耗时字段，减少冗余日志噪声
 - test: 新增企业导航项测试（确保主导航不暴露公司资料入口）与企业公司资料页返回按钮测试；补充用户端导航与公司页布局回归断言
+- feat: 公司资料字段改造：后端与前端移除 `contactEmail`，新增并贯通 `website`（公司官网）字段；用户端公司详情“工商信息”新增官网展示链接，企业端公司资料页移除“联系邮箱”输入并保留官网编辑
+- feat: 数据结构同步：新增迁移脚本 `V2026_05_04_023__company_add_website_and_drop_contact_email.sql`（新增 `company.website`、删除 `contact_email`），并同步更新 `backend/src/main/resources/db/schema.sql` 基线定义
+- test: 新增并更新后端 `CompanyControllerIT` / `PublicCompanyControllerIT` 与前端公司资料页、公司详情页测试，覆盖“官网读写/返回、联系邮箱移除、官网链接展示”场景；前后端全量测试通过

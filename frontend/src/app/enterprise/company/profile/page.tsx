@@ -17,7 +17,6 @@ export default function EnterpriseCompanyProfilePage() {
     name: '',
     contactName: '',
     contactPhone: '',
-    contactEmail: '',
     description: '',
     website: '',
     industryId: 0,
@@ -43,7 +42,6 @@ export default function EnterpriseCompanyProfilePage() {
         name: info.name ?? '',
         contactName: info.contactName ?? '',
         contactPhone: info.contactPhone ?? '',
-        contactEmail: info.contactEmail ?? '',
         description: info.description ?? '',
         website: info.website ?? '',
         industryId: currentIndustryId,
@@ -155,11 +153,6 @@ export default function EnterpriseCompanyProfilePage() {
         <label className="block text-sm">
           <span className="mb-1 block text-on-surface-variant">联系电话</span>
           <input value={form.contactPhone ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, contactPhone: e.target.value }))} className="w-full rounded-lg border border-outline-variant/40 dark:border-slate-600 bg-surface-container-lowest dark:bg-surface-container-highest px-3 py-2 text-sm text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/35" />
-        </label>
-
-        <label className="block text-sm">
-          <span className="mb-1 block text-on-surface-variant">联系邮箱</span>
-          <input value={form.contactEmail ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, contactEmail: e.target.value }))} className="w-full rounded-lg border border-outline-variant/40 dark:border-slate-600 bg-surface-container-lowest dark:bg-surface-container-highest px-3 py-2 text-sm text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/35" />
         </label>
 
         <label className="block text-sm">
