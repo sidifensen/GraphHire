@@ -199,3 +199,4 @@
 - feat: 公司资料字段改造：后端与前端移除 `contactEmail`，新增并贯通 `website`（公司官网）字段；用户端公司详情“工商信息”新增官网展示链接，企业端公司资料页移除“联系邮箱”输入并保留官网编辑
 - feat: 数据结构同步：新增迁移脚本 `V2026_05_04_023__company_add_website_and_drop_contact_email.sql`（新增 `company.website`、删除 `contact_email`），并同步更新 `backend/src/main/resources/db/schema.sql` 基线定义
 - test: 新增并更新后端 `CompanyControllerIT` / `PublicCompanyControllerIT` 与前端公司资料页、公司详情页测试，覆盖“官网读写/返回、联系邮箱移除、官网链接展示”场景；前后端全量测试通过
+- chore: 提交认证页品牌文案微调与岗位即时沟通实施计划文档

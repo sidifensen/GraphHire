@@ -272,6 +272,7 @@ export default function AuthUnifiedPage({ initialMode }: AuthUnifiedPageProps) {
           <Network size={20} />
         </div>
         <span className="font-display text-xl font-bold tracking-tight text-on-surface">GraphHire</span>
+        <span className="text-sm font-semibold text-on-surface/85">图谱智聘</span>
       </div>
 
       <div className="z-10 mx-auto flex w-full max-w-[1600px] flex-1 flex-col px-6 lg:flex-row lg:px-24">
