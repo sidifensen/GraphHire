@@ -18,6 +18,8 @@ vi.mock('next/navigation', () => ({
   }),
 }));
 
+const originalLocation = window.location;
+
 vi.mock('@/lib/api/auth', () => ({
   authApi: {
     login: (...args: unknown[]) => mockLogin(...args),
@@ -40,6 +42,10 @@ vi.mock('@/lib/stores/auth-store', () => ({
 describe('LoginPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      value: { ...originalLocation, search: '' },
+    });
   });
 
   it('submits email and password, then routes person user to home', async () => {
@@ -121,5 +127,25 @@ describe('LoginPage', () => {
       expect(screen.getByText(/当前账号不是/)).toBeInTheDocument();
     });
     expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it('switches to register form on same page when clicking register tab', async () => {
+    const user = userEvent.setup();
+    render(<LoginPage />);
+
+    await user.click(screen.getByRole('button', { name: '注册' }));
+
+    expect(screen.getByRole('button', { name: '创建账号' })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('6位验证码')).toBeInTheDocument();
+  });
+
+  it('shows review pending notice when review=pending', () => {
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      value: { ...originalLocation, search: '?review=pending' },
+    });
+
+    render(<LoginPage />);
+    expect(screen.getByText('该公司正在审核中，当前无法进入企业端。请等待管理员审核通过后再登录。')).toBeInTheDocument();
   });
 });

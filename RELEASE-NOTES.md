@@ -180,6 +180,9 @@
 
 ## 2026-05-04
 
+- feat: 用户端 `/login` 与 `/register` 重构为统一认证页面框架，保留两个地址入口并在同页右侧完成“登录/注册”表单切换，登录与注册均保留“求职者/招聘者”角色切换
+- feat: 用户端认证页视觉升级为与管理端一致的左侧品牌文案+全屏背景图+右侧玻璃卡片布局，背景图替换为相似商务办公风格
+- test: 新增并更新登录/注册页面切换测试，覆盖“登录页切到注册表单”“注册页切到登录表单”场景，认证相关测试全通过
 - fix: 新增用户端路由鉴权守卫，未登录访问 `/profile`、`/personal-info`、`/resume/*`、`/applications`、`/skill-graph`、`/notifications` 将强制跳转 `/login`，修复“显示登录按钮但仍可进入我的页”的问题
 - refactor: 用户端 `我的图谱` 页面改为真实接口驱动（`/person/graph` + `/person/ability-assessment`），移除前端写死技能点、分数与标签展示逻辑
 - fix: 后端 `SkillGraphClient#getPersonSkillGraph` 取消无驱动/异常时返回假技能列表，改为返回空技能结构，避免前端继续展示误导性假数据

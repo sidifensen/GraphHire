@@ -2,7 +2,16 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import LoginPage from '@/app/login/page';
 
+const originalLocation = window.location;
+
 describe('LoginPage', () => {
+  beforeEach(() => {
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      value: { ...originalLocation, search: '' },
+    });
+  });
+
   test('显示邮箱与密码输入框', () => {
     render(<LoginPage />);
     expect(screen.getByPlaceholderText('请输入邮箱')).toHaveAttribute('type', 'email');
@@ -34,5 +43,25 @@ describe('LoginPage', () => {
 
     expect(screen.getByPlaceholderText('请输入邮箱')).toHaveValue('13800138001@phone.com');
     expect(screen.getByPlaceholderText('请输入密码')).toHaveValue('password123');
+  });
+
+  test('点击注册后在同页切换为注册表单', async () => {
+    const user = userEvent.setup();
+    render(<LoginPage />);
+
+    await user.click(screen.getByRole('button', { name: '注册' }));
+
+    expect(screen.getByRole('button', { name: '创建账号' })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('6位验证码')).toHaveAttribute('type', 'text');
+  });
+
+  test('当 review=pending 时展示审核提示', () => {
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      value: { ...originalLocation, search: '?review=pending' },
+    });
+
+    render(<LoginPage />);
+    expect(screen.getByText('该公司正在审核中，当前无法进入企业端。请等待管理员审核通过后再登录。')).toBeInTheDocument();
   });
 });

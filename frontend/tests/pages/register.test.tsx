@@ -20,6 +20,8 @@ vi.mock('next/navigation', () => ({
   }),
 }));
 
+const originalLocation = window.location;
+
 vi.mock('@/lib/api/auth', () => ({
   authApi: {
     sendVerifyCode: (...args: unknown[]) => mockSendVerifyCode(...args),
@@ -36,11 +38,15 @@ vi.mock('next/image', () => ({
 describe('RegisterPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      value: { ...originalLocation, search: '' },
+    });
   });
 
   it('renders page title', () => {
     render(<RegisterPage />);
-    expect(screen.getByText('创建账号')).toBeDefined();
+    expect(screen.getByRole('heading', { name: '创建账号' })).toBeDefined();
   });
 
   it('renders role switcher', () => {
@@ -64,7 +70,7 @@ describe('RegisterPage', () => {
 
   it('renders submit button', () => {
     render(<RegisterPage />);
-    expect(screen.getByText('创建账号')).toBeDefined();
+    expect(screen.getByRole('button', { name: '创建账号' })).toBeDefined();
   });
 
   it('renders login link', () => {
@@ -110,4 +116,26 @@ describe('RegisterPage', () => {
       expect(screen.getByText('请求超时，请稍后重试')).toBeInTheDocument();
     });
   }, 15000);
+
+  it('switches to login form on same page when clicking login tab', async () => {
+    const user = userEvent.setup();
+    render(<RegisterPage />);
+
+    await user.click(screen.getByRole('button', { name: '登录' }));
+
+    expect(screen.getByRole('button', { name: '立即登录' })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('请输入密码')).toBeInTheDocument();
+  });
+
+  it('defaults to recruiter register form when role=enterprise', () => {
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      value: { ...originalLocation, search: '?role=enterprise' },
+    });
+
+    render(<RegisterPage />);
+
+    expect(screen.getByRole('tab', { name: '我是招聘者' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByPlaceholderText('请输入企业全称')).toBeInTheDocument();
+  });
 });
