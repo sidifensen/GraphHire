@@ -49,7 +49,7 @@ describe('LoginPage', () => {
     const user = userEvent.setup();
     render(<LoginPage />);
 
-    await user.click(screen.getByRole('button', { name: '注册' }));
+    await user.click(screen.getByRole('button', { name: '去注册' }));
 
     expect(screen.getByRole('button', { name: '创建账号' })).toBeInTheDocument();
     expect(screen.getByPlaceholderText('6位验证码')).toHaveAttribute('type', 'text');

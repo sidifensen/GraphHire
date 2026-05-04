@@ -61,7 +61,7 @@ describe('RegisterPage', () => {
     const user = userEvent.setup();
     render(<RegisterPage />);
 
-    await user.click(screen.getByRole('button', { name: '登录' }));
+    await user.click(screen.getByRole('button', { name: '去登录' }));
 
     expect(screen.getByRole('button', { name: '立即登录' })).toBeInTheDocument();
     expect(screen.getByPlaceholderText('请输入密码')).toHaveAttribute('type', 'password');

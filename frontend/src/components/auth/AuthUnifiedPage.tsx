@@ -1,7 +1,6 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Network } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -94,10 +93,15 @@ export default function AuthUnifiedPage({ initialMode }: AuthUnifiedPageProps) {
       return;
     }
     setMode(nextMode);
+    if (typeof window !== 'undefined') {
+      const nextPath = nextMode === 'login' ? '/login' : '/register';
+      if (window.location.pathname !== nextPath) {
+        window.history.pushState(null, '', nextPath);
+      }
+    }
     setLoginError('');
     setRegisterError('');
     setRegisterNotice('');
-    router.push(nextMode === 'login' ? '/login' : '/register');
   };
 
   const handleLoginRoleSwitch = (role: 'jobseeker' | 'recruiter') => {
@@ -296,27 +300,6 @@ export default function AuthUnifiedPage({ initialMode }: AuthUnifiedPageProps) {
               <p className="text-sm text-outline">{mode === 'login' ? '请登录以继续使用 GraphHire' : '完成注册以开启智能招聘体验'}</p>
             </div>
 
-            <div className="mb-6 flex border-b border-outline-variant">
-              <button
-                type="button"
-                onClick={() => switchMode('login')}
-                className={`pb-3 pr-5 text-base font-medium transition-colors ${
-                  mode === 'login' ? 'border-b-2 border-primary text-primary' : 'text-outline hover:text-on-surface'
-                }`}
-              >
-                登录
-              </button>
-              <button
-                type="button"
-                onClick={() => switchMode('register')}
-                className={`pb-3 pl-5 text-base font-medium transition-colors ${
-                  mode === 'register' ? 'border-b-2 border-primary text-primary' : 'text-outline hover:text-on-surface'
-                }`}
-              >
-                注册
-              </button>
-            </div>
-
             {mode === 'login' ? (
               <>
                 {reviewPending ? (
@@ -388,6 +371,17 @@ export default function AuthUnifiedPage({ initialMode }: AuthUnifiedPageProps) {
                     </button>
                   </div>
                 </form>
+
+                <div className="mt-6 text-center">
+                  <span className="text-xs font-medium text-on-surface-variant">还未有账号？</span>
+                  <button
+                    type="button"
+                    onClick={() => switchMode('register')}
+                    className="ml-1 text-xs font-black text-primary hover:underline underline-offset-2"
+                  >
+                    去注册
+                  </button>
+                </div>
               </>
             ) : (
               <>
@@ -567,9 +561,13 @@ export default function AuthUnifiedPage({ initialMode }: AuthUnifiedPageProps) {
 
                   <div className="text-center">
                     <span className="text-xs font-medium text-on-surface-variant">已有账号？</span>
-                    <Link href="/login" className="ml-1 text-xs font-black text-primary hover:underline underline-offset-2">
+                    <button
+                      type="button"
+                      onClick={() => switchMode('login')}
+                      className="ml-1 text-xs font-black text-primary hover:underline underline-offset-2"
+                    >
                       去登录
-                    </Link>
+                    </button>
                   </div>
                 </form>
               </>
