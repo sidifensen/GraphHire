@@ -75,4 +75,15 @@ describe('MockUser Navbar active state', () => {
     expect(myLink.className).toContain('text-white');
     expect(homeLink.className).not.toContain('text-white');
   });
+
+  it('does not highlight any desktop nav item on notifications page', () => {
+    pathname = '/notifications';
+    render(<Navbar />);
+
+    expect(screen.queryByTestId('desktop-nav-indicator')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '首页' }).className).not.toContain('text-white');
+    expect(screen.getByRole('link', { name: '职位' }).className).not.toContain('text-white');
+    expect(screen.getByRole('link', { name: '公司' }).className).not.toContain('text-white');
+    expect(screen.getByRole('link', { name: '我的' }).className).not.toContain('text-white');
+  });
 });

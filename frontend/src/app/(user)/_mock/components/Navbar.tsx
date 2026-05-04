@@ -51,14 +51,16 @@ export default function Navbar() {
     { name: '公司', path: '/companies', icon: Building2 },
     { name: '我的', path: '/profile', icon: User },
   ];
-  const activeNavPath = navItems.find((item) => isPathActive(normalizedPathname, item.path))?.path ?? '/';
-  const activeNavIndex = Math.max(0, navItems.findIndex((item) => item.path === activeNavPath));
+  const activeNavPath = navItems.find((item) => isPathActive(normalizedPathname, item.path))?.path ?? null;
+  const activeNavIndex = activeNavPath ? navItems.findIndex((item) => item.path === activeNavPath) : -1;
   const navItemWidth = 102;
   const navItemGap = 8;
-  const indicatorMetrics = resolveHorizontalIndicatorMetrics(
-    { left: 0 },
-    { left: activeNavIndex * (navItemWidth + navItemGap), width: navItemWidth },
-  );
+  const indicatorMetrics = activeNavIndex >= 0
+    ? resolveHorizontalIndicatorMetrics(
+      { left: 0 },
+      { left: activeNavIndex * (navItemWidth + navItemGap), width: navItemWidth },
+    )
+    : null;
 
   React.useEffect(() => {
     setAvatarError(false);
@@ -120,17 +122,19 @@ export default function Navbar() {
             GraphHire <span className="text-on-surface-variant text-base font-bold ml-3 border-l border-surface-mid pl-3 tracking-widest uppercase">图谱智聘</span>
           </Link>
           <div className="relative flex items-center gap-2">
-            <motion.div
-              aria-hidden="true"
-              data-testid="desktop-nav-indicator"
-              className="absolute top-0 h-full bg-primary rounded-xl shadow-lg shadow-primary/20"
-              initial={false}
-              animate={{
-                x: indicatorMetrics.x,
-                width: indicatorMetrics.width,
-              }}
-              transition={{ type: 'spring', bounce: 0.2, duration: 0.45 }}
-            />
+            {indicatorMetrics ? (
+              <motion.div
+                aria-hidden="true"
+                data-testid="desktop-nav-indicator"
+                className="absolute top-0 h-full bg-primary rounded-xl shadow-lg shadow-primary/20"
+                initial={false}
+                animate={{
+                  x: indicatorMetrics.x,
+                  width: indicatorMetrics.width,
+                }}
+                transition={{ type: 'spring', bounce: 0.2, duration: 0.45 }}
+              />
+            ) : null}
             {navItems.map((item) => {
               const isActive = isPathActive(normalizedPathname, item.path);
               return (
