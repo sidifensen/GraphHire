@@ -8,6 +8,7 @@ import { publicApi } from '@/lib/api/public';
 import { resumeApi, type Resume } from '@/lib/api/resume';
 import { enterpriseAuthStore, userAuthStore } from '@/lib/stores/auth-store';
 import type { ChatConversationSummary, ChatMessage } from '@/lib/types/chat';
+import { getApiBaseUrl } from '@/lib/api/base-url';
 import { CHAT_EMOJIS } from './emoji';
 import type { ChatJobMeta, ChatWorkspaceProps } from './ChatTypes';
 
@@ -54,6 +55,19 @@ function getDateKey(value?: string | null): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value.slice(0, 10);
   return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+}
+
+const API_BASE_URL = getApiBaseUrl(process.env.NEXT_PUBLIC_API_BASE_URL);
+
+function buildPersonAvatarUrl(userId: number): string {
+  return `${API_BASE_URL}/person/avatar/public/${userId}`;
+}
+
+function toAbsoluteAssetUrl(url?: string | null): string | null {
+  if (!url) return null;
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  if (url.startsWith('//')) return `${window.location.protocol}${url}`;
+  return `${API_BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
 }
 
 function getUserDisplay(role: ChatWorkspaceProps['role'], item: ChatConversationSummary): string {
@@ -122,14 +136,14 @@ function Avatar({
         src={imageUrl}
         alt={`${name}头像`}
         data-testid={testId}
-        className="h-9 w-9 rounded-full object-cover border border-surface-mid shrink-0"
+        className="h-9 w-9 rounded-full object-cover border border-outline/20 shrink-0"
       />
     );
   }
   return (
     <div
       data-testid={testId}
-      className="h-9 w-9 rounded-full shrink-0 border border-surface-mid bg-surface-low text-on-surface font-bold text-sm flex items-center justify-center"
+      className="h-9 w-9 rounded-full shrink-0 border border-outline/20 bg-surface-low text-on-surface font-bold text-sm flex items-center justify-center"
     >
       {initial}
     </div>
@@ -144,9 +158,9 @@ function EmojiPanel({
   return (
     <div
       data-testid="chat-emoji-panel"
-      className="absolute bottom-14 left-0 z-20 w-64 rounded-xl border border-surface-mid bg-surface-lowest p-3 shadow-lg"
+      className="absolute bottom-14 left-0 z-20 w-[360px] rounded-xl border border-outline/20 bg-surface-lowest p-3 shadow-lg"
     >
-      <div className="grid grid-cols-8 gap-2">
+      <div className="grid grid-cols-10 gap-2">
         {CHAT_EMOJIS.map((emoji) => (
           <button
             key={emoji}
@@ -192,13 +206,16 @@ export default function ChatWorkspace({
   const [showEmojiPanel, setShowEmojiPanel] = useState(false);
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [jobMeta, setJobMeta] = useState<ChatJobMeta | null>(null);
+  const [peerAvatarUrl, setPeerAvatarUrl] = useState<string | null>(null);
 
   const [inviteTime, setInviteTime] = useState('');
   const [inviteLocation, setInviteLocation] = useState('');
   const [inviteRemark, setInviteRemark] = useState('');
   const [showInviteEditor, setShowInviteEditor] = useState(false);
+  const [lastReadRefreshKey, setLastReadRefreshKey] = useState(0);
 
   const messageEndRef = useRef<HTMLDivElement | null>(null);
+  const conversationListLoadedRef = useRef(false);
 
   useEffect(() => {
     setAuthUser(readAuthUser(activeAuthStore));
@@ -225,20 +242,24 @@ export default function ChatWorkspace({
 
   useEffect(() => {
     let active = true;
+    const shouldShowBlockingLoading = !conversationListLoadedRef.current;
     void (async () => {
-      setLoadingList(true);
+      if (shouldShowBlockingLoading) {
+        setLoadingList(true);
+      }
       setError(null);
       try {
         const conversations = await chatApi.listConversations();
         if (!active) return;
         const items = conversations ?? [];
         setList(items);
+        conversationListLoadedRef.current = true;
         setSelectedConversationId((prev) => prev ?? resolveInitialConversationId(items, initialConversationId));
       } catch (err) {
         if (!active) return;
         setError(err instanceof Error ? err.message : '会话加载失败');
       } finally {
-        if (active) {
+        if (active && shouldShowBlockingLoading) {
           setLoadingList(false);
         }
       }
@@ -247,7 +268,7 @@ export default function ChatWorkspace({
     return () => {
       active = false;
     };
-  }, [initialConversationId]);
+  }, [initialConversationId, lastReadRefreshKey]);
 
   useEffect(() => {
     if (!isUserRole) return;
@@ -266,6 +287,24 @@ export default function ChatWorkspace({
       active = false;
     };
   }, [isUserRole]);
+
+  useEffect(() => {
+    if (!selectedConversation) {
+      setPeerAvatarUrl(null);
+      return;
+    }
+    if (isUserRole) {
+      // 用户端优先展示企业头像；头像地址在职位/公司信息中获取，先清空避免误打 person 头像地址。
+      setPeerAvatarUrl(null);
+      return;
+    }
+    const peerUserId = selectedConversation.candidateUserId;
+    if (!peerUserId) {
+      setPeerAvatarUrl(null);
+      return;
+    }
+    setPeerAvatarUrl(buildPersonAvatarUrl(peerUserId));
+  }, [selectedConversation, isUserRole]);
 
   useEffect(() => {
     if (!selectedConversationId) {
@@ -319,6 +358,19 @@ export default function ChatWorkspace({
         if (isUserRole) {
           const job = await publicApi.jobs.getById(selectedConversation.jobId);
           if (!active) return;
+          const jobAvatarUrl = toAbsoluteAssetUrl(job.companyAvatarUrl);
+          if (jobAvatarUrl) {
+            setPeerAvatarUrl(jobAvatarUrl);
+          } else if (selectedConversation.companyId) {
+            try {
+              const company = await publicApi.companies.getById(selectedConversation.companyId);
+              if (!active) return;
+              setPeerAvatarUrl(toAbsoluteAssetUrl(company.avatarUrl));
+            } catch {
+              if (!active) return;
+              setPeerAvatarUrl(null);
+            }
+          }
           setJobMeta({
             ownerName: selectedConversation.recruiterName || null,
             companyName: job.companyName || selectedConversation.companyName || null,
@@ -351,9 +403,22 @@ export default function ChatWorkspace({
 
   useEffect(() => {
     if (messages.length === 0 || !currentUserId || !selectedConversationId) return;
-    const inbound = messages.find((item) => item.receiverUserId === currentUserId);
-    if (!inbound) return;
-    void chatApi.markRead({ conversationId: selectedConversationId, readUpToMessageId: inbound.id });
+    const latestInboundMessageId = messages.reduce((maxId, item) => {
+      if (item.receiverUserId !== currentUserId) {
+        return maxId;
+      }
+      return item.id > maxId ? item.id : maxId;
+    }, 0);
+    if (latestInboundMessageId <= 0) return;
+    void (async () => {
+      await chatApi.markRead({ conversationId: selectedConversationId, readUpToMessageId: latestInboundMessageId });
+      setList((prev) =>
+        prev.map((item) =>
+          item.conversationId === selectedConversationId ? { ...item, unreadCount: 0 } : item,
+        ),
+      );
+      setLastReadRefreshKey((prev) => prev + 1);
+    })();
   }, [messages, currentUserId, selectedConversationId]);
 
   useEffect(() => {
@@ -451,6 +516,13 @@ export default function ChatWorkspace({
     return resumes.length > 0;
   }, [isUserRole, resumes]);
 
+  const buildResumeDownloadUrl = (conversationId: number, ext: Record<string, unknown> | null): string | null => {
+    if (!ext) return null;
+    const resumeId = Number(ext.resumeId);
+    if (!Number.isFinite(resumeId) || resumeId <= 0) return null;
+    return chatApi.getResumeDownloadUrl(conversationId, resumeId);
+  };
+
   return (
     <section data-testid="chat-workspace" className="mx-auto w-full max-w-6xl px-4 py-4 md:px-6 md:py-6">
       <h1 className="text-2xl font-black text-on-surface mb-4">{title}</h1>
@@ -461,12 +533,12 @@ export default function ChatWorkspace({
         className="grid grid-cols-1 md:grid-cols-[320px_minmax(0,1fr)] gap-4 md:h-[calc(100vh-220px)] min-h-[560px]"
       >
         {(mobileMode === 'list' || mobileMode === 'detail') ? (
-          <aside className={`rounded-2xl border border-surface-mid bg-surface-lowest overflow-hidden ${mobileMode === 'detail' ? 'hidden md:block' : ''}`}>
-            <div className="h-12 px-4 border-b border-surface-mid flex items-center text-sm text-on-surface-variant">会话列表</div>
+          <aside className={`rounded-2xl border border-outline/20 bg-surface-lowest overflow-hidden ${mobileMode === 'detail' ? 'hidden md:block' : ''}`}>
+            <div className="h-12 px-4 border-b border-outline/20 flex items-center text-sm text-on-surface-variant">会话列表</div>
             <div className="h-full overflow-y-auto p-2 space-y-2">
               {loadingList ? <div className="px-3 py-4 text-sm text-on-surface-variant">会话加载中...</div> : null}
               {!loadingList && list.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-surface-mid px-4 py-10 text-center text-sm text-on-surface-variant">暂无会话</div>
+                <div className="rounded-xl border border-dashed border-outline/20 px-4 py-10 text-center text-sm text-on-surface-variant">暂无会话</div>
               ) : null}
 
               {list.map((item) => {
@@ -476,7 +548,7 @@ export default function ChatWorkspace({
                     key={item.conversationId}
                     type="button"
                     onClick={() => setSelectedConversationId(item.conversationId)}
-                    className={`w-full text-left rounded-xl border px-3 py-3 transition-colors ${selected ? 'border-primary/40 bg-primary/5' : 'border-surface-mid bg-surface-lowest hover:border-primary/20'}`}
+                    className={`w-full text-left rounded-xl border px-3 py-3 transition-colors ${selected ? 'border-primary/40 bg-primary/5' : 'border-outline/20 bg-surface-lowest hover:border-primary/20'}`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
@@ -500,10 +572,10 @@ export default function ChatWorkspace({
           </aside>
         ) : null}
 
-        <div className={`${mobileMode === 'detail' && !shouldShowDetail ? 'hidden md:flex' : 'flex'} min-h-0 flex-col rounded-2xl border border-surface-mid bg-surface-lowest overflow-hidden`}>
+        <div className={`${mobileMode === 'detail' && !shouldShowDetail ? 'hidden md:flex' : 'flex'} min-h-0 flex-col rounded-2xl border border-outline/20 bg-surface-lowest overflow-hidden`}>
           {selectedConversation ? (
             <>
-              <header className="border-b border-surface-mid px-4 py-3 bg-surface-low">
+              <header className="border-b border-outline/20 px-4 py-3 bg-surface-low">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-sm text-on-surface-variant">岗位负责人</p>
@@ -512,7 +584,7 @@ export default function ChatWorkspace({
                   </div>
                   <Link href={jobHref} className="shrink-0 rounded-lg border border-primary/40 px-3 py-1.5 text-sm font-bold text-primary hover:bg-primary/5">查看职位</Link>
                 </div>
-                <div className="mt-2 rounded-xl bg-surface-lowest border border-surface-mid px-3 py-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+                <div className="mt-2 rounded-xl bg-surface-lowest border border-outline/20 px-3 py-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
                   <span className="font-semibold text-on-surface">{jobMeta?.jobTitle || selectedConversation.jobTitle || `岗位 #${selectedConversation.jobId}`}</span>
                   <span className="text-primary font-bold">{jobMeta?.salaryText || '薪资面议'}</span>
                   <span className="text-on-surface-variant">{jobMeta?.locationText || '地点待补充'}</span>
@@ -531,6 +603,8 @@ export default function ChatWorkspace({
                   const showDateTag = index === 0 || currentDateKey !== prevDateKey;
                   const senderName = self ? currentUserName : getUserDisplay(role, selectedConversation);
 
+                  const resumeDownloadUrl = message.messageType === 3 ? buildResumeDownloadUrl(message.conversationId, ext) : null;
+
                   return (
                     <div key={message.id}>
                       {showDateTag ? (
@@ -539,12 +613,29 @@ export default function ChatWorkspace({
                         </div>
                       ) : null}
                       <div className={`flex items-end gap-2 ${self ? 'justify-end' : 'justify-start'}`}>
-                        {!self ? <Avatar name={senderName} testId="chat-message-avatar" /> : null}
+                        {!self ? <Avatar name={senderName} imageUrl={peerAvatarUrl} testId="chat-message-avatar" /> : null}
                         <div className={`max-w-[78%] rounded-2xl px-3 py-2 text-sm ${self ? 'bg-primary text-white' : 'bg-surface-low text-on-surface'}`}>
                           {message.messageType === 3 && ext ? (
-                            <div>
-                              <p className="font-bold">简历卡片</p>
-                              <p className="opacity-90">{String(ext.fileName ?? '未命名简历')}</p>
+                            <div className={`rounded-xl border px-3 py-2 ${self ? 'border-white/40 bg-white/10' : 'border-outline/20 bg-surface-lowest'}`}>
+                              <div className="flex items-start gap-2">
+                                <span className="text-xl leading-none">📄</span>
+                                <div className="min-w-0">
+                                  <p className="font-bold">PDF简历</p>
+                                  <p className={`truncate ${self ? 'text-white/90' : 'text-on-surface-variant'}`}>
+                                    {String(ext.fileName ?? '未命名简历.pdf')}
+                                  </p>
+                                </div>
+                              </div>
+                              {resumeDownloadUrl ? (
+                                <a
+                                  href={resumeDownloadUrl}
+                                  className={`mt-2 inline-flex rounded-lg px-2.5 py-1 text-xs font-bold ${self ? 'bg-white text-primary' : 'bg-primary text-white'}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                >
+                                  下载PDF
+                                </a>
+                                ) : null}
                             </div>
                           ) : null}
                           {message.messageType === 2 && ext ? (
@@ -571,21 +662,21 @@ export default function ChatWorkspace({
                 <div ref={messageEndRef} />
               </div>
 
-              <footer className="border-t border-surface-mid px-4 py-3">
+              <footer className="border-t border-outline/20 px-4 py-3">
                 <div className="flex items-center gap-2 mb-2 relative">
                   <button
                     type="button"
                     data-testid="chat-emoji-button"
                     onClick={() => setShowEmojiPanel((prev) => !prev)}
-                    className="h-9 w-9 rounded-lg border border-surface-mid text-on-surface-variant hover:bg-surface-low"
+                    className="h-9 w-9 rounded-lg border border-outline/20 text-on-surface-variant hover:bg-surface-low"
                     aria-label="表情"
                   >
                     😀
                   </button>
                   {showEmojiPanel ? <EmojiPanel onSelect={(emoji) => { setInput((prev) => `${prev}${emoji}`); setShowEmojiPanel(false); }} /> : null}
 
-                  <label className="h-9 w-9 rounded-lg border border-surface-mid text-on-surface-variant hover:bg-surface-low inline-flex items-center justify-center cursor-pointer" aria-label="图片">
-                    🖼
+                  <label className="h-9 w-9 rounded-lg border border-outline/20 text-on-surface-variant hover:bg-surface-low inline-flex items-center justify-center cursor-pointer" aria-label="相册">
+                    <span className="material-symbols-outlined text-[20px] leading-none">photo_library</span>
                     <input
                       type="file"
                       accept="image/*"
@@ -608,31 +699,29 @@ export default function ChatWorkspace({
                       {resumeSending ? '发送中...' : '发送简历'}
                     </button>
                   ) : (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => setShowInviteEditor((prev) => !prev)}
-                        className="h-9 px-3 rounded-lg border border-primary text-primary text-sm font-bold"
-                      >
-                        {showInviteEditor ? '收起通知' : '面试通知'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => void handleSendInterview()}
-                        disabled={inviteSending}
-                        className="h-9 px-3 rounded-lg border border-primary text-primary text-sm font-bold disabled:opacity-60"
-                      >
-                        {inviteSending ? '发送中...' : '发送通知'}
-                      </button>
-                    </>
+                    <button
+                      type="button"
+                      onClick={() => setShowInviteEditor((prev) => !prev)}
+                      className="h-9 px-3 rounded-lg border border-primary text-primary text-sm font-bold"
+                    >
+                      {inviteSending ? '发送中...' : showInviteEditor ? '发送面试通知' : '面试通知'}
+                    </button>
                   )}
                 </div>
 
                 {!isUserRole && showInviteEditor ? (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    <input value={inviteTime} onChange={(event) => setInviteTime(event.target.value)} placeholder="面试时间（必填） 2026-05-10T15:00:00" className="h-9 rounded-lg border border-surface-mid px-3 text-sm bg-transparent" />
-                    <input value={inviteLocation} onChange={(event) => setInviteLocation(event.target.value)} placeholder="面试地点" className="h-9 rounded-lg border border-surface-mid px-3 text-sm bg-transparent" />
-                    <input value={inviteRemark} onChange={(event) => setInviteRemark(event.target.value)} placeholder="面试备注" className="h-9 rounded-lg border border-surface-mid px-3 text-sm bg-transparent" />
+                    <input value={inviteTime} onChange={(event) => setInviteTime(event.target.value)} placeholder="面试时间（必填） 2026-05-10T15:00:00" className="h-9 rounded-lg border border-outline/20 px-3 text-sm bg-transparent" />
+                    <input value={inviteLocation} onChange={(event) => setInviteLocation(event.target.value)} placeholder="面试地点" className="h-9 rounded-lg border border-outline/20 px-3 text-sm bg-transparent" />
+                    <input value={inviteRemark} onChange={(event) => setInviteRemark(event.target.value)} placeholder="面试备注" className="h-9 rounded-lg border border-outline/20 px-3 text-sm bg-transparent" />
+                    <button
+                      type="button"
+                      onClick={() => void handleSendInterview()}
+                      disabled={inviteSending}
+                      className="h-9 rounded-lg bg-primary text-white text-sm font-bold disabled:opacity-60 md:col-span-3"
+                    >
+                      {inviteSending ? '发送中...' : '确认发送面试通知'}
+                    </button>
                   </div>
                 ) : null}
 
@@ -641,7 +730,7 @@ export default function ChatWorkspace({
                     value={input}
                     onChange={(event) => setInput(event.target.value)}
                     placeholder="输入消息..."
-                    className="flex-1 h-10 rounded-xl border border-surface-mid px-3 text-sm bg-transparent"
+                    className="flex-1 h-10 rounded-xl border border-outline/20 px-3 text-sm bg-transparent"
                   />
                   <button
                     type="button"

@@ -12,11 +12,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class ChatControllerIT extends BaseControllerIT {
 
@@ -67,16 +70,67 @@ class ChatControllerIT extends BaseControllerIT {
     @Test
     @DisplayName("企业负责人可查看会话并发送消息")
     void recruiterCanListAndSendMessage() throws Exception {
+        String startBody = "{\"jobId\":1}";
+        mockMvc.perform(post("/chat/conversations/start")
+                .headers(personHeaders)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(startBody))
+            .andExpect(jsonPath("$.code").value(200))
+            .andExpect(jsonPath("$.data.conversationId").isNumber());
+
         mockMvc.perform(get("/chat/conversations").headers(companyHeaders))
             .andExpect(jsonPath("$.code").value(200))
             .andExpect(jsonPath("$.data").isArray());
 
-        String body = "{\"conversationId\":1,\"content\":\"你好，欢迎沟通\"}";
+        String body = "{\"conversationId\":3,\"content\":\"你好，欢迎沟通\"}";
         mockMvc.perform(post("/chat/messages/text")
                 .headers(companyHeaders)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
             .andExpect(jsonPath("$.code").value(200))
             .andExpect(jsonPath("$.data.messageId").isNumber());
+    }
+
+    @Test
+    @DisplayName("会话成员可以下载会话中的简历文件")
+    void conversationMemberCanDownloadResumeFile() throws Exception {
+        String startBody = "{\"jobId\":1}";
+        mockMvc.perform(post("/chat/conversations/start")
+                .headers(personHeaders)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(startBody))
+            .andExpect(jsonPath("$.code").value(200))
+            .andExpect(jsonPath("$.data.conversationId").isNumber());
+
+        byte[] resumeBytes = "test-resume-content".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        MockMultipartFile resumeFile = new MockMultipartFile(
+            "file",
+            "resume-test.pdf",
+            MediaType.APPLICATION_PDF_VALUE,
+            resumeBytes
+        );
+        mockMvc.perform(multipart("/resume/my/upload")
+                .file(resumeFile)
+                .header("satoken", personToken))
+            .andExpect(jsonPath("$.code").value(200))
+            .andExpect(jsonPath("$.data.id").isNumber());
+
+        Long resumeId = jdbcTemplate.queryForObject(
+            "SELECT id FROM resume WHERE user_id = ? ORDER BY id DESC LIMIT 1",
+            Long.class,
+            personUserId
+        );
+
+        String sendResumeBody = String.format("{\"conversationId\":3,\"resumeId\":%d}", resumeId);
+        mockMvc.perform(post("/chat/messages/resume")
+                .headers(personHeaders)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(sendResumeBody))
+            .andExpect(jsonPath("$.code").value(200))
+            .andExpect(jsonPath("$.data.messageId").isNumber());
+
+        mockMvc.perform(get("/chat/conversations/3/resume/" + resumeId + "/download")
+                .headers(companyHeaders))
+            .andExpect(status().isOk());
     }
 }

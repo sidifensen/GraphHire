@@ -22,6 +22,8 @@ import com.graphhire.job.domain.repository.JobRepository;
 import com.graphhire.resume.domain.model.Resume;
 import com.graphhire.resume.domain.repository.ResumeRepository;
 import com.graphhire.resume.infrastructure.file.RustFSClient;
+import com.graphhire.resume.application.service.ResumeAppService;
+import com.graphhire.resume.application.service.dto.ResumePreviewFile;
 import com.graphhire.notification.application.service.NotificationAppService;
 import com.graphhire.notification.domain.vo.NotificationType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +62,8 @@ public class ChatAppService {
     private ChatMQProducer chatMQProducer;
     @Autowired
     private RustFSClient rustFSClient;
+    @Autowired
+    private ResumeAppService resumeService;
 
     @Transactional
     public Long startConversationAsPerson(Long currentUserId, Long jobId) {
@@ -280,6 +284,14 @@ public class ChatAppService {
         }
         conversationRepository.save(conversation);
         dispatchReadReceiptSafely(conversationId, currentUserId, readUpToMessageId);
+    }
+
+    public ResumePreviewFile downloadResumeFile(Long currentUserId, Long conversationId, Long resumeId) {
+        ChatConversation conversation = requireConversation(conversationId);
+        ensureConversationMember(conversation, currentUserId);
+        Resume resume = resumeRepository.findById(resumeId)
+            .orElseThrow(() -> Exceptions.BusinessException.of(404, "简历不存在"));
+        return resumeService.previewResume(resume.getId(), resume.getUserId());
     }
 
     private ChatConversation requireConversation(Long conversationId) {

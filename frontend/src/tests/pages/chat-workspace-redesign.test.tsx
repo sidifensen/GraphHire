@@ -15,6 +15,7 @@ const {
   markReadMock,
   getMyResumesMock,
   getPublicJobByIdMock,
+  getPublicCompanyByIdMock,
   getEnterpriseJobDetailMock,
 } = vi.hoisted(() => ({
   listConversationsMock: vi.fn(),
@@ -26,6 +27,7 @@ const {
   markReadMock: vi.fn(),
   getMyResumesMock: vi.fn(),
   getPublicJobByIdMock: vi.fn(),
+  getPublicCompanyByIdMock: vi.fn(),
   getEnterpriseJobDetailMock: vi.fn(),
 }));
 
@@ -52,6 +54,7 @@ vi.mock('@/lib/api/chat', () => ({
     sendResume: sendResumeMock,
     sendImage: sendImageMock,
     sendInterviewInvite: sendInterviewInviteMock,
+    getResumeDownloadUrl: vi.fn((conversationId: number, resumeId: number) => `/chat/conversations/${conversationId}/resume/${resumeId}/download`),
     markRead: markReadMock,
   },
 }));
@@ -66,6 +69,9 @@ vi.mock('@/lib/api/public', () => ({
   publicApi: {
     jobs: {
       getById: getPublicJobByIdMock,
+    },
+    companies: {
+      getById: getPublicCompanyByIdMock,
     },
   },
 }));
@@ -138,6 +144,42 @@ function mockConversationList() {
   ]);
 }
 
+function mockConversationListReadAfterOpen() {
+  listConversationsMock
+    .mockResolvedValueOnce([
+      {
+        conversationId: 1,
+        jobId: 101,
+        jobTitle: '前端工程师',
+        companyId: 9,
+        companyName: '图谱科技',
+        recruiterUserId: 20,
+        candidateUserId: 10,
+        candidateName: '小王',
+        recruiterName: '陈HR',
+        lastMessagePreview: '你好，方便沟通吗',
+        lastMessageTime: '2026-05-04T09:12:00',
+        unreadCount: 2,
+      },
+    ])
+    .mockResolvedValue([
+      {
+        conversationId: 1,
+        jobId: 101,
+        jobTitle: '前端工程师',
+        companyId: 9,
+        companyName: '图谱科技',
+        recruiterUserId: 20,
+        candidateUserId: 10,
+        candidateName: '小王',
+        recruiterName: '陈HR',
+        lastMessagePreview: '你好，方便沟通吗',
+        lastMessageTime: '2026-05-04T09:12:00',
+        unreadCount: 0,
+      },
+    ]);
+}
+
 function mockMessageList() {
   listMessagesMock.mockResolvedValue([
     {
@@ -207,6 +249,12 @@ describe('chat workspace redesign', () => {
       district: '浦东新区',
       salaryMin: 25000,
       salaryMax: 40000,
+      companyAvatarUrl: 'https://cdn.example.com/company-avatar.png',
+    });
+    getPublicCompanyByIdMock.mockResolvedValue({
+      id: 9,
+      name: '图谱科技',
+      avatarUrl: 'https://cdn.example.com/company-avatar-fallback.png',
     });
     getEnterpriseJobDetailMock.mockResolvedValue({
       id: 101,
@@ -260,6 +308,56 @@ describe('chat workspace redesign', () => {
     expect(screen.getByRole('link', { name: '查看职位' })).toHaveAttribute('href', '/enterprise/jobs/101');
     expect(screen.queryByRole('button', { name: '发送简历' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '面试通知' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '发送通知' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '发送通知' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '面试通知' }));
+    expect(screen.getByPlaceholderText(/面试时间/)).toBeInTheDocument();
+  });
+
+  it('clears unread badge in sidebar after markRead succeeds', async () => {
+    mockConversationListReadAfterOpen();
+    render(<UserChatListPage />);
+
+    await waitFor(() => expect(listConversationsMock).toHaveBeenCalledTimes(1));
+    expect(await screen.findByText('2')).toBeInTheDocument();
+
+    await waitFor(() => expect(markReadMock).toHaveBeenCalled());
+    expect(markReadMock).toHaveBeenCalledWith({ conversationId: 1, readUpToMessageId: 3 });
+    await waitFor(() => expect(listConversationsMock).toHaveBeenCalledTimes(2));
+
+    expect(screen.queryByText('2')).not.toBeInTheDocument();
+  });
+
+  it('renders resume card with download link and richer emoji + gallery icon + no enterprise send-notice button', async () => {
+    listMessagesMock.mockResolvedValue([
+      {
+        id: 11,
+        conversationId: 1,
+        senderUserId: 10,
+        receiverUserId: 20,
+        messageType: 3,
+        content: '发送了一份简历',
+        ext: JSON.stringify({ resumeId: 501, fileName: '25年简历测试.pdf' }),
+        recalled: 0,
+        createTime: '2026-05-04T10:00:00',
+      },
+    ]);
+
+    render(<EnterpriseChatListPage />);
+
+    await waitFor(() => expect(listConversationsMock).toHaveBeenCalledTimes(1));
+    expect(await screen.findByText('25年简历测试.pdf')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '下载PDF' })).toBeInTheDocument();
+
+    expect(screen.queryByRole('button', { name: '发送通知' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '面试通知' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '面试通知' }));
+    expect(screen.getByRole('button', { name: '确认发送面试通知' })).toBeInTheDocument();
+
+    expect(screen.getByLabelText('相册')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('chat-emoji-button'));
+    const panel = await screen.findByTestId('chat-emoji-panel');
+    expect(within(panel).getByRole('button', { name: '🥳' })).toBeInTheDocument();
+    expect(within(panel).getByRole('button', { name: '🤝' })).toBeInTheDocument();
   });
 });

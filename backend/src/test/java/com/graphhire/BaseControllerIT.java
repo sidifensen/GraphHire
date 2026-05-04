@@ -21,9 +21,11 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.mockito.Mockito;
 
 import java.nio.charset.StandardCharsets;
+import java.io.InputStream;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 
 @SpringBootTest
@@ -81,6 +83,8 @@ public abstract class BaseControllerIT {
         ensureJobEducationAndPositionTypeColumns(jdbcTemplate);
         Mockito.lenient().when(rustFSClient.upload(any(byte[].class), anyString()))
             .thenAnswer(invocation -> "s3://resumes/mock/" + invocation.getArgument(1, String.class));
+        Mockito.lenient().when(rustFSClient.upload(any(InputStream.class), anyLong(), anyString()))
+            .thenAnswer(invocation -> "s3://resumes/mock/" + invocation.getArgument(2, String.class));
         Mockito.lenient().when(rustFSClient.download(anyString()))
             .thenReturn("mock-file-content".getBytes(StandardCharsets.UTF_8));
         Mockito.lenient().when(rustFSClient.exists(anyString())).thenReturn(true);

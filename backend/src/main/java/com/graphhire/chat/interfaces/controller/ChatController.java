@@ -11,8 +11,13 @@ import com.graphhire.chat.application.service.dto.ChatSendTextMessageRequest;
 import com.graphhire.chat.application.service.dto.ChatStartConversationRequest;
 import com.graphhire.common.vo.Result;
 import com.graphhire.notification.application.service.NotificationAppService;
+import com.graphhire.resume.application.service.dto.ResumePreviewFile;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.CacheControl;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -23,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -97,5 +103,22 @@ public class ChatController {
         chatAppService.markConversationRead(currentUserId, request.getConversationId(), request.getReadUpToMessageId());
         notificationAppService.markAllAsRead(currentUserId);
         return Result.success();
+    }
+
+    @GetMapping("/conversations/{conversationId}/resume/{resumeId}/download")
+    public ResponseEntity<byte[]> downloadResume(@PathVariable Long conversationId, @PathVariable Long resumeId) {
+        Long currentUserId = StpUtil.getLoginIdAsLong();
+        ResumePreviewFile file = chatAppService.downloadResumeFile(currentUserId, conversationId, resumeId);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType(file.getContentType()));
+        headers.setContentDisposition(ContentDisposition.attachment()
+            .filename(file.getFileName(), StandardCharsets.UTF_8)
+            .build());
+        headers.setCacheControl(CacheControl.noCache().getHeaderValue());
+
+        return ResponseEntity.ok()
+            .headers(headers)
+            .body(file.getContent());
     }
 }

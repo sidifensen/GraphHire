@@ -50,6 +50,11 @@ export const chatApi = {
     return response.data;
   },
 
+  getResumeDownloadUrl: (conversationId: number, resumeId: number): string => {
+    const baseURL = (apiClient.defaults.baseURL ?? '').replace(/\/$/, '');
+    return `${baseURL}/chat/conversations/${conversationId}/resume/${resumeId}/download`;
+  },
+
   markRead: async (data: MarkReadRequest): Promise<void> => {
     await apiClient.post('/chat/messages/read', data);
   },
