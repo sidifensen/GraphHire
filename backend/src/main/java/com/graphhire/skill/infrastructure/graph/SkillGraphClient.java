@@ -280,7 +280,10 @@ public class SkillGraphClient {
     public Map<String, Object> getPersonSkillGraph(Long personId) {
         Map<String, Object> graphData = new HashMap<>();
         if (driver == null) {
-            return getMockPersonGraph(personId);
+            graphData.put("personId", personId);
+            graphData.put("skills", List.of());
+            graphData.put("success", false);
+            return graphData;
         }
 
         try (Session session = driver.session()) {
@@ -294,11 +297,19 @@ public class SkillGraphClient {
                 graphData.put("personId", record.get("personId").asLong());
                 graphData.put("skills", record.get("skills").asList(Value::asString));
                 graphData.put("success", true);
+                return graphData;
             }
         } catch (Exception e) {
             log.error("获取人员 {} 技能图谱失败: {}", personId, e.getMessage());
-            return getMockPersonGraph(personId);
+            graphData.put("personId", personId);
+            graphData.put("skills", List.of());
+            graphData.put("success", false);
+            return graphData;
         }
+
+        graphData.put("personId", personId);
+        graphData.put("skills", List.of());
+        graphData.put("success", true);
         return graphData;
     }
 
@@ -359,14 +370,6 @@ public class SkillGraphClient {
             return "";
         }
         return input.replace("\\", "\\\\").replace("'", "\\'").replace("\n", "\\n");
-    }
-
-    private Map<String, Object> getMockPersonGraph(Long personId) {
-        Map<String, Object> graph = new HashMap<>();
-        graph.put("personId", personId);
-        graph.put("skills", List.of("Java", "Spring Boot", "MySQL", "React"));
-        graph.put("mock", true);
-        return graph;
     }
 
     private Map<String, Object> getMockJobGraph(Long jobId) {

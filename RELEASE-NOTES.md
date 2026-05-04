@@ -177,3 +177,10 @@
 - feat: 企业端团队管理页 `/enterprise/employees` 接入真实后端接口，员工列表/统计/待审批区改为读取 `companyApi` 数据并保持原有页面结构
 - feat: 团队管理页新增真实操作对接：成员禁用/启用、重置密码、加入审批通过/拒绝，并补充加载态与最小反馈文案
 - test: 新增 `enterprise-employees-page` 页面测试，覆盖后端数据渲染与禁用/审批交互调用
+
+## 2026-05-04
+
+- fix: 新增用户端路由鉴权守卫，未登录访问 `/profile`、`/personal-info`、`/resume/*`、`/applications`、`/skill-graph`、`/notifications` 将强制跳转 `/login`，修复“显示登录按钮但仍可进入我的页”的问题
+- refactor: 用户端 `我的图谱` 页面改为真实接口驱动（`/person/graph` + `/person/ability-assessment`），移除前端写死技能点、分数与标签展示逻辑
+- fix: 后端 `SkillGraphClient#getPersonSkillGraph` 取消无驱动/异常时返回假技能列表，改为返回空技能结构，避免前端继续展示误导性假数据
+- test: 新增 `user-auth-guard` 与 `user-skill-graph-page` 前端测试，并更新 `SkillGraphClientTest` 覆盖个人图谱空结构返回行为

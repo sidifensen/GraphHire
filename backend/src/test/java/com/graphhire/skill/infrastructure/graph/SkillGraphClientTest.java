@@ -18,8 +18,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class SkillGraphClientTest {
 
     @Test
-    @DisplayName("getMockPersonGraph returns valid structure")
-    void getMockPersonGraph_ReturnsValidStructure() {
+    @DisplayName("getPersonSkillGraph returns empty structure when driver unavailable")
+    void getPersonSkillGraph_ReturnsEmptyStructureWhenDriverUnavailable() {
         SkillGraphClient client = new SkillGraphClient();
 
         Map<String, Object> graph = client.getPersonSkillGraph(1L);
@@ -27,8 +27,8 @@ class SkillGraphClientTest {
         assertNotNull(graph);
         assertEquals(1L, graph.get("personId"));
         assertNotNull(graph.get("skills"));
-        assertTrue(graph.containsKey("mock"));
-        assertTrue((Boolean) graph.get("mock"));
+        assertTrue(graph.containsKey("success"));
+        assertEquals(false, graph.get("success"));
     }
 
     @Test
@@ -79,14 +79,16 @@ class SkillGraphClientTest {
     }
 
     @Test
-    @DisplayName("getPersonSkillGraph handles exceptions gracefully")
-    void getPersonSkillGraph_Exception_ReturnsMockData() {
+    @DisplayName("getPersonSkillGraph handles exceptions by returning empty graph")
+    void getPersonSkillGraph_Exception_ReturnsEmptyGraph() {
         SkillGraphClient client = new SkillGraphClient();
 
         Map<String, Object> graph = client.getPersonSkillGraph(999L);
 
         assertNotNull(graph);
-        assertTrue(graph.containsKey("mock"));
+        assertTrue(graph.containsKey("personId"));
+        assertTrue(graph.containsKey("skills"));
+        assertTrue(graph.containsKey("success"));
     }
 
     @Test
