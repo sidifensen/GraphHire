@@ -53,3 +53,15 @@ export interface MarkReadRequest {
   conversationId: number;
   readUpToMessageId: number;
 }
+
+export interface ChatDisplayMessage {
+  id: number;
+  conversationId: number;
+  senderUserId: number;
+  receiverUserId: number;
+  messageType: ChatMessageTypeCode;
+  content?: string | null;
+  ext?: string | null;
+  recalled: number;
+  createTime?: string | null;
+}
