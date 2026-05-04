@@ -20,6 +20,7 @@
 
 - 简单任务默认直接修改，不要求输出完整计划流程。
 - 简单任务按改动面做最小必要验证，不做无关模块验证。
+- 小改动（符合简单任务豁免范围）如需写计划时，仅需产出一个 `docs/superpowers/plans/` 下的 plan 文档；不强制要求 spec 与 acceptance 文档。
 
 ## superpowers-plus 标准流程
 

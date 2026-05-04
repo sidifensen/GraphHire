@@ -139,8 +139,13 @@ public class DeepSeekClient {
             return DEFAULT_MATCH_REASON;
         }
 
-        log.info("AI生成匹配结果成功：使用AI结果，resumeId={}, jobId={}, 请求次数={}, 单次耗时={}ms, 总耗时={}ms",
-            resumeId, jobId, result.attemptCount(), result.lastAttemptCostMs(), result.totalCostMs());
+        if (result.attemptCount() <= 1) {
+            log.info("AI生成匹配结果成功：使用AI结果，resumeId={}, jobId={}, 请求次数={}, 单次耗时={}ms",
+                resumeId, jobId, result.attemptCount(), result.lastAttemptCostMs());
+        } else {
+            log.info("AI生成匹配结果成功：使用AI结果，resumeId={}, jobId={}, 请求次数={}, 单次耗时={}ms, 总耗时={}ms",
+                resumeId, jobId, result.attemptCount(), result.lastAttemptCostMs(), result.totalCostMs());
+        }
         return content.trim();
     }
 

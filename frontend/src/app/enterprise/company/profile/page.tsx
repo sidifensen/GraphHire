@@ -1,10 +1,12 @@
 'use client';
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { companyApi, type CompanyProfileUpdateRequest, type IndustryOption } from '@/lib/api/company';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function EnterpriseCompanyProfilePage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [industries, setIndustries] = useState<IndustryOption[]>([]);
@@ -82,13 +84,24 @@ export default function EnterpriseCompanyProfilePage() {
 
   return (
     <main className="w-full max-w-3xl mx-auto px-4 md:px-8 py-6 md:py-8">
+      <div className="mb-4">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="inline-flex items-center gap-1 rounded-full border border-outline-variant px-3 py-1.5 text-sm text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-on-surface"
+          aria-label="返回上一页"
+        >
+          <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+          返回上一页
+        </button>
+      </div>
       <h1 className="text-2xl font-bold text-on-surface mb-2">公司资料</h1>
       <p className="text-sm text-on-surface-variant mb-6">仅企业主可编辑公司资料。</p>
 
-      <form onSubmit={(event) => void onSubmit(event)} className="rounded-xl border border-outline-variant/40 bg-surface p-5 md:p-6 space-y-4">
+      <form onSubmit={(event) => void onSubmit(event)} className="rounded-xl border border-outline-variant/40 dark:border-slate-600 bg-surface-container-low/70 dark:bg-surface-container p-5 md:p-6 space-y-4">
         <label className="block text-sm">
           <span className="mb-1 block text-on-surface-variant">公司名称</span>
-          <input value={form.name ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} className="w-full rounded-lg border border-outline-variant/40 px-3 py-2 text-sm" />
+          <input value={form.name ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} className="w-full rounded-lg border border-outline-variant/40 dark:border-slate-600 bg-surface-container-lowest dark:bg-surface-container-highest px-3 py-2 text-sm text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/35" />
         </label>
 
         <label className="block text-sm">
@@ -104,7 +117,7 @@ export default function EnterpriseCompanyProfilePage() {
                 setForm((prev) => ({ ...prev, industryId: firstChild?.id ?? 0 }));
               }}
             >
-              <SelectTrigger className="w-full rounded-lg border border-outline-variant/40 px-3 py-2 text-sm">
+              <SelectTrigger className="w-full rounded-lg border border-outline-variant/40 dark:border-slate-600 bg-surface-container-lowest dark:bg-surface-container-highest px-3 py-2 text-sm text-on-surface">
                 <SelectValue placeholder="选择一级行业" />
               </SelectTrigger>
               <SelectContent>
@@ -117,7 +130,7 @@ export default function EnterpriseCompanyProfilePage() {
               value={String(form.industryId)}
               onValueChange={(value) => setForm((prev) => ({ ...prev, industryId: Number(value) }))}
             >
-              <SelectTrigger className="w-full rounded-lg border border-outline-variant/40 px-3 py-2 text-sm">
+              <SelectTrigger className="w-full rounded-lg border border-outline-variant/40 dark:border-slate-600 bg-surface-container-lowest dark:bg-surface-container-highest px-3 py-2 text-sm text-on-surface">
                 <SelectValue placeholder="选择二级行业" />
               </SelectTrigger>
               <SelectContent>
@@ -131,37 +144,37 @@ export default function EnterpriseCompanyProfilePage() {
 
         <label className="block text-sm">
           <span className="mb-1 block text-on-surface-variant">企业规模</span>
-          <input value={form.scale ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, scale: e.target.value }))} className="w-full rounded-lg border border-outline-variant/40 px-3 py-2 text-sm" />
+          <input value={form.scale ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, scale: e.target.value }))} className="w-full rounded-lg border border-outline-variant/40 dark:border-slate-600 bg-surface-container-lowest dark:bg-surface-container-highest px-3 py-2 text-sm text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/35" />
         </label>
 
         <label className="block text-sm">
           <span className="mb-1 block text-on-surface-variant">联系人</span>
-          <input value={form.contactName ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, contactName: e.target.value }))} className="w-full rounded-lg border border-outline-variant/40 px-3 py-2 text-sm" />
+          <input value={form.contactName ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, contactName: e.target.value }))} className="w-full rounded-lg border border-outline-variant/40 dark:border-slate-600 bg-surface-container-lowest dark:bg-surface-container-highest px-3 py-2 text-sm text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/35" />
         </label>
 
         <label className="block text-sm">
           <span className="mb-1 block text-on-surface-variant">联系电话</span>
-          <input value={form.contactPhone ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, contactPhone: e.target.value }))} className="w-full rounded-lg border border-outline-variant/40 px-3 py-2 text-sm" />
+          <input value={form.contactPhone ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, contactPhone: e.target.value }))} className="w-full rounded-lg border border-outline-variant/40 dark:border-slate-600 bg-surface-container-lowest dark:bg-surface-container-highest px-3 py-2 text-sm text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/35" />
         </label>
 
         <label className="block text-sm">
           <span className="mb-1 block text-on-surface-variant">联系邮箱</span>
-          <input value={form.contactEmail ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, contactEmail: e.target.value }))} className="w-full rounded-lg border border-outline-variant/40 px-3 py-2 text-sm" />
+          <input value={form.contactEmail ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, contactEmail: e.target.value }))} className="w-full rounded-lg border border-outline-variant/40 dark:border-slate-600 bg-surface-container-lowest dark:bg-surface-container-highest px-3 py-2 text-sm text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/35" />
         </label>
 
         <label className="block text-sm">
           <span className="mb-1 block text-on-surface-variant">公司官网</span>
-          <input value={form.website ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, website: e.target.value }))} className="w-full rounded-lg border border-outline-variant/40 px-3 py-2 text-sm" />
+          <input value={form.website ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, website: e.target.value }))} className="w-full rounded-lg border border-outline-variant/40 dark:border-slate-600 bg-surface-container-lowest dark:bg-surface-container-highest px-3 py-2 text-sm text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/35" />
         </label>
 
         <label className="block text-sm">
           <span className="mb-1 block text-on-surface-variant">公司地址</span>
-          <input value={form.address ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, address: e.target.value }))} className="w-full rounded-lg border border-outline-variant/40 px-3 py-2 text-sm" />
+          <input value={form.address ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, address: e.target.value }))} className="w-full rounded-lg border border-outline-variant/40 dark:border-slate-600 bg-surface-container-lowest dark:bg-surface-container-highest px-3 py-2 text-sm text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/35" />
         </label>
 
         <label className="block text-sm">
           <span className="mb-1 block text-on-surface-variant">公司简介</span>
-          <textarea value={form.description ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))} className="w-full min-h-[120px] rounded-lg border border-outline-variant/40 px-3 py-2 text-sm" />
+          <textarea value={form.description ?? ''} onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))} className="w-full min-h-[120px] rounded-lg border border-outline-variant/40 dark:border-slate-600 bg-surface-container-lowest dark:bg-surface-container-highest px-3 py-2 text-sm text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/35" />
         </label>
 
         <div className="flex items-center justify-between pt-2">

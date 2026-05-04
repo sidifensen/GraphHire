@@ -184,3 +184,9 @@
 - refactor: 用户端 `我的图谱` 页面改为真实接口驱动（`/person/graph` + `/person/ability-assessment`），移除前端写死技能点、分数与标签展示逻辑
 - fix: 后端 `SkillGraphClient#getPersonSkillGraph` 取消无驱动/异常时返回假技能列表，改为返回空技能结构，避免前端继续展示误导性假数据
 - test: 新增 `user-auth-guard` 与 `user-skill-graph-page` 前端测试，并更新 `SkillGraphClientTest` 覆盖个人图谱空结构返回行为
+- fix: 用户端导航栏桌面容器取消 `max-w-7xl + mx-auto` 限制，窗口缩小时左右区域按两端贴边布局，修复顶部元素聚中挤压问题
+- fix: 用户端公司列表页根容器移除 `min-h-screen` 且桌面 `main` 顶部间距归零，避免在壳层布局下出现额外垂直空白
+- refactor: 企业端主导航移除“公司”主入口，保留账户菜单中的“公司资料”；同步强化顶栏/菜单暗色主题边框与分隔表现
+- feat: 企业端公司资料页新增左上“返回上一页”按钮，并统一表单输入与下拉的亮暗主题样式（背景、边框、focus ring）
+- fix: 后端 DeepSeek 匹配成功日志按重试次数分支输出，单次成功不再打印总耗时字段，减少冗余日志噪声
+- test: 新增企业导航项测试（确保主导航不暴露公司资料入口）与企业公司资料页返回按钮测试；补充用户端导航与公司页布局回归断言

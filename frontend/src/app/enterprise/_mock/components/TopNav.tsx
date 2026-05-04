@@ -137,7 +137,10 @@ export function TopNav({ title, showBack, rightAction, userAvatar, onBack }: Top
           <span className="text-xl font-bold text-primary tracking-tight">GraphHire 图谱智聘</span>
         </Link>
 
-        <nav data-testid="enterprise-desktop-nav-track" className="hidden md:flex items-center gap-1 rounded-xl border border-outline-variant/40 bg-surface-container/70 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
+        <nav
+          data-testid="enterprise-desktop-nav-track"
+          className="hidden md:flex items-center gap-1 rounded-xl border border-outline-variant/50 bg-surface-container/70 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.28)] dark:border-slate-700/80 dark:bg-surface-container-high/60 dark:shadow-none"
+        >
           {NAV_ITEMS.map((item) => {
             const fullPath = `/enterprise${item.path}`;
             const isActive = activePathname === fullPath || (fullPath !== '/enterprise/' && activePathname.startsWith(fullPath));
@@ -183,18 +186,20 @@ export function TopNav({ title, showBack, rightAction, userAvatar, onBack }: Top
       </div>
 
       {showAccountMenu ? (
-        <div ref={menuPanelRef} className={cn('absolute top-full mt-2 w-56 rounded-xl border border-outline-variant/40 shadow-lg overflow-hidden z-50', menuAnchor === 'mobile' ? 'left-4 bg-white dark:bg-[#1a1d20]' : 'right-4 bg-surface-lowest')}>
-          <div className="px-4 py-3 border-b border-outline-variant/40">
+        <div ref={menuPanelRef} className={cn('absolute top-full mt-2 w-56 rounded-xl border border-outline-variant/40 dark:border-slate-600 shadow-lg overflow-hidden z-50', menuAnchor === 'mobile' ? 'left-4 bg-white dark:bg-[#1a1d20]' : 'right-4 bg-surface-lowest')}>
+          <div className="px-4 py-3 border-b border-outline-variant/40 dark:border-slate-600">
             <p className="text-sm font-medium text-on-surface truncate">{displayName}</p>
             <p className="text-xs text-on-surface-variant mt-0.5">企业管理中心</p>
           </div>
           <Link href="/enterprise/company/profile" className="block w-full px-4 py-3 text-left text-sm text-on-surface hover:bg-surface-container transition-colors">
             公司资料
           </Link>
-          <button type="button" aria-label="退出登录" onClick={() => void handleLogout()} className="w-full px-4 py-3 text-left text-sm text-error hover:bg-error-container transition-colors flex items-center gap-2">
-            <span className="material-symbols-outlined text-[18px]">logout</span>
-            退出登录
-          </button>
+          <div className="border-t border-outline-variant/40 dark:border-slate-600">
+            <button type="button" aria-label="退出登录" onClick={() => void handleLogout()} className="w-full px-4 py-3 text-left text-sm text-error hover:bg-error-container transition-colors flex items-center gap-2">
+              <span className="material-symbols-outlined text-[18px]">logout</span>
+              退出登录
+            </button>
+          </div>
         </div>
       ) : null}
     </header>

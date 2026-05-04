@@ -362,7 +362,7 @@ export default function CompanyList() {
   }, [industryTree, activeIndustryRootId]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-surface-background pb-24 md:pb-12">
+    <div className="flex flex-col bg-surface-background pb-24 md:pb-0">
       <header className="sticky top-0 z-50 bg-surface-lowest shadow-sm md:hidden">
         <div className="border-b border-surface-mid px-4 py-2">
           <div className="flex h-9 items-center rounded-full bg-surface-low px-3">
@@ -651,7 +651,7 @@ export default function CompanyList() {
 
       </header>
 
-      <main className="mt-2 flex w-full flex-col gap-6 md:mt-6">
+      <main className="mt-2 flex w-full flex-col gap-6 md:mt-0">
         <section data-testid="desktop-company-filter-band" className="hidden w-full bg-surface-low md:block">
           <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-4 px-5 py-6 md:px-8">
             <div data-testid="desktop-company-search-row" className="flex w-full md:mx-0 md:w-full">

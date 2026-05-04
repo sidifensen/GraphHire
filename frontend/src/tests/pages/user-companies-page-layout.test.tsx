@@ -43,4 +43,12 @@ describe('User companies page desktop search layout', () => {
 
     expect(container.querySelectorAll('main > section').length).toBeGreaterThan(0);
   });
+
+  test('does not set min-h-screen on page root to avoid extra vertical scroll in shell layout', async () => {
+    const { container } = render(<CompanyList />);
+    await screen.findByText('暂无符合条件的公司');
+
+    const root = container.firstElementChild;
+    expect(root).not.toHaveClass('min-h-screen');
+  });
 });

@@ -114,7 +114,7 @@ export default function Navbar() {
 
   return (
     <nav className="hidden md:flex sticky top-0 z-[60] w-full h-16 bg-surface-lowest/80 backdrop-blur-md border-b border-surface-mid shadow-sm px-8 items-center justify-center">
-      <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
+      <div className="w-full flex items-center justify-between">
         <div className="flex items-center gap-12">
           <Link to="/" className="text-2xl font-black text-primary tracking-tighter shrink-0 flex items-center">
             GraphHire <span className="text-on-surface-variant text-base font-bold ml-3 border-l border-surface-mid pl-3 tracking-widest uppercase">图谱智聘</span>
