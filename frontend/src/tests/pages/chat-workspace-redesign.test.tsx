@@ -259,6 +259,7 @@ describe('chat workspace redesign', () => {
     expect(await screen.findByTestId('chat-workspace')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '查看职位' })).toHaveAttribute('href', '/enterprise/jobs/101');
     expect(screen.queryByRole('button', { name: '发送简历' })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '发送面试通知' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '面试通知' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '发送通知' })).toBeInTheDocument();
   });
 });
