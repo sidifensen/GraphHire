@@ -1,17 +1,17 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import ResumeManagePage from '@/app/(user)/resume/manage/page';
-import ApplicationsPage from '@/app/(user)/applications/page';
+import UserChatListPage from '@/app/(user)/chat/page';
 import SkillGraphPage from '@/app/(user)/skill-graph/page';
 import PersonalInfoPage from '@/app/(user)/personal-info/page';
 import { vi } from 'vitest';
 
 const {
   getMyResumesMock,
-  getApplicationsMock,
+  listConversationsMock,
   getProfileMock,
 } = vi.hoisted(() => ({
   getMyResumesMock: vi.fn(),
-  getApplicationsMock: vi.fn(),
+  listConversationsMock: vi.fn(),
   getProfileMock: vi.fn(),
 }));
 
@@ -28,11 +28,16 @@ vi.mock('@/lib/api/resume', () => ({
 
 vi.mock('@/lib/api/person', () => ({
   personApi: {
-    getApplications: getApplicationsMock,
-    withdrawApplication: vi.fn(),
     getProfile: getProfileMock,
     updateProfile: vi.fn(),
     uploadAvatar: vi.fn(),
+    getFavorites: vi.fn().mockResolvedValue([]),
+  },
+}));
+
+vi.mock('@/lib/api/chat', () => ({
+  chatApi: {
+    listConversations: listConversationsMock,
   },
 }));
 
@@ -48,7 +53,7 @@ describe('User workbench desktop layout consistency', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     getMyResumesMock.mockResolvedValue([]);
-    getApplicationsMock.mockResolvedValue([]);
+    listConversationsMock.mockResolvedValue([]);
     getProfileMock.mockResolvedValue(null);
   });
 
@@ -68,7 +73,7 @@ describe('User workbench desktop layout consistency', () => {
     );
   });
 
-  it('keeps applications page desktop wrapper consistent with personal info page', async () => {
+  it('chat page can render independently without workbench sidebar wrapper', async () => {
     const personalInfoRender = render(<PersonalInfoPage />);
     await waitFor(() => expect(getProfileMock).toHaveBeenCalledTimes(1));
     expectMaxWidthContainerWithoutHorizontalPadding(
@@ -76,12 +81,10 @@ describe('User workbench desktop layout consistency', () => {
     );
     personalInfoRender.unmount();
 
-    getApplicationsMock.mockClear();
-    render(<ApplicationsPage />);
-    await waitFor(() => expect(getApplicationsMock).toHaveBeenCalledTimes(1));
-    expectMaxWidthContainerWithoutHorizontalPadding(
-      screen.getByRole('navigation', { name: '我的页面菜单' }),
-    );
+    listConversationsMock.mockClear();
+    render(<UserChatListPage />);
+    await waitFor(() => expect(listConversationsMock).toHaveBeenCalledTimes(1));
+    expect(screen.getByRole('heading', { name: '沟通消息' })).toBeInTheDocument();
   });
 
   it('keeps skill graph page desktop wrapper consistent with personal info page', async () => {

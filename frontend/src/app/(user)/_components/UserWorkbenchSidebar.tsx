@@ -7,7 +7,7 @@ const MENU_ITEMS = [
   { label: '个人主页', href: '/profile' },
   { label: '个人资料', href: '/personal-info' },
   { label: '简历管理', href: '/resume/manage' },
-  { label: '投递记录', href: '/applications' },
+  { label: '沟通消息', href: '/chat' },
   { label: '我的图谱', href: '/skill-graph' },
 ] as const;
 

@@ -180,6 +180,16 @@
 
 ## 2026-05-04
 
+- feat: 新增岗位即时沟通能力，用户端与企业端均新增聊天页面（会话列表 `/chat`、`/enterprise/chat` 与会话详情 `/chat/[conversationId]`、`/enterprise/chat/[conversationId]`）
+- feat: 用户端职位详情页“立即投递”替换为“立即沟通”，点击后自动发起/复用会话并直达聊天详情页
+- feat: 聊天支持文本/表情消息、图片消息、简历卡片消息（用户端）与面试邀请卡片消息（企业端）
+- feat: 新增会话已读游标机制（会话级 `recruiter_last_read_msg_id` / `candidate_last_read_msg_id`），支持已读回执实时推送
+- refactor: 引入聊天后端模块（chat domain/repository/service/controller + WebSocket + RocketMQ 分发消费者/生产者），消息采用“先落库后分发”策略
+- refactor: 岗位模型新增 `owner_user_id` 负责人字段，企业侧按岗位负责人权限控制聊天发言
+- refactor: 下线投递与人才库链路，删除 application/talent_pool 相关后端模块、Mapper XML 与用户端投递记录页面入口
+- docs: 数据库基线与迁移新增聊天表结构（`chat_conversation`、`chat_message`、`chat_message_image`、`chat_message_resume`、`chat_message_interview_invite`）并补齐表/字段注释
+- test: 新增聊天相关后端测试（`ChatSchemaIT`、`ChatControllerIT`、`ChatAppServiceTest`）并更新前端侧边栏/个人主页/页面迁移测试到“沟通消息”新入口
+
 - fix: 用户端消息页 `/notifications` 顶部主导航取消默认回退高亮，进入消息页时不再选中“首页/职位/公司/我的”任一菜单
 - test: 新增 `mock-user-navbar-active-state` 用例，覆盖消息页“主导航无激活项”回归场景
 - feat: 用户端 `/login` 与 `/register` 重构为统一认证页面框架，保留两个地址入口并在同页右侧完成“登录/注册”表单切换，登录与注册均保留“求职者/招聘者”角色切换

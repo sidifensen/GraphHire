@@ -34,6 +34,8 @@ public class Job extends BaseAggregateRoot {
     private Long id;
     /** 所属企业ID */
     private Long companyId;
+    /** 岗位负责人用户ID（创建岗位的HR） */
+    private Long ownerUserId;
     /** 职位名称 */
     private String title;
     /** 所属部门 */
@@ -139,6 +141,14 @@ public class Job extends BaseAggregateRoot {
 
     public void setCompanyId(Long companyId) {
         this.companyId = companyId;
+    }
+
+    public Long getOwnerUserId() {
+        return ownerUserId;
+    }
+
+    public void setOwnerUserId(Long ownerUserId) {
+        this.ownerUserId = ownerUserId;
     }
 
     public String getTitle() {

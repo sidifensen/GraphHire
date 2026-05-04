@@ -37,6 +37,8 @@ function getTopNavProps(pathname: string) {
   if (pathname.startsWith('/enterprise/jobs/')) return { title: '职位详情', showBack: true };
   if (pathname.startsWith('/enterprise/candidates/')) return { title: '简历详情', showBack: true };
   if (pathname.startsWith('/enterprise/recommendations')) return { title: '智能推荐', userAvatar: true };
+  if (pathname === '/enterprise/chat') return { title: '沟通列表', userAvatar: true };
+  if (pathname.startsWith('/enterprise/chat/')) return { title: '聊天详情', showBack: true };
   if (pathname.startsWith('/enterprise/employees')) return { title: '团队管理', userAvatar: true };
   if (pathname.startsWith('/enterprise/notifications')) return { title: '消息中心', showBack: true };
   return { title: 'GraphHire', userAvatar: true };

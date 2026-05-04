@@ -15,7 +15,7 @@ describe('UserWorkbenchSidebar', () => {
     expect(screen.getByRole('link', { name: '个人主页' })).toHaveAttribute('href', '/profile');
     expect(screen.getByRole('link', { name: '个人资料' })).toHaveAttribute('href', '/personal-info');
     expect(screen.getByRole('link', { name: '简历管理' })).toHaveAttribute('href', '/resume/manage');
-    expect(screen.getByRole('link', { name: '投递记录' })).toHaveAttribute('href', '/applications');
+    expect(screen.getByRole('link', { name: '沟通消息' })).toHaveAttribute('href', '/chat');
     expect(screen.getByRole('link', { name: '我的图谱' })).toHaveAttribute('href', '/skill-graph');
     expect(screen.queryByRole('link', { name: '账号设置' })).not.toBeInTheDocument();
 

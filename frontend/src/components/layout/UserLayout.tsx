@@ -11,7 +11,7 @@ interface UserLayoutProps {
   contentClassName?: string;
 }
 
-const SIDEBAR_ROUTE_PREFIXES = ['/profile', '/resume', '/applications'];
+const SIDEBAR_ROUTE_PREFIXES = ['/profile', '/resume', '/chat'];
 
 export default function UserLayout({ children, contentClassName = '' }: UserLayoutProps) {
   const pathname = usePathname();

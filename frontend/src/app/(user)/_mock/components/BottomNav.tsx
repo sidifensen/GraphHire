@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Briefcase, Building2, User } from 'lucide-react';
+import { Home, Briefcase, Building2, MessageCircle, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export function BottomNav() {
@@ -8,6 +8,7 @@ export function BottomNav() {
     { name: '首页', icon: Home, path: '/' },
     { name: '职位', icon: Briefcase, path: '/jobs' },
     { name: '公司', icon: Building2, path: '/companies' },
+    { name: '沟通', icon: MessageCircle, path: '/chat' },
     { name: '我的', icon: User, path: '/profile' },
   ];
 

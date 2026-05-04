@@ -8,7 +8,7 @@ import { ThemeProvider } from '../context/ThemeContext';
 
 export default function MockUserShell({ children }: { children: ReactNode }) {
   const pathname = usePathname() ?? '/';
-  const showBottomNav = ['/', '/jobs', '/companies', '/profile'].includes(pathname);
+  const showBottomNav = ['/', '/jobs', '/companies', '/profile', '/chat'].includes(pathname);
 
   return (
     <ThemeProvider>

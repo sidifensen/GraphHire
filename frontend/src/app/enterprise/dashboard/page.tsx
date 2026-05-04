@@ -27,7 +27,7 @@ export default function Dashboard() {
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-stack-gap-sm md:gap-6">
           <div className="bg-gradient-to-br from-primary-fixed to-surface-container-lowest p-inline-padding-md rounded-xl border border-surface-variant shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-md col-span-2 flex justify-between items-center transition-all active:scale-[0.98]">
             <div>
-              <p className="font-label-md text-label-md text-on-surface-variant mb-1">待处理投递</p>
+              <p className="font-label-md text-label-md text-on-surface-variant mb-1">待处理沟通</p>
               {loading ? (
                 <div className="h-8 w-16 bg-surface-variant animate-pulse rounded"></div>
               ) : (
@@ -147,7 +147,7 @@ export default function Dashboard() {
                         {job.newApplications > 0 && (
                           <div className="flex items-center gap-1.5 bg-error/10 px-2 py-0.5 rounded text-error shrink-0">
                             <span className="material-symbols-outlined text-[14px]">mail</span>
-                            <span className="font-label-md text-[13px] font-semibold">{job.newApplications} 新投递</span>
+                            <span className="font-label-md text-[13px] font-semibold">{job.newApplications} 新会话</span>
                           </div>
                         )}
                       </div>
@@ -206,7 +206,7 @@ export default function Dashboard() {
                 <div className="p-3 rounded-lg border border-outline-variant bg-surface-container-low">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="material-symbols-outlined text-[18px] text-primary">mail</span>
-                    <p className="text-[14px] font-semibold text-on-surface">新增投递 8 份</p>
+                    <p className="text-[14px] font-semibold text-on-surface">新增沟通 8 条</p>
                   </div>
                   <p className="text-[12px] text-on-surface-variant">其中 3 位候选人与在招岗位匹配度超过 90%</p>
                 </div>

@@ -4,17 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CompanyDashboardResponse {
-    private long pendingApplicationCount;
+    private long pendingConversationCount;
     private long newMatchCandidateCount;
     private long activeJobCount;
     private List<CompanyDashboardJobItemResponse> recentJobs = new ArrayList<>();
 
-    public long getPendingApplicationCount() {
-        return pendingApplicationCount;
+    public long getPendingConversationCount() {
+        return pendingConversationCount;
     }
 
-    public void setPendingApplicationCount(long pendingApplicationCount) {
-        this.pendingApplicationCount = pendingApplicationCount;
+    public void setPendingConversationCount(long pendingConversationCount) {
+        this.pendingConversationCount = pendingConversationCount;
     }
 
     public long getNewMatchCandidateCount() {

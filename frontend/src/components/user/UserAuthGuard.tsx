@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { authApi } from '@/lib/api/auth';
 import { userAuthStore } from '@/lib/stores/auth-store';
 
-const PROTECTED_PREFIXES = ['/profile', '/personal-info', '/resume', '/applications', '/skill-graph', '/notifications'];
+const PROTECTED_PREFIXES = ['/profile', '/personal-info', '/resume', '/skill-graph', '/notifications', '/chat'];
 
 function requiresAuth(pathname: string | null | undefined): boolean {
   if (!pathname) {

@@ -6,8 +6,8 @@ import com.graphhire.auth.domain.repository.UserRepository;
 import com.graphhire.auth.domain.vo.AuthStatus;
 import com.graphhire.auth.domain.vo.EncryptedPassword;
 import com.graphhire.auth.domain.vo.UserType;
-import com.graphhire.application.application.service.ApplicationAppService;
-import com.graphhire.application.domain.repository.ApplicationRepository;
+import com.graphhire.chat.domain.model.ChatConversation;
+import com.graphhire.chat.domain.repository.ChatConversationRepository;
 import com.graphhire.job.application.service.CompanyAppService;
 import com.graphhire.job.application.service.JobAppService;
 import com.graphhire.job.domain.model.Company;
@@ -79,16 +79,13 @@ class CompanyControllerTest {
     private MatchAppService matchAppService;
 
     @Mock
-    private ApplicationRepository applicationRepository;
-
-    @Mock
     private MatchRecordRepository matchRecordRepository;
 
     @Mock
     private SkillGraphClient skillGraphClient;
 
     @Mock
-    private ApplicationAppService applicationAppService;
+    private ChatConversationRepository chatConversationRepository;
 
     @Mock
     private RustFSClient rustFSClient;
@@ -978,26 +975,35 @@ class CompanyControllerTest {
     }
 
     @Nested
-    @DisplayName("推荐面试邀请测试")
-    class InviteInterviewTests {
+    @DisplayName("聊天统计替代投递统计测试")
+    class ChatStatsTests {
         @Test
-        @DisplayName("推荐页可按简历+职位触发面试邀请")
-        void inviteInterviewByResume_Success() {
+        @DisplayName("职位列表应用量显示为该岗位会话数")
+        void listJobs_ShouldUseConversationCount() {
             try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
-                stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(1L);
-                when(companyAppService.getCompanyIdByUserId(1L)).thenReturn(100L);
-                doReturn(null).when(applicationAppService)
-                        .sendInterviewInvitationByResume(eq(100L), eq(11L), eq(22L), any(), any(), any());
+                Long userId = 1L;
+                Long companyId = 10L;
+                stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(userId);
+                when(companyAppService.getCompanyIdByUserId(userId)).thenReturn(companyId);
 
-                Map<String, String> body = new java.util.HashMap<>();
-                body.put("resumeId", "11");
-                body.put("jobId", "22");
-                body.put("location", "会议室A");
-                body.put("remark", "请准时参加");
+                Job job = new Job();
+                job.setId(101L);
+                job.setCompanyId(companyId);
+                job.setOwnerUserId(userId);
+                job.setTitle("测试职位");
+                job.setStatus(JobStatus.PUBLISHED);
 
-                var result = companyController.inviteInterviewByResume(body);
+                ChatConversation conversation = new ChatConversation();
+                conversation.setId(1L);
+                conversation.setJobId(101L);
+
+                when(jobAppService.getJobsByCompany(companyId)).thenReturn(List.of(job));
+                when(chatConversationRepository.findByRecruiterUserId(userId)).thenReturn(List.of(conversation));
+                when(matchRecordRepository.findByJobId(job.getId())).thenReturn(List.of());
+
+                var result = companyController.listJobs(null, null);
                 assertEquals(200, result.getCode());
-                verify(applicationAppService).sendInterviewInvitationByResume(eq(100L), eq(11L), eq(22L), any(), eq("会议室A"), eq("请准时参加"));
+                assertEquals(1L, result.getData().get(0).getApplyCount());
             }
         }
     }

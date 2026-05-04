@@ -58,14 +58,6 @@ public class SwaggerConfig {
     }
 
     @Bean
-    public GroupedOpenApi applicationApi() {
-        return GroupedOpenApi.builder()
-                .group("申请模块")
-                .pathsToMatch("/person/application/**", "/company/application/**")
-                .build();
-    }
-
-    @Bean
     public GroupedOpenApi matchApi() {
         return GroupedOpenApi.builder()
                 .group("匹配模块")

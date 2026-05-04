@@ -7,9 +7,9 @@ vi.mock('next/navigation', () => ({
 }));
 
 describe('UserSidebar', () => {
-  it('uses /applications for 投递记录 link', () => {
+  it('uses /chat for 沟通消息 link', () => {
     render(<UserSidebar />);
-    const link = screen.getByText('投递记录').closest('a');
-    expect(link).toHaveAttribute('href', '/applications');
+    const link = screen.getByText('沟通消息').closest('a');
+    expect(link).toHaveAttribute('href', '/chat');
   });
 });

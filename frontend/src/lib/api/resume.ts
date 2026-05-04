@@ -191,11 +191,4 @@ export const resumeApi = {
     return response.data;
   },
 
-  /**
-   * POST /person/applications - 投递简历（需先选择简历）
-   */
-  apply: async (data: { jobId: number; resumeId: number }): Promise<{ applicationId: number }> => {
-    const response = await apiClient.post('/person/application/apply', data);
-    return response.data;
-  },
 };

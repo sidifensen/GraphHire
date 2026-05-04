@@ -63,10 +63,21 @@ public class JobAppService {
                          String description,
                          Integer education,
                          Long positionTypeId) {
+        return createJob(companyId, null, title, department, headcount, location, salaryRange, skills, description, education, positionTypeId);
+    }
+
+    @Transactional
+    public Job createJob(Long companyId, Long ownerUserId, String title, String department, Integer headcount,
+                         Location location, SalaryRange salaryRange,
+                         List<String> skills,
+                         String description,
+                         Integer education,
+                         Long positionTypeId) {
         List<String> normalizedSkills = validateAndNormalizeSkills(skills);
         // 步骤1：构建职位领域模型并填充基础信息
         Job job = new Job();
         job.setCompanyId(companyId);
+        job.setOwnerUserId(ownerUserId);
         job.setTitle(title);
         job.setDepartment(department);
         job.setHeadcount(headcount);

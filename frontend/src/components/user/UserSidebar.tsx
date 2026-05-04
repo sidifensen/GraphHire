@@ -7,7 +7,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 const menuItems = [
   { href: '/profile', label: '个人资料', icon: 'account_circle' },
   { href: '/resume/manage', label: '简历管理', icon: 'description' },
-  { href: '/applications', label: '投递记录', icon: 'assignment_turned_in' },
+  { href: '/chat', label: '沟通消息', icon: 'chat' },
   { href: '/skill-graph', label: '我的图谱', icon: 'hub' },
   { href: '#', label: '账号设置', icon: 'settings' },
 ];

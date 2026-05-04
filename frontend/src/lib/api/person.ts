@@ -145,36 +145,6 @@ export const personApi = {
     return toAbsoluteAvatarUrl(response.data);
   },
 
-  apply: async (data: { jobId: number; resumeId: number }): Promise<{ applicationId: number }> => {
-    const response = await apiClient.post('/person/application/apply', data);
-    return response.data;
-  },
-
-  getApplications: async (): Promise<Application[]> => {
-    const response = await apiClient.get<Application[]>('/person/application/list');
-    return response.data;
-  },
-
-  getApplication: async (id: number): Promise<Application> => {
-    const response = await apiClient.get<Application>(`/person/application/${id}`);
-    return response.data;
-  },
-
-  withdrawApplication: async (id: number): Promise<void> => {
-    await apiClient.put(`/person/application/${id}/withdraw`);
-  },
-
-  addFavorite: async (jobId: number): Promise<void> => {
-    await apiClient.post('/person/application/favorite', { jobId });
-  },
-
-  removeFavorite: async (jobId: number): Promise<void> => {
-    await apiClient.delete(`/person/application/favorite/${jobId}`);
-  },
-
-  getFavorites: async (): Promise<Favorite[]> => {
-    const response = await apiClient.get('/person/application/favorites');
-    return response.data;
-  },
+  getFavorites: async (): Promise<Favorite[]> => [],
 };
 

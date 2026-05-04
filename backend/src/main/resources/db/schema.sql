@@ -267,6 +267,7 @@ CREATE TABLE job
 (
     id           BIGSERIAL PRIMARY KEY,
     company_id   BIGINT       NOT NULL,
+    owner_user_id BIGINT,
     title        VARCHAR(100) NOT NULL,
     description  VARCHAR(2000),
     skills       TEXT[]       NOT NULL DEFAULT '{}',
@@ -292,6 +293,7 @@ CREATE TABLE job
 COMMENT ON TABLE job IS '职位表：存储企业发布的职位信息';
 COMMENT ON COLUMN job.id IS '主键ID';
 COMMENT ON COLUMN job.company_id IS '所属企业ID';
+COMMENT ON COLUMN job.owner_user_id IS '岗位负责人用户ID';
 COMMENT ON COLUMN job.title IS '职位名称';
 COMMENT ON COLUMN job.description IS '岗位描述（企业录入）';
 COMMENT ON COLUMN job.skills IS '岗位技能名称数组（来源于 skill_tag.name）';
@@ -309,6 +311,8 @@ COMMENT ON COLUMN job.update_time IS '更新时间';
 COMMENT ON COLUMN job.deleted IS '软删除标记：0-未删除 1-已删除';
 
 CREATE INDEX idx_job_company_id ON job (company_id);
+CREATE INDEX idx_job_owner_user_id ON job (owner_user_id);
+CREATE INDEX idx_job_company_owner_user_id ON job (company_id, owner_user_id);
 CREATE INDEX idx_job_status ON job (status) WHERE deleted = 0;
 CREATE INDEX idx_job_city ON job (city) WHERE deleted = 0 AND status = 1;
 CREATE INDEX idx_job_create_time ON job (create_time DESC);
@@ -436,89 +440,181 @@ CREATE INDEX idx_notification_type ON notification (type);
 CREATE INDEX idx_notification_create_time ON notification (create_time DESC);
 
 -- =============================================
--- 13. 投递记录表 application
+-- 13. 聊天会话表 chat_conversation
 -- =============================================
-CREATE TABLE application
+CREATE TABLE chat_conversation
 (
-    id          BIGSERIAL PRIMARY KEY,
-    resume_id   BIGINT       NOT NULL,
-    job_id      BIGINT       NOT NULL,
-    user_id     BIGINT       NOT NULL,
-    company_id  BIGINT       NOT NULL,
-    status      VARCHAR(20)  NOT NULL DEFAULT 'PENDING',
-    applied_at  TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at  TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id                         BIGSERIAL PRIMARY KEY,
+    job_id                     BIGINT    NOT NULL,
+    company_id                 BIGINT    NOT NULL,
+    recruiter_user_id          BIGINT    NOT NULL,
+    candidate_user_id          BIGINT    NOT NULL,
+    status                     SMALLINT  NOT NULL DEFAULT 1,
+    last_message_id            BIGINT,
+    recruiter_last_read_msg_id BIGINT,
+    candidate_last_read_msg_id BIGINT,
+    create_time                TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time                TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted                    SMALLINT  NOT NULL DEFAULT 0,
 
-    CONSTRAINT uk_application_resume_job UNIQUE (resume_id, job_id),
-    CONSTRAINT chk_application_status CHECK (status IN ('PENDING', 'VIEWED', 'INTERVIEW_INVITED', 'REJECTED', 'ACCEPTED', 'WITHDRAWN'))
+    CONSTRAINT uk_chat_conversation_job_candidate UNIQUE (job_id, candidate_user_id),
+    CONSTRAINT chk_chat_conversation_status CHECK (status IN (1, 2)),
+    CONSTRAINT chk_chat_conversation_deleted CHECK (deleted IN (0, 1))
 );
 
-COMMENT ON TABLE application IS '投递记录表：存储用户的职位投递记录';
-COMMENT ON COLUMN application.id IS '主键ID';
-COMMENT ON COLUMN application.resume_id IS '投递的简历ID';
-COMMENT ON COLUMN application.job_id IS '投递的职位ID';
-COMMENT ON COLUMN application.user_id IS '求职者用户ID';
-COMMENT ON COLUMN application.company_id IS '目标公司ID';
-COMMENT ON COLUMN application.status IS '投递状态：PENDING-待处理 VIEWED-已查看 INTERVIEW_INVITED-面试邀请 REJECTED-已拒绝 ACCEPTED-已接受 WITHDRAWN-已撤回';
-COMMENT ON COLUMN application.applied_at IS '投递时间';
-COMMENT ON COLUMN application.updated_at IS '更新时间';
+COMMENT ON TABLE chat_conversation IS '岗位私聊会话表';
+COMMENT ON COLUMN chat_conversation.id IS '主键ID';
+COMMENT ON COLUMN chat_conversation.job_id IS '岗位ID';
+COMMENT ON COLUMN chat_conversation.company_id IS '企业ID';
+COMMENT ON COLUMN chat_conversation.recruiter_user_id IS '招聘者用户ID';
+COMMENT ON COLUMN chat_conversation.candidate_user_id IS '求职者用户ID';
+COMMENT ON COLUMN chat_conversation.status IS '会话状态：1-进行中 2-已关闭';
+COMMENT ON COLUMN chat_conversation.last_message_id IS '最后一条消息ID';
+COMMENT ON COLUMN chat_conversation.recruiter_last_read_msg_id IS '招聘者最后已读消息ID';
+COMMENT ON COLUMN chat_conversation.candidate_last_read_msg_id IS '求职者最后已读消息ID';
+COMMENT ON COLUMN chat_conversation.create_time IS '创建时间';
+COMMENT ON COLUMN chat_conversation.update_time IS '更新时间';
+COMMENT ON COLUMN chat_conversation.deleted IS '软删除标记：0-未删除 1-已删除';
 
-CREATE INDEX idx_application_user_id ON application (user_id);
-CREATE INDEX idx_application_job_id ON application (job_id);
-CREATE INDEX idx_application_company_id ON application (company_id);
-CREATE INDEX idx_application_status ON application (status);
-CREATE INDEX idx_application_applied_at ON application (applied_at DESC);
+CREATE INDEX idx_chat_conversation_recruiter_update_time ON chat_conversation (recruiter_user_id, update_time DESC);
+CREATE INDEX idx_chat_conversation_candidate_update_time ON chat_conversation (candidate_user_id, update_time DESC);
+CREATE INDEX idx_chat_conversation_job_id ON chat_conversation (job_id);
 
 -- =============================================
--- 14. 收藏记录表 favorite
+-- 14. 聊天消息主表 chat_message
 -- =============================================
-CREATE TABLE favorite
+CREATE TABLE chat_message
 (
-    id          BIGSERIAL PRIMARY KEY,
-    user_id     BIGINT   NOT NULL,
-    job_id      BIGINT   NOT NULL,
-    created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id               BIGSERIAL PRIMARY KEY,
+    conversation_id  BIGINT    NOT NULL,
+    sender_user_id   BIGINT    NOT NULL,
+    receiver_user_id BIGINT    NOT NULL,
+    message_type     SMALLINT  NOT NULL,
+    content          TEXT,
+    ext              JSONB,
+    recalled         SMALLINT  NOT NULL DEFAULT 0,
+    create_time      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted          SMALLINT  NOT NULL DEFAULT 0,
 
-    CONSTRAINT uk_favorite_user_job UNIQUE (user_id, job_id)
+    CONSTRAINT chk_chat_message_type CHECK (message_type IN (1, 2, 3, 4, 5)),
+    CONSTRAINT chk_chat_message_recalled CHECK (recalled IN (0, 1)),
+    CONSTRAINT chk_chat_message_deleted CHECK (deleted IN (0, 1))
 );
 
-COMMENT ON TABLE favorite IS '收藏记录表：存储用户收藏的职位';
-COMMENT ON COLUMN favorite.id IS '主键ID';
-COMMENT ON COLUMN favorite.user_id IS '用户ID';
-COMMENT ON COLUMN favorite.job_id IS '收藏的职位ID';
-COMMENT ON COLUMN favorite.created_at IS '收藏时间';
+COMMENT ON TABLE chat_message IS '聊天消息主表';
+COMMENT ON COLUMN chat_message.id IS '主键ID';
+COMMENT ON COLUMN chat_message.conversation_id IS '会话ID';
+COMMENT ON COLUMN chat_message.sender_user_id IS '发送者用户ID';
+COMMENT ON COLUMN chat_message.receiver_user_id IS '接收者用户ID';
+COMMENT ON COLUMN chat_message.message_type IS '消息类型：1-文本 2-图片 3-简历卡片 4-面试邀请卡片 5-系统消息';
+COMMENT ON COLUMN chat_message.content IS '消息正文';
+COMMENT ON COLUMN chat_message.ext IS '扩展JSON字段';
+COMMENT ON COLUMN chat_message.recalled IS '撤回标记：0-正常 1-已撤回';
+COMMENT ON COLUMN chat_message.create_time IS '创建时间';
+COMMENT ON COLUMN chat_message.update_time IS '更新时间';
+COMMENT ON COLUMN chat_message.deleted IS '软删除标记：0-未删除 1-已删除';
 
-CREATE INDEX idx_favorite_user_id ON favorite (user_id);
-CREATE INDEX idx_favorite_job_id ON favorite (job_id);
-CREATE INDEX idx_favorite_created_at ON favorite (created_at DESC);
+CREATE INDEX idx_chat_message_conversation_id ON chat_message (conversation_id, id DESC);
+CREATE INDEX idx_chat_message_receiver_user_id ON chat_message (receiver_user_id, id DESC);
+CREATE INDEX idx_chat_message_sender_user_id ON chat_message (sender_user_id, id DESC);
 
 -- =============================================
--- 15. 人才库表 talent_pool
+-- 15. 图片消息详情表 chat_message_image
 -- =============================================
-CREATE TABLE talent_pool
+CREATE TABLE chat_message_image
 (
     id          BIGSERIAL PRIMARY KEY,
-    company_id  BIGINT       NOT NULL,
-    resume_id   BIGINT       NOT NULL,
-    added_at    TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    note        TEXT,
-    status      VARCHAR(20)  NOT NULL DEFAULT 'ACTIVE',
+    message_id  BIGINT       NOT NULL,
+    file_path   VARCHAR(500) NOT NULL,
+    file_name   VARCHAR(255) NOT NULL,
+    create_time TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted     SMALLINT     NOT NULL DEFAULT 0,
 
-    CONSTRAINT uk_talent_pool_company_resume UNIQUE (company_id, resume_id),
-    CONSTRAINT chk_talent_pool_status CHECK (status IN ('ACTIVE', 'ARCHIVED'))
+    CONSTRAINT uk_chat_message_image_message_id UNIQUE (message_id),
+    CONSTRAINT chk_chat_message_image_deleted CHECK (deleted IN (0, 1))
 );
 
-COMMENT ON TABLE talent_pool IS '人才库表：存储企业收藏的候选人简历';
-COMMENT ON COLUMN talent_pool.id IS '主键ID';
-COMMENT ON COLUMN talent_pool.company_id IS '公司ID';
-COMMENT ON COLUMN talent_pool.resume_id IS '简历ID';
-COMMENT ON COLUMN talent_pool.added_at IS '加入时间';
-COMMENT ON COLUMN talent_pool.note IS '备注';
-COMMENT ON COLUMN talent_pool.status IS '状态：ACTIVE-活跃 ARCHIVED-已归档';
+COMMENT ON TABLE chat_message_image IS '图片消息详情表';
+COMMENT ON COLUMN chat_message_image.id IS '主键ID';
+COMMENT ON COLUMN chat_message_image.message_id IS '关联消息ID';
+COMMENT ON COLUMN chat_message_image.file_path IS '图片对象存储路径';
+COMMENT ON COLUMN chat_message_image.file_name IS '原始文件名';
+COMMENT ON COLUMN chat_message_image.create_time IS '创建时间';
+COMMENT ON COLUMN chat_message_image.update_time IS '更新时间';
+COMMENT ON COLUMN chat_message_image.deleted IS '软删除标记：0-未删除 1-已删除';
 
-CREATE INDEX idx_talent_pool_company_id ON talent_pool (company_id);
-CREATE INDEX idx_talent_pool_resume_id ON talent_pool (resume_id);
-CREATE INDEX idx_talent_pool_added_at ON talent_pool (added_at DESC);
+CREATE INDEX idx_chat_message_image_create_time ON chat_message_image (create_time DESC);
+
+-- =============================================
+-- 16. 简历卡片消息详情表 chat_message_resume
+-- =============================================
+CREATE TABLE chat_message_resume
+(
+    id                   BIGSERIAL PRIMARY KEY,
+    message_id           BIGINT       NOT NULL,
+    resume_id            BIGINT       NOT NULL,
+    resume_owner_user_id BIGINT       NOT NULL,
+    snapshot_file_name   VARCHAR(255) NOT NULL,
+    snapshot_file_path   VARCHAR(500) NOT NULL,
+    create_time          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted              SMALLINT     NOT NULL DEFAULT 0,
+
+    CONSTRAINT uk_chat_message_resume_message_id UNIQUE (message_id),
+    CONSTRAINT chk_chat_message_resume_deleted CHECK (deleted IN (0, 1))
+);
+
+COMMENT ON TABLE chat_message_resume IS '简历卡片消息详情表';
+COMMENT ON COLUMN chat_message_resume.id IS '主键ID';
+COMMENT ON COLUMN chat_message_resume.message_id IS '关联消息ID';
+COMMENT ON COLUMN chat_message_resume.resume_id IS '来源简历ID';
+COMMENT ON COLUMN chat_message_resume.resume_owner_user_id IS '简历所属求职者用户ID';
+COMMENT ON COLUMN chat_message_resume.snapshot_file_name IS '快照文件名';
+COMMENT ON COLUMN chat_message_resume.snapshot_file_path IS '快照文件路径';
+COMMENT ON COLUMN chat_message_resume.create_time IS '创建时间';
+COMMENT ON COLUMN chat_message_resume.update_time IS '更新时间';
+COMMENT ON COLUMN chat_message_resume.deleted IS '软删除标记：0-未删除 1-已删除';
+
+CREATE INDEX idx_chat_message_resume_owner_user_id ON chat_message_resume (resume_owner_user_id, create_time DESC);
+
+-- =============================================
+-- 17. 面试邀请卡片消息详情表 chat_message_interview_invite
+-- =============================================
+CREATE TABLE chat_message_interview_invite
+(
+    id                BIGSERIAL PRIMARY KEY,
+    message_id        BIGINT        NOT NULL,
+    job_id            BIGINT        NOT NULL,
+    inviter_user_id   BIGINT        NOT NULL,
+    candidate_user_id BIGINT        NOT NULL,
+    interview_time    TIMESTAMP     NOT NULL,
+    location          VARCHAR(255)  NOT NULL,
+    remark            VARCHAR(1000),
+    create_time       TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time       TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted           SMALLINT      NOT NULL DEFAULT 0,
+
+    CONSTRAINT uk_chat_message_interview_invite_message_id UNIQUE (message_id),
+    CONSTRAINT chk_chat_message_interview_invite_deleted CHECK (deleted IN (0, 1))
+);
+
+COMMENT ON TABLE chat_message_interview_invite IS '面试邀请卡片消息详情表';
+COMMENT ON COLUMN chat_message_interview_invite.id IS '主键ID';
+COMMENT ON COLUMN chat_message_interview_invite.message_id IS '关联消息ID';
+COMMENT ON COLUMN chat_message_interview_invite.job_id IS '岗位ID';
+COMMENT ON COLUMN chat_message_interview_invite.inviter_user_id IS '发起邀请的招聘者用户ID';
+COMMENT ON COLUMN chat_message_interview_invite.candidate_user_id IS '被邀请求职者用户ID';
+COMMENT ON COLUMN chat_message_interview_invite.interview_time IS '面试时间';
+COMMENT ON COLUMN chat_message_interview_invite.location IS '面试地点';
+COMMENT ON COLUMN chat_message_interview_invite.remark IS '面试备注';
+COMMENT ON COLUMN chat_message_interview_invite.create_time IS '创建时间';
+COMMENT ON COLUMN chat_message_interview_invite.update_time IS '更新时间';
+COMMENT ON COLUMN chat_message_interview_invite.deleted IS '软删除标记：0-未删除 1-已删除';
+
+CREATE INDEX idx_chat_message_interview_invite_candidate_time
+    ON chat_message_interview_invite (candidate_user_id, interview_time DESC);
 
 -- =============================================
 -- 表结构扩展
@@ -530,7 +626,7 @@ COMMENT ON COLUMN person_info.avatar_url IS '头像URL';
 
 -- notification 表扩展类型约束（支持6-简历投递 7-面试邀请）
 ALTER TABLE notification DROP CONSTRAINT IF EXISTS chk_notif_type;
-ALTER TABLE notification ADD CONSTRAINT chk_notif_type CHECK (type IN (1, 2, 3, 4, 5, 6, 7));
-COMMENT ON COLUMN notification.type IS '通知类型：1-简历解析完成 2-新职位推荐 3-收到候选人推荐 4-企业认证结果 5-简历被查看 6-面试邀请 7-简历投递';
+ALTER TABLE notification ADD CONSTRAINT chk_notif_type CHECK (type IN (1, 2, 3, 4, 5, 6));
+COMMENT ON COLUMN notification.type IS '通知类型：1-简历解析完成 2-新职位推荐 3-收到候选人推荐 4-企业认证结果 5-简历被查看 6-面试邀请';
 
 

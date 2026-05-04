@@ -42,9 +42,9 @@ const { userAuthStore } = vi.hoisted(() => {
   };
 });
 
-const { getProfileMock, getApplicationsMock, getFavoritesMock } = vi.hoisted(() => ({
+const { getProfileMock, listConversationsMock, getFavoritesMock } = vi.hoisted(() => ({
   getProfileMock: vi.fn(),
-  getApplicationsMock: vi.fn(),
+  listConversationsMock: vi.fn(),
   getFavoritesMock: vi.fn(),
 }));
 
@@ -55,8 +55,13 @@ vi.mock('@/lib/stores/auth-store', () => ({
 vi.mock('@/lib/api/person', () => ({
   personApi: {
     getProfile: getProfileMock,
-    getApplications: getApplicationsMock,
     getFavorites: getFavoritesMock,
+  },
+}));
+
+vi.mock('@/lib/api/chat', () => ({
+  chatApi: {
+    listConversations: listConversationsMock,
   },
 }));
 
@@ -76,10 +81,10 @@ describe('User Profile auth info', () => {
       expectedSalary: 35000,
       avatarUrl: 'https://picsum.photos/100',
     });
-    getApplicationsMock.mockResolvedValue([
-      { id: 1, jobId: 1, status: 'VIEWED', appliedAt: '2026-05-01T00:00:00.000Z' },
-      { id: 2, jobId: 2, status: 'INTERVIEW_INVITED', appliedAt: '2026-05-01T00:00:00.000Z' },
-      { id: 3, jobId: 3, status: 'VIEWED', appliedAt: '2026-05-01T00:00:00.000Z' },
+    listConversationsMock.mockResolvedValue([
+      { conversationId: 1, unreadCount: 2 },
+      { conversationId: 2, unreadCount: 1 },
+      { conversationId: 3, unreadCount: 0 },
     ]);
     getFavoritesMock.mockResolvedValue(
       Array.from({ length: 7 }, (_, index) => ({
@@ -111,8 +116,8 @@ describe('User Profile auth info', () => {
 
     expect(await screen.findByText('测试姓名')).toBeInTheDocument();
     expect(screen.getByText('test-user@example.com')).toBeInTheDocument();
-    expect(await screen.findByTestId('profile-stat-viewed')).toHaveTextContent('2');
-    expect(screen.getByTestId('profile-stat-interview')).toHaveTextContent('1');
+    expect(await screen.findByTestId('profile-stat-conversation')).toHaveTextContent('3');
+    expect(screen.getByTestId('profile-stat-unread')).toHaveTextContent('3');
     expect(screen.getByTestId('profile-stat-favorite')).toHaveTextContent('7');
     expect(screen.getByText('男')).toBeInTheDocument();
     expect(screen.getByText('27 岁')).toBeInTheDocument();
@@ -143,10 +148,10 @@ describe('User Profile auth info', () => {
     );
 
     expect(await screen.findByText('未登录用户')).toBeInTheDocument();
-    expect(screen.getByTestId('profile-stat-viewed')).toHaveTextContent('0');
-    expect(screen.getByTestId('profile-stat-interview')).toHaveTextContent('0');
+    expect(screen.getByTestId('profile-stat-conversation')).toHaveTextContent('0');
+    expect(screen.getByTestId('profile-stat-unread')).toHaveTextContent('0');
     expect(screen.getByTestId('profile-stat-favorite')).toHaveTextContent('0');
-    expect(getApplicationsMock).not.toHaveBeenCalled();
+    expect(listConversationsMock).not.toHaveBeenCalled();
     expect(getFavoritesMock).not.toHaveBeenCalled();
   });
 });

@@ -17,7 +17,7 @@ function normalizePath(pathname: string) {
 
 function isPathActive(currentPathname: string, navPath: string) {
   if (navPath === '/profile') {
-    const mySubPaths = ['/personal-info', '/applications', '/skill-graph', '/graph'];
+    const mySubPaths = ['/personal-info', '/chat', '/skill-graph', '/graph'];
     if (mySubPaths.some((path) => currentPathname === path || currentPathname.startsWith(`${path}/`))) {
       return true;
     }
@@ -49,6 +49,7 @@ export default function Navbar() {
     { name: '首页', path: '/', icon: Home },
     { name: '职位', path: '/jobs', icon: Briefcase },
     { name: '公司', path: '/companies', icon: Building2 },
+    { name: '沟通', path: '/chat', icon: Bell },
     { name: '我的', path: '/profile', icon: User },
   ];
   const activeNavPath = navItems.find((item) => isPathActive(normalizedPathname, item.path))?.path ?? null;

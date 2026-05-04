@@ -2,7 +2,7 @@
 import { render, screen } from '@testing-library/react';
 import UserLayout from '@/components/layout/UserLayout';
 
-let pathname = '/applications';
+let pathname = '/chat';
 
 vi.mock('next/navigation', () => ({
   usePathname: () => pathname,
@@ -31,15 +31,15 @@ vi.mock('@/components/user/UserSidebar', () => ({
   default: () => <aside>个人资料</aside>,
 }));
 
-describe('UserLayout applications sidebar visibility', () => {
-  it('shows sidebar on /applications', () => {
-    pathname = '/applications';
+describe('UserLayout chat sidebar visibility', () => {
+  it('shows sidebar on /chat', () => {
+    pathname = '/chat';
     render(
       <UserLayout>
-        <div>投递记录主体</div>
+        <div>沟通消息主体</div>
       </UserLayout>,
     );
     expect(screen.getByText('个人资料')).toBeInTheDocument();
-    expect(screen.getByText('投递记录主体')).toBeInTheDocument();
+    expect(screen.getByText('沟通消息主体')).toBeInTheDocument();
   });
 });

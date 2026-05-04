@@ -34,7 +34,7 @@ describe('Sidebar', () => {
     render(<Sidebar />);
     expect(screen.getByText('个人资料')).toBeDefined();
     expect(screen.getByText('简历管理')).toBeDefined();
-    expect(screen.getByText('投递记录')).toBeDefined();
+    expect(screen.getByText('沟通消息')).toBeDefined();
     expect(screen.getByText('我的图谱')).toBeDefined();
     expect(screen.getByText('账号设置')).toBeDefined();
   });

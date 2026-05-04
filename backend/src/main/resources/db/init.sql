@@ -287,6 +287,10 @@ INSERT INTO job (id, company_id, title, description, skills, city, salary_min, s
  '北京', 25000, 45000, '月', '1-3年', '本科', 1, 1, '2026-04-15 16:00:00', '2026-04-15 16:00:00', 0)
 ON CONFLICT (id) DO NOTHING;
 
+UPDATE job SET owner_user_id = 101 WHERE company_id = 100 AND owner_user_id IS NULL;
+UPDATE job SET owner_user_id = 2 WHERE company_id = 1 AND owner_user_id IS NULL;
+UPDATE job SET owner_user_id = 3 WHERE company_id = 2 AND owner_user_id IS NULL;
+
 -- =============================================
 -- 10. 匹配记录（部分人岗匹配结果）
 -- =============================================
@@ -342,6 +346,29 @@ INSERT INTO notification (user_id, type, title, content, related_id, is_read, cr
 ON CONFLICT DO NOTHING;
 
 -- =============================================
+-- 12. 聊天会话与消息示例数据
+-- =============================================
+INSERT INTO chat_conversation (id, job_id, company_id, recruiter_user_id, candidate_user_id, status, last_message_id, recruiter_last_read_msg_id, candidate_last_read_msg_id, create_time, update_time, deleted) VALUES
+(1, 1, 1, 2, 4, 1, 2, 2, 2, '2026-04-15 19:00:00', '2026-04-15 19:06:00', 0),
+(2, 2, 1, 2, 5, 1, 4, 4, 3, '2026-04-15 19:10:00', '2026-04-15 19:20:00', 0)
+ON CONFLICT (job_id, candidate_user_id) DO NOTHING;
+
+INSERT INTO chat_message (id, conversation_id, sender_user_id, receiver_user_id, message_type, content, ext, recalled, create_time, update_time, deleted) VALUES
+(1, 1, 4, 2, 1, '你好，我对这个岗位很感兴趣😀', NULL, 0, '2026-04-15 19:01:00', '2026-04-15 19:01:00', 0),
+(2, 1, 2, 4, 1, '收到，我们可以先聊下项目经历。', NULL, 0, '2026-04-15 19:06:00', '2026-04-15 19:06:00', 0),
+(3, 2, 5, 2, 3, '发送了一份简历', '{\"resumeId\":2,\"fileName\":\"李四_数据工程师.pdf\",\"filePath\":\"/files/resume/resume_2.pdf\"}', 0, '2026-04-15 19:12:00', '2026-04-15 19:12:00', 0),
+(4, 2, 2, 5, 4, '发送了一条面试通知', '{\"interviewTime\":\"2026-04-20T14:00:00\",\"location\":\"线上腾讯会议\",\"remark\":\"请提前10分钟进入会议\"}', 0, '2026-04-15 19:20:00', '2026-04-15 19:20:00', 0)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO chat_message_resume (id, message_id, resume_id, resume_owner_user_id, snapshot_file_name, snapshot_file_path, create_time, update_time, deleted) VALUES
+(1, 3, 2, 5, '李四_数据工程师.pdf', '/files/resume/resume_2.pdf', '2026-04-15 19:12:00', '2026-04-15 19:12:00', 0)
+ON CONFLICT (message_id) DO NOTHING;
+
+INSERT INTO chat_message_interview_invite (id, message_id, job_id, inviter_user_id, candidate_user_id, interview_time, location, remark, create_time, update_time, deleted) VALUES
+(1, 4, 2, 2, 5, '2026-04-20 14:00:00', '线上腾讯会议', '请提前10分钟进入会议', '2026-04-15 19:20:00', '2026-04-15 19:20:00', 0)
+ON CONFLICT (message_id) DO NOTHING;
+
+-- =============================================
 -- 重置序列（确保后续插入ID连续）
 -- =============================================
 SELECT setval('sys_user_id_seq', (SELECT MAX(id) FROM sys_user));
@@ -349,6 +376,10 @@ SELECT setval('company_id_seq', (SELECT MAX(id) FROM company));
 SELECT setval('resume_id_seq', (SELECT MAX(id) FROM resume));
 SELECT setval('job_id_seq', (SELECT MAX(id) FROM job));
 SELECT setval('skill_tag_id_seq', (SELECT MAX(id) FROM skill_tag));
+SELECT setval('chat_conversation_id_seq', COALESCE((SELECT MAX(id) FROM chat_conversation), 1), true);
+SELECT setval('chat_message_id_seq', COALESCE((SELECT MAX(id) FROM chat_message), 1), true);
+SELECT setval('chat_message_resume_id_seq', COALESCE((SELECT MAX(id) FROM chat_message_resume), 1), true);
+SELECT setval('chat_message_interview_invite_id_seq', COALESCE((SELECT MAX(id) FROM chat_message_interview_invite), 1), true);
 
 
 

@@ -1138,7 +1138,7 @@ export default function JobList() {
                         </div>
                         
                         <button className="px-5 py-2 bg-primary/5 text-primary border border-primary/20 rounded-[20px] text-sm font-bold opacity-0 md:opacity-100 group-hover:bg-primary group-hover:text-white transition-all">
-                          立即投递
+                          立即沟通
                         </button>
                       </div>
                     </Link>

@@ -9,7 +9,7 @@ export interface EnterpriseDashboardJobItem {
 }
 
 export interface EnterpriseDashboard {
-  pendingApplicationCount: number;
+  pendingConversationCount: number;
   newMatchCandidateCount: number;
   activeJobCount: number;
   recentJobs: EnterpriseDashboardJobItem[];

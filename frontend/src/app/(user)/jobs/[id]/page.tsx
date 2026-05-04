@@ -5,8 +5,10 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ArrowLeft, Briefcase, ChevronRight, GraduationCap, MapPin, Share2, Zap } from 'lucide-react';
 import { publicApi, type Company, type Job } from '@/lib/api/public';
+import { chatApi } from '@/lib/api/chat';
 import { formatCompanyScale } from '@/features/user-filters/constants';
 import { getApiBaseUrl } from '@/lib/api/base-url';
+import { useRouter } from 'next/navigation';
 
 const DEFAULT_COMPANY_LOGO = '/default-avatar.svg';
 
@@ -92,6 +94,7 @@ function buildJobDescriptionSections(job: Job) {
 
 export default function JobDetailPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const jobId = Number(params?.id);
 
   const [job, setJob] = useState<Job | null>(null);
@@ -152,6 +155,18 @@ export default function JobDetailPage() {
   const companyScale = formatCompanyScale(company?.scale ?? job?.companyScale ?? null);
   const companyLogoUrl = resolveLogoUrl(company?.avatarUrl ?? job?.companyAvatarUrl ?? null);
   const companyAuthStatusText = formatCompanyAuthStatus(company?.authStatus ?? job?.companyAuthStatus ?? null);
+
+  const handleStartChat = async () => {
+    if (!Number.isFinite(jobId)) return;
+    try {
+      const result = await chatApi.startConversation({ jobId });
+      if (result?.conversationId) {
+        router.push(`/chat/${result.conversationId}`);
+      }
+    } catch {
+      // keep silent and allow user retry
+    }
+  };
 
   if (loading) {
     return <div className="p-6 text-on-surface-variant">职位详情加载中...</div>;
@@ -294,8 +309,8 @@ export default function JobDetailPage() {
               </Link>
 
               <div className="hidden lg:flex flex-col gap-4 mt-8">
-                <button className="flex items-center justify-center gap-3 h-14 w-full rounded-2xl bg-primary text-white font-black text-lg shadow-xl shadow-primary/20 hover:bg-primary/90 hover:-translate-y-0.5 active:translate-y-0 transition-all">
-                  立即投递职位
+                <button onClick={() => void handleStartChat()} className="flex items-center justify-center gap-3 h-14 w-full rounded-2xl bg-primary text-white font-black text-lg shadow-xl shadow-primary/20 hover:bg-primary/90 hover:-translate-y-0.5 active:translate-y-0 transition-all">
+                  立即沟通
                 </button>
                 <button className="flex items-center justify-center gap-3 h-14 w-full rounded-2xl border-2 border-primary text-primary font-black text-lg hover:bg-primary/5 active:scale-[0.98] transition-all">
                   <Zap size={20} fill="currentColor" />
@@ -312,8 +327,8 @@ export default function JobDetailPage() {
           <Zap size={18} fill="currentColor" />
           智能匹配
         </button>
-        <button className="flex-1 h-12 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/20 active:scale-95 transition-all">
-          立即投递
+        <button onClick={() => void handleStartChat()} className="flex-1 h-12 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/20 active:scale-95 transition-all">
+          立即沟通
         </button>
       </div>
     </div>

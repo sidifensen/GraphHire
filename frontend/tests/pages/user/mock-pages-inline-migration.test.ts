@@ -5,7 +5,8 @@ import { join } from 'node:path';
 const root = process.cwd();
 const userPages = [
   'src/app/page.tsx',
-  'src/app/(user)/applications/page.tsx',
+  'src/app/(user)/chat/page.tsx',
+  'src/app/(user)/chat/[conversationId]/page.tsx',
   'src/app/(user)/companies/page.tsx',
   'src/app/(user)/companies/[id]/page.tsx',
   'src/app/(user)/jobs/page.tsx',

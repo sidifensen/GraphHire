@@ -22,6 +22,9 @@ public class JobPO {
     private Long id;
     /** 所属企业ID */
     private Long companyId;
+    /** 岗位负责人用户ID */
+    @TableField("owner_user_id")
+    private Long ownerUserId;
     /** 职位名称 */
     private String title;
     /** 所属部门（数据库中不存在） */
@@ -93,6 +96,14 @@ public class JobPO {
 
     public void setCompanyId(Long companyId) {
         this.companyId = companyId;
+    }
+
+    public Long getOwnerUserId() {
+        return ownerUserId;
+    }
+
+    public void setOwnerUserId(Long ownerUserId) {
+        this.ownerUserId = ownerUserId;
     }
 
     public String getTitle() {

@@ -5,6 +5,7 @@ import { User, FileText, Send, Network, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { userAuthStore } from '@/lib/stores/auth-store';
 import { personApi, type PersonProfile } from '@/lib/api/person';
+import { chatApi } from '@/lib/api/chat';
 import UserWorkbenchSidebar from '@/app/(user)/_components/UserWorkbenchSidebar';
 
 function formatGender(gender?: number | null): string {
@@ -41,8 +42,8 @@ export default function Profile() {
   const authUser = authState.user;
   const [profile, setProfile] = useState<PersonProfile | null>(null);
   const [stats, setStats] = useState({
-    viewedCount: 0,
-    interviewCount: 0,
+    conversationCount: 0,
+    unreadCount: 0,
     favoriteCount: 0,
   });
   const [avatarError, setAvatarError] = useState(false);
@@ -52,7 +53,7 @@ export default function Profile() {
   const mobileMenuItems = [
     { name: '个人资料', icon: User, path: '/personal-info' },
     { name: '简历管理', icon: FileText, path: '/resume/manage' },
-    { name: '投递记录', icon: Send, path: '/applications' },
+    { name: '沟通消息', icon: Send, path: '/chat' },
     { name: '我的图谱', icon: Network, path: '/skill-graph' },
   ];
 
@@ -72,8 +73,8 @@ export default function Profile() {
     if (!authUser?.id) {
       setProfile(null);
       setStats({
-        viewedCount: 0,
-        interviewCount: 0,
+        conversationCount: 0,
+        unreadCount: 0,
         favoriteCount: 0,
       });
       return () => {
@@ -82,10 +83,10 @@ export default function Profile() {
     }
     Promise.all([
       personApi.getProfile(),
-      personApi.getApplications(),
+      chatApi.listConversations(),
       personApi.getFavorites(),
     ])
-      .then(([nextProfile, applications, favorites]) => {
+      .then(([nextProfile, conversations, favorites]) => {
         if (!active) {
           return;
         }
@@ -109,18 +110,20 @@ export default function Profile() {
             userAuthStore.getState().updateUser(nextPatch);
           }
         }
-        const viewedCount = applications.filter((item) => item.status === 'VIEWED').length;
-        const interviewCount = applications.filter((item) => item.status === 'INTERVIEW_INVITED').length;
+        const conversationCount = Array.isArray(conversations) ? conversations.length : 0;
+        const unreadCount = Array.isArray(conversations)
+          ? conversations.reduce((total, item) => total + (item.unreadCount || 0), 0)
+          : 0;
         const favoriteCount = Array.isArray(favorites) ? favorites.length : 0;
-        setStats({ viewedCount, interviewCount, favoriteCount });
+        setStats({ conversationCount, unreadCount, favoriteCount });
       })
       .catch(() => {
         if (!active) {
           return;
         }
         setStats({
-          viewedCount: 0,
-          interviewCount: 0,
+          conversationCount: 0,
+          unreadCount: 0,
           favoriteCount: 0,
         });
       });
@@ -128,6 +131,23 @@ export default function Profile() {
     return () => {
       active = false;
     };
+  }, [authUser?.id]);
+
+  useEffect(() => {
+    const id = authUser?.id;
+    if (!id) return;
+    const timer = window.setInterval(async () => {
+      try {
+        const conversations = await chatApi.listConversations();
+        if (!Array.isArray(conversations)) return;
+        const conversationCount = conversations.length;
+        const unreadCount = conversations.reduce((total, item) => total + (item.unreadCount || 0), 0);
+        setStats((prev) => ({ ...prev, conversationCount, unreadCount }));
+      } catch {
+        // no-op
+      }
+    }, 15000);
+    return () => window.clearInterval(timer);
   }, [authUser?.id]);
 
   return (
@@ -159,12 +179,12 @@ export default function Profile() {
 
             <div className="mt-8 flex items-center justify-between border-t border-surface-mid px-4 pt-6">
               <div className="text-center group cursor-pointer">
-                <div data-testid="profile-stat-viewed" className="text-xl font-bold text-on-surface group-hover:text-primary transition-colors">{stats.viewedCount}</div>
-                <div className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">沟通过</div>
+                <div data-testid="profile-stat-conversation" className="text-xl font-bold text-on-surface group-hover:text-primary transition-colors">{stats.conversationCount}</div>
+                <div className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">会话数</div>
               </div>
               <div className="text-center group cursor-pointer">
-                <div data-testid="profile-stat-interview" className="text-xl font-bold text-on-surface group-hover:text-primary transition-colors">{stats.interviewCount}</div>
-                <div className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">面试</div>
+                <div data-testid="profile-stat-unread" className="text-xl font-bold text-on-surface group-hover:text-primary transition-colors">{stats.unreadCount}</div>
+                <div className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">未读</div>
               </div>
               <div className="text-center group cursor-pointer">
                 <div data-testid="profile-stat-favorite" className="text-xl font-bold text-on-surface group-hover:text-primary transition-colors">{stats.favoriteCount}</div>

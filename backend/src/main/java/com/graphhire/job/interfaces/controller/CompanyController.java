@@ -3,13 +3,12 @@ package com.graphhire.job.interfaces.controller;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.io.file.FileNameUtil;
 import cn.hutool.core.util.IdUtil;
-import com.graphhire.application.application.service.ApplicationAppService;
-import com.graphhire.application.domain.repository.ApplicationRepository;
 import com.graphhire.auth.domain.model.User;
 import com.graphhire.auth.domain.repository.UserRepository;
 import com.graphhire.auth.domain.vo.AuthStatus;
 import com.graphhire.auth.domain.vo.EncryptedPassword;
 import com.graphhire.auth.domain.vo.UserType;
+import com.graphhire.chat.domain.repository.ChatConversationRepository;
 import com.graphhire.auth.domain.vo.Username;
 import com.graphhire.common.constants.UploadErrorMessages;
 import com.graphhire.common.vo.Exceptions;
@@ -57,7 +56,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/company")
@@ -84,13 +82,10 @@ public class CompanyController {
     private UserRepository userRepository;
 
     @Autowired
-    private ApplicationRepository applicationRepository;
-
-    @Autowired
     private MatchRecordRepository matchRecordRepository;
 
     @Autowired
-    private ApplicationAppService applicationAppService;
+    private ChatConversationRepository chatConversationRepository;
 
     @Autowired
     private RustFSClient rustFSClient;
@@ -219,9 +214,14 @@ public class CompanyController {
         List<Job> activeJobs = jobs.stream()
                 .filter(job -> job.getStatus() == JobStatus.PUBLISHED)
                 .toList();
+        long pendingConversationCount = jobs.stream()
+            .filter(job -> job.getOwnerUserId() != null)
+            .mapToLong(job -> chatConversationRepository.findByRecruiterUserId(job.getOwnerUserId())
+                .stream().filter(item -> job.getId().equals(item.getJobId())).count())
+            .sum();
 
         CompanyDashboardResponse response = new CompanyDashboardResponse();
-        response.setPendingApplicationCount(applicationRepository.findByCompanyId(companyId).size());
+        response.setPendingConversationCount(pendingConversationCount);
         response.setNewMatchCandidateCount(activeJobs.stream()
                 .mapToLong(job -> matchRecordRepository.findByJobId(job.getId()).size())
                 .sum());
@@ -243,8 +243,9 @@ public class CompanyController {
     @PostMapping("/job")
     public Result<Long> publishJob(@RequestBody PublishJobCmd cmd) {
         Long companyId = currentCompanyId();
+        Long currentUserId = StpUtil.getLoginIdAsLong();
         ensureCompanyVerified(companyId);
-        Job job = jobAppService.createJob(companyId, cmd.getTitle(), cmd.getDepartment(), cmd.getHeadcount(),
+        Job job = jobAppService.createJob(companyId, currentUserId, cmd.getTitle(), cmd.getDepartment(), cmd.getHeadcount(),
                 cmd.getLocation(), cmd.getSalaryRange(), cmd.getSkills(),
                 cmd.getDescription(), cmd.getEducation(), cmd.getPositionTypeId());
         return Result.success(job.getId());
@@ -258,9 +259,11 @@ public class CompanyController {
     public Result<List<CompanyJobListItemResponse>> listJobs(@RequestParam(required = false) String status,
                                                              @RequestParam(required = false) String keyword) {
         Long companyId = currentCompanyId();
+        Long currentUserId = StpUtil.getLoginIdAsLong();
         List<Job> jobs = jobAppService.getJobsByCompany(companyId).stream()
                 .filter(job -> status == null || status.isBlank() || job.getStatus().name().equalsIgnoreCase(status))
                 .filter(job -> keyword == null || keyword.isBlank() || containsIgnoreCase(job.getTitle(), keyword))
+                .filter(job -> job.getOwnerUserId() == null || userIdOwnsJob(job, currentUserId))
                 .sorted(Comparator.comparing(Job::getId, Comparator.nullsLast(Long::compareTo)).reversed())
                 .toList();
         return Result.success(jobs.stream().map(this::toJobListItem).toList());
@@ -576,21 +579,6 @@ public class CompanyController {
         return Result.success();
     }
 
-    @PostMapping("/applications/interview-invite")
-    public Result<Void> inviteInterviewByResume(@RequestBody Map<String, String> request) {
-        Long companyId = currentCompanyId();
-        Long resumeId = Long.valueOf(request.get("resumeId"));
-        Long jobId = Long.valueOf(request.get("jobId"));
-        String location = request.get("location");
-        String remark = request.get("remark");
-        String interviewTimeRaw = request.get("interviewTime");
-        LocalDateTime interviewTime = interviewTimeRaw == null || interviewTimeRaw.isBlank()
-                ? LocalDateTime.now().plusDays(1)
-                : LocalDateTime.parse(interviewTimeRaw);
-        applicationAppService.sendInterviewInvitationByResume(companyId, resumeId, jobId, interviewTime, location, remark);
-        return Result.success();
-    }
-
     private Long currentCompanyId() {
         Long userId = StpUtil.getLoginIdAsLong();
         ensureCompanyMemberActiveIfPresent(userId);
@@ -646,6 +634,16 @@ public class CompanyController {
         return source != null && source.toLowerCase().contains(keyword.toLowerCase());
     }
 
+    private boolean userIdOwnsJob(Job job, Long userId) {
+        if (job == null || userId == null) {
+            return false;
+        }
+        if (job.getOwnerUserId() == null) {
+            return true;
+        }
+        return job.getOwnerUserId().equals(userId);
+    }
+
     private CompanyProfileResponse toCompanyProfileResponse(Company company) {
         return new CompanyProfileResponse(
                 company.getId(),
@@ -679,11 +677,13 @@ public class CompanyController {
     }
 
     private CompanyDashboardJobItemResponse toDashboardJobItem(Job job) {
+        long applyCount = job.getOwnerUserId() == null ? 0L : chatConversationRepository.findByRecruiterUserId(job.getOwnerUserId())
+            .stream().filter(item -> job.getId().equals(item.getJobId())).count();
         CompanyDashboardJobItemResponse item = new CompanyDashboardJobItemResponse();
         item.setId(job.getId());
         item.setTitle(job.getTitle());
         item.setDepartment(job.getDepartment());
-        item.setApplyCount(applicationRepository.findByJobId(job.getId()).size());
+        item.setApplyCount(applyCount);
         item.setMatchCount(matchRecordRepository.findByJobId(job.getId()).size());
         item.setStatus(job.getStatus().name());
         item.setPublishedAt(job.getPublishedAt() != null ? job.getPublishedAt() : job.getCreateTime());
@@ -691,6 +691,8 @@ public class CompanyController {
     }
 
     private CompanyJobListItemResponse toJobListItem(Job job) {
+        long applyCount = job.getOwnerUserId() == null ? 0L : chatConversationRepository.findByRecruiterUserId(job.getOwnerUserId())
+            .stream().filter(item -> job.getId().equals(item.getJobId())).count();
         CompanyJobListItemResponse item = new CompanyJobListItemResponse();
         item.setId(job.getId());
         item.setTitle(job.getTitle());
@@ -703,7 +705,7 @@ public class CompanyController {
         item.setDescription(job.getDescription());
         item.setParseStatus(null);
         item.setViewCount(0L);
-        item.setApplyCount(applicationRepository.findByJobId(job.getId()).size());
+        item.setApplyCount(applyCount);
         item.setMatchCount(matchRecordRepository.findByJobId(job.getId()).size());
         item.setCreatedAt(job.getCreateTime());
         item.setPublishedAt(job.getPublishedAt());

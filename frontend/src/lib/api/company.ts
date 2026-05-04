@@ -152,8 +152,4 @@ export const companyApi = {
   rejectJoinRequest: async (staffId: number): Promise<void> => {
     await apiClient.post(`/company/staff/${staffId}/reject-join`);
   },
-
-  inviteInterview: async (data: { resumeId: number; jobId: number; interviewTime?: string; location?: string; remark?: string }): Promise<void> => {
-    await apiClient.post('/company/applications/interview-invite', data);
-  },
 };

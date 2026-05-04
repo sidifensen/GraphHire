@@ -320,7 +320,7 @@ class CompanyControllerIT extends BaseControllerIT {
                 .headers(companyHeaders))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.code").value(200))
-            .andExpect(jsonPath("$.data.pendingApplicationCount").isNumber())
+            .andExpect(jsonPath("$.data.pendingConversationCount").isNumber())
             .andExpect(jsonPath("$.data.newMatchCandidateCount").isNumber())
             .andExpect(jsonPath("$.data.activeJobCount").isNumber())
             .andExpect(jsonPath("$.data.recentJobs").isArray());
