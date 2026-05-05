@@ -10,7 +10,6 @@ export default function EnterpriseChatDetailPage() {
   return (
     <ChatWorkspace
       role="enterprise"
-      title="聊天详情"
       conversationPathPrefix="/enterprise/chat"
       mobileMode="detail"
       initialConversationId={Number.isFinite(conversationId) ? conversationId : null}
