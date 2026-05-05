@@ -17,10 +17,16 @@ function isActive(pathname: string, href: string) {
 
 export default function UserWorkbenchSidebar() {
   const pathname = usePathname() ?? '/';
+  const transparent = pathname === '/skill-graph' || pathname.startsWith('/skill-graph/');
 
   return (
     <aside className="hidden lg:block lg:w-36 lg:shrink-0">
-      <nav aria-label="我的页面菜单" className="fixed left-8 top-24 z-30 inline-block">
+      <nav
+        aria-label="我的页面菜单"
+        className={`fixed left-8 top-24 z-30 inline-block ${
+          transparent ? 'bg-transparent backdrop-blur-[1px]' : ''
+        }`}
+      >
         <ul className="space-y-1.5">
           {MENU_ITEMS.map((item) => {
             const active = isActive(pathname, item.href);
@@ -30,7 +36,9 @@ export default function UserWorkbenchSidebar() {
                   <motion.span
                     layoutId="user-workbench-sidebar-active"
                     transition={{ type: 'spring', stiffness: 520, damping: 40 }}
-                    className="absolute inset-0 rounded-r-full border-l-2 border-primary bg-primary/10"
+                    className={`absolute inset-0 rounded-r-full border-l-2 border-primary ${
+                      transparent ? 'bg-primary/15' : 'bg-primary/10'
+                    }`}
                   />
                 ) : null}
                 <Link
@@ -39,7 +47,9 @@ export default function UserWorkbenchSidebar() {
                   className={`block whitespace-nowrap rounded-r-full border-l-2 px-4 py-2.5 text-sm font-semibold transition-colors ${
                     active
                       ? 'border-transparent text-primary'
-                      : 'border-transparent text-on-surface-variant hover:bg-surface-low hover:text-on-surface'
+                      : transparent
+                        ? 'border-transparent text-on-surface hover:bg-surface-low/55 hover:text-on-surface'
+                        : 'border-transparent text-on-surface-variant hover:bg-surface-low hover:text-on-surface'
                   } relative z-10`}
                 >
                   {item.label}

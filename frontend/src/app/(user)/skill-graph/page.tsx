@@ -1,33 +1,40 @@
 'use client';
 
 import React from 'react';
+import dynamic from 'next/dynamic';
 import { TopNav } from '@/app/(user)/_mock/components/TopNav';
-import { RefreshCw, User, Code, Layout, Database, Group, TrendingUp, Award } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { RefreshCw } from 'lucide-react';
 import UserWorkbenchSidebar from '@/app/(user)/_components/UserWorkbenchSidebar';
 import { personApi, type AbilityAssessment } from '@/lib/api/person';
+import type { ForceGraphMethods, LinkObject, NodeObject } from 'react-force-graph-2d';
+
+const ForceGraph2D = dynamic(() => import('react-force-graph-2d'), { ssr: false });
 
 type SkillGraphPayload = {
   personId?: number;
+  realName?: string | null;
+  avatarUrl?: string | null;
   skills?: string[];
+  success?: boolean;
 };
 
-type NodePreset = {
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+type GraphNodeType = {
+  id: string;
   label: string;
-  top: string;
-  left?: string;
-  right?: string;
+  kind: 'person' | 'skill';
   color: string;
+  radius: number;
 };
 
-const NODE_PRESETS: NodePreset[] = [
-  { icon: Code, label: '技术工程', top: '15%', left: '50%', color: 'bg-secondary-container' },
-  { icon: Layout, label: '产品体验', top: '40%', left: '15%', color: 'bg-primary/10 text-primary' },
-  { icon: Group, label: '团队协作', top: '80%', left: '20%', color: 'bg-surface-mid' },
-  { icon: Database, label: '数据能力', top: '80%', right: '20%', color: 'bg-surface-mid' },
-  { icon: TrendingUp, label: '成长潜力', top: '40%', right: '15%', color: 'bg-tertiary/10 text-tertiary' },
-];
+type GraphLinkType = {
+  source: string;
+  target: string;
+};
+
+type GraphData = {
+  nodes: NodeObject<GraphNodeType>[];
+  links: LinkObject<GraphNodeType, GraphLinkType>[];
+};
 
 const LEVEL_TEXT: Record<string, string> = {
   HIGH: 'Top 5% 职场精英',
@@ -39,18 +46,18 @@ function normalizeSkills(input: unknown): string[] {
   if (!Array.isArray(input)) {
     return [];
   }
-  const unique = new Set<string>();
+  const deduped = new Set<string>();
   for (const item of input) {
     if (typeof item !== 'string') {
       continue;
     }
-    const skill = item.trim();
-    if (skill.length === 0) {
+    const cleaned = item.trim();
+    if (cleaned.length === 0) {
       continue;
     }
-    unique.add(skill);
+    deduped.add(cleaned);
   }
-  return Array.from(unique);
+  return Array.from(deduped);
 }
 
 function safePercent(value: number): number {
@@ -82,18 +89,76 @@ function resolveLevelText(level: string | undefined): string {
   return LEVEL_TEXT[level] ?? LEVEL_TEXT.LOW;
 }
 
-function skillsForNode(skills: string[], index: number): string {
-  if (skills.length === 0) {
-    return NODE_PRESETS[index].label;
+function buildGraphData(personId: number, personName: string, skills: string[]): GraphData {
+  const centerNodeId = `person:${personId}`;
+  const personNode: NodeObject<GraphNodeType> = {
+    id: centerNodeId,
+    label: personName,
+    kind: 'person',
+    color: '#0052FF',
+    radius: 38,
+    fx: 0,
+    fy: 0,
+  };
+
+  const skillNodes: NodeObject<GraphNodeType>[] = skills.map((skill) => ({
+    id: `skill:${skill}`,
+    label: skill,
+    kind: 'skill',
+    color: '#BFD2FF',
+    radius: 16,
+  }));
+
+  const links: LinkObject<GraphNodeType, GraphLinkType>[] = skillNodes.map((node) => ({
+    source: centerNodeId,
+    target: node.id as string,
+  }));
+
+  return {
+    nodes: [personNode, ...skillNodes],
+    links,
+  };
+}
+
+function drawNode(node: NodeObject<GraphNodeType>, ctx: CanvasRenderingContext2D, globalScale: number) {
+  const label = node.label ?? '';
+  const radius = node.radius ?? 10;
+  const x = node.x ?? 0;
+  const y = node.y ?? 0;
+
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
+  ctx.fillStyle = node.color ?? '#90A4FF';
+  ctx.fill();
+
+  if (node.kind === 'person') {
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+  } else {
+    ctx.strokeStyle = 'rgba(0, 82, 255, 0.32)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
   }
-  return skills[index % skills.length];
+
+  const fontSize = node.kind === 'person' ? 14 / globalScale : 11 / globalScale;
+  ctx.font = `${node.kind === 'person' ? 800 : 700} ${fontSize}px Manrope, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = node.kind === 'person' ? '#FFFFFF' : '#1B2A57';
+  const textY = node.kind === 'person' ? y : y + radius + 12 / globalScale;
+  ctx.fillText(label, x, textY);
 }
 
 export default function KnowledgeGraph() {
   const [skills, setSkills] = React.useState<string[]>([]);
   const [assessment, setAssessment] = React.useState<AbilityAssessment | null>(null);
+  const [personId, setPersonId] = React.useState<number>(0);
+  const [personName, setPersonName] = React.useState<string>('求职者');
+  const [graphData, setGraphData] = React.useState<GraphData>({ nodes: [], links: [] });
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+  const stageRef = React.useRef<ForceGraphMethods<GraphNodeType, GraphLinkType>>();
 
   React.useEffect(() => {
     let active = true;
@@ -113,8 +178,15 @@ export default function KnowledgeGraph() {
         }
 
         const graph = (graphResponse ?? {}) as SkillGraphPayload;
-        setSkills(normalizeSkills(graph.skills));
+        const nextSkills = normalizeSkills(graph.skills);
+        const nextPersonId = Number.isFinite(graph.personId) ? Number(graph.personId) : 0;
+        const nextPersonName = graph.realName?.trim() ? graph.realName.trim() : '求职者';
+
+        setSkills(nextSkills);
+        setPersonId(nextPersonId);
+        setPersonName(nextPersonName);
         setAssessment(assessmentResponse);
+        setGraphData(buildGraphData(nextPersonId, nextPersonName, nextSkills));
       } catch (err) {
         if (!active) {
           return;
@@ -122,7 +194,10 @@ export default function KnowledgeGraph() {
         const message = err instanceof Error ? err.message : '能力图谱加载失败';
         setError(message || '能力图谱加载失败');
         setSkills([]);
+        setPersonId(0);
+        setPersonName('求职者');
         setAssessment(null);
+        setGraphData(buildGraphData(0, '求职者', []));
       } finally {
         if (active) {
           setLoading(false);
@@ -137,179 +212,112 @@ export default function KnowledgeGraph() {
     };
   }, []);
 
+  React.useEffect(() => {
+    if (!stageRef.current || graphData.nodes.length === 0) {
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      stageRef.current?.zoomToFit(500, 60);
+    }, 220);
+    return () => window.clearTimeout(timer);
+  }, [graphData]);
+
   const totalScore = safeScore(assessment);
   const skillCount = safeSkillCount(assessment, skills);
   const levelText = resolveLevelText(assessment?.level);
-  const progressWidth = `${totalScore}%`;
+
+  const handleResetView = React.useCallback(() => {
+    const graph = stageRef.current;
+    if (!graph) {
+      return;
+    }
+    graph.centerAt(0, 0, 450);
+    graph.zoom(1.1, 450);
+    graph.d3ReheatSimulation();
+  }, []);
 
   return (
-    <div className="flex flex-col min-h-screen md:min-h-[calc(100vh-4rem)]">
+    <div className="flex min-h-screen md:min-h-[calc(100vh-4rem)] flex-col bg-surface-background">
       <div className="md:hidden">
         <TopNav title="我的图谱" />
       </div>
 
-      <main className="flex-1 px-5 pb-28 pt-5 md:px-8 md:py-12 md:pb-32">
-        <div className="mx-auto flex w-full max-w-7xl gap-6 lg:gap-8">
+      <main className="flex-1 px-5 pb-28 pt-5 md:px-8 md:py-8 md:pb-32">
+        <div className="mx-auto flex w-full max-w-[1700px] gap-6">
           <UserWorkbenchSidebar />
-          <div className="flex-1 grid gap-6 md:grid-cols-12 md:gap-8">
-            <section className="md:col-span-8 bg-surface-lowest rounded-2xl border border-surface-mid h-[400px] md:h-[600px] relative flex items-center justify-center overflow-hidden">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/10 via-surface-lowest to-surface-lowest" />
 
-              <div className="absolute top-6 left-8 z-20">
-                <h2 className="text-xl md:text-3xl font-black text-on-surface flex items-center gap-3">
-                  <div className="w-2 h-8 bg-primary rounded-full" />
-                  全景图谱
-                </h2>
-                <p className="text-xs md:text-sm text-outline font-bold mt-1">
-                  {loading ? '正在同步能力图谱...' : `基于您的 ${skillCount} 个技能点位生成`}
-                </p>
+          <section className="relative min-h-[74vh] flex-1 overflow-hidden rounded-3xl border border-surface-mid/60 bg-[radial-gradient(circle_at_20%_20%,rgba(0,82,255,0.12),transparent_45%),radial-gradient(circle_at_80%_80%,rgba(37,99,235,0.08),transparent_40%),linear-gradient(145deg,rgba(255,255,255,0.96),rgba(245,248,255,0.84))]">
+            <div className="absolute inset-0 z-0" data-testid="force-graph-stage">
+              <ForceGraph2D
+                ref={stageRef}
+                graphData={graphData}
+                backgroundColor="rgba(0,0,0,0)"
+                linkColor={() => 'rgba(0,82,255,0.25)'}
+                linkWidth={1.5}
+                linkDirectionalParticles={1}
+                linkDirectionalParticleWidth={2.2}
+                linkDirectionalParticleSpeed={() => 0.006}
+                nodeRelSize={7}
+                nodeCanvasObject={drawNode}
+                nodePointerAreaPaint={(node, color, ctx) => {
+                  const radius = node.radius ?? 10;
+                  ctx.fillStyle = color;
+                  ctx.beginPath();
+                  ctx.arc(node.x ?? 0, node.y ?? 0, radius + 10, 0, 2 * Math.PI, false);
+                  ctx.fill();
+                }}
+                nodeLabel={(node) => node.label}
+                d3VelocityDecay={0.3}
+                enableNodeDrag
+                enablePanInteraction
+                enableZoomInteraction
+                minZoom={0.45}
+                maxZoom={4}
+                onNodeDragEnd={(node) => {
+                  if (node.kind === 'person') {
+                    node.fx = 0;
+                    node.fy = 0;
+                    return;
+                  }
+                  node.fx = node.x;
+                  node.fy = node.y;
+                }}
+                onBackgroundClick={() => {
+                  stageRef.current?.d3ReheatSimulation();
+                }}
+              />
+            </div>
+
+            <div className="pointer-events-none absolute left-7 top-6 z-20">
+              <p className="text-xs font-extrabold uppercase tracking-[0.24em] text-primary/70">Immersive Skill Graph</p>
+              <h2 className="mt-2 text-2xl font-black text-on-surface md:text-4xl">{personName}</h2>
+              <p className="mt-2 text-sm font-semibold text-outline">
+                {loading ? '正在同步能力图谱...' : `已连接 ${skillCount} 个技能节点`}
+              </p>
+              {error ? <p className="mt-2 text-xs font-semibold text-red-500">{error}</p> : null}
+            </div>
+
+            <button
+              type="button"
+              className="absolute right-7 top-6 z-20 flex h-11 w-11 items-center justify-center rounded-2xl border border-surface-mid bg-surface-lowest/85 text-on-surface-variant shadow-sm transition hover:text-primary"
+              onClick={handleResetView}
+              aria-label="重置图谱视角"
+            >
+              <RefreshCw size={18} />
+            </button>
+
+            <div className="absolute bottom-6 right-7 z-20 text-right">
+              <div className="text-6xl font-black text-primary md:text-7xl">{totalScore}</div>
+              <div className="mt-1 text-sm font-extrabold uppercase tracking-[0.2em] text-on-surface/85">综合分</div>
+              <div className="mt-2 text-xs font-bold text-outline">{levelText}</div>
+              <div className="mt-3 text-xl font-black text-on-surface">{skillCount} 知识节点</div>
+              <div className="mt-1 max-w-[260px] text-xs font-semibold text-outline">
+                {skills.length > 0 ? skills.slice(0, 8).join(' · ') : '暂无技能标签'}
               </div>
-
-              <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-40">
-                <g stroke="var(--color-primary)" strokeDasharray="4 4" strokeWidth="1">
-                  <line x1="50%" y1="50%" x2="50%" y2="15%" />
-                  <line x1="50%" y1="50%" x2="85%" y2="40%" />
-                  <line x1="50%" y1="50%" x2="80%" y2="80%" />
-                  <line x1="50%" y1="50%" x2="20%" y2="80%" />
-                  <line x1="50%" y1="50%" x2="15%" y2="40%" />
-                </g>
-              </svg>
-
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="z-10 w-24 h-24 md:w-32 md:h-32 bg-primary text-white rounded-full flex flex-col items-center justify-center shadow-xl absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-8 border-surface-lowest"
-              >
-                <User size={32} className="md:size-48" />
-              </motion.div>
-
-              {NODE_PRESETS.map((preset, index) => (
-                <Node
-                  key={`${preset.label}-${index}`}
-                  icon={preset.icon}
-                  label={skillsForNode(skills, index)}
-                  top={preset.top}
-                  left={preset.left}
-                  right={preset.right}
-                  delay={0.1 * (index + 1)}
-                  color={preset.color}
-                />
-              ))}
-
-              {skills.length === 0 && !loading && !error ? (
-                <div className="absolute bottom-8 left-8 rounded-xl border border-surface-mid bg-surface-lowest/90 px-4 py-3 text-xs text-on-surface-variant">
-                  暂无技能图谱数据
-                  <div className="mt-1 text-[11px]">请先上传并解析简历，然后重试。</div>
-                </div>
-              ) : null}
-
-              <div className="md:flex hidden absolute bottom-10 right-10 flex-col gap-3">
-                <button className="w-12 h-12 rounded-2xl bg-surface-lowest border border-surface-mid flex items-center justify-center shadow-sm" disabled>
-                  <RefreshCw size={20} className="text-on-surface-variant" />
-                </button>
-              </div>
-            </section>
-
-            <section className="md:col-span-4 flex flex-col gap-6">
-              <div className="bg-surface-lowest rounded-2xl p-6 md:p-7 border border-surface-mid flex flex-col gap-4">
-                <div className="flex items-center gap-3 text-primary">
-                  <Award size={24} />
-                  <span className="text-sm font-black text-on-surface uppercase tracking-widest">能力概览</span>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-5xl md:text-6xl font-black text-primary">{totalScore}</span>
-                  <span className="text-sm text-outline font-bold">综合分</span>
-                </div>
-                <div className="mt-6 pt-6 border-t border-surface-low">
-                  <div className="w-full h-3 bg-surface-low rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: progressWidth }}
-                      transition={{ duration: 1, delay: 0.2 }}
-                      className="h-full bg-primary rounded-full shadow-[0_0_15px_rgba(0,82,255,0.4)]"
-                    />
-                  </div>
-                  <div className="flex justify-between mt-4 text-xs font-black">
-                    <span className="text-outline uppercase tracking-wider">{levelText}</span>
-                    <span className="text-green-500 flex items-center gap-1 font-black">
-                      <TrendingUp size={14} />
-                      {loading ? '同步中' : `${totalScore}%`}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-surface-lowest rounded-2xl p-6 md:p-7 border border-surface-mid flex flex-col gap-4">
-                <div className="flex items-center gap-3 text-tertiary">
-                  <div className="w-6 h-6 rounded-lg bg-tertiary/10 flex items-center justify-center">
-                    <RefreshCw size={14} className="text-tertiary" />
-                  </div>
-                  <span className="text-sm font-black text-on-surface uppercase tracking-widest">知识节点</span>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-5xl md:text-6xl font-black text-on-surface">{skillCount}</span>
-                  <span className="text-sm text-outline font-bold">已同步</span>
-                </div>
-                <div className="mt-6">
-                  {error ? (
-                    <p className="text-xs text-red-500 leading-relaxed mb-6">{error}</p>
-                  ) : (
-                    <p className="text-xs text-on-surface-variant leading-relaxed mb-6">
-                      {loading ? '正在加载您的能力图谱，请稍候。' : '您的知识图谱会随着简历解析结果持续更新。'}
-                    </p>
-                  )}
-                  <div className="flex flex-wrap gap-2">
-                    {skills.length > 0 ? (
-                      skills.slice(0, 8).map((tag) => (
-                        <span key={tag} className="px-4 py-1.5 bg-primary/5 text-primary text-[10px] font-black rounded-xl border border-primary/10">
-                          {tag}
-                        </span>
-                      ))
-                    ) : (
-                      <span className="px-4 py-1.5 bg-surface-mid text-on-surface-variant text-[10px] font-black rounded-xl">
-                        暂无技能标签
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </section>
-          </div>
+            </div>
+          </section>
         </div>
       </main>
     </div>
-  );
-}
-
-function Node({
-  icon: Icon,
-  label,
-  top,
-  left,
-  right,
-  delay,
-  color,
-}: {
-  icon: React.ComponentType<{ size?: number; className?: string }>;
-  label: string;
-  top: string;
-  left?: string;
-  right?: string;
-  delay: number;
-  color: string;
-}) {
-  return (
-    <motion.div
-      initial={{ scale: 0, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ delay }}
-      className="absolute flex flex-col items-center gap-2 transform -translate-x-1/2 -translate-y-1/2"
-      style={{ top, left, right }}
-    >
-      <div className={`w-14 h-14 rounded-full flex items-center justify-center shadow-md border-4 border-surface-lowest ${color}`}>
-        <Icon size={24} />
-      </div>
-      <span className="text-xs font-bold text-on-surface-variant whitespace-nowrap">{label}</span>
-    </motion.div>
   );
 }

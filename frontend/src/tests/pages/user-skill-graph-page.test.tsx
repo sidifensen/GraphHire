@@ -14,6 +14,10 @@ vi.mock('@/lib/api/person', () => ({
   },
 }));
 
+vi.mock('react-force-graph-2d', () => ({
+  default: () => <div data-testid="force-graph-stage">Force Graph</div>,
+}));
+
 describe('User Skill Graph page', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -22,6 +26,8 @@ describe('User Skill Graph page', () => {
   it('loads graph and assessment from backend', async () => {
     getGraphMock.mockResolvedValue({
       personId: 99,
+      realName: '斯蒂芬森',
+      avatarUrl: '/person/avatar/public/99',
       skills: ['Java', 'Spring Boot', 'React'],
       success: true,
       mock: false,
@@ -48,19 +54,20 @@ describe('User Skill Graph page', () => {
     });
 
     expect(screen.getByRole('navigation', { name: '我的页面菜单' })).toBeInTheDocument();
-    expect(screen.getByText('全景图谱')).toBeInTheDocument();
+    expect(screen.getAllByTestId('force-graph-stage').length).toBeGreaterThan(0);
+    expect(screen.getByText('斯蒂芬森')).toBeInTheDocument();
     expect(screen.getByText('86')).toBeInTheDocument();
     expect(screen.getByText('综合分')).toBeInTheDocument();
-    expect(screen.getByText('3')).toBeInTheDocument();
-    expect(screen.getByText('已同步')).toBeInTheDocument();
-    expect(screen.getAllByText('Java').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Spring Boot').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('React').length).toBeGreaterThan(0);
+    expect(screen.getByText('3 知识节点')).toBeInTheDocument();
+    expect(screen.getByText('Top 5% 职场精英')).toBeInTheDocument();
+    expect(screen.getByText(/Java · Spring Boot · React/)).toBeInTheDocument();
   });
 
   it('renders empty state when no graph skills', async () => {
     getGraphMock.mockResolvedValue({
       personId: 99,
+      realName: null,
+      avatarUrl: null,
       skills: [],
       success: true,
       mock: false,
@@ -86,8 +93,8 @@ describe('User Skill Graph page', () => {
       expect(getAbilityAssessmentMock).toHaveBeenCalledTimes(1);
     });
 
-    expect(screen.getByText('暂无技能图谱数据')).toBeInTheDocument();
-    expect(screen.getByText('请先上传并解析简历，然后重试。')).toBeInTheDocument();
+    expect(screen.getByText('求职者')).toBeInTheDocument();
+    expect(screen.getByText('0 知识节点')).toBeInTheDocument();
     expect(screen.getByText('暂无技能标签')).toBeInTheDocument();
   });
 });

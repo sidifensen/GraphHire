@@ -113,6 +113,14 @@ public class PersonController {
     public Result<Map<String, Object>> getPersonGraph() {
         Long userId = StpUtil.getLoginIdAsLong();
         Map<String, Object> graph = skillGraphClient.getPersonSkillGraph(userId);
+        PersonInfo personInfo = personInfoRepository.findByUserId(userId).orElse(null);
+
+        graph.put("realName", personInfo == null ? null : personInfo.getRealName());
+        graph.put(
+            "avatarUrl",
+            personInfo == null || personInfo.getAvatarUrl() == null ? null : "/person/avatar/public/" + userId
+        );
+
         return Result.success(graph);
     }
 

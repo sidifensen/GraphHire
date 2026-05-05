@@ -17,6 +17,9 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -130,6 +133,52 @@ class PersonControllerTest {
             assertEquals(90, result.getData().getDimensions().getBreadth());
             assertEquals("HIGH", result.getData().getLevel());
             verify(personAbilityAssessmentService).assess(300L);
+        }
+    }
+
+    @Test
+    @DisplayName("获取个人图谱时附带真实姓名与头像访问地址")
+    void getPersonGraph_IncludesRealNameAndAvatarUrl() {
+        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+            stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(400L);
+            Map<String, Object> graph = new HashMap<>();
+            graph.put("personId", 400L);
+            graph.put("skills", List.of("Java", "Spring Boot"));
+            graph.put("success", true);
+            when(skillGraphClient.getPersonSkillGraph(400L)).thenReturn(graph);
+
+            PersonInfo personInfo = new PersonInfo();
+            personInfo.setUserId(400L);
+            personInfo.setRealName("斯蒂芬森");
+            personInfo.setAvatarUrl("avatar/user_400.png");
+            when(personInfoRepository.findByUserId(400L)).thenReturn(Optional.of(personInfo));
+
+            var result = personController.getPersonGraph();
+
+            assertNotNull(result.getData());
+            assertEquals("斯蒂芬森", result.getData().get("realName"));
+            assertEquals("/person/avatar/public/400", result.getData().get("avatarUrl"));
+            assertEquals(List.of("Java", "Spring Boot"), result.getData().get("skills"));
+        }
+    }
+
+    @Test
+    @DisplayName("获取个人图谱时无资料记录仍返回空姓名和头像")
+    void getPersonGraph_AllowsNullRealNameWhenPersonInfoMissing() {
+        try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+            stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(401L);
+            Map<String, Object> graph = new HashMap<>();
+            graph.put("personId", 401L);
+            graph.put("skills", List.of("React"));
+            graph.put("success", true);
+            when(skillGraphClient.getPersonSkillGraph(401L)).thenReturn(graph);
+
+            var result = personController.getPersonGraph();
+
+            assertNotNull(result.getData());
+            assertNull(result.getData().get("realName"));
+            assertNull(result.getData().get("avatarUrl"));
+            assertEquals(List.of("React"), result.getData().get("skills"));
         }
     }
 }

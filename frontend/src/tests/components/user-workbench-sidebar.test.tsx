@@ -28,4 +28,13 @@ describe('UserWorkbenchSidebar', () => {
 
     expect(screen.getByRole('link', { name: '个人主页' })).toHaveAttribute('aria-current', 'page');
   });
+
+  it('uses transparent variant styles on skill graph route', () => {
+    pathname = '/skill-graph';
+    render(<UserWorkbenchSidebar />);
+
+    const nav = screen.getByRole('navigation', { name: '我的页面菜单' });
+    expect(nav.className).toContain('bg-transparent');
+    expect(nav.className).toContain('backdrop-blur-[1px]');
+  });
 });

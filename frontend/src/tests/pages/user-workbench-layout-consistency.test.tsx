@@ -42,7 +42,9 @@ vi.mock('@/lib/api/chat', () => ({
 }));
 
 function expectMaxWidthContainerWithoutHorizontalPadding(layoutMenu: HTMLElement) {
-  const maxWidthContainer = layoutMenu.closest('.max-w-7xl') as HTMLElement | null;
+  const maxWidthContainer =
+    (layoutMenu.closest('.max-w-7xl') as HTMLElement | null) ??
+    (layoutMenu.closest('.max-w-\\[1700px\\]') as HTMLElement | null);
   expect(maxWidthContainer).not.toBeNull();
   expect(maxWidthContainer).not.toHaveClass('p-5');
   expect(maxWidthContainer).not.toHaveClass('px-5');

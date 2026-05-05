@@ -32,6 +32,8 @@ export interface PersonProfile {
 
 export interface SkillGraph {
   personId?: number;
+  realName?: string | null;
+  avatarUrl?: string | null;
   skills?: string[];
   success?: boolean;
   mock?: boolean;

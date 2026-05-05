@@ -2,6 +2,13 @@
 
 ## 2026-05-05
 
+- feat: 用户端“我的图谱”重构为沉浸式可拖拽技能图谱舞台，接入 `react-force-graph-2d`，支持节点拖拽、画布平移缩放与视角重置
+- feat: `/person/graph` 接口新增返回 `realName` 与 `avatarUrl`（兼容保留 `personId/skills/success`），前端中心节点改为展示真实姓名（空值回退“求职者”）
+- refactor: 图谱页布局由“主卡片 + 右侧统计卡”调整为“全幅图谱 + 右下角纯数字能力概览”，能力信息继续只读 `/person/ability-assessment`
+- fix: 保留左侧“我的页面菜单”尺寸与结构，并在图谱路由下切换为透明视觉风格，减少对沉浸式背景的遮挡
+- test: 新增并更新 `PersonControllerTest`、`user-skill-graph-page.test.tsx`、`user-workbench-sidebar.test.tsx`、`user-workbench-layout-consistency.test.tsx` 覆盖图谱接口扩展与页面新交互
+- docs: 新增本次改造的 spec / acceptance / plan 文档（`docs/superpowers/specs|acceptance|plans/2026-05-05-200447-*`）
+
 - chore: 汇总提交当前在途改动（默认简历安全重匹配、企业推荐页布局与聊天/个人工作台相关前端调整），并完成前后端构建与前端全量测试校验
 - feat: 简历上传流程优化：当用户尚无默认简历时，新上传简历自动标记为默认简历
 - feat: 默认简历切换后触发全职位重匹配，手动“设为默认”改为先重建新默认匹配，再清理旧默认匹配记录
