@@ -313,6 +313,25 @@ describe('chat workspace redesign', () => {
     expect(screen.getByPlaceholderText('输入消息...')).toHaveValue('😀');
   });
 
+  it('supports emoji category switch and pagination with fixed scroll region', async () => {
+    render(<UserChatListPage />);
+
+    await waitFor(() => expect(listConversationsMock).toHaveBeenCalledTimes(1));
+    fireEvent.click(await screen.findByTestId('chat-emoji-button'));
+
+    const panel = await screen.findByTestId('chat-emoji-panel');
+    const scrollRegion = within(panel).getByTestId('chat-emoji-scroll-region');
+    expect(scrollRegion.className).toContain('h-64');
+    expect(scrollRegion.className).toContain('overflow-y-auto');
+
+    fireEvent.click(within(panel).getByRole('button', { name: '笑脸' }));
+    expect(within(panel).getByText('笑脸 · 第1/2页')).toBeInTheDocument();
+
+    fireEvent.click(within(panel).getByRole('button', { name: '下一页表情' }));
+    expect(within(panel).getByText('笑脸 · 第2/2页')).toBeInTheDocument();
+    expect(within(panel).getByRole('button', { name: '上一页表情' })).toBeInTheDocument();
+  });
+
   it('renders enterprise workspace without resume button and keeps interview action', async () => {
     render(<EnterpriseChatListPage />);
 
@@ -462,6 +481,9 @@ describe('chat workspace redesign', () => {
     const panel = await screen.findByTestId('chat-emoji-panel');
     expect(within(panel).getByRole('button', { name: '🥳' })).toBeInTheDocument();
     expect(within(panel).getByRole('button', { name: '🤝' })).toBeInTheDocument();
+    expect(within(panel).getByRole('button', { name: '常用' })).toBeInTheDocument();
+    expect(within(panel).getByRole('button', { name: '笑脸' })).toBeInTheDocument();
+    expect(within(panel).getByRole('button', { name: '下一页表情' })).toBeInTheDocument();
 
     createElementSpy.mockRestore();
     createObjectURLSpy.mockRestore();

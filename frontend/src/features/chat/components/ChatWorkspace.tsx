@@ -11,7 +11,7 @@ import { resumeApi, type Resume } from '@/lib/api/resume';
 import { enterpriseAuthStore, userAuthStore } from '@/lib/stores/auth-store';
 import type { ChatConversationSummary, ChatMessage } from '@/lib/types/chat';
 import { getApiBaseUrl } from '@/lib/api/base-url';
-import { CHAT_EMOJIS } from './emoji';
+import { CHAT_EMOJI_CATEGORIES } from './emoji';
 import type { ChatJobMeta, ChatWorkspaceProps } from './ChatTypes';
 
 function parseExt(ext?: string | null): Record<string, unknown> | null {
@@ -157,23 +157,92 @@ function EmojiPanel({
 }: {
   onSelect: (emoji: string) => void;
 }) {
+  const emojisPerPage = 72;
+  const [activeCategoryId, setActiveCategoryId] = useState(CHAT_EMOJI_CATEGORIES[0]?.id ?? '');
+  const [page, setPage] = useState(1);
+
+  const activeCategory = useMemo(
+    () => CHAT_EMOJI_CATEGORIES.find((item) => item.id === activeCategoryId) ?? CHAT_EMOJI_CATEGORIES[0],
+    [activeCategoryId],
+  );
+  const totalPages = Math.max(1, Math.ceil((activeCategory?.emojis.length ?? 0) / emojisPerPage));
+  const pageStart = (page - 1) * emojisPerPage;
+  const pageEmojis = (activeCategory?.emojis ?? []).slice(pageStart, pageStart + emojisPerPage);
+
+  useEffect(() => {
+    setPage(1);
+  }, [activeCategoryId]);
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
   return (
     <div
       data-testid="chat-emoji-panel"
-      className="absolute bottom-14 left-0 z-20 w-[360px] rounded-xl border border-outline/20 bg-surface-lowest p-3 shadow-lg"
+      className="absolute bottom-14 left-0 z-20 w-[430px] rounded-xl border border-outline/20 bg-surface-lowest p-3 shadow-lg"
     >
-      <div className="grid grid-cols-10 gap-2">
-        {CHAT_EMOJIS.map((emoji) => (
+      <div className="mb-2 flex items-center gap-2 overflow-x-auto pb-1" data-testid="chat-emoji-category-tabs">
+        {CHAT_EMOJI_CATEGORIES.map((category) => (
           <button
-            key={emoji}
+            key={category.id}
             type="button"
-            onClick={() => onSelect(emoji)}
-            className="h-7 w-7 rounded-lg hover:bg-surface-low text-base leading-none"
-            aria-label={emoji}
+            aria-pressed={activeCategory?.id === category.id}
+            onClick={() => setActiveCategoryId(category.id)}
+            className={`shrink-0 rounded-full border px-2.5 py-1 text-xs font-bold ${
+              activeCategory?.id === category.id
+                ? 'border-primary/40 bg-primary/10 text-primary'
+                : 'border-outline/20 text-on-surface-variant hover:bg-surface-low'
+            }`}
           >
-            {emoji}
+            {category.label}
           </button>
         ))}
+      </div>
+
+      <div
+        data-testid="chat-emoji-scroll-region"
+        className="h-64 overflow-y-auto rounded-lg border border-outline/10 bg-surface-low p-2"
+      >
+        <div className="grid grid-cols-10 gap-2">
+          {pageEmojis.map((emoji) => (
+            <button
+              key={emoji}
+              type="button"
+              onClick={() => onSelect(emoji)}
+              className="h-7 w-7 rounded-lg hover:bg-surface-lowest text-base leading-none"
+              aria-label={emoji}
+            >
+              {emoji}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-2 flex items-center justify-between gap-2 text-xs text-on-surface-variant">
+        <span>{activeCategory?.label ?? '表情'} · 第{page}/{totalPages}页</span>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            aria-label="上一页表情"
+            onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+            disabled={page <= 1}
+            className="rounded-md border border-outline/20 px-2 py-0.5 font-bold disabled:opacity-40"
+          >
+            上一页
+          </button>
+          <button
+            type="button"
+            aria-label="下一页表情"
+            onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+            disabled={page >= totalPages}
+            className="rounded-md border border-outline/20 px-2 py-0.5 font-bold disabled:opacity-40"
+          >
+            下一页
+          </button>
+        </div>
       </div>
     </div>
   );
