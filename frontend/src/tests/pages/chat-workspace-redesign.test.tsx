@@ -12,6 +12,7 @@ const {
   sendResumeMock,
   sendImageMock,
   sendInterviewInviteMock,
+  downloadResumeMock,
   markReadMock,
   getMyResumesMock,
   getPublicJobByIdMock,
@@ -24,6 +25,7 @@ const {
   sendResumeMock: vi.fn(),
   sendImageMock: vi.fn(),
   sendInterviewInviteMock: vi.fn(),
+  downloadResumeMock: vi.fn(),
   markReadMock: vi.fn(),
   getMyResumesMock: vi.fn(),
   getPublicJobByIdMock: vi.fn(),
@@ -54,6 +56,7 @@ vi.mock('@/lib/api/chat', () => ({
     sendResume: sendResumeMock,
     sendImage: sendImageMock,
     sendInterviewInvite: sendInterviewInviteMock,
+    downloadResume: downloadResumeMock,
     getResumeDownloadUrl: vi.fn((conversationId: number, resumeId: number) => `/chat/conversations/${conversationId}/resume/${resumeId}/download`),
     markRead: markReadMock,
   },
@@ -227,6 +230,10 @@ describe('chat workspace redesign', () => {
     sendResumeMock.mockResolvedValue({ messageId: 89 });
     sendImageMock.mockResolvedValue({ messageId: 90 });
     sendInterviewInviteMock.mockResolvedValue({ messageId: 91 });
+    downloadResumeMock.mockResolvedValue({
+      blob: new Blob(['resume'], { type: 'application/pdf' }),
+      fileName: '25年简历测试.pdf',
+    });
     markReadMock.mockResolvedValue(undefined);
     getMyResumesMock.mockResolvedValue([
       {
@@ -327,7 +334,7 @@ describe('chat workspace redesign', () => {
     expect(screen.queryByText('2')).not.toBeInTheDocument();
   });
 
-  it('renders resume card with download link and richer emoji + gallery icon + no enterprise send-notice button', async () => {
+  it('renders resume card and downloads pdf via authenticated api call', async () => {
     listMessagesMock.mockResolvedValue([
       {
         id: 11,
@@ -346,7 +353,24 @@ describe('chat workspace redesign', () => {
 
     await waitFor(() => expect(listConversationsMock).toHaveBeenCalledTimes(1));
     expect(await screen.findByText('25年简历测试.pdf')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '下载PDF' })).toBeInTheDocument();
+    const createObjectURLSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test-url');
+    const revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
+    const clickMock = vi.fn();
+    const originalCreateElement = document.createElement.bind(document);
+    const createElementSpy = vi.spyOn(document, 'createElement').mockImplementation(((tagName: string, options?: ElementCreationOptions) => {
+      const element = originalCreateElement(tagName, options);
+      if (tagName.toLowerCase() === 'a') {
+        (element as HTMLAnchorElement).click = clickMock;
+      }
+      return element;
+    }) as typeof document.createElement);
+
+    fireEvent.click(screen.getByRole('button', { name: '下载PDF' }));
+
+    await waitFor(() => expect(downloadResumeMock).toHaveBeenCalledWith(1, 501));
+    expect(createObjectURLSpy).toHaveBeenCalled();
+    expect(clickMock).toHaveBeenCalledTimes(1);
+    expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:test-url');
 
     expect(screen.queryByRole('button', { name: '发送通知' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '面试通知' })).toBeInTheDocument();
@@ -359,5 +383,9 @@ describe('chat workspace redesign', () => {
     const panel = await screen.findByTestId('chat-emoji-panel');
     expect(within(panel).getByRole('button', { name: '🥳' })).toBeInTheDocument();
     expect(within(panel).getByRole('button', { name: '🤝' })).toBeInTheDocument();
+
+    createElementSpy.mockRestore();
+    createObjectURLSpy.mockRestore();
+    revokeObjectURLSpy.mockRestore();
   });
 });

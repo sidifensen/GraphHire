@@ -9,6 +9,26 @@ import type {
   StartConversationRequest,
 } from '@/lib/types/chat';
 
+function decodeContentDispositionFileName(contentDisposition?: string): string | null {
+  if (!contentDisposition) return null;
+
+  const encodedMatch = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
+  if (encodedMatch?.[1]) {
+    try {
+      return decodeURIComponent(encodedMatch[1]);
+    } catch {
+      return encodedMatch[1];
+    }
+  }
+
+  const plainMatch = contentDisposition.match(/filename="?([^";]+)"?/i);
+  if (plainMatch?.[1]) {
+    return plainMatch[1];
+  }
+
+  return null;
+}
+
 export const chatApi = {
   listConversations: async (): Promise<ChatConversationSummary[]> => {
     const response = await apiClient.get<ChatConversationSummary[]>('/chat/conversations');
@@ -48,6 +68,17 @@ export const chatApi = {
   sendInterviewInvite: async (data: SendInterviewInviteRequest): Promise<{ messageId: number }> => {
     const response = await apiClient.post<{ messageId: number }>('/chat/messages/interview-invite', data);
     return response.data;
+  },
+
+  downloadResume: async (conversationId: number, resumeId: number): Promise<{ blob: Blob; fileName: string | null }> => {
+    const response = await apiClient.get<Blob>(`/chat/conversations/${conversationId}/resume/${resumeId}/download`, {
+      responseType: 'blob',
+    });
+    const contentDisposition = response.headers?.['content-disposition'] as string | undefined;
+    return {
+      blob: response.data,
+      fileName: decodeContentDispositionFileName(contentDisposition),
+    };
   },
 
   getResumeDownloadUrl: (conversationId: number, resumeId: number): string => {

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { Images } from 'lucide-react';
 import { chatApi } from '@/lib/api/chat';
 import { companyApi } from '@/lib/api/company';
 import { publicApi } from '@/lib/api/public';
@@ -201,6 +202,7 @@ export default function ChatWorkspace({
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [resumeSending, setResumeSending] = useState(false);
+  const [resumeDownloading, setResumeDownloading] = useState(false);
   const [imageSending, setImageSending] = useState(false);
   const [inviteSending, setInviteSending] = useState(false);
   const [showEmojiPanel, setShowEmojiPanel] = useState(false);
@@ -509,6 +511,33 @@ export default function ChatWorkspace({
     }
   };
 
+  const handleDownloadResume = async (conversationId: number, ext: Record<string, unknown> | null) => {
+    if (resumeDownloading) return;
+    const resumeId = Number(ext?.resumeId);
+    if (!Number.isFinite(resumeId) || resumeId <= 0) {
+      setError('简历信息异常，无法下载');
+      return;
+    }
+
+    setResumeDownloading(true);
+    setError(null);
+    try {
+      const { blob, fileName } = await chatApi.downloadResume(conversationId, resumeId);
+      const objectUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = objectUrl;
+      anchor.download = fileName || String(ext?.fileName ?? `resume-${resumeId}.pdf`);
+      document.body.append(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '下载简历失败');
+    } finally {
+      setResumeDownloading(false);
+    }
+  };
+
   const jobHref = selectedConversation ? jobPathBuilder(selectedConversation.jobId) : '#';
 
   const hasDefaultResume = useMemo(() => {
@@ -516,11 +545,10 @@ export default function ChatWorkspace({
     return resumes.length > 0;
   }, [isUserRole, resumes]);
 
-  const buildResumeDownloadUrl = (conversationId: number, ext: Record<string, unknown> | null): string | null => {
-    if (!ext) return null;
+  const canDownloadResume = (ext: Record<string, unknown> | null): boolean => {
+    if (!ext) return false;
     const resumeId = Number(ext.resumeId);
-    if (!Number.isFinite(resumeId) || resumeId <= 0) return null;
-    return chatApi.getResumeDownloadUrl(conversationId, resumeId);
+    return Number.isFinite(resumeId) && resumeId > 0;
   };
 
   return (
@@ -603,7 +631,7 @@ export default function ChatWorkspace({
                   const showDateTag = index === 0 || currentDateKey !== prevDateKey;
                   const senderName = self ? currentUserName : getUserDisplay(role, selectedConversation);
 
-                  const resumeDownloadUrl = message.messageType === 3 ? buildResumeDownloadUrl(message.conversationId, ext) : null;
+                  const resumeCanDownload = message.messageType === 3 ? canDownloadResume(ext) : false;
 
                   return (
                     <div key={message.id}>
@@ -626,16 +654,16 @@ export default function ChatWorkspace({
                                   </p>
                                 </div>
                               </div>
-                              {resumeDownloadUrl ? (
-                                <a
-                                  href={resumeDownloadUrl}
-                                  className={`mt-2 inline-flex rounded-lg px-2.5 py-1 text-xs font-bold ${self ? 'bg-white text-primary' : 'bg-primary text-white'}`}
-                                  target="_blank"
-                                  rel="noreferrer"
+                              {resumeCanDownload ? (
+                                <button
+                                  type="button"
+                                  onClick={() => void handleDownloadResume(message.conversationId, ext)}
+                                  disabled={resumeDownloading}
+                                  className={`mt-2 inline-flex rounded-lg px-2.5 py-1 text-xs font-bold disabled:opacity-60 ${self ? 'bg-white text-primary' : 'bg-primary text-white'}`}
                                 >
-                                  下载PDF
-                                </a>
-                                ) : null}
+                                  {resumeDownloading ? '下载中...' : '下载PDF'}
+                                </button>
+                              ) : null}
                             </div>
                           ) : null}
                           {message.messageType === 2 && ext ? (
@@ -676,7 +704,7 @@ export default function ChatWorkspace({
                   {showEmojiPanel ? <EmojiPanel onSelect={(emoji) => { setInput((prev) => `${prev}${emoji}`); setShowEmojiPanel(false); }} /> : null}
 
                   <label className="h-9 w-9 rounded-lg border border-outline/20 text-on-surface-variant hover:bg-surface-low inline-flex items-center justify-center cursor-pointer" aria-label="相册">
-                    <span className="material-symbols-outlined text-[20px] leading-none">photo_library</span>
+                    <Images className="h-5 w-5" />
                     <input
                       type="file"
                       accept="image/*"
