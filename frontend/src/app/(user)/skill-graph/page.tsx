@@ -96,7 +96,7 @@ function buildGraphData(personId: number, personName: string, skills: string[]):
     label: personName,
     kind: 'person',
     color: '#0052FF',
-    radius: 38,
+    radius: 30,
     fx: 0,
     fy: 0,
   };
@@ -106,7 +106,7 @@ function buildGraphData(personId: number, personName: string, skills: string[]):
     label: skill,
     kind: 'skill',
     color: '#BFD2FF',
-    radius: 16,
+    radius: 10,
   }));
 
   const links: LinkObject<GraphNodeType, GraphLinkType>[] = skillNodes.map((node) => ({
@@ -133,20 +133,20 @@ function drawNode(node: NodeObject<GraphNodeType>, ctx: CanvasRenderingContext2D
 
   if (node.kind === 'person') {
     ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 3;
     ctx.stroke();
   } else {
     ctx.strokeStyle = 'rgba(0, 82, 255, 0.32)';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1.5;
     ctx.stroke();
   }
 
-  const fontSize = node.kind === 'person' ? 14 / globalScale : 11 / globalScale;
+  const fontSize = node.kind === 'person' ? 11 / globalScale : 8 / globalScale;
   ctx.font = `${node.kind === 'person' ? 800 : 700} ${fontSize}px Manrope, sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = node.kind === 'person' ? '#FFFFFF' : '#1B2A57';
-  const textY = node.kind === 'person' ? y : y + radius + 12 / globalScale;
+  const textY = node.kind === 'person' ? y : y + radius + 9 / globalScale;
   ctx.fillText(label, x, textY);
 }
 
@@ -216,8 +216,23 @@ export default function KnowledgeGraph() {
     if (!stageRef.current || graphData.nodes.length === 0) {
       return;
     }
+    const graph = stageRef.current;
+    const d3ForceFn = graph.d3Force;
+    if (typeof d3ForceFn === 'function') {
+      const linkForce = d3ForceFn('link');
+      if (linkForce && typeof (linkForce as { distance?: (value: number) => unknown }).distance === 'function') {
+        ((linkForce as { distance: (value: number) => unknown }).distance(132));
+      }
+      const chargeForce = d3ForceFn('charge');
+      if (chargeForce && typeof (chargeForce as { strength?: (value: number) => unknown }).strength === 'function') {
+        ((chargeForce as { strength: (value: number) => unknown }).strength(-255));
+      }
+    }
+    graph.d3ReheatSimulation?.();
+
     const timer = window.setTimeout(() => {
-      stageRef.current?.zoomToFit(500, 60);
+      graph.zoomToFit(650, 130);
+      graph.zoom(0.86, 300);
     }, 220);
     return () => window.clearTimeout(timer);
   }, [graphData]);
@@ -232,7 +247,8 @@ export default function KnowledgeGraph() {
       return;
     }
     graph.centerAt(0, 0, 450);
-    graph.zoom(1.1, 450);
+    graph.zoomToFit(500, 120);
+    graph.zoom(0.88, 280);
     graph.d3ReheatSimulation();
   }, []);
 
@@ -242,37 +258,38 @@ export default function KnowledgeGraph() {
         <TopNav title="我的图谱" />
       </div>
 
-      <main className="flex-1 px-5 pb-28 pt-5 md:px-8 md:py-8 md:pb-32">
-        <div className="mx-auto flex w-full max-w-[1700px] gap-6">
+      <main className="flex-1 px-3 pb-24 pt-4 md:px-4 md:py-4 md:pb-24">
+        <div className="mx-auto flex w-full max-w-[1800px] gap-3">
           <UserWorkbenchSidebar />
 
-          <section className="relative min-h-[74vh] flex-1 overflow-hidden rounded-3xl border border-surface-mid/60 bg-[radial-gradient(circle_at_20%_20%,rgba(0,82,255,0.12),transparent_45%),radial-gradient(circle_at_80%_80%,rgba(37,99,235,0.08),transparent_40%),linear-gradient(145deg,rgba(255,255,255,0.96),rgba(245,248,255,0.84))]">
+          <section className="relative min-h-[82vh] flex-1 overflow-hidden rounded-3xl border border-surface-mid/60 bg-[radial-gradient(circle_at_20%_20%,rgba(0,82,255,0.12),transparent_45%),radial-gradient(circle_at_80%_80%,rgba(37,99,235,0.08),transparent_40%),linear-gradient(145deg,rgba(255,255,255,0.96),rgba(245,248,255,0.84))]">
             <div className="absolute inset-0 z-0" data-testid="force-graph-stage">
               <ForceGraph2D
                 ref={stageRef}
                 graphData={graphData}
                 backgroundColor="rgba(0,0,0,0)"
                 linkColor={() => 'rgba(0,82,255,0.25)'}
-                linkWidth={1.5}
+                linkWidth={1.1}
                 linkDirectionalParticles={1}
-                linkDirectionalParticleWidth={2.2}
-                linkDirectionalParticleSpeed={() => 0.006}
-                nodeRelSize={7}
+                linkDirectionalParticleWidth={1.6}
+                linkDirectionalParticleSpeed={() => 0.0042}
+                nodeRelSize={5}
                 nodeCanvasObject={drawNode}
                 nodePointerAreaPaint={(node, color, ctx) => {
                   const radius = node.radius ?? 10;
                   ctx.fillStyle = color;
                   ctx.beginPath();
-                  ctx.arc(node.x ?? 0, node.y ?? 0, radius + 10, 0, 2 * Math.PI, false);
+                  ctx.arc(node.x ?? 0, node.y ?? 0, radius + 7, 0, 2 * Math.PI, false);
                   ctx.fill();
                 }}
                 nodeLabel={(node) => node.label}
-                d3VelocityDecay={0.3}
+                d3VelocityDecay={0.42}
+                d3AlphaDecay={0.022}
                 enableNodeDrag
                 enablePanInteraction
                 enableZoomInteraction
-                minZoom={0.45}
-                maxZoom={4}
+                minZoom={0.3}
+                maxZoom={2.4}
                 onNodeDragEnd={(node) => {
                   if (node.kind === 'person') {
                     node.fx = 0;
@@ -288,10 +305,10 @@ export default function KnowledgeGraph() {
               />
             </div>
 
-            <div className="pointer-events-none absolute left-7 top-6 z-20">
+            <div className="pointer-events-none absolute left-5 top-5 z-20">
               <p className="text-xs font-extrabold uppercase tracking-[0.24em] text-primary/70">Immersive Skill Graph</p>
-              <h2 className="mt-2 text-2xl font-black text-on-surface md:text-4xl">{personName}</h2>
-              <p className="mt-2 text-sm font-semibold text-outline">
+              <h2 className="mt-1.5 text-2xl font-black text-on-surface md:text-[3rem]">{personName}</h2>
+              <p className="mt-1 text-sm font-semibold text-outline">
                 {loading ? '正在同步能力图谱...' : `已连接 ${skillCount} 个技能节点`}
               </p>
               {error ? <p className="mt-2 text-xs font-semibold text-red-500">{error}</p> : null}
@@ -299,19 +316,19 @@ export default function KnowledgeGraph() {
 
             <button
               type="button"
-              className="absolute right-7 top-6 z-20 flex h-11 w-11 items-center justify-center rounded-2xl border border-surface-mid bg-surface-lowest/85 text-on-surface-variant shadow-sm transition hover:text-primary"
+              className="absolute right-5 top-5 z-20 flex h-10 w-10 items-center justify-center rounded-2xl border border-surface-mid bg-surface-lowest/85 text-on-surface-variant shadow-sm transition hover:text-primary"
               onClick={handleResetView}
               aria-label="重置图谱视角"
             >
               <RefreshCw size={18} />
             </button>
 
-            <div className="absolute bottom-6 right-7 z-20 text-right">
-              <div className="text-6xl font-black text-primary md:text-7xl">{totalScore}</div>
-              <div className="mt-1 text-sm font-extrabold uppercase tracking-[0.2em] text-on-surface/85">综合分</div>
-              <div className="mt-2 text-xs font-bold text-outline">{levelText}</div>
-              <div className="mt-3 text-xl font-black text-on-surface">{skillCount} 知识节点</div>
-              <div className="mt-1 max-w-[260px] text-xs font-semibold text-outline">
+            <div className="absolute bottom-4 right-4 z-20 text-right md:bottom-5 md:right-5">
+              <div className="text-5xl font-black text-primary md:text-6xl">{totalScore}</div>
+              <div className="mt-0.5 text-sm font-extrabold uppercase tracking-[0.2em] text-on-surface/85">综合分</div>
+              <div className="mt-1.5 text-xs font-bold text-outline">{levelText}</div>
+              <div className="mt-2 text-lg font-black text-on-surface">{skillCount} 知识节点</div>
+              <div className="mt-1 max-w-[240px] text-xs font-semibold text-outline">
                 {skills.length > 0 ? skills.slice(0, 8).join(' · ') : '暂无技能标签'}
               </div>
             </div>
