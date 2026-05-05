@@ -1,5 +1,7 @@
 package com.graphhire.resume.infrastructure.mq;
 
+import com.graphhire.match.application.service.MatchAppService;
+import com.graphhire.match.infrastructure.ai.DeepSeekClient;
 import com.graphhire.notification.domain.model.Notification;
 import com.graphhire.notification.domain.repository.NotificationRepository;
 import com.graphhire.notification.domain.vo.NotificationType;
@@ -9,7 +11,6 @@ import com.graphhire.resume.domain.repository.ParseTaskRepository;
 import com.graphhire.resume.domain.repository.ResumeRepository;
 import com.graphhire.resume.domain.vo.ParseStatus;
 import com.graphhire.resume.infrastructure.ai.DocumentParser;
-import com.graphhire.match.infrastructure.ai.DeepSeekClient;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -52,6 +53,9 @@ class ResumeParseMQConsumerTest {
     @Mock
     private org.apache.rocketmq.spring.core.RocketMQTemplate rocketMQTemplate;
 
+    @Mock
+    private MatchAppService matchAppService;
+
     @InjectMocks
     private ResumeParseMQConsumer consumer;
 
@@ -62,7 +66,6 @@ class ResumeParseMQConsumerTest {
         @Test
         @DisplayName("成功解析简历并创建通知")
         void consumeResumeParse_Success() {
-            // Given
             Long resumeId = 1L;
             Long parseTaskId = 1L;
 
@@ -71,6 +74,7 @@ class ResumeParseMQConsumerTest {
             resume.setUserId(100L);
             resume.setFilePath("/path/to/resume.pdf");
             resume.setStatus(ParseStatus.PENDING);
+            resume.setIsDefault(true);
 
             ParseTask task = new ParseTask();
             task.setId(parseTaskId);
@@ -109,10 +113,8 @@ class ResumeParseMQConsumerTest {
                 return n;
             });
 
-            // When
             consumer.onMessage(resumeId + "," + parseTaskId);
 
-            // Then
             verify(parseTaskRepository, times(2)).save(any(ParseTask.class));
             ParseTask savedTask = savedTasks.get(0);
             assertEquals(ParseTask.TaskStatus.RUNNING, savedTask.getStatus());
@@ -140,12 +142,45 @@ class ResumeParseMQConsumerTest {
             assertEquals(NotificationType.RESUME_PARSED, notification.getType());
             assertEquals("简历解析完成", notification.getTitle());
             assertEquals(resumeId, notification.getReferenceId());
+
+            verify(matchAppService).triggerMatchForResume(resumeId);
+        }
+
+        @Test
+        @DisplayName("成功解析非默认简历时不触发全职位匹配")
+        void consumeResumeParse_Success_NonDefault_ShouldNotTriggerMatch() {
+            Long resumeId = 2L;
+            Long parseTaskId = 2L;
+
+            Resume resume = new Resume();
+            resume.setId(resumeId);
+            resume.setUserId(101L);
+            resume.setFilePath("/path/to/resume2.pdf");
+            resume.setStatus(ParseStatus.PENDING);
+            resume.setIsDefault(false);
+
+            ParseTask task = new ParseTask();
+            task.setId(parseTaskId);
+            task.setResumeId(resumeId);
+            task.setTaskType("resume_parse");
+            task.setStatus(ParseTask.TaskStatus.PENDING);
+
+            when(parseTaskRepository.findById(parseTaskId)).thenReturn(Optional.of(task));
+            when(resumeRepository.findById(resumeId)).thenReturn(Optional.of(resume));
+            when(documentParser.extractText(anyString())).thenReturn("resume content");
+            when(deepSeekClient.parseResume(anyString())).thenReturn(Map.of("name", "A"));
+            when(parseTaskRepository.save(any(ParseTask.class))).thenReturn(task);
+            when(resumeRepository.save(any(Resume.class))).thenReturn(resume);
+            when(notificationRepository.save(any(Notification.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+            consumer.onMessage(resumeId + "," + parseTaskId);
+
+            verify(matchAppService, never()).triggerMatchForResume(anyLong());
         }
 
         @Test
         @DisplayName("解析失败时更新状态并保存错误信息")
         void consumeResumeParse_Failure() {
-            // Given
             Long resumeId = 1L;
             Long parseTaskId = 1L;
 
@@ -167,10 +202,8 @@ class ResumeParseMQConsumerTest {
             when(resumeRepository.save(any(Resume.class))).thenReturn(resume);
             when(parseTaskRepository.save(any(ParseTask.class))).thenReturn(task);
 
-            // When
             consumer.onMessage(resumeId + "," + parseTaskId);
 
-            // Then
             ArgumentCaptor<Resume> resumeCaptor = ArgumentCaptor.forClass(Resume.class);
             verify(resumeRepository, times(2)).save(resumeCaptor.capture());
 
@@ -186,20 +219,17 @@ class ResumeParseMQConsumerTest {
             assertEquals("File read error", savedTask.getErrorMessage());
             assertNotNull(savedTask.getCompletedAt());
 
-            // Verify no notification was created
             verify(notificationRepository, never()).save(any(Notification.class));
         }
 
         @Test
         @DisplayName("解析任务不存在时抛出异常")
         void consumeResumeParse_TaskNotFound() {
-            // Given
             Long resumeId = 1L;
             Long parseTaskId = 999L;
 
             when(parseTaskRepository.findById(parseTaskId)).thenReturn(Optional.empty());
 
-            // When & Then
             RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> consumer.onMessage(resumeId + "," + parseTaskId));
             assertTrue(exception.getMessage().contains("Parse task not found"));
@@ -208,7 +238,6 @@ class ResumeParseMQConsumerTest {
         @Test
         @DisplayName("简历不存在时抛出异常")
         void consumeResumeParse_ResumeNotFound() {
-            // Given
             Long resumeId = 999L;
             Long parseTaskId = 1L;
 
@@ -220,7 +249,6 @@ class ResumeParseMQConsumerTest {
             when(parseTaskRepository.findById(parseTaskId)).thenReturn(Optional.of(task));
             when(resumeRepository.findById(resumeId)).thenReturn(Optional.empty());
 
-            // When & Then
             RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> consumer.onMessage(resumeId + "," + parseTaskId));
             assertTrue(exception.getMessage().contains("Resume not found"));
@@ -229,7 +257,6 @@ class ResumeParseMQConsumerTest {
         @Test
         @DisplayName("DeepSeek解析返回null时使用空JSON")
         void consumeResumeParse_NullParseResult() {
-            // Given
             Long resumeId = 1L;
             Long parseTaskId = 1L;
 
@@ -256,10 +283,8 @@ class ResumeParseMQConsumerTest {
                 return n;
             });
 
-            // When
             consumer.onMessage(resumeId + "," + parseTaskId);
 
-            // Then
             ArgumentCaptor<Resume> resumeCaptor = ArgumentCaptor.forClass(Resume.class);
             verify(resumeRepository, times(2)).save(resumeCaptor.capture());
 
@@ -271,7 +296,6 @@ class ResumeParseMQConsumerTest {
         @Test
         @DisplayName("文档提取文本为空时标记为失败，不创建通知也不发送事件")
         void consumeResumeParse_BlankText_Fails() {
-            // Given
             Long resumeId = 1L;
             Long parseTaskId = 1L;
 
@@ -292,13 +316,10 @@ class ResumeParseMQConsumerTest {
             when(resumeRepository.save(any(Resume.class))).thenReturn(resume);
             when(parseTaskRepository.save(any(ParseTask.class))).thenReturn(task);
 
-            // When
             consumer.onMessage(resumeId + "," + parseTaskId);
 
-            // Then: deepSeekClient不应被调用
             verify(deepSeekClient, never()).parseResume(anyString());
 
-            // 验证状态为FAILED
             ArgumentCaptor<Resume> resumeCaptor = ArgumentCaptor.forClass(Resume.class);
             verify(resumeRepository, times(2)).save(resumeCaptor.capture());
             Resume savedResume = resumeCaptor.getAllValues().get(1);
@@ -311,10 +332,9 @@ class ResumeParseMQConsumerTest {
             assertEquals(ParseTask.TaskStatus.FAILED, savedTask.getStatus());
             assertTrue(savedTask.getErrorMessage().contains("未提取到有效文本"));
 
-            // 不创建通知
             verify(notificationRepository, never()).save(any(Notification.class));
-            // 不发送resume-parsed事件
             verify(rocketMQTemplate, never()).convertAndSend(eq(RESUME_PARSED_TOPIC), anyString());
+            verify(matchAppService, never()).triggerMatchForResume(anyLong());
         }
     }
 
@@ -340,6 +360,7 @@ class ResumeParseMQConsumerTest {
         copy.setParseResult(source.getParseResult());
         copy.setParseError(source.getParseError());
         copy.setConfidence(source.getConfidence());
+        copy.setIsDefault(source.getIsDefault());
         return copy;
     }
 }

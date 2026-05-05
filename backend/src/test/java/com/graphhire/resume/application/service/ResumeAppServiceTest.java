@@ -18,27 +18,28 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.util.unit.DataSize;
 
-import java.lang.reflect.Field;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.argThat;
-import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 class ResumeAppServiceTest {
@@ -195,6 +196,32 @@ class ResumeAppServiceTest {
     }
 
     @Test
+    @DisplayName("uploadResume 用户无默认简历时新简历应自动设为默认")
+    void uploadResume_shouldAutoSetDefaultWhenNoDefaultExists() throws Exception {
+        Resume exists = buildResume(88L, 8L, "old.pdf", "s3://old.pdf", "pdf");
+        exists.setIsDefault(false);
+        when(resumeRepository.findByUserId(8L)).thenReturn(List.of(exists));
+
+        byte[] content = "resume".getBytes();
+        UploadResumeCmd cmd = new UploadResumeCmd(new MockMultipartFile("file", "ok.pdf", "application/pdf", content));
+        cmd.setUserId(8L);
+
+        when(rustFSClient.upload(any(InputStream.class), eq((long) content.length), eq("ok.pdf")))
+            .thenReturn("s3://resumes/ok.pdf");
+        when(resumeRepository.save(any(Resume.class))).thenAnswer(invocation -> {
+            Resume resume = invocation.getArgument(0);
+            if (resume.getId() == null) {
+                resume.setId(99L);
+            }
+            return resume;
+        });
+
+        resumeAppService.uploadResume(cmd);
+
+        verify(resumeRepository, atLeastOnce()).save(argThat(resume -> Boolean.TRUE.equals(resume.getIsDefault())));
+    }
+
+    @Test
     @DisplayName("setDefaultResume 非SUCCESS状态应拒绝")
     void setDefaultResume_shouldRejectWhenStatusNotSuccess() {
         Resume resume = buildResume(20L, 9L, "resume.pdf", "s3://r.pdf", "pdf");
@@ -210,8 +237,8 @@ class ResumeAppServiceTest {
     }
 
     @Test
-    @DisplayName("setDefaultResume SUCCESS状态设默认后应发送默认变更消息并更新图谱")
-    void setDefaultResume_shouldSendDefaultChangedMessageWhenSuccess() {
+    @DisplayName("setDefaultResume SUCCESS状态设默认后应先重建新默认匹配，再清理旧默认")
+    void setDefaultResume_shouldRebuildNewDefaultBeforeClearingOldDefault() {
         Resume resume = buildResume(30L, 9L, "resume.pdf", "s3://r.pdf", "pdf");
         resume.setStatus(ParseStatus.SUCCESS);
         resume.setIsDefault(false);
@@ -224,10 +251,12 @@ class ResumeAppServiceTest {
         resumeAppService.setDefaultResume(30L, 9L, false);
 
         verify(graphBuildService).buildGraphForResume(resume);
-        verify(matchAppService).clearOldMatchDataForResume(31L);
-        verify(matchAppService).clearOldMatchDataForResume(30L);
         verify(mqProducer).sendResumeDefaultChangedMessage(30L);
         verifyNoInteractions(personInfoRepository);
+
+        InOrder inOrder = org.mockito.Mockito.inOrder(matchAppService);
+        inOrder.verify(matchAppService).triggerMatchForResume(30L);
+        inOrder.verify(matchAppService).clearOldMatchDataForResume(31L);
     }
 
     @Test
@@ -266,7 +295,7 @@ class ResumeAppServiceTest {
 
         when(resumeRepository.findById(10L)).thenReturn(Optional.of(current));
         when(rustFSClient.download("s3://resumes/missing.pdf"))
-                .thenThrow(new RuntimeException("Failed to download file from RustFS: The specified key does not exist."));
+            .thenThrow(new RuntimeException("Failed to download file from RustFS: The specified key does not exist."));
         when(resumeRepository.findByUserId(4L)).thenReturn(List.of(current, fallback));
         when(rustFSClient.exists("s3://resumes/available.pdf")).thenReturn(true);
         when(rustFSClient.download("s3://resumes/available.pdf")).thenReturn(expected);
@@ -283,14 +312,14 @@ class ResumeAppServiceTest {
     void previewResume_shouldThrowWhenNoFallbackAvailable() {
         Resume current = buildResume(10L, 4L, "25年简历测试.pdf", "s3://resumes/missing.pdf", "pdf");
         RuntimeException expectedException =
-                new RuntimeException("Failed to download file from RustFS: The specified key does not exist.");
+            new RuntimeException("Failed to download file from RustFS: The specified key does not exist.");
 
         when(resumeRepository.findById(10L)).thenReturn(Optional.of(current));
         when(rustFSClient.download("s3://resumes/missing.pdf")).thenThrow(expectedException);
         when(resumeRepository.findByUserId(4L)).thenReturn(List.of(current));
 
         RuntimeException actualException =
-                assertThrows(RuntimeException.class, () -> resumeAppService.previewResume(10L, 4L));
+            assertThrows(RuntimeException.class, () -> resumeAppService.previewResume(10L, 4L));
 
         assertEquals(expectedException.getMessage(), actualException.getMessage());
         verify(rustFSClient).download("s3://resumes/missing.pdf");

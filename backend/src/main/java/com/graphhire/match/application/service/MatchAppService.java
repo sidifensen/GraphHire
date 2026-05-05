@@ -26,8 +26,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -83,13 +87,39 @@ public class MatchAppService {
      */
     @Transactional
     public void triggerMatchForResume(Long resumeId) {
-        clearOldMatchDataForResume(resumeId);
         List<Job> publishedJobs = jobRepository.findAll().stream()
             .filter(job -> job.getStatus() == JobStatus.PUBLISHED)
             .toList();
+        List<MatchRecord> existingRecords = matchRecordRepository.findByResumeId(resumeId);
+        Map<Long, MatchRecord> existingByJobId = new HashMap<>();
+        for (MatchRecord existing : existingRecords) {
+            if (existing.getJobId() != null && !existingByJobId.containsKey(existing.getJobId())) {
+                existingByJobId.put(existing.getJobId(), existing);
+            }
+        }
+
+        Set<Long> publishedJobIds = new HashSet<>();
         for (Job job : publishedJobs) {
+            if (job.getId() == null) {
+                continue;
+            }
+            publishedJobIds.add(job.getId());
             MatchRecord record = matchDomainService.calculateMatch(resumeId, job.getId());
+            MatchRecord existing = existingByJobId.get(job.getId());
+            if (existing != null) {
+                record.setId(existing.getId());
+                if (record.getMatchDirection() == null) {
+                    record.setMatchDirection(existing.getMatchDirection());
+                }
+            }
             matchRecordRepository.save(record);
+        }
+
+        for (MatchRecord existing : existingRecords) {
+            Long oldJobId = existing.getJobId();
+            if (oldJobId == null || !publishedJobIds.contains(oldJobId)) {
+                matchRecordRepository.delete(existing);
+            }
         }
     }
 

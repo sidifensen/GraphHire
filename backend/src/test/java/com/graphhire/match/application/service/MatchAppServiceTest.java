@@ -16,6 +16,7 @@ import com.graphhire.resume.domain.repository.ResumeRepository;
 import com.graphhire.resume.domain.vo.ParseStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -25,6 +26,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -68,30 +70,82 @@ class MatchAppServiceTest {
     }
 
     @Test
-    void triggerMatchForResume_shouldRebuildRecordsForAllPublishedJobs() {
+    void triggerMatchForResume_shouldUpdateExistingAndDeleteOnlyStaleRecords() {
         Long resumeId = 20L;
-        Job job1 = new Job();
-        job1.setId(201L);
-        job1.setStatus(JobStatus.PUBLISHED);
-        Job job2 = new Job();
-        job2.setId(202L);
-        job2.setStatus(JobStatus.DRAFT);
-        Job job3 = new Job();
-        job3.setId(203L);
-        job3.setStatus(JobStatus.PUBLISHED);
 
-        when(jobRepository.findAll()).thenReturn(List.of(job1, job2, job3));
-        when(matchDomainService.calculateMatch(resumeId, 201L)).thenReturn(new MatchRecord());
-        when(matchDomainService.calculateMatch(resumeId, 203L)).thenReturn(new MatchRecord());
+        Job publishedJob1 = new Job();
+        publishedJob1.setId(201L);
+        publishedJob1.setStatus(JobStatus.PUBLISHED);
+        Job draftJob = new Job();
+        draftJob.setId(202L);
+        draftJob.setStatus(JobStatus.DRAFT);
+        Job publishedJob3 = new Job();
+        publishedJob3.setId(203L);
+        publishedJob3.setStatus(JobStatus.PUBLISHED);
+
+        MatchRecord oldFor201 = MatchRecord.create(resumeId, 201L, MatchScore.of(30, 20));
+        oldFor201.setId(901L);
+        oldFor201.setMatchDirection(MatchRecord.DIRECTION_PERSON_APPLIES);
+        MatchRecord staleFor999 = MatchRecord.create(resumeId, 999L, MatchScore.of(20, 10));
+        staleFor999.setId(902L);
+        staleFor999.setMatchDirection(MatchRecord.DIRECTION_PERSON_APPLIES);
+
+        MatchRecord newFor201 = MatchRecord.create(resumeId, 201L, MatchScore.of(91, 83));
+        newFor201.setMatchDirection(MatchRecord.DIRECTION_PERSON_APPLIES);
+        MatchRecord newFor203 = MatchRecord.create(resumeId, 203L, MatchScore.of(88, 81));
+        newFor203.setMatchDirection(MatchRecord.DIRECTION_PERSON_APPLIES);
+
+        when(jobRepository.findAll()).thenReturn(List.of(publishedJob1, draftJob, publishedJob3));
+        when(matchRecordRepository.findByResumeId(resumeId)).thenReturn(List.of(oldFor201, staleFor999));
+        when(matchDomainService.calculateMatch(resumeId, 201L)).thenReturn(newFor201);
+        when(matchDomainService.calculateMatch(resumeId, 203L)).thenReturn(newFor203);
 
         matchAppService.triggerMatchForResume(resumeId);
 
-        verify(matchRecordRepository).deleteByResumeId(resumeId);
-        verify(jobRepository).findAll();
+        verify(matchRecordRepository, never()).deleteByResumeId(resumeId);
         verify(matchDomainService).calculateMatch(resumeId, 201L);
         verify(matchDomainService).calculateMatch(resumeId, 203L);
         verify(matchDomainService, never()).calculateMatch(resumeId, 202L);
+
         verify(matchRecordRepository, times(2)).save(any(MatchRecord.class));
+        verify(matchRecordRepository).delete(staleFor999);
+        verify(matchRecordRepository, never()).delete(oldFor201);
+
+        InOrder inOrder = inOrder(matchRecordRepository);
+        inOrder.verify(matchRecordRepository, times(2)).save(any(MatchRecord.class));
+        inOrder.verify(matchRecordRepository).delete(staleFor999);
+    }
+
+    @Test
+    void triggerMatchForResume_shouldNotDeleteAnyOldRecordWhenCalculationFails() {
+        Long resumeId = 21L;
+
+        Job publishedJob1 = new Job();
+        publishedJob1.setId(301L);
+        publishedJob1.setStatus(JobStatus.PUBLISHED);
+        Job publishedJob2 = new Job();
+        publishedJob2.setId(302L);
+        publishedJob2.setStatus(JobStatus.PUBLISHED);
+
+        MatchRecord oldFor301 = MatchRecord.create(resumeId, 301L, MatchScore.of(50, 40));
+        oldFor301.setId(1001L);
+        oldFor301.setMatchDirection(MatchRecord.DIRECTION_PERSON_APPLIES);
+        MatchRecord oldFor999 = MatchRecord.create(resumeId, 999L, MatchScore.of(50, 40));
+        oldFor999.setId(1002L);
+        oldFor999.setMatchDirection(MatchRecord.DIRECTION_PERSON_APPLIES);
+
+        MatchRecord newFor301 = MatchRecord.create(resumeId, 301L, MatchScore.of(90, 80));
+        newFor301.setMatchDirection(MatchRecord.DIRECTION_PERSON_APPLIES);
+
+        when(jobRepository.findAll()).thenReturn(List.of(publishedJob1, publishedJob2));
+        when(matchRecordRepository.findByResumeId(resumeId)).thenReturn(List.of(oldFor301, oldFor999));
+        when(matchDomainService.calculateMatch(resumeId, 301L)).thenReturn(newFor301);
+        when(matchDomainService.calculateMatch(resumeId, 302L)).thenThrow(new RuntimeException("boom"));
+
+        assertThrows(RuntimeException.class, () -> matchAppService.triggerMatchForResume(resumeId));
+
+        verify(matchRecordRepository, never()).delete(any(MatchRecord.class));
+        verify(matchRecordRepository, never()).deleteByResumeId(resumeId);
     }
 
     @Test

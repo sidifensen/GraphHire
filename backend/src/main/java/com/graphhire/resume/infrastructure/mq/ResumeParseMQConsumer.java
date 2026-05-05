@@ -11,6 +11,7 @@ import com.graphhire.resume.domain.repository.ParseTaskRepository;
 import com.graphhire.resume.domain.repository.ResumeRepository;
 import com.graphhire.resume.domain.vo.ParseStatus;
 import com.graphhire.resume.infrastructure.ai.DocumentParser;
+import com.graphhire.match.application.service.MatchAppService;
 import com.graphhire.match.infrastructure.ai.DeepSeekClient;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
@@ -51,6 +52,9 @@ public class ResumeParseMQConsumer implements RocketMQListener<String> {
 
     @Autowired
     private RocketMQTemplate rocketMQTemplate;
+
+    @Autowired
+    private MatchAppService matchAppService;
 
     @Override
     public void onMessage(String message) {
@@ -116,6 +120,10 @@ public class ResumeParseMQConsumer implements RocketMQListener<String> {
             notification.setContent("您的简历已解析完成，可以查看匹配结果了");
             notification.setReferenceId(resumeId);
             notificationRepository.save(notification);
+
+            if (Boolean.TRUE.equals(resume.getIsDefault())) {
+                matchAppService.triggerMatchForResume(resumeId);
+            }
 
             // 步骤8：发布简历解析完成事件（仅传resumeId），触发技能图谱构建
             rocketMQTemplate.convertAndSend(TOPIC_RESUME_PARSED, String.valueOf(resumeId));

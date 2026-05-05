@@ -98,6 +98,8 @@ public class ResumeAppService {
         // 步骤2：创建简历聚合根
         Resume resume = new Resume();
         resume.setUserId(cmd.getUserId());
+        boolean hasDefaultResume = existingResumes.stream().anyMatch(r -> Boolean.TRUE.equals(r.getIsDefault()));
+        resume.setIsDefault(!hasDefaultResume);
         // 从文件名提取文件类型（扩展名）
         String fileType = StrUtil.isBlank(fileExt) ? "unknown" : fileExt;
         resume.setFileType(fileType);
@@ -243,10 +245,10 @@ public class ResumeAppService {
         // 将此简历设为默认
         resume.setIsDefault(true);
         resumeRepository.save(resume);
-        if (previousDefaultResumeId != null) {
+        matchAppService.triggerMatchForResume(resume.getId());
+        if (previousDefaultResumeId != null && !previousDefaultResumeId.equals(resume.getId())) {
             matchAppService.clearOldMatchDataForResume(previousDefaultResumeId);
         }
-            matchAppService.clearOldMatchDataForResume(resume.getId());
         graphBuildService.buildGraphForResume(resume);
         if (syncPersonInfo) {
             syncPersonInfoFromResume(userId, resume.getParseResult());
