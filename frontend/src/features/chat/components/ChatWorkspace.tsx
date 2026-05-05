@@ -592,9 +592,9 @@ export default function ChatWorkspace({
 
   const previewModal = previewUrl && typeof window !== 'undefined'
     ? createPortal(
-      <div data-testid="chat-resume-preview-modal" className="fixed inset-0 z-[120] bg-black/55 p-2 md:p-6">
-        <div className="mx-auto flex h-full w-full max-w-6xl flex-col overflow-hidden rounded-2xl bg-surface-lowest">
-          <div className="flex items-center justify-between border-b border-outline/20 px-4 py-3">
+      <div data-testid="chat-resume-preview-modal" className="fixed inset-0 z-[9999] bg-black/70 p-2 md:p-6">
+        <div className="mx-auto flex h-full w-full max-w-6xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+          <div className="flex items-center justify-between border-b border-outline/20 bg-white px-4 py-3">
             <p className="truncate text-sm font-bold text-on-surface">{previewFileName || '简历预览'}</p>
             <button
               type="button"
