@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Images } from 'lucide-react';
 import { chatApi } from '@/lib/api/chat';
 import { companyApi } from '@/lib/api/company';
@@ -589,25 +590,30 @@ export default function ChatWorkspace({
     return Number.isFinite(resumeId) && resumeId > 0;
   };
 
+  const previewModal = previewUrl && typeof window !== 'undefined'
+    ? createPortal(
+      <div data-testid="chat-resume-preview-modal" className="fixed inset-0 z-[120] bg-black/55 p-2 md:p-6">
+        <div className="mx-auto flex h-full w-full max-w-6xl flex-col overflow-hidden rounded-2xl bg-surface-lowest">
+          <div className="flex items-center justify-between border-b border-outline/20 px-4 py-3">
+            <p className="truncate text-sm font-bold text-on-surface">{previewFileName || '简历预览'}</p>
+            <button
+              type="button"
+              onClick={closePreview}
+              className="rounded-lg border border-outline/20 px-3 py-1 text-sm text-on-surface hover:bg-surface-low"
+            >
+              关闭预览
+            </button>
+          </div>
+          <iframe title="简历预览" src={previewUrl} className="h-full w-full flex-1 bg-white" />
+        </div>
+      </div>,
+      document.body,
+    )
+    : null;
+
   return (
     <section data-testid="chat-workspace" className="mx-auto w-full max-w-6xl px-4 py-4 md:px-6 md:py-6">
-      {previewUrl ? (
-        <div data-testid="chat-resume-preview-modal" className="fixed inset-0 z-50 bg-black/55 p-4 md:p-8">
-          <div className="mx-auto flex h-full w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-surface-lowest">
-            <div className="flex items-center justify-between border-b border-outline/20 px-4 py-3">
-              <p className="truncate text-sm font-bold text-on-surface">{previewFileName || '简历预览'}</p>
-              <button
-                type="button"
-                onClick={closePreview}
-                className="rounded-lg border border-outline/20 px-3 py-1 text-sm text-on-surface hover:bg-surface-low"
-              >
-                关闭预览
-              </button>
-            </div>
-            <iframe title="简历预览" src={previewUrl} className="h-full w-full flex-1 bg-white" />
-          </div>
-        </div>
-      ) : null}
+      {previewModal}
       <h1 className="text-2xl font-black text-on-surface mb-4">{title}</h1>
       {error ? <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">{error}</div> : null}
 

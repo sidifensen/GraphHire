@@ -6,6 +6,7 @@
 - feat: 企业端聊天 PDF 卡片新增“预览PDF”按钮，点击后通过鉴权接口获取 Blob 并在新窗口预览；保留“下载PDF”能力
 - fix: 修复 PDF 预览打开 `blob:` 地址出现 404 JSON 页问题；当下载接口返回 JSON 错误体（如 `{"code":404}`）时，前端改为解析并直接提示错误，不再打开错误 Blob 页面
 - refactor: PDF 预览改为站内弹层内嵌预览（iframe），不再跳转新页面；支持关闭预览并释放 Blob URL
+- fix: 修复站内 PDF 预览弹层显示不完整问题，改为通过 Portal 挂载到 `document.body` 并提升层级，避免被页面容器裁切
 - test: 更新 `chat-workspace-redesign` 测试，覆盖“预览PDF + 下载PDF”均通过鉴权接口并触发浏览器行为
 - test: 新增 `chat-api-download` 单测，覆盖“JSON 错误 Blob 解析抛错”与“PDF 响应文件名解析”
 
