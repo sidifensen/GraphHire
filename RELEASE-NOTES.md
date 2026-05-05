@@ -11,6 +11,7 @@
 - feat: 聊天图片消息新增“预览图片”能力，支持会话内鉴权拉取图片并在站内弹层中查看大图
 - feat: 后端新增图片预览接口 `GET /chat/conversations/{conversationId}/images/{messageId}/preview`，会话成员可按消息ID预览对应图片
 - refactor: 图片消息改为自动内嵌显示缩略图，不再依赖“预览图片”按钮触发加载；点击缩略图仍可放大预览
+- fix: 修复图片消息可能长期停留“图片加载中...”的问题；图片加载失败时改为展示错误原因并提供“重试加载图片”按钮
 - test: 新增/更新后端 `ChatAppServiceTest`、`ChatControllerIT` 与前端聊天工作台测试，覆盖图片预览链路
 - test: 更新 `chat-workspace-redesign` 测试，覆盖“预览PDF + 下载PDF”均通过鉴权接口并触发浏览器行为
 - test: 新增 `chat-api-download` 单测，覆盖“JSON 错误 Blob 解析抛错”与“PDF 响应文件名解析”

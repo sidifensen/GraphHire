@@ -208,6 +208,7 @@ export default function ChatWorkspace({
   const [previewFileName, setPreviewFileName] = useState<string>('');
   const [previewKind, setPreviewKind] = useState<'pdf' | 'image'>('pdf');
   const [inlineImageUrls, setInlineImageUrls] = useState<Record<number, string>>({});
+  const [inlineImageErrors, setInlineImageErrors] = useState<Record<number, string>>({});
   const [imageSending, setImageSending] = useState(false);
   const [inviteSending, setInviteSending] = useState(false);
   const [showEmojiPanel, setShowEmojiPanel] = useState(false);
@@ -564,6 +565,24 @@ export default function ChatWorkspace({
     }
   };
 
+  const loadInlineImage = async (conversationId: number, messageId: number) => {
+    const { blob } = await chatApi.previewImage(conversationId, messageId);
+    const objectUrl = URL.createObjectURL(blob);
+    setInlineImageUrls((prev) => {
+      if (prev[messageId]) {
+        URL.revokeObjectURL(objectUrl);
+        return prev;
+      }
+      return { ...prev, [messageId]: objectUrl };
+    });
+    setInlineImageErrors((prev) => {
+      if (!prev[messageId]) return prev;
+      const next = { ...prev };
+      delete next[messageId];
+      return next;
+    });
+  };
+
   const closePreview = () => {
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
@@ -592,18 +611,14 @@ export default function ChatWorkspace({
           continue;
         }
         try {
-          const { blob } = await chatApi.previewImage(message.conversationId, message.id);
           if (cancelled) return;
-          const objectUrl = URL.createObjectURL(blob);
-          setInlineImageUrls((prev) => {
-            if (prev[message.id]) {
-              URL.revokeObjectURL(objectUrl);
-              return prev;
-            }
-            return { ...prev, [message.id]: objectUrl };
-          });
-        } catch {
+          await loadInlineImage(message.conversationId, message.id);
+        } catch (err) {
           if (cancelled) return;
+          setInlineImageErrors((prev) => ({
+            ...prev,
+            [message.id]: err instanceof Error ? err.message : '图片加载失败',
+          }));
         }
       }
     })();
@@ -839,6 +854,17 @@ export default function ChatWorkspace({
                                     className="max-h-52 w-auto max-w-[320px] rounded-lg object-contain bg-black/10"
                                   />
                                 </button>
+                              ) : inlineImageErrors[message.id] ? (
+                                <div className="mt-2 space-y-1">
+                                  <p className="text-xs opacity-90">{inlineImageErrors[message.id]}</p>
+                                  <button
+                                    type="button"
+                                    onClick={() => void loadInlineImage(message.conversationId, message.id)}
+                                    className={`inline-flex rounded-lg px-2.5 py-1 text-xs font-bold ${self ? 'bg-white text-primary' : 'bg-primary text-white'}`}
+                                  >
+                                    重试加载图片
+                                  </button>
+                                </div>
                               ) : (
                                 <p className="mt-2 text-xs opacity-80">图片加载中...</p>
                               )}
