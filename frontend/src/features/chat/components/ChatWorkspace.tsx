@@ -200,6 +200,7 @@ export default function ChatWorkspace({
   const [loadingList, setLoadingList] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [conversationKeyword, setConversationKeyword] = useState('');
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [resumeSending, setResumeSending] = useState(false);
@@ -240,6 +241,22 @@ export default function ChatWorkspace({
     () => list.find((item) => item.conversationId === selectedConversationId) ?? null,
     [list, selectedConversationId],
   );
+  const normalizedConversationKeyword = conversationKeyword.trim().toLowerCase();
+  const filteredList = useMemo(() => {
+    if (!normalizedConversationKeyword) {
+      return list;
+    }
+    return list.filter((item) => {
+      const fields = [
+        item.jobTitle,
+        item.companyName,
+        item.recruiterName,
+        item.candidateName,
+        item.lastMessagePreview,
+      ];
+      return fields.some((field) => field?.toLowerCase().includes(normalizedConversationKeyword));
+    });
+  }, [list, normalizedConversationKeyword]);
 
   const shouldShowDetail = useMemo(() => {
     if (mobileMode === 'detail') {
@@ -724,14 +741,21 @@ export default function ChatWorkspace({
       >
         {(mobileMode === 'list' || mobileMode === 'detail') ? (
           <aside className={`rounded-2xl border border-outline/20 bg-surface-lowest overflow-hidden ${mobileMode === 'detail' ? 'hidden md:block' : ''}`}>
-            <div className="h-12 px-4 border-b border-outline/20 flex items-center text-sm text-on-surface-variant">会话列表</div>
+            <div className="h-12 px-3 border-b border-outline/20 flex items-center">
+              <input
+                value={conversationKeyword}
+                onChange={(event) => setConversationKeyword(event.target.value)}
+                placeholder="搜索会话..."
+                className="h-9 w-full rounded-lg border border-outline/20 bg-surface-low px-3 text-sm text-on-surface outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/30"
+              />
+            </div>
             <div className="h-full overflow-y-auto p-2 space-y-2">
               {loadingList ? <div className="px-3 py-4 text-sm text-on-surface-variant">会话加载中...</div> : null}
-              {!loadingList && list.length === 0 ? (
+              {!loadingList && filteredList.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-outline/20 px-4 py-10 text-center text-sm text-on-surface-variant">暂无会话</div>
               ) : null}
 
-              {list.map((item) => {
+              {filteredList.map((item) => {
                 const selected = item.conversationId === selectedConversationId;
                 return (
                   <button

@@ -85,7 +85,7 @@ describe('User workbench desktop layout consistency', () => {
     render(<UserChatListPage />);
     await waitFor(() => expect(listConversationsMock).toHaveBeenCalledTimes(1));
     expect(screen.queryByRole('heading', { name: '沟通消息' })).not.toBeInTheDocument();
-    expect(screen.getByText('会话列表')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('搜索会话...')).toBeInTheDocument();
   });
 
   it('keeps skill graph page desktop wrapper consistent with personal info page', async () => {

@@ -327,6 +327,53 @@ describe('chat workspace redesign', () => {
     expect(screen.getByPlaceholderText(/面试时间/)).toBeInTheDocument();
   });
 
+  it('filters conversations by sidebar search keyword', async () => {
+    listConversationsMock.mockResolvedValue([
+      {
+        conversationId: 1,
+        jobId: 101,
+        jobTitle: '前端工程师',
+        companyId: 9,
+        companyName: '图谱科技',
+        recruiterUserId: 20,
+        candidateUserId: 10,
+        candidateName: '小王',
+        recruiterName: '陈HR',
+        lastMessagePreview: '你好，方便沟通吗',
+        lastMessageTime: '2026-05-04T09:12:00',
+        unreadCount: 2,
+      },
+      {
+        conversationId: 2,
+        jobId: 102,
+        jobTitle: '数据分析师',
+        companyId: 10,
+        companyName: '智域信息',
+        recruiterUserId: 21,
+        candidateUserId: 10,
+        candidateName: '小李',
+        recruiterName: '赵HR',
+        lastMessagePreview: '请完善简历',
+        lastMessageTime: '2026-05-04T10:12:00',
+        unreadCount: 0,
+      },
+    ]);
+
+    render(<UserChatListPage />);
+
+    await waitFor(() => expect(listConversationsMock).toHaveBeenCalledTimes(1));
+    const searchInput = screen.getByPlaceholderText('搜索会话...');
+    const sidebar = searchInput.closest('aside') as HTMLElement;
+    expect(sidebar).toBeTruthy();
+    expect(within(sidebar).getByText('前端工程师')).toBeInTheDocument();
+    expect(within(sidebar).getByText('数据分析师')).toBeInTheDocument();
+
+    fireEvent.change(searchInput, { target: { value: '分析' } });
+
+    expect(within(sidebar).queryByText('前端工程师')).not.toBeInTheDocument();
+    expect(within(sidebar).getByText('数据分析师')).toBeInTheDocument();
+  });
+
   it('clears unread badge in sidebar after markRead succeeds', async () => {
     mockConversationListReadAfterOpen();
     render(<UserChatListPage />);
