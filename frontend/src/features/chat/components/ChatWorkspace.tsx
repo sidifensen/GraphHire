@@ -888,14 +888,14 @@ export default function ChatWorkspace({
     : null;
 
   return (
-      <section data-testid="chat-workspace" className="mx-auto w-full max-w-6xl px-0 py-0 md:px-6 md:py-6">
+      <section data-testid="chat-workspace" className="mx-auto w-full max-w-6xl px-0 py-0 md:px-6 md:py-0">
         {previewModal}
       {title ? <h1 className="text-2xl font-black text-on-surface mb-4">{title}</h1> : null}
       {error ? <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">{error}</div> : null}
 
       <div
         data-testid="chat-desktop-layout"
-        className="grid grid-cols-1 md:grid-cols-[320px_minmax(0,1fr)] gap-4 md:h-[calc(100vh-96px)] min-h-[560px]"
+        className="grid grid-cols-1 md:grid-cols-[320px_minmax(0,1fr)] gap-4 md:h-[calc(100vh-64px)] min-h-[560px]"
       >
         {(mobileMode === 'list' || mobileMode === 'detail') ? (
           <aside
