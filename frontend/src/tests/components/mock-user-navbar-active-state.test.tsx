@@ -86,4 +86,12 @@ describe('MockUser Navbar active state', () => {
     expect(screen.getByRole('link', { name: '公司' }).className).not.toContain('text-white');
     expect(screen.getByRole('link', { name: '我的' }).className).not.toContain('text-white');
   });
+
+  it('highlights 沟通 only on /chat page', () => {
+    pathname = '/chat';
+    render(<Navbar />);
+
+    expect(screen.getByRole('link', { name: '沟通' }).className).toContain('text-white');
+    expect(screen.getByRole('link', { name: '我的' }).className).not.toContain('text-white');
+  });
 });
