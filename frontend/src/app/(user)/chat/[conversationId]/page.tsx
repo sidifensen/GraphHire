@@ -10,7 +10,6 @@ export default function UserChatDetailPage() {
   return (
     <ChatWorkspace
       role="user"
-      title="沟通消息"
       conversationPathPrefix="/chat"
       mobileMode="detail"
       initialConversationId={Number.isFinite(conversationId) ? conversationId : null}

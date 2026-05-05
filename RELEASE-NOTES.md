@@ -2,6 +2,8 @@
 
 ## 2026-05-05
 
+- fix: 移除用户端聊天页顶部“沟通消息”标题，仅保留会话工作台内容区，避免与全局顶栏导航文案重复
+- test: 更新 `user-workbench-layout-consistency` 测试断言，校验聊天页不再渲染“沟通消息”标题并保留“会话列表”主体
 - fix: 修复用户端顶栏在 `/chat` 路由下“我的”菜单被误判为激活态（白字看似消失）的问题；移除 `/chat` 对“我的”子路由映射，确保仅“沟通”高亮
 - test: 新增 `mock-user-navbar-active-state` 用例，覆盖 `/chat` 路由下“沟通高亮且我的不高亮”回归场景
 - fix: 修复企业端沟通页“下载PDF”401问题，将简历下载从浏览器直链改为走 `chatApi.downloadResume` 鉴权请求（携带 `satoken`），并通过 Blob 方式触发文件下载

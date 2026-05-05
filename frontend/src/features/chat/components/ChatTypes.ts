@@ -4,7 +4,7 @@ export type ChatMobileMode = 'list' | 'detail';
 
 export interface ChatWorkspaceProps {
   role: ChatWorkspaceRole;
-  title: string;
+  title?: string;
   conversationPathPrefix: string;
   jobPathBuilder: (jobId: number) => string;
   mobileMode: ChatMobileMode;

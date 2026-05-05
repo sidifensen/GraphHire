@@ -713,9 +713,9 @@ export default function ChatWorkspace({
     : null;
 
   return (
-    <section data-testid="chat-workspace" className="mx-auto w-full max-w-6xl px-4 py-4 md:px-6 md:py-6">
-      {previewModal}
-      <h1 className="text-2xl font-black text-on-surface mb-4">{title}</h1>
+      <section data-testid="chat-workspace" className="mx-auto w-full max-w-6xl px-4 py-4 md:px-6 md:py-6">
+        {previewModal}
+      {title ? <h1 className="text-2xl font-black text-on-surface mb-4">{title}</h1> : null}
       {error ? <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">{error}</div> : null}
 
       <div
