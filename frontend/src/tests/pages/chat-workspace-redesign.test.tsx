@@ -334,7 +334,7 @@ describe('chat workspace redesign', () => {
     expect(screen.queryByText('2')).not.toBeInTheDocument();
   });
 
-  it('renders resume card and downloads pdf via authenticated api call', async () => {
+  it('renders resume card and supports authenticated preview + download', async () => {
     listMessagesMock.mockResolvedValue([
       {
         id: 11,
@@ -355,6 +355,7 @@ describe('chat workspace redesign', () => {
     expect(await screen.findByText('25年简历测试.pdf')).toBeInTheDocument();
     const createObjectURLSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test-url');
     const revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
+    const windowOpenSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
     const clickMock = vi.fn();
     const originalCreateElement = document.createElement.bind(document);
     const createElementSpy = vi.spyOn(document, 'createElement').mockImplementation(((tagName: string, options?: ElementCreationOptions) => {
@@ -365,9 +366,14 @@ describe('chat workspace redesign', () => {
       return element;
     }) as typeof document.createElement);
 
-    fireEvent.click(screen.getByRole('button', { name: '下载PDF' }));
+    fireEvent.click(screen.getByRole('button', { name: '预览PDF' }));
 
     await waitFor(() => expect(downloadResumeMock).toHaveBeenCalledWith(1, 501));
+    expect(windowOpenSpy).toHaveBeenCalledWith('blob:test-url', '_blank', 'noopener,noreferrer');
+
+    fireEvent.click(screen.getByRole('button', { name: '下载PDF' }));
+
+    await waitFor(() => expect(downloadResumeMock).toHaveBeenCalledTimes(2));
     expect(createObjectURLSpy).toHaveBeenCalled();
     expect(clickMock).toHaveBeenCalledTimes(1);
     expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:test-url');
@@ -385,6 +391,7 @@ describe('chat workspace redesign', () => {
     expect(within(panel).getByRole('button', { name: '🤝' })).toBeInTheDocument();
 
     createElementSpy.mockRestore();
+    windowOpenSpy.mockRestore();
     createObjectURLSpy.mockRestore();
     revokeObjectURLSpy.mockRestore();
   });

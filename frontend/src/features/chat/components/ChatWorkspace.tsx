@@ -202,7 +202,7 @@ export default function ChatWorkspace({
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [resumeSending, setResumeSending] = useState(false);
-  const [resumeDownloading, setResumeDownloading] = useState(false);
+  const [resumeFileLoading, setResumeFileLoading] = useState(false);
   const [imageSending, setImageSending] = useState(false);
   const [inviteSending, setInviteSending] = useState(false);
   const [showEmojiPanel, setShowEmojiPanel] = useState(false);
@@ -511,22 +511,43 @@ export default function ChatWorkspace({
     }
   };
 
-  const handleDownloadResume = async (conversationId: number, ext: Record<string, unknown> | null) => {
-    if (resumeDownloading) return;
+  const fetchResumeBlob = async (conversationId: number, ext: Record<string, unknown> | null) => {
     const resumeId = Number(ext?.resumeId);
     if (!Number.isFinite(resumeId) || resumeId <= 0) {
-      setError('简历信息异常，无法下载');
-      return;
+      throw new Error('简历信息异常，无法获取文件');
     }
+    return chatApi.downloadResume(conversationId, resumeId);
+  };
 
-    setResumeDownloading(true);
+  const handlePreviewResume = async (conversationId: number, ext: Record<string, unknown> | null) => {
+    if (resumeFileLoading) return;
+    setResumeFileLoading(true);
     setError(null);
     try {
-      const { blob, fileName } = await chatApi.downloadResume(conversationId, resumeId);
+      const { blob } = await fetchResumeBlob(conversationId, ext);
+      const objectUrl = URL.createObjectURL(blob);
+      window.open(objectUrl, '_blank', 'noopener,noreferrer');
+      window.setTimeout(() => {
+        URL.revokeObjectURL(objectUrl);
+      }, 60_000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '预览简历失败');
+    } finally {
+      setResumeFileLoading(false);
+    }
+  };
+
+  const handleDownloadResume = async (conversationId: number, ext: Record<string, unknown> | null) => {
+    if (resumeFileLoading) return;
+    setResumeFileLoading(true);
+    setError(null);
+    try {
+      const resumeId = Number(ext?.resumeId);
+      const { blob, fileName } = await fetchResumeBlob(conversationId, ext);
       const objectUrl = URL.createObjectURL(blob);
       const anchor = document.createElement('a');
       anchor.href = objectUrl;
-      anchor.download = fileName || String(ext?.fileName ?? `resume-${resumeId}.pdf`);
+      anchor.download = fileName || String(ext?.fileName ?? `resume-${Number.isFinite(resumeId) ? resumeId : 'file'}.pdf`);
       document.body.append(anchor);
       anchor.click();
       anchor.remove();
@@ -534,7 +555,7 @@ export default function ChatWorkspace({
     } catch (err) {
       setError(err instanceof Error ? err.message : '下载简历失败');
     } finally {
-      setResumeDownloading(false);
+      setResumeFileLoading(false);
     }
   };
 
@@ -655,14 +676,24 @@ export default function ChatWorkspace({
                                 </div>
                               </div>
                               {resumeCanDownload ? (
-                                <button
-                                  type="button"
-                                  onClick={() => void handleDownloadResume(message.conversationId, ext)}
-                                  disabled={resumeDownloading}
-                                  className={`mt-2 inline-flex rounded-lg px-2.5 py-1 text-xs font-bold disabled:opacity-60 ${self ? 'bg-white text-primary' : 'bg-primary text-white'}`}
-                                >
-                                  {resumeDownloading ? '下载中...' : '下载PDF'}
-                                </button>
+                                <div className="mt-2 flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => void handlePreviewResume(message.conversationId, ext)}
+                                    disabled={resumeFileLoading}
+                                    className={`inline-flex rounded-lg px-2.5 py-1 text-xs font-bold disabled:opacity-60 ${self ? 'bg-white/90 text-primary' : 'bg-surface-low text-on-surface'}`}
+                                  >
+                                    {resumeFileLoading ? '处理中...' : '预览PDF'}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => void handleDownloadResume(message.conversationId, ext)}
+                                    disabled={resumeFileLoading}
+                                    className={`inline-flex rounded-lg px-2.5 py-1 text-xs font-bold disabled:opacity-60 ${self ? 'bg-white text-primary' : 'bg-primary text-white'}`}
+                                  >
+                                    {resumeFileLoading ? '处理中...' : '下载PDF'}
+                                  </button>
+                                </div>
                               ) : null}
                             </div>
                           ) : null}
