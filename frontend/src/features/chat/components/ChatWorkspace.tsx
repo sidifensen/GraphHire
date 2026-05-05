@@ -80,6 +80,16 @@ function getUserDisplay(role: ChatWorkspaceProps['role'], item: ChatConversation
   return item.recruiterName || `用户#${item.recruiterUserId}`;
 }
 
+function normalizeCandidateDisplayName(item: ChatConversationSummary): string {
+  const raw = (item.candidateName || '').trim();
+  if (!raw) return `用户#${item.candidateUserId}`;
+  if (raw.includes('@')) {
+    const localPart = raw.split('@')[0]?.trim();
+    if (localPart) return localPart;
+  }
+  return raw;
+}
+
 function getConversationOwnerAvatarUrl(item: ChatConversationSummary): string | null {
   if (!item.recruiterUserId) return null;
   return buildPersonAvatarUrl(item.recruiterUserId);
@@ -137,13 +147,18 @@ function Avatar({
   imageUrl?: string | null;
   testId?: string;
 }) {
+  const [broken, setBroken] = useState(false);
   const initial = name.trim().slice(0, 1).toUpperCase() || '?';
-  if (imageUrl) {
+  useEffect(() => {
+    setBroken(false);
+  }, [imageUrl]);
+  if (imageUrl && !broken) {
     return (
       <img
         src={imageUrl}
         alt={`${name}头像`}
         data-testid={testId}
+        onError={() => setBroken(true)}
         className="h-9 w-9 rounded-full object-cover border border-outline/20 shrink-0"
       />
     );
@@ -292,6 +307,8 @@ export default function ChatWorkspace({
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [jobMeta, setJobMeta] = useState<ChatJobMeta | null>(null);
   const [peerAvatarUrl, setPeerAvatarUrl] = useState<string | null>(null);
+  const [conversationOwnerAvatarMap, setConversationOwnerAvatarMap] = useState<Record<number, string | null>>({});
+  const [candidateInfoMap, setCandidateInfoMap] = useState<Record<number, { displayName: string }>>({});
 
   const [inviteTime, setInviteTime] = useState('');
   const [inviteLocation, setInviteLocation] = useState('');
@@ -406,6 +423,47 @@ export default function ChatWorkspace({
     }
     setPeerAvatarUrl(buildPersonAvatarUrl(peerUserId));
   }, [selectedConversation, isUserRole]);
+
+  useEffect(() => {
+    if (!isUserRole) {
+      setCandidateInfoMap({});
+      return;
+    }
+    let cancelled = false;
+    if (list.length === 0) {
+      setConversationOwnerAvatarMap({});
+      return;
+    }
+
+    void (async () => {
+      const entries = await Promise.all(
+        list.map(async (item): Promise<[number, string | null]> => {
+          try {
+            const job = await publicApi.jobs.getById(item.jobId);
+            const fromJob = toAbsoluteAssetUrl(job.companyAvatarUrl);
+            if (fromJob) return [item.conversationId, fromJob];
+            if (item.companyId) {
+              try {
+                const company = await publicApi.companies.getById(item.companyId);
+                return [item.conversationId, toAbsoluteAssetUrl(company.avatarUrl)];
+              } catch {
+                return [item.conversationId, null];
+              }
+            }
+            return [item.conversationId, null];
+          } catch {
+            return [item.conversationId, null];
+          }
+        }),
+      );
+      if (cancelled) return;
+      setConversationOwnerAvatarMap(Object.fromEntries(entries));
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [list, isUserRole]);
 
   useEffect(() => {
     if (!selectedConversationId) {
@@ -846,7 +904,9 @@ export default function ChatWorkspace({
 
               {filteredList.map((item) => {
                 const selected = item.conversationId === selectedConversationId;
-                const ownerAvatarUrl = getConversationOwnerAvatarUrl(item);
+                const ownerAvatarUrl = conversationOwnerAvatarMap[item.conversationId]
+                  ?? (isUserRole ? null : (item.candidateUserId ? buildPersonAvatarUrl(item.candidateUserId) : null));
+                const candidateDisplay = normalizeCandidateDisplayName(item);
                 return (
                   <button
                     key={item.conversationId}
@@ -857,13 +917,13 @@ export default function ChatWorkspace({
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex items-start gap-2">
                         <Avatar
-                          name={item.recruiterName || '负责人'}
+                          name={isUserRole ? (item.recruiterName || '负责人') : candidateDisplay}
                           imageUrl={ownerAvatarUrl}
                           testId="chat-conversation-owner-avatar"
                         />
                         <div className="min-w-0">
-                          <p className="text-sm font-bold text-on-surface truncate">{item.jobTitle || `岗位 #${item.jobId}`}</p>
-                          <p className="text-xs text-on-surface-variant truncate">{isUserRole ? item.companyName || '未知企业' : `候选人：${item.candidateName || `用户#${item.candidateUserId}`}`}</p>
+                          <p className="text-sm font-bold text-on-surface line-clamp-2">{item.jobTitle || `岗位 #${item.jobId}`}</p>
+                          <p className="text-xs text-on-surface-variant line-clamp-2">{isUserRole ? item.companyName || '未知企业' : `候选人：${candidateDisplay}`}</p>
                           <p className="mt-1 text-xs text-on-surface-variant line-clamp-1">{item.lastMessagePreview || '暂无消息'}</p>
                         </div>
                       </div>
@@ -902,18 +962,36 @@ export default function ChatWorkspace({
                   </div>
                 ) : null}
                 <div className="flex items-start justify-between gap-3">
+                  {(() => {
+                    const candidateDisplayName = normalizeCandidateDisplayName(selectedConversation);
+                    const headerOwnerAvatarUrl = isUserRole
+                      ? (peerAvatarUrl ?? conversationOwnerAvatarMap[selectedConversation.conversationId] ?? null)
+                      : (selectedConversation.candidateUserId ? buildPersonAvatarUrl(selectedConversation.candidateUserId) : null);
+                    return (
                   <div className="min-w-0 flex items-start gap-2">
                     <Avatar
-                      name={selectedConversation.recruiterName || '负责人'}
-                      imageUrl={getConversationOwnerAvatarUrl(selectedConversation)}
+                      name={isUserRole ? (selectedConversation.recruiterName || '负责人') : candidateDisplayName}
+                      imageUrl={headerOwnerAvatarUrl}
                       testId="chat-header-owner-avatar"
                     />
                     <div className="min-w-0">
-                      <p className="text-sm text-on-surface-variant">岗位负责人</p>
-                      <p className="text-base font-bold text-on-surface truncate">{jobMeta?.ownerName || selectedConversation.recruiterName || '招聘负责人'}</p>
-                      <p className="text-sm text-on-surface-variant truncate">{jobMeta?.companyName || selectedConversation.companyName || '未知企业'}</p>
+                      {isUserRole ? (
+                        <>
+                          <p className="text-sm text-on-surface-variant">岗位负责人</p>
+                          <p className="text-base font-bold text-on-surface truncate">{jobMeta?.ownerName || selectedConversation.recruiterName || '招聘负责人'}</p>
+                          <p className="text-sm text-on-surface-variant truncate">{jobMeta?.companyName || selectedConversation.companyName || '未知企业'}</p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-sm text-on-surface-variant">候选人</p>
+                          <p className="text-base font-bold text-on-surface line-clamp-2">{candidateDisplayName}</p>
+                          <p className="text-sm text-on-surface-variant truncate">ID：{selectedConversation.candidateUserId}</p>
+                        </>
+                      )}
                     </div>
                   </div>
+                    );
+                  })()}
                   <Link href={jobHref} className="shrink-0 rounded-lg border border-primary/40 px-3 py-1.5 text-sm font-bold text-primary hover:bg-primary/5">查看职位</Link>
                 </div>
                 <div className="mt-2 rounded-xl bg-surface-lowest border border-outline/20 px-3 py-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">

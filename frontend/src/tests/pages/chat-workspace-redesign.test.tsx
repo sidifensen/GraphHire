@@ -426,6 +426,22 @@ describe('chat workspace redesign', () => {
   });
 
   it('renders enterprise workspace without resume button and keeps interview action', async () => {
+    listConversationsMock.mockResolvedValue([
+      {
+        conversationId: 1,
+        jobId: 101,
+        jobTitle: '前端工程师',
+        companyId: 9,
+        companyName: '图谱科技',
+        recruiterUserId: 20,
+        candidateUserId: 10,
+        candidateName: 'test_person@example.com',
+        recruiterName: '陈HR',
+        lastMessagePreview: '你好，方便沟通吗',
+        lastMessageTime: '2026-05-04T09:12:00',
+        unreadCount: 2,
+      },
+    ]);
     render(<EnterpriseChatListPage />);
 
     await waitFor(() => expect(listConversationsMock).toHaveBeenCalledTimes(1));
@@ -433,6 +449,10 @@ describe('chat workspace redesign', () => {
     expect(await screen.findByTestId('chat-workspace')).toBeInTheDocument();
     expect(screen.getAllByTestId('chat-conversation-owner-avatar').length).toBeGreaterThan(0);
     expect(screen.getByTestId('chat-header-owner-avatar')).toBeInTheDocument();
+    expect(screen.getAllByText(/候选人：test_person/).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/候选人：test_person@example.com/)).not.toBeInTheDocument();
+    expect(screen.getByText('候选人')).toBeInTheDocument();
+    expect(screen.getByText('test_person')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '查看职位' })).toHaveAttribute('href', '/enterprise/jobs/101');
     expect(screen.queryByRole('button', { name: '发送简历' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '面试通知' })).toBeInTheDocument();
