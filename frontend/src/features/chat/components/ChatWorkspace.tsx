@@ -80,6 +80,11 @@ function getUserDisplay(role: ChatWorkspaceProps['role'], item: ChatConversation
   return item.recruiterName || `用户#${item.recruiterUserId}`;
 }
 
+function getConversationOwnerAvatarUrl(item: ChatConversationSummary): string | null {
+  if (!item.recruiterUserId) return null;
+  return buildPersonAvatarUrl(item.recruiterUserId);
+}
+
 type AuthStoreState = {
   user?: {
     id: number;
@@ -841,6 +846,7 @@ export default function ChatWorkspace({
 
               {filteredList.map((item) => {
                 const selected = item.conversationId === selectedConversationId;
+                const ownerAvatarUrl = getConversationOwnerAvatarUrl(item);
                 return (
                   <button
                     key={item.conversationId}
@@ -849,10 +855,17 @@ export default function ChatWorkspace({
                     className={`w-full text-left rounded-xl border px-3 py-3 transition-colors ${selected ? 'border-primary/40 bg-primary/5' : 'border-outline/20 bg-surface-lowest hover:border-primary/20'}`}
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="text-sm font-bold text-on-surface truncate">{item.jobTitle || `岗位 #${item.jobId}`}</p>
-                        <p className="text-xs text-on-surface-variant truncate">{isUserRole ? item.companyName || '未知企业' : `候选人：${item.candidateName || `用户#${item.candidateUserId}`}`}</p>
-                        <p className="mt-1 text-xs text-on-surface-variant line-clamp-1">{item.lastMessagePreview || '暂无消息'}</p>
+                      <div className="min-w-0 flex items-start gap-2">
+                        <Avatar
+                          name={item.recruiterName || '负责人'}
+                          imageUrl={ownerAvatarUrl}
+                          testId="chat-conversation-owner-avatar"
+                        />
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-on-surface truncate">{item.jobTitle || `岗位 #${item.jobId}`}</p>
+                          <p className="text-xs text-on-surface-variant truncate">{isUserRole ? item.companyName || '未知企业' : `候选人：${item.candidateName || `用户#${item.candidateUserId}`}`}</p>
+                          <p className="mt-1 text-xs text-on-surface-variant line-clamp-1">{item.lastMessagePreview || '暂无消息'}</p>
+                        </div>
                       </div>
                       <div className="shrink-0 text-right">
                         <p className="text-[11px] text-outline">{formatListTime(item.lastMessageTime)}</p>
@@ -889,10 +902,17 @@ export default function ChatWorkspace({
                   </div>
                 ) : null}
                 <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-sm text-on-surface-variant">岗位负责人</p>
-                    <p className="text-base font-bold text-on-surface truncate">{jobMeta?.ownerName || selectedConversation.recruiterName || '招聘负责人'}</p>
-                    <p className="text-sm text-on-surface-variant truncate">{jobMeta?.companyName || selectedConversation.companyName || '未知企业'}</p>
+                  <div className="min-w-0 flex items-start gap-2">
+                    <Avatar
+                      name={selectedConversation.recruiterName || '负责人'}
+                      imageUrl={getConversationOwnerAvatarUrl(selectedConversation)}
+                      testId="chat-header-owner-avatar"
+                    />
+                    <div className="min-w-0">
+                      <p className="text-sm text-on-surface-variant">岗位负责人</p>
+                      <p className="text-base font-bold text-on-surface truncate">{jobMeta?.ownerName || selectedConversation.recruiterName || '招聘负责人'}</p>
+                      <p className="text-sm text-on-surface-variant truncate">{jobMeta?.companyName || selectedConversation.companyName || '未知企业'}</p>
+                    </div>
                   </div>
                   <Link href={jobHref} className="shrink-0 rounded-lg border border-primary/40 px-3 py-1.5 text-sm font-bold text-primary hover:bg-primary/5">查看职位</Link>
                 </div>

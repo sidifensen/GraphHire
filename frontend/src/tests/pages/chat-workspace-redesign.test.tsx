@@ -378,6 +378,8 @@ describe('chat workspace redesign', () => {
 
     expect(await screen.findByTestId('chat-workspace')).toBeInTheDocument();
     expect(screen.getByTestId('chat-desktop-layout')).toBeInTheDocument();
+    expect(screen.getAllByTestId('chat-conversation-owner-avatar').length).toBeGreaterThan(0);
+    expect(screen.getByTestId('chat-header-owner-avatar')).toBeInTheDocument();
     expect(await screen.findByText('岗位负责人')).toBeInTheDocument();
     expect(screen.getAllByText('图谱科技').length).toBeGreaterThan(0);
     expect(screen.getAllByText('前端工程师').length).toBeGreaterThan(0);
@@ -429,6 +431,8 @@ describe('chat workspace redesign', () => {
     await waitFor(() => expect(listConversationsMock).toHaveBeenCalledTimes(1));
 
     expect(await screen.findByTestId('chat-workspace')).toBeInTheDocument();
+    expect(screen.getAllByTestId('chat-conversation-owner-avatar').length).toBeGreaterThan(0);
+    expect(screen.getByTestId('chat-header-owner-avatar')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '查看职位' })).toHaveAttribute('href', '/enterprise/jobs/101');
     expect(screen.queryByRole('button', { name: '发送简历' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '面试通知' })).toBeInTheDocument();
