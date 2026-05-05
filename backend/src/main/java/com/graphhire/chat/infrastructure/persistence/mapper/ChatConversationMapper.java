@@ -20,6 +20,10 @@ public interface ChatConversationMapper extends BaseMapper<ChatConversationPO> {
                c.recruiter_user_id AS recruiterUserId,
                c.candidate_user_id AS candidateUserId,
                su_cand.username AS candidateName,
+               pi.email AS candidateEmail,
+               pi.age AS candidateAge,
+               pi.gender AS candidateGender,
+               pi.education AS candidateEducation,
                su_rec.username AS recruiterName,
                c.last_message_id AS lastMessageId,
                m.content AS lastMessageContent,
@@ -30,6 +34,7 @@ public interface ChatConversationMapper extends BaseMapper<ChatConversationPO> {
         LEFT JOIN job j ON j.id = c.job_id
         LEFT JOIN company cp ON cp.id = c.company_id
         LEFT JOIN sys_user su_cand ON su_cand.id = c.candidate_user_id
+        LEFT JOIN person_info pi ON pi.user_id = c.candidate_user_id AND pi.deleted = 0
         LEFT JOIN sys_user su_rec ON su_rec.id = c.recruiter_user_id
         LEFT JOIN chat_message m ON m.id = c.last_message_id
         WHERE c.recruiter_user_id = #{recruiterUserId}
@@ -47,6 +52,10 @@ public interface ChatConversationMapper extends BaseMapper<ChatConversationPO> {
                c.recruiter_user_id AS recruiterUserId,
                c.candidate_user_id AS candidateUserId,
                su_cand.username AS candidateName,
+               pi.email AS candidateEmail,
+               pi.age AS candidateAge,
+               pi.gender AS candidateGender,
+               pi.education AS candidateEducation,
                su_rec.username AS recruiterName,
                c.last_message_id AS lastMessageId,
                m.content AS lastMessageContent,
@@ -57,6 +66,7 @@ public interface ChatConversationMapper extends BaseMapper<ChatConversationPO> {
         LEFT JOIN job j ON j.id = c.job_id
         LEFT JOIN company cp ON cp.id = c.company_id
         LEFT JOIN sys_user su_cand ON su_cand.id = c.candidate_user_id
+        LEFT JOIN person_info pi ON pi.user_id = c.candidate_user_id AND pi.deleted = 0
         LEFT JOIN sys_user su_rec ON su_rec.id = c.recruiter_user_id
         LEFT JOIN chat_message m ON m.id = c.last_message_id
         WHERE c.candidate_user_id = #{candidateUserId}

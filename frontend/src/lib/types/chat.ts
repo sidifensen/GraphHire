@@ -9,6 +9,10 @@ export interface ChatConversationSummary {
   recruiterUserId: number;
   candidateUserId: number;
   candidateName?: string | null;
+  candidateEmail?: string | null;
+  candidateAge?: number | null;
+  candidateGender?: number | null;
+  candidateEducation?: string | null;
   recruiterName?: string | null;
   lastMessageId?: number | null;
   lastMessagePreview?: string | null;

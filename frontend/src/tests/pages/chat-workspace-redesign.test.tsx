@@ -148,6 +148,10 @@ function mockConversationList() {
       recruiterUserId: 20,
       candidateUserId: 10,
       candidateName: '小王',
+      candidateEmail: 'candidate@example.com',
+      candidateAge: 26,
+      candidateGender: 1,
+      candidateEducation: '本科',
       recruiterName: '陈HR',
       lastMessagePreview: '你好，方便沟通吗',
       lastMessageTime: '2026-05-04T09:12:00',
@@ -168,6 +172,10 @@ function mockConversationListReadAfterOpen() {
         recruiterUserId: 20,
         candidateUserId: 10,
         candidateName: '小王',
+        candidateEmail: 'candidate@example.com',
+        candidateAge: 26,
+        candidateGender: 1,
+        candidateEducation: '本科',
         recruiterName: '陈HR',
         lastMessagePreview: '你好，方便沟通吗',
         lastMessageTime: '2026-05-04T09:12:00',
@@ -184,6 +192,10 @@ function mockConversationListReadAfterOpen() {
         recruiterUserId: 20,
         candidateUserId: 10,
         candidateName: '小王',
+        candidateEmail: 'candidate@example.com',
+        candidateAge: 26,
+        candidateGender: 1,
+        candidateEducation: '本科',
         recruiterName: '陈HR',
         lastMessagePreview: '你好，方便沟通吗',
         lastMessageTime: '2026-05-04T09:12:00',
@@ -435,7 +447,11 @@ describe('chat workspace redesign', () => {
         companyName: '图谱科技',
         recruiterUserId: 20,
         candidateUserId: 10,
-        candidateName: 'test_person@example.com',
+        candidateName: '测试候选人',
+        candidateEmail: 'test_person@example.com',
+        candidateAge: 25,
+        candidateGender: 2,
+        candidateEducation: '硕士',
         recruiterName: '陈HR',
         lastMessagePreview: '你好，方便沟通吗',
         lastMessageTime: '2026-05-04T09:12:00',
@@ -449,10 +465,11 @@ describe('chat workspace redesign', () => {
     expect(await screen.findByTestId('chat-workspace')).toBeInTheDocument();
     expect(screen.getAllByTestId('chat-conversation-owner-avatar').length).toBeGreaterThan(0);
     expect(screen.getByTestId('chat-header-owner-avatar')).toBeInTheDocument();
-    expect(screen.getAllByText(/候选人：test_person/).length).toBeGreaterThan(0);
-    expect(screen.queryByText(/候选人：test_person@example.com/)).not.toBeInTheDocument();
-    expect(screen.getByText('候选人')).toBeInTheDocument();
-    expect(screen.getByText('test_person')).toBeInTheDocument();
+    expect(screen.getAllByText('测试候选人').length).toBeGreaterThan(0);
+    expect(screen.getByText('test_person@example.com')).toBeInTheDocument();
+    expect(screen.getByText('年龄：25 · 性别：女 · 学历：硕士')).toBeInTheDocument();
+    expect(screen.queryByText(/^候选人$/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^ID：/)).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: '查看职位' })).toHaveAttribute('href', '/enterprise/jobs/101');
     expect(screen.queryByRole('button', { name: '发送简历' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '面试通知' })).toBeInTheDocument();

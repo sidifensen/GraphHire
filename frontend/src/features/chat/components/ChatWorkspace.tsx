@@ -83,11 +83,13 @@ function getUserDisplay(role: ChatWorkspaceProps['role'], item: ChatConversation
 function normalizeCandidateDisplayName(item: ChatConversationSummary): string {
   const raw = (item.candidateName || '').trim();
   if (!raw) return `用户#${item.candidateUserId}`;
-  if (raw.includes('@')) {
-    const localPart = raw.split('@')[0]?.trim();
-    if (localPart) return localPart;
-  }
   return raw;
+}
+
+function formatGender(gender?: number | null): string {
+  if (gender === 1) return '男';
+  if (gender === 2) return '女';
+  return '未填写';
 }
 
 function getConversationOwnerAvatarUrl(item: ChatConversationSummary): string | null {
@@ -893,7 +895,7 @@ export default function ChatWorkspace({
 
       <div
         data-testid="chat-desktop-layout"
-        className="grid grid-cols-1 md:grid-cols-[320px_minmax(0,1fr)] gap-4 md:h-[calc(100vh-220px)] min-h-[560px]"
+        className="grid grid-cols-1 md:grid-cols-[320px_minmax(0,1fr)] gap-4 md:h-[calc(100vh-96px)] min-h-[560px]"
       >
         {(mobileMode === 'list' || mobileMode === 'detail') ? (
           <aside
@@ -935,7 +937,7 @@ export default function ChatWorkspace({
                         />
                         <div className="min-w-0">
                           <p className="text-sm font-bold text-on-surface line-clamp-2">{item.jobTitle || `岗位 #${item.jobId}`}</p>
-                          <p className="text-xs text-on-surface-variant line-clamp-2">{isUserRole ? item.companyName || '未知企业' : `候选人：${candidateDisplay}`}</p>
+                          <p className="text-xs text-on-surface-variant line-clamp-2">{isUserRole ? item.companyName || '未知企业' : candidateDisplay}</p>
                           <p className="mt-1 text-xs text-on-surface-variant line-clamp-1">{item.lastMessagePreview || '暂无消息'}</p>
                         </div>
                       </div>
@@ -995,9 +997,11 @@ export default function ChatWorkspace({
                         </>
                       ) : (
                         <>
-                          <p className="text-sm text-on-surface-variant">候选人</p>
                           <p className="text-base font-bold text-on-surface line-clamp-2">{candidateDisplayName}</p>
-                          <p className="text-sm text-on-surface-variant truncate">ID：{selectedConversation.candidateUserId}</p>
+                          <p className="text-sm text-on-surface-variant truncate">{selectedConversation.candidateEmail || '邮箱未填写'}</p>
+                          <p className="text-xs text-on-surface-variant">
+                            {`年龄：${selectedConversation.candidateAge ?? '未填写'} · 性别：${formatGender(selectedConversation.candidateGender)} · 学历：${selectedConversation.candidateEducation || '未填写'}`}
+                          </p>
                         </>
                       )}
                     </div>

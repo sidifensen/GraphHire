@@ -11,6 +11,10 @@ public class ChatConversationViewPO {
     private Long recruiterUserId;
     private Long candidateUserId;
     private String candidateName;
+    private String candidateEmail;
+    private Integer candidateAge;
+    private Integer candidateGender;
+    private String candidateEducation;
     private String recruiterName;
     private Long lastMessageId;
     private String lastMessageContent;
@@ -80,6 +84,38 @@ public class ChatConversationViewPO {
 
     public void setCandidateName(String candidateName) {
         this.candidateName = candidateName;
+    }
+
+    public String getCandidateEmail() {
+        return candidateEmail;
+    }
+
+    public void setCandidateEmail(String candidateEmail) {
+        this.candidateEmail = candidateEmail;
+    }
+
+    public Integer getCandidateAge() {
+        return candidateAge;
+    }
+
+    public void setCandidateAge(Integer candidateAge) {
+        this.candidateAge = candidateAge;
+    }
+
+    public Integer getCandidateGender() {
+        return candidateGender;
+    }
+
+    public void setCandidateGender(Integer candidateGender) {
+        this.candidateGender = candidateGender;
+    }
+
+    public String getCandidateEducation() {
+        return candidateEducation;
+    }
+
+    public void setCandidateEducation(String candidateEducation) {
+        this.candidateEducation = candidateEducation;
     }
 
     public String getRecruiterName() {
