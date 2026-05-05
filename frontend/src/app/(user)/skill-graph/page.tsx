@@ -143,7 +143,7 @@ export default function KnowledgeGraph() {
   const progressWidth = `${totalScore}%`;
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen md:min-h-[calc(100vh-4rem)]">
       <div className="md:hidden">
         <TopNav title="我的图谱" />
       </div>

@@ -188,8 +188,11 @@ export default function Recommendations() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-surface overflow-hidden">
-      <main className="w-full max-w-none md:max-w-7xl mx-auto flex-1 flex flex-col md:flex-row md:gap-8 px-3 md:px-8 pt-stack-gap-md md:pt-8 overflow-hidden pb-[80px] md:pb-8">
+    <div data-testid="enterprise-recommendations-root" className="flex h-full min-h-0 flex-col bg-surface overflow-hidden">
+      <main
+        data-testid="enterprise-recommendations-main"
+        className="w-full max-w-none md:max-w-7xl mx-auto flex-1 min-h-0 flex flex-col md:flex-row md:gap-8 px-3 md:px-8 pt-stack-gap-md md:pt-8 overflow-hidden pb-[80px] md:pb-8"
+      >
         <div className="md:hidden flex flex-col gap-stack-gap-sm shrink-0 mb-4">
           <button
             type="button"
@@ -228,7 +231,7 @@ export default function Recommendations() {
           )}
         </div>
 
-        <aside className="hidden md:flex flex-col w-[320px] lg:w-[360px] shrink-0 h-full gap-5 overflow-hidden">
+        <aside className="hidden md:flex flex-col w-[320px] lg:w-[360px] shrink-0 h-full min-h-0 gap-5 overflow-hidden">
           <div className="flex items-center justify-between shrink-0">
             <h2 className="font-headline-sm text-2xl font-bold text-on-surface">职位猎场</h2>
             <Link href="/enterprise/jobs" className="text-sm font-medium text-primary hover:text-primary-fixed-variant transition-colors flex items-center gap-1">
@@ -246,7 +249,7 @@ export default function Recommendations() {
             />
           </div>
 
-          <div className="flex-1 overflow-y-auto hide-scrollbar flex flex-col gap-3 pb-8 pr-2">
+          <div data-testid="enterprise-recommendations-job-scroll" className="flex-1 overflow-y-auto hide-scrollbar flex flex-col gap-3 pb-8 pr-2">
             {jobs.map((job) => (
               <div
                 key={job.id}
@@ -289,7 +292,7 @@ export default function Recommendations() {
           </div>
         </aside>
 
-        <section className="flex-1 flex flex-col h-full overflow-hidden min-w-0">
+        <section className="flex-1 flex flex-col h-full min-h-0 overflow-hidden min-w-0">
           <div className="hidden md:flex flex-col gap-1 mb-6 shrink-0">
             <h1 className="font-headline-md text-2xl font-bold text-on-surface flex items-center gap-3">
               {selectedJob?.title || '暂无职位'}
@@ -349,7 +352,7 @@ export default function Recommendations() {
 
           {error ? <div className="mb-3 text-sm text-error">{error}</div> : null}
 
-          <div className="flex-1 overflow-y-auto hide-scrollbar pb-8 pr-2">
+          <div data-testid="enterprise-recommendations-candidate-scroll" className="flex-1 overflow-y-auto hide-scrollbar pb-8 pr-2">
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-stack-gap-md">
               {loading || loadingCandidates || refreshing ? (
                 Array(4)

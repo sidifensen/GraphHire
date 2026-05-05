@@ -308,7 +308,6 @@ export default function ChatWorkspace({
   const [jobMeta, setJobMeta] = useState<ChatJobMeta | null>(null);
   const [peerAvatarUrl, setPeerAvatarUrl] = useState<string | null>(null);
   const [conversationOwnerAvatarMap, setConversationOwnerAvatarMap] = useState<Record<number, string | null>>({});
-  const [candidateInfoMap, setCandidateInfoMap] = useState<Record<number, { displayName: string }>>({});
 
   const [inviteTime, setInviteTime] = useState('');
   const [inviteLocation, setInviteLocation] = useState('');
@@ -426,12 +425,11 @@ export default function ChatWorkspace({
 
   useEffect(() => {
     if (!isUserRole) {
-      setCandidateInfoMap({});
       return;
     }
     let cancelled = false;
     if (list.length === 0) {
-      setConversationOwnerAvatarMap({});
+      setConversationOwnerAvatarMap((prev) => (Object.keys(prev).length === 0 ? prev : {}));
       return;
     }
 
@@ -457,7 +455,21 @@ export default function ChatWorkspace({
         }),
       );
       if (cancelled) return;
-      setConversationOwnerAvatarMap(Object.fromEntries(entries));
+      setConversationOwnerAvatarMap((prev) => {
+        const next = Object.fromEntries(entries) as Record<number, string | null>;
+        const prevKeys = Object.keys(prev);
+        const nextKeys = Object.keys(next);
+        if (prevKeys.length !== nextKeys.length) {
+          return next;
+        }
+        for (const key of nextKeys) {
+          const conversationId = Number(key);
+          if (prev[conversationId] !== next[conversationId]) {
+            return next;
+          }
+        }
+        return prev;
+      });
     })();
 
     return () => {

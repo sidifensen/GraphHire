@@ -2,12 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { motion } from 'framer-motion';
 
 const MENU_ITEMS = [
   { label: '个人主页', href: '/profile' },
   { label: '个人资料', href: '/personal-info' },
   { label: '简历管理', href: '/resume/manage' },
-  { label: '沟通消息', href: '/chat' },
   { label: '我的图谱', href: '/skill-graph' },
 ] as const;
 
@@ -19,17 +19,28 @@ export default function UserWorkbenchSidebar() {
   const pathname = usePathname() ?? '/';
 
   return (
-    <aside className="hidden lg:block lg:w-64 lg:shrink-0">
-      <nav aria-label="我的页面菜单" className="sticky top-24 rounded-2xl border border-surface-mid bg-surface-lowest">
-        <ul className="divide-y divide-surface-mid">
+    <aside className="hidden lg:block lg:w-36 lg:shrink-0">
+      <nav aria-label="我的页面菜单" className="fixed left-8 top-24 z-30 inline-block">
+        <ul className="space-y-1.5">
           {MENU_ITEMS.map((item) => {
             const active = isActive(pathname, item.href);
             return (
-              <li key={item.label}>
+              <li key={item.label} className="relative">
+                {active ? (
+                  <motion.span
+                    layoutId="user-workbench-sidebar-active"
+                    transition={{ type: 'spring', stiffness: 520, damping: 40 }}
+                    className="absolute inset-0 rounded-r-full border-l-2 border-primary bg-primary/10"
+                  />
+                ) : null}
                 <Link
                   href={item.href}
                   aria-current={active ? 'page' : undefined}
-                  className={`block px-4 py-3 text-sm font-semibold transition-colors ${active ? 'text-primary bg-primary/5' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-low'}`}
+                  className={`block whitespace-nowrap rounded-r-full border-l-2 px-4 py-2.5 text-sm font-semibold transition-colors ${
+                    active
+                      ? 'border-transparent text-primary'
+                      : 'border-transparent text-on-surface-variant hover:bg-surface-low hover:text-on-surface'
+                  } relative z-10`}
                 >
                   {item.label}
                 </Link>

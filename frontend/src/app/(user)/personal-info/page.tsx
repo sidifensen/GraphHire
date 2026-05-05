@@ -193,7 +193,7 @@ export default function PersonalInfo() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-surface-background px-5 md:px-8">
+    <div className="flex min-h-screen md:min-h-[calc(100vh-4rem)] flex-col bg-surface-background px-5 md:px-8">
       <div className="md:hidden">
         <TopNav title="个人资料" />
       </div>

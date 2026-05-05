@@ -209,11 +209,7 @@ public class CompanyAppService {
         Long companyId = getCompanyIdByUserId(userId);
 
         // 步骤2：根据公司ID查询公司完整信息
-        Company company = companyRepository.findById(companyId)
-                .orElseThrow(() -> Exceptions.BusinessException.of("企业不存在"));
-        log.info("根据用户查询企业: userId={}, companyId={}", userId, companyId);
-        return company;
-        // 步骤4：返回公司信息
+        return companyRepository.findById(companyId).orElseThrow(() -> Exceptions.BusinessException.of("企业不存在"));
     }
 
     /**

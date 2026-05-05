@@ -90,7 +90,10 @@ public class MatchAppService {
         List<Job> publishedJobs = jobRepository.findAll().stream()
             .filter(job -> job.getStatus() == JobStatus.PUBLISHED)
             .toList();
-        List<MatchRecord> existingRecords = matchRecordRepository.findByResumeId(resumeId);
+        List<MatchRecord> existingRecords = matchRecordRepository.findByResumeId(resumeId).stream()
+            .filter(record -> record.getMatchDirection() == null
+                || record.getMatchDirection().equals(MatchRecord.DIRECTION_PERSON_APPLIES))
+            .toList();
         Map<Long, MatchRecord> existingByJobId = new HashMap<>();
         for (MatchRecord existing : existingRecords) {
             if (existing.getJobId() != null && !existingByJobId.containsKey(existing.getJobId())) {

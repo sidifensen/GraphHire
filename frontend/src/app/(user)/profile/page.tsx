@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { User, FileText, Send, Network, ChevronRight } from 'lucide-react';
+import { User, FileText, Network, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { userAuthStore } from '@/lib/stores/auth-store';
 import { personApi, type PersonProfile } from '@/lib/api/person';
@@ -53,7 +53,6 @@ export default function Profile() {
   const mobileMenuItems = [
     { name: '个人资料', icon: User, path: '/personal-info' },
     { name: '简历管理', icon: FileText, path: '/resume/manage' },
-    { name: '沟通消息', icon: Send, path: '/chat' },
     { name: '我的图谱', icon: Network, path: '/skill-graph' },
   ];
 
@@ -151,7 +150,7 @@ export default function Profile() {
   }, [authUser?.id]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-surface-background px-5 pb-32 pt-6 md:px-8 md:pt-12">
+    <div className="flex min-h-screen md:min-h-[calc(100vh-4rem)] flex-col bg-surface-background px-5 pb-32 pt-6 md:px-8 md:pt-12">
       <div className="mx-auto flex w-full max-w-7xl gap-6 lg:gap-8">
         <UserWorkbenchSidebar />
         <div className="flex-1 space-y-6">

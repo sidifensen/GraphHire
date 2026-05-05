@@ -461,6 +461,22 @@ describe('chat workspace redesign', () => {
     expect(screen.getByPlaceholderText(/面试时间/)).toBeInTheDocument();
   });
 
+  it('does not trigger maximum update depth errors on enterprise chat page', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    render(<EnterpriseChatListPage />);
+
+    await waitFor(() => expect(listConversationsMock).toHaveBeenCalledTimes(1));
+    expect(await screen.findByTestId('chat-workspace')).toBeInTheDocument();
+
+    const maxDepthCalls = consoleErrorSpy.mock.calls.filter((args) =>
+      args.some((arg) => typeof arg === 'string' && arg.includes('Maximum update depth exceeded')),
+    );
+    expect(maxDepthCalls).toHaveLength(0);
+
+    consoleErrorSpy.mockRestore();
+  });
+
   it('filters conversations by sidebar search keyword', async () => {
     listConversationsMock.mockResolvedValue([
       {

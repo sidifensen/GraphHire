@@ -122,7 +122,12 @@ public class ResumeParseMQConsumer implements RocketMQListener<String> {
             notificationRepository.save(notification);
 
             if (Boolean.TRUE.equals(resume.getIsDefault())) {
-                matchAppService.triggerMatchForResume(resumeId);
+                try {
+                    matchAppService.triggerMatchForResume(resumeId);
+                } catch (Exception matchException) {
+                    log.error("默认简历解析成功后触发全职位匹配失败: resumeId={}, reason={}",
+                        resumeId, matchException.getMessage(), matchException);
+                }
             }
 
             // 步骤8：发布简历解析完成事件（仅传resumeId），触发技能图谱构建
