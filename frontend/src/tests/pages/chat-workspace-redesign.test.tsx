@@ -13,6 +13,7 @@ const {
   sendImageMock,
   sendInterviewInviteMock,
   downloadResumeMock,
+  previewImageMock,
   markReadMock,
   getMyResumesMock,
   getPublicJobByIdMock,
@@ -26,6 +27,7 @@ const {
   sendImageMock: vi.fn(),
   sendInterviewInviteMock: vi.fn(),
   downloadResumeMock: vi.fn(),
+  previewImageMock: vi.fn(),
   markReadMock: vi.fn(),
   getMyResumesMock: vi.fn(),
   getPublicJobByIdMock: vi.fn(),
@@ -57,6 +59,7 @@ vi.mock('@/lib/api/chat', () => ({
     sendImage: sendImageMock,
     sendInterviewInvite: sendInterviewInviteMock,
     downloadResume: downloadResumeMock,
+    previewImage: previewImageMock,
     getResumeDownloadUrl: vi.fn((conversationId: number, resumeId: number) => `/chat/conversations/${conversationId}/resume/${resumeId}/download`),
     markRead: markReadMock,
   },
@@ -234,6 +237,10 @@ describe('chat workspace redesign', () => {
       blob: new Blob(['resume'], { type: 'application/pdf' }),
       fileName: '25年简历测试.pdf',
     });
+    previewImageMock.mockResolvedValue({
+      blob: new Blob(['image-bytes'], { type: 'image/jpeg' }),
+      contentType: 'image/jpeg',
+    });
     markReadMock.mockResolvedValue(undefined);
     getMyResumesMock.mockResolvedValue([
       {
@@ -347,6 +354,17 @@ describe('chat workspace redesign', () => {
         recalled: 0,
         createTime: '2026-05-04T10:00:00',
       },
+      {
+        id: 12,
+        conversationId: 1,
+        senderUserId: 10,
+        receiverUserId: 20,
+        messageType: 2,
+        content: '发送了一张图片',
+        ext: JSON.stringify({ fileName: 'avatar.jpg', filePath: 's3://resumes/chat/image/avatar.jpg' }),
+        recalled: 0,
+        createTime: '2026-05-04T10:10:00',
+      },
     ]);
 
     render(<EnterpriseChatListPage />);
@@ -380,6 +398,12 @@ describe('chat workspace redesign', () => {
     expect(createObjectURLSpy).toHaveBeenCalled();
     expect(clickMock).toHaveBeenCalledTimes(1);
     expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:test-url');
+
+    fireEvent.click(screen.getByRole('button', { name: '预览图片' }));
+    await waitFor(() => expect(previewImageMock).toHaveBeenCalledWith(1, 12));
+    expect(screen.getByTestId('chat-resume-preview-modal')).toBeInTheDocument();
+    expect(screen.getByTitle('图片预览')).toHaveAttribute('src', 'blob:test-url');
+    fireEvent.click(screen.getByRole('button', { name: '关闭预览' }));
 
     expect(screen.queryByRole('button', { name: '发送通知' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '面试通知' })).toBeInTheDocument();

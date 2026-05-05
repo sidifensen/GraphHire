@@ -51,6 +51,20 @@ async function unwrapBlobErrorIfNeeded(blob: Blob, contentTypeHeader?: string): 
   }
 }
 
+async function fetchBlobWithErrorGuard(path: string): Promise<{ blob: Blob; contentType?: string; fileName?: string | null }> {
+  const response = await apiClient.get<Blob>(path, {
+    responseType: 'blob',
+  });
+  const contentType = response.headers?.['content-type'] as string | undefined;
+  await unwrapBlobErrorIfNeeded(response.data, contentType);
+  const contentDisposition = response.headers?.['content-disposition'] as string | undefined;
+  return {
+    blob: response.data,
+    contentType,
+    fileName: decodeContentDispositionFileName(contentDisposition),
+  };
+}
+
 export const chatApi = {
   listConversations: async (): Promise<ChatConversationSummary[]> => {
     const response = await apiClient.get<ChatConversationSummary[]>('/chat/conversations');
@@ -93,15 +107,18 @@ export const chatApi = {
   },
 
   downloadResume: async (conversationId: number, resumeId: number): Promise<{ blob: Blob; fileName: string | null }> => {
-    const response = await apiClient.get<Blob>(`/chat/conversations/${conversationId}/resume/${resumeId}/download`, {
-      responseType: 'blob',
-    });
-    const contentType = response.headers?.['content-type'] as string | undefined;
-    await unwrapBlobErrorIfNeeded(response.data, contentType);
-    const contentDisposition = response.headers?.['content-disposition'] as string | undefined;
+    const response = await fetchBlobWithErrorGuard(`/chat/conversations/${conversationId}/resume/${resumeId}/download`);
     return {
-      blob: response.data,
-      fileName: decodeContentDispositionFileName(contentDisposition),
+      blob: response.blob,
+      fileName: response.fileName ?? null,
+    };
+  },
+
+  previewImage: async (conversationId: number, messageId: number): Promise<{ blob: Blob; contentType: string }> => {
+    const response = await fetchBlobWithErrorGuard(`/chat/conversations/${conversationId}/images/${messageId}/preview`);
+    return {
+      blob: response.blob,
+      contentType: response.contentType || response.blob.type || 'application/octet-stream',
     };
   },
 

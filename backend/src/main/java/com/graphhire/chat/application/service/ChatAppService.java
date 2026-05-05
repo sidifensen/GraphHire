@@ -2,6 +2,7 @@ package com.graphhire.chat.application.service;
 
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson2.JSONObject;
 import com.graphhire.auth.domain.repository.UserRepository;
 import com.graphhire.auth.domain.vo.UserType;
 import com.graphhire.chat.application.service.dto.ChatConversationSummaryDTO;
@@ -292,6 +293,41 @@ public class ChatAppService {
         Resume resume = resumeRepository.findById(resumeId)
             .orElseThrow(() -> Exceptions.BusinessException.of(404, "简历不存在"));
         return resumeService.previewResume(resume.getId(), resume.getUserId());
+    }
+
+    public ResumePreviewFile previewImageFile(Long currentUserId, Long conversationId, Long messageId) {
+        ChatConversation conversation = requireConversation(conversationId);
+        ensureConversationMember(conversation, currentUserId);
+
+        ChatMessage message = messageRepository.findById(messageId)
+            .orElseThrow(() -> Exceptions.BusinessException.of(404, "图片消息不存在"));
+        if (!conversationId.equals(message.getConversationId())) {
+            throw Exceptions.BusinessException.of(400, "图片消息与会话不匹配");
+        }
+        if (message.getMessageType() != ChatMessageType.IMAGE) {
+            throw Exceptions.BusinessException.of(400, "当前消息不是图片消息");
+        }
+
+        JSONObject extJson = JSONObject.parseObject(StrUtil.blankToDefault(message.getExt(), "{}"));
+        String filePath = extJson.getString("filePath");
+        String fileName = StrUtil.blankToDefault(extJson.getString("fileName"), "image.png");
+        if (StrUtil.isBlank(filePath)) {
+            throw Exceptions.BusinessException.of(404, "图片资源不存在");
+        }
+
+        byte[] content = rustFSClient.download(filePath);
+        return new ResumePreviewFile(content, fileName, resolveImageContentType(fileName));
+    }
+
+    private String resolveImageContentType(String fileName) {
+        String ext = StrUtil.blankToDefault(cn.hutool.core.io.FileUtil.extName(fileName), "").toLowerCase();
+        return switch (ext) {
+            case "png" -> "image/png";
+            case "jpg", "jpeg" -> "image/jpeg";
+            case "gif" -> "image/gif";
+            case "webp" -> "image/webp";
+            default -> "application/octet-stream";
+        };
     }
 
     private ChatConversation requireConversation(Long conversationId) {

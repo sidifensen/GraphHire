@@ -8,6 +8,9 @@
 - refactor: PDF 预览改为站内弹层内嵌预览（iframe），不再跳转新页面；支持关闭预览并释放 Blob URL
 - fix: 修复站内 PDF 预览弹层显示不完整问题，改为通过 Portal 挂载到 `document.body` 并提升层级，避免被页面容器裁切
 - fix: 修复站内 PDF 预览顶部“透明漏底”问题，预览遮罩改为更深不透明背景并提升层级，弹层头部改为纯白底，避免透出页面导航
+- feat: 聊天图片消息新增“预览图片”能力，支持会话内鉴权拉取图片并在站内弹层中查看大图
+- feat: 后端新增图片预览接口 `GET /chat/conversations/{conversationId}/images/{messageId}/preview`，会话成员可按消息ID预览对应图片
+- test: 新增/更新后端 `ChatAppServiceTest`、`ChatControllerIT` 与前端聊天工作台测试，覆盖图片预览链路
 - test: 更新 `chat-workspace-redesign` 测试，覆盖“预览PDF + 下载PDF”均通过鉴权接口并触发浏览器行为
 - test: 新增 `chat-api-download` 单测，覆盖“JSON 错误 Blob 解析抛错”与“PDF 响应文件名解析”
 

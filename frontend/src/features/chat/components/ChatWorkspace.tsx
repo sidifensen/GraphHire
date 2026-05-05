@@ -206,6 +206,7 @@ export default function ChatWorkspace({
   const [resumeFileLoading, setResumeFileLoading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewFileName, setPreviewFileName] = useState<string>('');
+  const [previewKind, setPreviewKind] = useState<'pdf' | 'image'>('pdf');
   const [imageSending, setImageSending] = useState(false);
   const [inviteSending, setInviteSending] = useState(false);
   const [showEmojiPanel, setShowEmojiPanel] = useState(false);
@@ -534,8 +535,29 @@ export default function ChatWorkspace({
       const objectUrl = URL.createObjectURL(blob);
       setPreviewUrl(objectUrl);
       setPreviewFileName(fileName || String(ext?.fileName ?? '简历预览'));
+      setPreviewKind('pdf');
     } catch (err) {
       setError(err instanceof Error ? err.message : '预览简历失败');
+    } finally {
+      setResumeFileLoading(false);
+    }
+  };
+
+  const handlePreviewImage = async (conversationId: number, messageId: number, ext: Record<string, unknown> | null) => {
+    if (resumeFileLoading) return;
+    setResumeFileLoading(true);
+    setError(null);
+    try {
+      const { blob } = await chatApi.previewImage(conversationId, messageId);
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+      const objectUrl = URL.createObjectURL(blob);
+      setPreviewUrl(objectUrl);
+      setPreviewFileName(String(ext?.fileName ?? '图片预览'));
+      setPreviewKind('image');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '预览图片失败');
     } finally {
       setResumeFileLoading(false);
     }
@@ -547,6 +569,7 @@ export default function ChatWorkspace({
     }
     setPreviewUrl(null);
     setPreviewFileName('');
+    setPreviewKind('pdf');
   };
 
   useEffect(() => () => {
@@ -604,7 +627,13 @@ export default function ChatWorkspace({
               关闭预览
             </button>
           </div>
-          <iframe title="简历预览" src={previewUrl} className="h-full w-full flex-1 bg-white" />
+          {previewKind === 'image' ? (
+            <div className="flex h-full w-full flex-1 items-center justify-center bg-black/80 p-3">
+              <img title="图片预览" src={previewUrl} alt={previewFileName || '图片预览'} className="max-h-full max-w-full object-contain" />
+            </div>
+          ) : (
+            <iframe title="简历预览" src={previewUrl} className="h-full w-full flex-1 bg-white" />
+          )}
         </div>
       </div>,
       document.body,
@@ -741,6 +770,14 @@ export default function ChatWorkspace({
                             <div>
                               <p className="font-bold">图片消息</p>
                               <p className="opacity-90">{String(ext.fileName ?? '图片')}</p>
+                              <button
+                                type="button"
+                                onClick={() => void handlePreviewImage(message.conversationId, message.id, ext)}
+                                disabled={resumeFileLoading}
+                                className={`mt-2 inline-flex rounded-lg px-2.5 py-1 text-xs font-bold disabled:opacity-60 ${self ? 'bg-white text-primary' : 'bg-primary text-white'}`}
+                              >
+                                {resumeFileLoading ? '处理中...' : '预览图片'}
+                              </button>
                             </div>
                           ) : null}
                           {message.messageType === 4 && ext ? (

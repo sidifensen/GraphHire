@@ -16,6 +16,8 @@ import com.graphhire.job.domain.repository.JobRepository;
 import com.graphhire.notification.application.service.NotificationAppService;
 import com.graphhire.resume.domain.model.Resume;
 import com.graphhire.resume.domain.repository.ResumeRepository;
+import com.graphhire.resume.application.service.ResumeAppService;
+import com.graphhire.resume.application.service.dto.ResumePreviewFile;
 import com.graphhire.resume.infrastructure.file.RustFSClient;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -57,6 +59,8 @@ class ChatAppServiceTest {
     private ChatMQProducer chatMQProducer;
     @Mock
     private RustFSClient rustFSClient;
+    @Mock
+    private ResumeAppService resumeService;
 
     @InjectMocks
     private ChatAppService chatAppService;
@@ -189,5 +193,35 @@ class ChatAppServiceTest {
 
         chatAppService.markConversationRead(20L, 88L, 9L);
         assertEquals(9L, conversation.getCandidateLastReadMsgId());
+    }
+
+    @Test
+    @DisplayName("会话成员可预览会话图片")
+    void previewImageFile_shouldSuccessForConversationMember() {
+        ChatConversation conversation = new ChatConversation();
+        conversation.setId(88L);
+        conversation.setRecruiterUserId(10L);
+        conversation.setCandidateUserId(20L);
+        conversation.setCompanyId(1L);
+        conversation.setStatus(ChatConversation.STATUS_ACTIVE);
+
+        ChatMessage imageMessage = new ChatMessage();
+        imageMessage.setId(301L);
+        imageMessage.setConversationId(88L);
+        imageMessage.setSenderUserId(20L);
+        imageMessage.setReceiverUserId(10L);
+        imageMessage.setMessageType(com.graphhire.chat.domain.model.ChatMessageType.IMAGE);
+        imageMessage.setExt("{\"fileName\":\"avatar.jpg\",\"filePath\":\"s3://resumes/chat/image/avatar.jpg\"}");
+
+        byte[] imageBytes = "image-bytes".getBytes();
+        when(conversationRepository.findById(88L)).thenReturn(Optional.of(conversation));
+        when(messageRepository.findById(301L)).thenReturn(Optional.of(imageMessage));
+        when(rustFSClient.download("s3://resumes/chat/image/avatar.jpg")).thenReturn(imageBytes);
+
+        ResumePreviewFile file = chatAppService.previewImageFile(10L, 88L, 301L);
+
+        assertEquals("avatar.jpg", file.getFileName());
+        assertEquals("image/jpeg", file.getContentType());
+        assertEquals(imageBytes.length, file.getContent().length);
     }
 }

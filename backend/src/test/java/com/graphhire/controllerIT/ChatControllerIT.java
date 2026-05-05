@@ -133,4 +133,45 @@ class ChatControllerIT extends BaseControllerIT {
                 .headers(companyHeaders))
             .andExpect(status().isOk());
     }
+
+    @Test
+    @DisplayName("会话成员可以预览会话中的图片文件")
+    void conversationMemberCanPreviewImageFile() throws Exception {
+        String startBody = "{\"jobId\":1}";
+        mockMvc.perform(post("/chat/conversations/start")
+                .headers(personHeaders)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(startBody))
+            .andExpect(jsonPath("$.code").value(200))
+            .andExpect(jsonPath("$.data.conversationId").isNumber());
+
+        MockMultipartFile imageFile = new MockMultipartFile(
+            "file",
+            "avatar.jpg",
+            MediaType.IMAGE_JPEG_VALUE,
+            "mock-image".getBytes(java.nio.charset.StandardCharsets.UTF_8)
+        );
+        mockMvc.perform(multipart("/chat/messages/image")
+                .file(imageFile)
+                .param("conversationId", "3")
+                .header("satoken", personToken))
+            .andExpect(jsonPath("$.code").value(200))
+            .andExpect(jsonPath("$.data.messageId").isNumber());
+
+        Long imageMessageId = jdbcTemplate.queryForObject(
+            "SELECT id FROM chat_message WHERE conversation_id = ? AND message_type = 2 ORDER BY id DESC LIMIT 1",
+            Long.class,
+            3L
+        );
+
+        mockMvc.perform(get("/chat/conversations/3/images/" + imageMessageId + "/preview")
+                .headers(companyHeaders))
+            .andExpect(status().isOk())
+            .andExpect(result -> {
+                String contentType = result.getResponse().getContentType();
+                if (contentType == null || !contentType.startsWith("image/")) {
+                    throw new AssertionError("expected image content type but was: " + contentType);
+                }
+            });
+    }
 }

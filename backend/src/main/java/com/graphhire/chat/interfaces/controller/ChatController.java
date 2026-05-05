@@ -121,4 +121,18 @@ public class ChatController {
             .headers(headers)
             .body(file.getContent());
     }
+
+    @GetMapping("/conversations/{conversationId}/images/{messageId}/preview")
+    public ResponseEntity<byte[]> previewImage(@PathVariable Long conversationId, @PathVariable Long messageId) {
+        Long currentUserId = StpUtil.getLoginIdAsLong();
+        ResumePreviewFile file = chatAppService.previewImageFile(currentUserId, conversationId, messageId);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType(file.getContentType()));
+        headers.setCacheControl(CacheControl.noCache().getHeaderValue());
+
+        return ResponseEntity.ok()
+            .headers(headers)
+            .body(file.getContent());
+    }
 }
