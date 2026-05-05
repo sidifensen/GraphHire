@@ -207,6 +207,7 @@ export default function ChatWorkspace({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewFileName, setPreviewFileName] = useState<string>('');
   const [previewKind, setPreviewKind] = useState<'pdf' | 'image'>('pdf');
+  const [inlineImageUrls, setInlineImageUrls] = useState<Record<number, string>>({});
   const [imageSending, setImageSending] = useState(false);
   const [inviteSending, setInviteSending] = useState(false);
   const [showEmojiPanel, setShowEmojiPanel] = useState(false);
@@ -578,6 +579,62 @@ export default function ChatWorkspace({
     }
   }, [previewUrl]);
 
+  useEffect(() => {
+    let cancelled = false;
+    const imageMessages = messages.filter((item) => item.messageType === 2);
+    if (imageMessages.length === 0) {
+      return;
+    }
+
+    void (async () => {
+      for (const message of imageMessages) {
+        if (inlineImageUrls[message.id]) {
+          continue;
+        }
+        try {
+          const { blob } = await chatApi.previewImage(message.conversationId, message.id);
+          if (cancelled) return;
+          const objectUrl = URL.createObjectURL(blob);
+          setInlineImageUrls((prev) => {
+            if (prev[message.id]) {
+              URL.revokeObjectURL(objectUrl);
+              return prev;
+            }
+            return { ...prev, [message.id]: objectUrl };
+          });
+        } catch {
+          if (cancelled) return;
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [messages, inlineImageUrls]);
+
+  useEffect(() => {
+    const validIds = new Set(messages.filter((item) => item.messageType === 2).map((item) => item.id));
+    setInlineImageUrls((prev) => {
+      let changed = false;
+      const next: Record<number, string> = {};
+      Object.entries(prev).forEach(([idText, url]) => {
+        const id = Number(idText);
+        if (validIds.has(id)) {
+          next[id] = url;
+        } else {
+          changed = true;
+          URL.revokeObjectURL(url);
+        }
+      });
+      return changed ? next : prev;
+    });
+  }, [messages]);
+
+  useEffect(() => () => {
+    Object.values(inlineImageUrls).forEach((url) => URL.revokeObjectURL(url));
+  }, [inlineImageUrls]);
+
   const handleDownloadResume = async (conversationId: number, ext: Record<string, unknown> | null) => {
     if (resumeFileLoading) return;
     setResumeFileLoading(true);
@@ -770,14 +827,21 @@ export default function ChatWorkspace({
                             <div>
                               <p className="font-bold">图片消息</p>
                               <p className="opacity-90">{String(ext.fileName ?? '图片')}</p>
-                              <button
-                                type="button"
-                                onClick={() => void handlePreviewImage(message.conversationId, message.id, ext)}
-                                disabled={resumeFileLoading}
-                                className={`mt-2 inline-flex rounded-lg px-2.5 py-1 text-xs font-bold disabled:opacity-60 ${self ? 'bg-white text-primary' : 'bg-primary text-white'}`}
-                              >
-                                {resumeFileLoading ? '处理中...' : '预览图片'}
-                              </button>
+                              {inlineImageUrls[message.id] ? (
+                                <button
+                                  type="button"
+                                  className="mt-2 block overflow-hidden rounded-lg"
+                                  onClick={() => void handlePreviewImage(message.conversationId, message.id, ext)}
+                                >
+                                  <img
+                                    src={inlineImageUrls[message.id]}
+                                    alt={String(ext.fileName ?? '图片预览')}
+                                    className="max-h-52 w-auto max-w-[320px] rounded-lg object-contain bg-black/10"
+                                  />
+                                </button>
+                              ) : (
+                                <p className="mt-2 text-xs opacity-80">图片加载中...</p>
+                              )}
                             </div>
                           ) : null}
                           {message.messageType === 4 && ext ? (

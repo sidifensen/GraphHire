@@ -399,11 +399,10 @@ describe('chat workspace redesign', () => {
     expect(clickMock).toHaveBeenCalledTimes(1);
     expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:test-url');
 
-    fireEvent.click(screen.getByRole('button', { name: '预览图片' }));
     await waitFor(() => expect(previewImageMock).toHaveBeenCalledWith(1, 12));
-    expect(screen.getByTestId('chat-resume-preview-modal')).toBeInTheDocument();
-    expect(screen.getByTitle('图片预览')).toHaveAttribute('src', 'blob:test-url');
-    fireEvent.click(screen.getByRole('button', { name: '关闭预览' }));
+    const imageThumb = await screen.findByRole('img', { name: 'avatar.jpg' });
+    const imageSrc = imageThumb.getAttribute('src') || '';
+    expect(imageSrc.startsWith('blob:')).toBe(true);
 
     expect(screen.queryByRole('button', { name: '发送通知' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '面试通知' })).toBeInTheDocument();
