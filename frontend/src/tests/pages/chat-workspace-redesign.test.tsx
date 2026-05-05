@@ -295,6 +295,9 @@ describe('chat workspace redesign', () => {
     const listPageDetailPanel = screen.getByTestId('chat-conversation-detail-panel');
     expect(listPanel.className).not.toContain('hidden md:block');
     expect(listPageDetailPanel.className).toContain('hidden md:flex');
+    expect(screen.getByTestId('chat-workspace').className).toContain('px-0');
+    expect(listPanel.className).toContain('rounded-none');
+    expect(listPageDetailPanel.className).toContain('rounded-none');
 
     useParamsMock.mockReturnValue({ conversationId: '1' });
     render(<UserChatDetailPage />);
@@ -315,6 +318,8 @@ describe('chat workspace redesign', () => {
     expect(screen.getByTestId('chat-mobile-back-button')).toHaveAttribute('href', '/enterprise/chat');
     expect(screen.getByTestId('chat-conversation-list-panel').className).toContain('hidden md:block');
     expect(screen.getByTestId('chat-conversation-detail-panel').className).not.toContain('hidden md:flex');
+    expect(screen.getByTestId('chat-workspace').className).toContain('px-0');
+    expect(screen.getByTestId('chat-conversation-detail-panel').className).toContain('rounded-none');
   });
 
   it('keeps image message inside bubble bounds and uses compact mobile spacing classes', async () => {
@@ -337,14 +342,33 @@ describe('chat workspace redesign', () => {
     await waitFor(() => expect(previewImageMock).toHaveBeenCalledWith(1, 12));
 
     const workspace = screen.getByTestId('chat-workspace');
-    expect(workspace.className).toContain('px-2');
-    expect(workspace.className).toContain('py-2');
+    expect(workspace.className).toContain('px-0');
+    expect(workspace.className).toContain('py-0');
     expect(workspace.className).toContain('md:px-6');
 
     const imageThumb = await screen.findByRole('img', { name: 'avatar.jpg' });
     expect(imageThumb.className).toContain('w-full');
     expect(imageThumb.className).toContain('max-w-full');
     expect(imageThumb.className).toContain('max-h-60');
+  });
+
+  it('keeps mobile detail header and composer fixed while only message list scrolls', async () => {
+    useParamsMock.mockReturnValue({ conversationId: '1' });
+    render(<UserChatDetailPage />);
+
+    await waitFor(() => expect(listConversationsMock).toHaveBeenCalledTimes(1));
+
+    const detailPanel = screen.getByTestId('chat-conversation-detail-panel');
+    const messageList = screen.getByTestId('chat-message-scroll-container');
+    const header = screen.getByTestId('chat-detail-header');
+    const composer = screen.getByTestId('chat-detail-composer');
+
+    expect(detailPanel.className).toContain('h-[100dvh]');
+    expect(detailPanel.className).toContain('overflow-hidden');
+    expect(messageList.className).toContain('overflow-y-auto');
+    expect(messageList.className).toContain('flex-1');
+    expect(header.className).toContain('shrink-0');
+    expect(composer.className).toContain('shrink-0');
   });
 
   it('renders redesigned user workspace with job header, day separators and resume action', async () => {

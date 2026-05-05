@@ -811,7 +811,7 @@ export default function ChatWorkspace({
     : null;
 
   return (
-      <section data-testid="chat-workspace" className="mx-auto w-full max-w-6xl px-2 py-2 md:px-6 md:py-6">
+      <section data-testid="chat-workspace" className="mx-auto w-full max-w-6xl px-0 py-0 md:px-6 md:py-6">
         {previewModal}
       {title ? <h1 className="text-2xl font-black text-on-surface mb-4">{title}</h1> : null}
       {error ? <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">{error}</div> : null}
@@ -823,7 +823,7 @@ export default function ChatWorkspace({
         {(mobileMode === 'list' || mobileMode === 'detail') ? (
           <aside
             data-testid="chat-conversation-list-panel"
-            className={`rounded-2xl border border-outline/20 bg-surface-lowest overflow-hidden ${mobileMode === 'detail' ? 'hidden md:block' : ''}`}
+            className={`rounded-none md:rounded-2xl border border-outline/20 bg-surface-lowest overflow-hidden ${mobileMode === 'detail' ? 'hidden md:block' : ''}`}
           >
             <div className="h-12 px-3 border-b border-outline/20 flex items-center">
               <input
@@ -872,11 +872,11 @@ export default function ChatWorkspace({
 
         <div
           data-testid="chat-conversation-detail-panel"
-          className={`${mobileMode === 'list' ? 'hidden md:flex' : ''} ${mobileMode === 'detail' && !shouldShowDetail ? 'hidden md:flex' : mobileMode === 'detail' ? 'flex' : ''} min-h-0 flex-col rounded-2xl border border-outline/20 bg-surface-lowest overflow-hidden`}
+          className={`${mobileMode === 'list' ? 'hidden md:flex' : ''} ${mobileMode === 'detail' && !shouldShowDetail ? 'hidden md:flex' : mobileMode === 'detail' ? 'flex' : ''} min-h-0 flex-col rounded-none md:rounded-2xl border border-outline/20 bg-surface-lowest overflow-hidden ${mobileMode === 'detail' ? 'h-[100dvh] md:h-auto' : ''}`}
         >
           {selectedConversation ? (
             <>
-              <header className="border-b border-outline/20 px-4 py-3 bg-surface-low">
+              <header data-testid="chat-detail-header" className="shrink-0 border-b border-outline/20 px-4 py-3 bg-surface-low">
                 {mobileMode === 'detail' ? (
                   <div className="mb-2 md:hidden">
                     <Link
@@ -903,7 +903,7 @@ export default function ChatWorkspace({
                 </div>
               </header>
 
-              <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-3">
+              <div data-testid="chat-message-scroll-container" className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-3">
                 {loadingMessages ? <div className="text-sm text-on-surface-variant">消息加载中...</div> : null}
                 {!loadingMessages && messages.length === 0 ? <div className="text-sm text-on-surface-variant">暂无消息</div> : null}
 
@@ -1010,7 +1010,7 @@ export default function ChatWorkspace({
                 <div ref={messageEndRef} />
               </div>
 
-              <footer className="border-t border-outline/20 px-4 py-3">
+              <footer data-testid="chat-detail-composer" className="shrink-0 border-t border-outline/20 px-4 py-3">
                 <div className="flex items-center gap-2 mb-2 relative">
                   <button
                     type="button"
