@@ -334,7 +334,7 @@ describe('chat workspace redesign', () => {
     expect(screen.queryByText('2')).not.toBeInTheDocument();
   });
 
-  it('renders resume card and supports authenticated preview + download', async () => {
+  it('renders resume card and supports in-page preview + authenticated download', async () => {
     listMessagesMock.mockResolvedValue([
       {
         id: 11,
@@ -355,7 +355,6 @@ describe('chat workspace redesign', () => {
     expect(await screen.findByText('25年简历测试.pdf')).toBeInTheDocument();
     const createObjectURLSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test-url');
     const revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
-    const windowOpenSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
     const clickMock = vi.fn();
     const originalCreateElement = document.createElement.bind(document);
     const createElementSpy = vi.spyOn(document, 'createElement').mockImplementation(((tagName: string, options?: ElementCreationOptions) => {
@@ -369,7 +368,11 @@ describe('chat workspace redesign', () => {
     fireEvent.click(screen.getByRole('button', { name: '预览PDF' }));
 
     await waitFor(() => expect(downloadResumeMock).toHaveBeenCalledWith(1, 501));
-    expect(windowOpenSpy).toHaveBeenCalledWith('blob:test-url', '_blank', 'noopener,noreferrer');
+    expect(screen.getByTestId('chat-resume-preview-modal')).toBeInTheDocument();
+    expect(screen.getByTitle('简历预览')).toHaveAttribute('src', 'blob:test-url');
+
+    fireEvent.click(screen.getByRole('button', { name: '关闭预览' }));
+    expect(screen.queryByTestId('chat-resume-preview-modal')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: '下载PDF' }));
 
@@ -391,7 +394,6 @@ describe('chat workspace redesign', () => {
     expect(within(panel).getByRole('button', { name: '🤝' })).toBeInTheDocument();
 
     createElementSpy.mockRestore();
-    windowOpenSpy.mockRestore();
     createObjectURLSpy.mockRestore();
     revokeObjectURLSpy.mockRestore();
   });

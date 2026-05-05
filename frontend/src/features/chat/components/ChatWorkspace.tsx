@@ -203,6 +203,8 @@ export default function ChatWorkspace({
   const [sending, setSending] = useState(false);
   const [resumeSending, setResumeSending] = useState(false);
   const [resumeFileLoading, setResumeFileLoading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewFileName, setPreviewFileName] = useState<string>('');
   const [imageSending, setImageSending] = useState(false);
   const [inviteSending, setInviteSending] = useState(false);
   const [showEmojiPanel, setShowEmojiPanel] = useState(false);
@@ -524,18 +526,33 @@ export default function ChatWorkspace({
     setResumeFileLoading(true);
     setError(null);
     try {
-      const { blob } = await fetchResumeBlob(conversationId, ext);
+      const { blob, fileName } = await fetchResumeBlob(conversationId, ext);
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
       const objectUrl = URL.createObjectURL(blob);
-      window.open(objectUrl, '_blank', 'noopener,noreferrer');
-      window.setTimeout(() => {
-        URL.revokeObjectURL(objectUrl);
-      }, 60_000);
+      setPreviewUrl(objectUrl);
+      setPreviewFileName(fileName || String(ext?.fileName ?? '简历预览'));
     } catch (err) {
       setError(err instanceof Error ? err.message : '预览简历失败');
     } finally {
       setResumeFileLoading(false);
     }
   };
+
+  const closePreview = () => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setPreviewUrl(null);
+    setPreviewFileName('');
+  };
+
+  useEffect(() => () => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+  }, [previewUrl]);
 
   const handleDownloadResume = async (conversationId: number, ext: Record<string, unknown> | null) => {
     if (resumeFileLoading) return;
@@ -574,6 +591,23 @@ export default function ChatWorkspace({
 
   return (
     <section data-testid="chat-workspace" className="mx-auto w-full max-w-6xl px-4 py-4 md:px-6 md:py-6">
+      {previewUrl ? (
+        <div data-testid="chat-resume-preview-modal" className="fixed inset-0 z-50 bg-black/55 p-4 md:p-8">
+          <div className="mx-auto flex h-full w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-surface-lowest">
+            <div className="flex items-center justify-between border-b border-outline/20 px-4 py-3">
+              <p className="truncate text-sm font-bold text-on-surface">{previewFileName || '简历预览'}</p>
+              <button
+                type="button"
+                onClick={closePreview}
+                className="rounded-lg border border-outline/20 px-3 py-1 text-sm text-on-surface hover:bg-surface-low"
+              >
+                关闭预览
+              </button>
+            </div>
+            <iframe title="简历预览" src={previewUrl} className="h-full w-full flex-1 bg-white" />
+          </div>
+        </div>
+      ) : null}
       <h1 className="text-2xl font-black text-on-surface mb-4">{title}</h1>
       {error ? <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">{error}</div> : null}
 
