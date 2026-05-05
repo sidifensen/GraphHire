@@ -4,7 +4,9 @@
 
 - fix: 修复企业端沟通页“下载PDF”401问题，将简历下载从浏览器直链改为走 `chatApi.downloadResume` 鉴权请求（携带 `satoken`），并通过 Blob 方式触发文件下载
 - feat: 企业端聊天 PDF 卡片新增“预览PDF”按钮，点击后通过鉴权接口获取 Blob 并在新窗口预览；保留“下载PDF”能力
+- fix: 修复 PDF 预览打开 `blob:` 地址出现 404 JSON 页问题；当下载接口返回 JSON 错误体（如 `{"code":404}`）时，前端改为解析并直接提示错误，不再打开错误 Blob 页面
 - test: 更新 `chat-workspace-redesign` 测试，覆盖“预览PDF + 下载PDF”均通过鉴权接口并触发浏览器行为
+- test: 新增 `chat-api-download` 单测，覆盖“JSON 错误 Blob 解析抛错”与“PDF 响应文件名解析”
 
 ## 2026-05-04
 

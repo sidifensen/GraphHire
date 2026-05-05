@@ -29,6 +29,28 @@ function decodeContentDispositionFileName(contentDisposition?: string): string |
   return null;
 }
 
+async function unwrapBlobErrorIfNeeded(blob: Blob, contentTypeHeader?: string): Promise<void> {
+  const contentType = (contentTypeHeader || blob.type || '').toLowerCase();
+  const isJsonLike = contentType.includes('application/json') || contentType.includes('text/json');
+  if (!isJsonLike) return;
+
+  const rawText = await blob.text();
+  if (!rawText) {
+    throw new Error('简历文件不存在或无权访问');
+  }
+
+  try {
+    const parsed = JSON.parse(rawText) as { code?: number; message?: string };
+    const message = parsed?.message?.trim();
+    throw new Error(message || '简历文件不存在或无权访问');
+  } catch (error) {
+    if (error instanceof Error && error.message) {
+      throw error;
+    }
+    throw new Error('简历文件不存在或无权访问');
+  }
+}
+
 export const chatApi = {
   listConversations: async (): Promise<ChatConversationSummary[]> => {
     const response = await apiClient.get<ChatConversationSummary[]>('/chat/conversations');
@@ -74,6 +96,8 @@ export const chatApi = {
     const response = await apiClient.get<Blob>(`/chat/conversations/${conversationId}/resume/${resumeId}/download`, {
       responseType: 'blob',
     });
+    const contentType = response.headers?.['content-type'] as string | undefined;
+    await unwrapBlobErrorIfNeeded(response.data, contentType);
     const contentDisposition = response.headers?.['content-disposition'] as string | undefined;
     return {
       blob: response.data,
