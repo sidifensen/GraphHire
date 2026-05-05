@@ -617,6 +617,8 @@ describe('chat workspace redesign', () => {
     const imageThumb = await screen.findByRole('img', { name: 'avatar.jpg' });
     const imageSrc = imageThumb.getAttribute('src') || '';
     expect(imageSrc.startsWith('blob:')).toBe(true);
+    expect(screen.queryByText('图片消息')).not.toBeInTheDocument();
+    expect(screen.queryByText('avatar.jpg')).not.toBeInTheDocument();
 
     expect(screen.queryByRole('button', { name: '发送通知' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '面试通知' })).toBeInTheDocument();
@@ -636,6 +638,34 @@ describe('chat workspace redesign', () => {
     createElementSpy.mockRestore();
     createObjectURLSpy.mockRestore();
     revokeObjectURLSpy.mockRestore();
+  });
+
+  it('uses candidate real name from person info and keeps full email in enterprise header', async () => {
+    listConversationsMock.mockResolvedValue([
+      {
+        conversationId: 1,
+        jobId: 101,
+        jobTitle: '前端工程师',
+        companyId: 9,
+        companyName: '图谱科技',
+        recruiterUserId: 20,
+        candidateUserId: 10,
+        candidateName: '王小明',
+        candidateEmail: '13800138001@phone.com',
+        candidateAge: 24,
+        candidateGender: 1,
+        candidateEducation: '本科',
+        recruiterName: '陈HR',
+        lastMessagePreview: '你好',
+        lastMessageTime: '2026-05-04T09:12:00',
+        unreadCount: 0,
+      },
+    ]);
+    render(<EnterpriseChatListPage />);
+
+    await waitFor(() => expect(listConversationsMock).toHaveBeenCalledTimes(1));
+    expect((await screen.findAllByText('王小明')).length).toBeGreaterThan(0);
+    expect(screen.getByText('13800138001@phone.com')).toBeInTheDocument();
   });
 });
 

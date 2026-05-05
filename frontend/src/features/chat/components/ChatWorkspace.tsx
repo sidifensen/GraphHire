@@ -1076,12 +1076,10 @@ export default function ChatWorkspace({
                           ) : null}
                           {message.messageType === 2 && ext ? (
                             <div>
-                              <p className="font-bold">图片消息</p>
-                              <p className="opacity-90">{String(ext.fileName ?? '图片')}</p>
                               {inlineImageUrls[message.id] ? (
                                 <button
                                   type="button"
-                                  className="mt-2 block overflow-hidden rounded-lg"
+                                  className="block overflow-hidden rounded-lg"
                                   onClick={() => void handlePreviewImage(message.conversationId, message.id, ext)}
                                 >
                                   <img
