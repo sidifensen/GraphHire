@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Images } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { chatApi } from '@/lib/api/chat';
 import { companyApi } from '@/lib/api/company';
 import { publicApi } from '@/lib/api/public';
@@ -256,6 +257,7 @@ export default function ChatWorkspace({
   mobileMode,
   initialConversationId,
 }: ChatWorkspaceProps) {
+  const router = useRouter();
   const isUserRole = role === 'user';
   const activeAuthStore = (isUserRole ? userAuthStore : enterpriseAuthStore) as AuthStoreLike;
   const [authUser, setAuthUser] = useState(() => readAuthUser(activeAuthStore));
@@ -771,6 +773,16 @@ export default function ChatWorkspace({
     return Number.isFinite(resumeId) && resumeId > 0;
   };
 
+  const handleSelectConversation = (conversationId: number) => {
+    setSelectedConversationId(conversationId);
+    if (mobileMode !== 'list' || typeof window === 'undefined') {
+      return;
+    }
+    if (window.matchMedia('(max-width: 767px)').matches) {
+      router.push(`${conversationPathPrefix}/${conversationId}`);
+    }
+  };
+
   const previewModal = previewUrl && typeof window !== 'undefined'
     ? createPortal(
       <div data-testid="chat-resume-preview-modal" className="fixed inset-0 z-[9999] bg-black/70 p-2 md:p-6">
@@ -799,7 +811,7 @@ export default function ChatWorkspace({
     : null;
 
   return (
-      <section data-testid="chat-workspace" className="mx-auto w-full max-w-6xl px-4 py-4 md:px-6 md:py-6">
+      <section data-testid="chat-workspace" className="mx-auto w-full max-w-6xl px-2 py-2 md:px-6 md:py-6">
         {previewModal}
       {title ? <h1 className="text-2xl font-black text-on-surface mb-4">{title}</h1> : null}
       {error ? <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">{error}</div> : null}
@@ -809,7 +821,10 @@ export default function ChatWorkspace({
         className="grid grid-cols-1 md:grid-cols-[320px_minmax(0,1fr)] gap-4 md:h-[calc(100vh-220px)] min-h-[560px]"
       >
         {(mobileMode === 'list' || mobileMode === 'detail') ? (
-          <aside className={`rounded-2xl border border-outline/20 bg-surface-lowest overflow-hidden ${mobileMode === 'detail' ? 'hidden md:block' : ''}`}>
+          <aside
+            data-testid="chat-conversation-list-panel"
+            className={`rounded-2xl border border-outline/20 bg-surface-lowest overflow-hidden ${mobileMode === 'detail' ? 'hidden md:block' : ''}`}
+          >
             <div className="h-12 px-3 border-b border-outline/20 flex items-center">
               <input
                 value={conversationKeyword}
@@ -830,7 +845,7 @@ export default function ChatWorkspace({
                   <button
                     key={item.conversationId}
                     type="button"
-                    onClick={() => setSelectedConversationId(item.conversationId)}
+                    onClick={() => handleSelectConversation(item.conversationId)}
                     className={`w-full text-left rounded-xl border px-3 py-3 transition-colors ${selected ? 'border-primary/40 bg-primary/5' : 'border-outline/20 bg-surface-lowest hover:border-primary/20'}`}
                   >
                     <div className="flex items-start justify-between gap-2">
@@ -855,10 +870,24 @@ export default function ChatWorkspace({
           </aside>
         ) : null}
 
-        <div className={`${mobileMode === 'detail' && !shouldShowDetail ? 'hidden md:flex' : 'flex'} min-h-0 flex-col rounded-2xl border border-outline/20 bg-surface-lowest overflow-hidden`}>
+        <div
+          data-testid="chat-conversation-detail-panel"
+          className={`${mobileMode === 'list' ? 'hidden md:flex' : ''} ${mobileMode === 'detail' && !shouldShowDetail ? 'hidden md:flex' : mobileMode === 'detail' ? 'flex' : ''} min-h-0 flex-col rounded-2xl border border-outline/20 bg-surface-lowest overflow-hidden`}
+        >
           {selectedConversation ? (
             <>
               <header className="border-b border-outline/20 px-4 py-3 bg-surface-low">
+                {mobileMode === 'detail' ? (
+                  <div className="mb-2 md:hidden">
+                    <Link
+                      data-testid="chat-mobile-back-button"
+                      href={conversationPathPrefix}
+                      className="inline-flex items-center gap-1 rounded-lg border border-outline/20 px-2.5 py-1 text-xs font-bold text-on-surface-variant hover:bg-surface-lowest"
+                    >
+                      返回会话列表
+                    </Link>
+                  </div>
+                ) : null}
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-sm text-on-surface-variant">岗位负责人</p>
@@ -944,7 +973,7 @@ export default function ChatWorkspace({
                                   <img
                                     src={inlineImageUrls[message.id]}
                                     alt={String(ext.fileName ?? '图片预览')}
-                                    className="max-h-52 w-auto max-w-[320px] rounded-lg object-contain bg-black/10"
+                                    className="max-h-60 h-auto w-full max-w-full rounded-lg object-contain bg-black/10"
                                   />
                                 </button>
                               ) : inlineImageErrors[message.id] ? (

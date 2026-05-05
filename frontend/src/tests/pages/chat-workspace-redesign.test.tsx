@@ -1,9 +1,14 @@
-﻿import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import UserChatListPage from '@/app/(user)/chat/page';
+import UserChatDetailPage from '@/app/(user)/chat/[conversationId]/page';
 import EnterpriseChatListPage from '@/app/enterprise/chat/page';
+import EnterpriseChatDetailPage from '@/app/enterprise/chat/[conversationId]/page';
 import { vi } from 'vitest';
 
 const pushMock = vi.fn();
+const { useParamsMock } = vi.hoisted(() => ({
+  useParamsMock: vi.fn(() => ({})),
+}));
 
 const {
   listConversationsMock,
@@ -39,6 +44,7 @@ vi.mock('next/navigation', async (importOriginal) => {
   const actual = await importOriginal<typeof import('next/navigation')>();
   return {
     ...actual,
+    useParams: useParamsMock,
     useRouter: () => ({
       push: pushMock,
       replace: vi.fn(),
@@ -227,6 +233,7 @@ function mockMessageList() {
 describe('chat workspace redesign', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    useParamsMock.mockReturnValue({});
     mockConversationList();
     mockMessageList();
     sendTextMock.mockResolvedValue({ messageId: 88 });
@@ -278,6 +285,66 @@ describe('chat workspace redesign', () => {
       salaryRange: { min: 25000, max: 40000, unit: '元/月' },
       status: 'PUBLISHED',
     });
+  });
+
+  it('uses split mobile layout on user side: list page hides detail panel and detail page provides back button', async () => {
+    render(<UserChatListPage />);
+    await waitFor(() => expect(listConversationsMock).toHaveBeenCalledTimes(1));
+
+    const listPanel = await screen.findByTestId('chat-conversation-list-panel');
+    const listPageDetailPanel = screen.getByTestId('chat-conversation-detail-panel');
+    expect(listPanel.className).not.toContain('hidden md:block');
+    expect(listPageDetailPanel.className).toContain('hidden md:flex');
+
+    useParamsMock.mockReturnValue({ conversationId: '1' });
+    render(<UserChatDetailPage />);
+    await waitFor(() => expect(listConversationsMock).toHaveBeenCalledTimes(2));
+
+    const detailPageListPanel = (await screen.findAllByTestId('chat-conversation-list-panel'))[1];
+    const detailPageDetailPanel = screen.getAllByTestId('chat-conversation-detail-panel')[1];
+    expect(detailPageListPanel.className).toContain('hidden md:block');
+    expect(detailPageDetailPanel.className).not.toContain('hidden md:flex');
+    expect(screen.getByTestId('chat-mobile-back-button')).toHaveAttribute('href', '/chat');
+  });
+
+  it('uses split mobile layout on enterprise side detail page and provides back button', async () => {
+    useParamsMock.mockReturnValue({ conversationId: '1' });
+    render(<EnterpriseChatDetailPage />);
+    await waitFor(() => expect(listConversationsMock).toHaveBeenCalledTimes(1));
+
+    expect(screen.getByTestId('chat-mobile-back-button')).toHaveAttribute('href', '/enterprise/chat');
+    expect(screen.getByTestId('chat-conversation-list-panel').className).toContain('hidden md:block');
+    expect(screen.getByTestId('chat-conversation-detail-panel').className).not.toContain('hidden md:flex');
+  });
+
+  it('keeps image message inside bubble bounds and uses compact mobile spacing classes', async () => {
+    listMessagesMock.mockResolvedValue([
+      {
+        id: 12,
+        conversationId: 1,
+        senderUserId: 10,
+        receiverUserId: 20,
+        messageType: 2,
+        content: '发送了一张图片',
+        ext: JSON.stringify({ fileName: 'avatar.jpg', filePath: 's3://resumes/chat/image/avatar.jpg' }),
+        recalled: 0,
+        createTime: '2026-05-04T10:10:00',
+      },
+    ]);
+
+    render(<UserChatListPage />);
+    await waitFor(() => expect(listConversationsMock).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(previewImageMock).toHaveBeenCalledWith(1, 12));
+
+    const workspace = screen.getByTestId('chat-workspace');
+    expect(workspace.className).toContain('px-2');
+    expect(workspace.className).toContain('py-2');
+    expect(workspace.className).toContain('md:px-6');
+
+    const imageThumb = await screen.findByRole('img', { name: 'avatar.jpg' });
+    expect(imageThumb.className).toContain('w-full');
+    expect(imageThumb.className).toContain('max-w-full');
+    expect(imageThumb.className).toContain('max-h-60');
   });
 
   it('renders redesigned user workspace with job header, day separators and resume action', async () => {
@@ -490,3 +557,4 @@ describe('chat workspace redesign', () => {
     revokeObjectURLSpy.mockRestore();
   });
 });
+
