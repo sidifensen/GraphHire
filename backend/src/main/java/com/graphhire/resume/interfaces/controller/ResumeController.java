@@ -39,11 +39,12 @@ public class ResumeController {
      * @return 上传结果，包含简历ID
      */
     @PostMapping("/my/upload")
-    public Result<Resume> uploadResume(@RequestParam("file") MultipartFile file) throws IOException {
+    public Result<Resume> uploadResume(@RequestParam("file") MultipartFile file,
+                                       @RequestParam(defaultValue = "true") boolean refreshAllMatches) throws IOException {
         Long userId = StpUtil.getLoginIdAsLong();
         UploadResumeCmd cmd = new UploadResumeCmd(file);
         cmd.setUserId(userId);
-        Resume resume = resumeService.uploadResume(cmd);
+        Resume resume = resumeService.uploadResume(cmd, refreshAllMatches);
         return Result.success(resume);
     }
 
@@ -101,9 +102,10 @@ public class ResumeController {
      * @return 解析结果
      */
     @PostMapping("/{id}/parse")
-    public Result<Void> parseResume(@PathVariable Long id) {
+    public Result<Void> parseResume(@PathVariable Long id,
+                                    @RequestParam(defaultValue = "true") boolean refreshAllMatches) {
         Long userId = StpUtil.getLoginIdAsLong();
-        resumeService.triggerResumeParse(id, userId);
+        resumeService.triggerResumeParse(id, userId, refreshAllMatches);
         return Result.success();
     }
 

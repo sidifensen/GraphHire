@@ -66,7 +66,7 @@ public class ResumeAppService {
     private UploadProperties uploadProperties;
 
     @Transactional
-    public Resume uploadResume(UploadResumeCmd cmd) throws IOException {
+    public Resume uploadResume(UploadResumeCmd cmd, boolean refreshAllMatches) throws IOException {
         List<Resume> existingResumes = resumeRepository.findByUserId(cmd.getUserId());
         if (existingResumes.size() >= 3) {
             throw Exceptions.BusinessException.of(400, UploadErrorMessages.RESUME_LIMIT_REACHED);
@@ -117,7 +117,7 @@ public class ResumeAppService {
 
         // 步骤5：发送MQ消息触发AI解析（如MQ已启用）
         if (mqProducer != null) {
-            mqProducer.sendResumeParseMessage(saved.getId(), task.getId());
+            mqProducer.sendResumeParseMessage(saved.getId(), task.getId(), refreshAllMatches);
         }
 
         return saved;
@@ -366,7 +366,7 @@ public class ResumeAppService {
      * 步骤4：发送MQ消息触发AI解析（如MQ已启用）
      */
     @Transactional
-    public void triggerResumeParse(Long resumeId, Long userId) {
+    public void triggerResumeParse(Long resumeId, Long userId, boolean refreshAllMatches) {
         Resume resume = getResumeById(resumeId);
         if (!resume.getUserId().equals(userId)) {
             throw new RuntimeException("无权解析此简历");
@@ -381,7 +381,7 @@ public class ResumeAppService {
             task.setTaskType("resume_parse");
             task.setStatus(ParseTask.TaskStatus.PENDING);
             parseTaskRepository.save(task);
-            mqProducer.sendResumeParseMessage(resumeId, task.getId());
+            mqProducer.sendResumeParseMessage(resumeId, task.getId(), refreshAllMatches);
         }
     }
 

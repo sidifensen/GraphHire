@@ -165,8 +165,10 @@ export const resumeApi = {
   /**
    * POST /resume/{id}/parse - 触发简历解析
    */
-  parse: async (id: number): Promise<{ status: string }> => {
-    const response = await apiClient.post(`/resume/${id}/parse`);
+  parse: async (id: number, refreshAllMatches = true): Promise<{ status: string }> => {
+    const response = await apiClient.post(`/resume/${id}/parse`, null, {
+      params: { refreshAllMatches },
+    });
     return response.data;
   },
 

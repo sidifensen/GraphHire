@@ -23,9 +23,9 @@ public class ResumeMQProducer {
         rocketMQTemplate.convertAndSend(TOPIC_RESUME_UPLOADED, event);
     }
 
-    public void sendResumeParseMessage(Long resumeId, Long parseTaskId) {
-        // 消息格式："resumeId,parseTaskId"（逗号分隔）
-        String message = resumeId + "," + parseTaskId;
+    public void sendResumeParseMessage(Long resumeId, Long parseTaskId, boolean refreshAllMatches) {
+        // 消息格式："resumeId,parseTaskId,refreshAllMatches"（逗号分隔）
+        String message = resumeId + "," + parseTaskId + "," + refreshAllMatches;
         rocketMQTemplate.convertAndSend(TOPIC_RESUME_PARSE, message);
     }
 
@@ -36,13 +36,15 @@ public class ResumeMQProducer {
     public static class ResumeParseMessage {
         private Long resumeId;
         private Long parseTaskId;
+        private boolean refreshAllMatches;
 
         public ResumeParseMessage() {
         }
 
-        public ResumeParseMessage(Long resumeId, Long parseTaskId) {
+        public ResumeParseMessage(Long resumeId, Long parseTaskId, boolean refreshAllMatches) {
             this.resumeId = resumeId;
             this.parseTaskId = parseTaskId;
+            this.refreshAllMatches = refreshAllMatches;
         }
 
         public Long getResumeId() {
@@ -59,6 +61,14 @@ public class ResumeMQProducer {
 
         public void setParseTaskId(Long parseTaskId) {
             this.parseTaskId = parseTaskId;
+        }
+
+        public boolean isRefreshAllMatches() {
+            return refreshAllMatches;
+        }
+
+        public void setRefreshAllMatches(boolean refreshAllMatches) {
+            this.refreshAllMatches = refreshAllMatches;
         }
     }
 }

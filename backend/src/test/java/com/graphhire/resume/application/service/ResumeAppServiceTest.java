@@ -102,7 +102,7 @@ class ResumeAppServiceTest {
 
         Exceptions.BusinessException ex = assertThrows(
             Exceptions.BusinessException.class,
-            () -> resumeAppService.uploadResume(cmd)
+            () -> resumeAppService.uploadResume(cmd, true)
         );
 
         assertEquals("最多上传3份简历，请先删除旧简历", ex.getMessage());
@@ -120,7 +120,7 @@ class ResumeAppServiceTest {
 
         Exceptions.BusinessException ex = assertThrows(
             Exceptions.BusinessException.class,
-            () -> resumeAppService.uploadResume(cmd)
+            () -> resumeAppService.uploadResume(cmd, true)
         );
 
         assertEquals("仅支持上传 PDF、DOC、DOCX 格式的简历", ex.getMessage());
@@ -144,7 +144,7 @@ class ResumeAppServiceTest {
 
         Exceptions.BusinessException ex = assertThrows(
             Exceptions.BusinessException.class,
-            () -> resumeAppService.uploadResume(cmd)
+            () -> resumeAppService.uploadResume(cmd, true)
         );
 
         assertEquals("简历文件超过大小限制，最大支持 10MB", ex.getMessage());
@@ -162,7 +162,7 @@ class ResumeAppServiceTest {
 
         Exceptions.BusinessException ex = assertThrows(
             Exceptions.BusinessException.class,
-            () -> resumeAppService.uploadResume(cmd)
+            () -> resumeAppService.uploadResume(cmd, true)
         );
 
         assertEquals("简历文件类型不合法，请上传 PDF、DOC、DOCX 文件", ex.getMessage());
@@ -188,7 +188,7 @@ class ResumeAppServiceTest {
             return resume;
         });
 
-        resumeAppService.uploadResume(cmd);
+        resumeAppService.uploadResume(cmd, true);
 
         verify(rustFSClient).upload(any(InputStream.class), eq((long) content.length), eq("ok.pdf"));
         verify(resumeRepository, atLeastOnce()).save(argThat(resume -> resume.getFileSize() != null && resume.getFileSize() == content.length));
@@ -215,10 +215,48 @@ class ResumeAppServiceTest {
             }
             return resume;
         });
+        when(parseTaskRepository.save(any(ParseTask.class))).thenAnswer(invocation -> {
+            ParseTask task = invocation.getArgument(0);
+            if (task.getId() == null) {
+                task.setId(99L);
+            }
+            return task;
+        });
 
-        resumeAppService.uploadResume(cmd);
+        resumeAppService.uploadResume(cmd, true);
 
         verify(resumeRepository, atLeastOnce()).save(argThat(resume -> Boolean.TRUE.equals(resume.getIsDefault())));
+        verify(mqProducer).sendResumeParseMessage(99L, 99L, true);
+    }
+
+    @Test
+    @DisplayName("uploadResume 关闭全量匹配刷新时应传递false给解析消息")
+    void uploadResume_shouldSendParseMessageWithRefreshAllMatchesFalse() throws Exception {
+        when(resumeRepository.findByUserId(12L)).thenReturn(List.of());
+        byte[] content = "resume".getBytes();
+        UploadResumeCmd cmd = new UploadResumeCmd(new MockMultipartFile("file", "ok.pdf", "application/pdf", content));
+        cmd.setUserId(12L);
+
+        when(rustFSClient.upload(any(InputStream.class), eq((long) content.length), eq("ok.pdf")))
+            .thenReturn("s3://resumes/ok.pdf");
+        when(resumeRepository.save(any(Resume.class))).thenAnswer(invocation -> {
+            Resume resume = invocation.getArgument(0);
+            if (resume.getId() == null) {
+                resume.setId(199L);
+            }
+            return resume;
+        });
+        when(parseTaskRepository.save(any(ParseTask.class))).thenAnswer(invocation -> {
+            ParseTask task = invocation.getArgument(0);
+            if (task.getId() == null) {
+                task.setId(299L);
+            }
+            return task;
+        });
+
+        resumeAppService.uploadResume(cmd, false);
+
+        verify(mqProducer).sendResumeParseMessage(199L, 299L, false);
     }
 
     @Test
@@ -284,6 +322,42 @@ class ResumeAppServiceTest {
         assertEquals(26, saved.getAge());
         assertEquals("本科", saved.getEducation());
         assertEquals("清华大学", saved.getSchool());
+    }
+
+    @Test
+    @DisplayName("triggerResumeParse 开启全量匹配刷新时应透传true")
+    void triggerResumeParse_shouldSendParseMessageWithRefreshAllMatchesTrue() {
+        Resume resume = buildResume(51L, 10L, "sync.pdf", "s3://sync.pdf", "pdf");
+        when(resumeRepository.findById(51L)).thenReturn(Optional.of(resume));
+        when(parseTaskRepository.save(any(ParseTask.class))).thenAnswer(invocation -> {
+            ParseTask task = invocation.getArgument(0);
+            if (task.getId() == null) {
+                task.setId(88L);
+            }
+            return task;
+        });
+
+        resumeAppService.triggerResumeParse(51L, 10L, true);
+
+        verify(mqProducer).sendResumeParseMessage(51L, 88L, true);
+    }
+
+    @Test
+    @DisplayName("triggerResumeParse 关闭全量匹配刷新时应透传false")
+    void triggerResumeParse_shouldSendParseMessageWithRefreshAllMatchesFalse() {
+        Resume resume = buildResume(52L, 10L, "sync.pdf", "s3://sync.pdf", "pdf");
+        when(resumeRepository.findById(52L)).thenReturn(Optional.of(resume));
+        when(parseTaskRepository.save(any(ParseTask.class))).thenAnswer(invocation -> {
+            ParseTask task = invocation.getArgument(0);
+            if (task.getId() == null) {
+                task.setId(89L);
+            }
+            return task;
+        });
+
+        resumeAppService.triggerResumeParse(52L, 10L, false);
+
+        verify(mqProducer).sendResumeParseMessage(52L, 89L, false);
     }
 
     @Test

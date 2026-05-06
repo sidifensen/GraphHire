@@ -59,10 +59,11 @@ public class ResumeParseMQConsumer implements RocketMQListener<String> {
     @Override
     public void onMessage(String message) {
         long totalStartNanos = System.nanoTime();
-        // 消息格式："resumeId,parseTaskId"
+        // 消息格式："resumeId,parseTaskId,refreshAllMatches"
         String[] parts = message.split(",");
         Long resumeId = Long.parseLong(parts[0]);
         Long parseTaskId = Long.parseLong(parts[1]);
+        boolean refreshAllMatches = parts.length <= 2 || Boolean.parseBoolean(parts[2]);
         log.info("开始处理简历解析任务: resumeId={}, parseTaskId={}", resumeId, parseTaskId);
 
         // 步骤1：将parse_task状态更新为RUNNING(1)
@@ -121,7 +122,7 @@ public class ResumeParseMQConsumer implements RocketMQListener<String> {
             notification.setReferenceId(resumeId);
             notificationRepository.save(notification);
 
-            if (Boolean.TRUE.equals(resume.getIsDefault())) {
+            if (Boolean.TRUE.equals(resume.getIsDefault()) && refreshAllMatches) {
                 try {
                     matchAppService.triggerMatchForResume(resumeId);
                 } catch (Exception matchException) {

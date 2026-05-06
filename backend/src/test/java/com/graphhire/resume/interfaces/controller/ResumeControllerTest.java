@@ -86,17 +86,17 @@ class ResumeControllerTest {
                 );
 
                 Resume savedResume = createResume(1L, userId);
-                when(resumeAppService.uploadResume(any(UploadResumeCmd.class))).thenReturn(savedResume);
+                when(resumeAppService.uploadResume(any(UploadResumeCmd.class), eq(true))).thenReturn(savedResume);
 
                 // When
-                Result<Resume> result = resumeController.uploadResume(file);
+                Result<Resume> result = resumeController.uploadResume(file, true);
 
                 // Then
                 assertNotNull(result);
                 assertEquals(200, result.getCode());
                 assertNotNull(result.getData());
                 assertEquals(1L, result.getData().getId());
-                verify(resumeAppService).uploadResume(any(UploadResumeCmd.class));
+                verify(resumeAppService).uploadResume(any(UploadResumeCmd.class), eq(true));
             }
         }
 
@@ -113,7 +113,7 @@ class ResumeControllerTest {
                 );
 
                 // When & Then
-                assertThrows(RuntimeException.class, () -> resumeController.uploadResume(file));
+                assertThrows(RuntimeException.class, () -> resumeController.uploadResume(file, true));
             }
         }
     }
@@ -338,15 +338,15 @@ class ResumeControllerTest {
                 Long resumeId = 1L;
                 stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(userId);
 
-                doNothing().when(resumeAppService).triggerResumeParse(resumeId, userId);
+                doNothing().when(resumeAppService).triggerResumeParse(resumeId, userId, true);
 
                 // When
-                Result<Void> result = resumeController.parseResume(resumeId);
+                Result<Void> result = resumeController.parseResume(resumeId, true);
 
                 // Then
                 assertNotNull(result);
                 assertEquals(200, result.getCode());
-                verify(resumeAppService).triggerResumeParse(resumeId, userId);
+                verify(resumeAppService).triggerResumeParse(resumeId, userId, true);
             }
         }
 
@@ -360,10 +360,10 @@ class ResumeControllerTest {
                 stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(userId);
 
                 doThrow(new RuntimeException("无权解析此简历"))
-                    .when(resumeAppService).triggerResumeParse(resumeId, userId);
+                    .when(resumeAppService).triggerResumeParse(resumeId, userId, false);
 
                 // When & Then
-                assertThrows(RuntimeException.class, () -> resumeController.parseResume(resumeId));
+                assertThrows(RuntimeException.class, () -> resumeController.parseResume(resumeId, false));
             }
         }
     }

@@ -118,10 +118,26 @@ describe('User Resume Manage page', () => {
 
     await waitFor(() => expect(getMyResumesMock).toHaveBeenCalledTimes(1));
 
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     const parseButton = screen.getByRole('button', { name: '重新解析-1' });
     await user.click(parseButton);
 
-    await waitFor(() => expect(parseMock).toHaveBeenCalledWith(1));
+    await waitFor(() => expect(parseMock).toHaveBeenCalledWith(1, true));
+    expect(confirmSpy).toHaveBeenCalled();
+  });
+
+  it('calls parse with refreshAllMatches=false when user unchecks option in confirm text', async () => {
+    const user = userEvent.setup();
+    render(<ResumeManagePage />);
+
+    await waitFor(() => expect(getMyResumesMock).toHaveBeenCalledTimes(1));
+
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const parseButton = screen.getByRole('button', { name: '重新解析-1' });
+    await user.click(parseButton);
+
+    await waitFor(() => expect(parseMock).toHaveBeenCalledWith(1, false));
+    expect(confirmSpy).toHaveBeenCalled();
   });
 
   it('uploads file through uploadWithProgress', async () => {
@@ -130,6 +146,7 @@ describe('User Resume Manage page', () => {
 
     await waitFor(() => expect(getMyResumesMock).toHaveBeenCalledTimes(1));
 
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
     const file = new File(['resume-content'], 'resume.pdf', { type: 'application/pdf' });
     const input = screen.getByTestId('resume-upload-input');
     await user.upload(input, file);
@@ -140,6 +157,24 @@ describe('User Resume Manage page', () => {
     expect(formDataArg).toBeInstanceOf(FormData);
     expect(onProgressArg).toEqual(expect.any(Function));
     expect((formDataArg as FormData).get('file')).toBe(file);
+    expect((formDataArg as FormData).get('refreshAllMatches')).toBe('true');
+  });
+
+  it('uploads with refreshAllMatches=false when user cancels default checked option', async () => {
+    const user = userEvent.setup({ applyAccept: false });
+    render(<ResumeManagePage />);
+
+    await waitFor(() => expect(getMyResumesMock).toHaveBeenCalledTimes(1));
+
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const file = new File(['resume-content'], 'resume.pdf', { type: 'application/pdf' });
+    const input = screen.getByTestId('resume-upload-input');
+    await user.upload(input, file);
+
+    await waitFor(() => expect(uploadWithProgressMock).toHaveBeenCalledTimes(1));
+
+    const [formDataArg] = uploadWithProgressMock.mock.calls[0];
+    expect((formDataArg as FormData).get('refreshAllMatches')).toBe('false');
   });
 
   it('rejects non-doc file before calling upload api', async () => {

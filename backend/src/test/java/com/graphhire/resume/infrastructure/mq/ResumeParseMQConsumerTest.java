@@ -113,7 +113,7 @@ class ResumeParseMQConsumerTest {
                 return n;
             });
 
-            consumer.onMessage(resumeId + "," + parseTaskId);
+            consumer.onMessage(resumeId + "," + parseTaskId + ",true");
 
             verify(parseTaskRepository, times(2)).save(any(ParseTask.class));
             ParseTask savedTask = savedTasks.get(0);
@@ -173,7 +173,7 @@ class ResumeParseMQConsumerTest {
             when(resumeRepository.save(any(Resume.class))).thenReturn(resume);
             when(notificationRepository.save(any(Notification.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-            consumer.onMessage(resumeId + "," + parseTaskId);
+            consumer.onMessage(resumeId + "," + parseTaskId + ",true");
 
             verify(matchAppService, never()).triggerMatchForResume(anyLong());
         }
@@ -202,7 +202,7 @@ class ResumeParseMQConsumerTest {
             when(resumeRepository.save(any(Resume.class))).thenReturn(resume);
             when(parseTaskRepository.save(any(ParseTask.class))).thenReturn(task);
 
-            consumer.onMessage(resumeId + "," + parseTaskId);
+            consumer.onMessage(resumeId + "," + parseTaskId + ",true");
 
             ArgumentCaptor<Resume> resumeCaptor = ArgumentCaptor.forClass(Resume.class);
             verify(resumeRepository, times(2)).save(resumeCaptor.capture());
@@ -231,7 +231,7 @@ class ResumeParseMQConsumerTest {
             when(parseTaskRepository.findById(parseTaskId)).thenReturn(Optional.empty());
 
             RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> consumer.onMessage(resumeId + "," + parseTaskId));
+                () -> consumer.onMessage(resumeId + "," + parseTaskId + ",true"));
             assertTrue(exception.getMessage().contains("Parse task not found"));
         }
 
@@ -250,7 +250,7 @@ class ResumeParseMQConsumerTest {
             when(resumeRepository.findById(resumeId)).thenReturn(Optional.empty());
 
             RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> consumer.onMessage(resumeId + "," + parseTaskId));
+                () -> consumer.onMessage(resumeId + "," + parseTaskId + ",true"));
             assertTrue(exception.getMessage().contains("Resume not found"));
         }
 
@@ -283,7 +283,7 @@ class ResumeParseMQConsumerTest {
                 return n;
             });
 
-            consumer.onMessage(resumeId + "," + parseTaskId);
+            consumer.onMessage(resumeId + "," + parseTaskId + ",true");
 
             ArgumentCaptor<Resume> resumeCaptor = ArgumentCaptor.forClass(Resume.class);
             verify(resumeRepository, times(2)).save(resumeCaptor.capture());
@@ -316,7 +316,7 @@ class ResumeParseMQConsumerTest {
             when(resumeRepository.save(any(Resume.class))).thenReturn(resume);
             when(parseTaskRepository.save(any(ParseTask.class))).thenReturn(task);
 
-            consumer.onMessage(resumeId + "," + parseTaskId);
+            consumer.onMessage(resumeId + "," + parseTaskId + ",true");
 
             verify(deepSeekClient, never()).parseResume(anyString());
 
@@ -335,6 +335,39 @@ class ResumeParseMQConsumerTest {
             verify(notificationRepository, never()).save(any(Notification.class));
             verify(rocketMQTemplate, never()).convertAndSend(eq(RESUME_PARSED_TOPIC), anyString());
             verify(matchAppService, never()).triggerMatchForResume(anyLong());
+        }
+
+        @Test
+        @DisplayName("默认简历在关闭全量匹配刷新时不触发全职位匹配")
+        void consumeResumeParse_DefaultButRefreshDisabled_ShouldNotTriggerMatch() {
+            Long resumeId = 9L;
+            Long parseTaskId = 19L;
+
+            Resume resume = new Resume();
+            resume.setId(resumeId);
+            resume.setUserId(100L);
+            resume.setFilePath("/path/to/resume.pdf");
+            resume.setStatus(ParseStatus.PENDING);
+            resume.setIsDefault(true);
+
+            ParseTask task = new ParseTask();
+            task.setId(parseTaskId);
+            task.setResumeId(resumeId);
+            task.setTaskType("resume_parse");
+            task.setStatus(ParseTask.TaskStatus.PENDING);
+
+            when(parseTaskRepository.findById(parseTaskId)).thenReturn(Optional.of(task));
+            when(resumeRepository.findById(resumeId)).thenReturn(Optional.of(resume));
+            when(documentParser.extractText(anyString())).thenReturn("resume content");
+            when(deepSeekClient.parseResume(anyString())).thenReturn(Map.of("name", "A"));
+            when(parseTaskRepository.save(any(ParseTask.class))).thenReturn(task);
+            when(resumeRepository.save(any(Resume.class))).thenReturn(resume);
+            when(notificationRepository.save(any(Notification.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+            consumer.onMessage(resumeId + "," + parseTaskId + ",false");
+
+            verify(matchAppService, never()).triggerMatchForResume(anyLong());
+            verify(rocketMQTemplate).convertAndSend(eq(RESUME_PARSED_TOPIC), eq(String.valueOf(resumeId)));
         }
     }
 

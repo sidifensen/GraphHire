@@ -66,6 +66,7 @@ class ResumeControllerIT extends BaseControllerIT {
 
         MvcResult result = mockMvc.perform(multipart("/resume/my/upload")
                 .file(file)
+                .param("refreshAllMatches", "true")
                 .headers(personHeaders))
             .andExpect(jsonPath("$.code").value(200))
             .andReturn();
@@ -115,6 +116,7 @@ class ResumeControllerIT extends BaseControllerIT {
         assertNotNull(uploadedResumeId);
 
         mockMvc.perform(post("/resume/{id}/parse", uploadedResumeId)
+                .param("refreshAllMatches", "true")
                 .headers(personHeaders))
             .andExpect(jsonPath("$.code").value(200));
     }

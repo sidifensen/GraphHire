@@ -80,6 +80,10 @@ export default function ResumeManageContent() {
   const [uploading, setUploading] = useState(false);
   const uploadInputRef = useRef<HTMLInputElement | null>(null);
 
+  const confirmRefreshAllMatches = React.useCallback(() => {
+    return window.confirm('是否刷新所有职位匹配记录？\n确定：刷新（默认勾选）\n取消：不刷新');
+  }, []);
+
   const closePreviewModal = React.useCallback(() => {
     setPreviewModal((prev) => {
       if (prev?.url) {
@@ -153,7 +157,8 @@ export default function ResumeManageContent() {
   const handleParse = async (resumeId: number) => {
     setActionState((prev) => ({ ...prev, parsingId: resumeId }));
     await runAction(async () => {
-      await resumeApi.parse(resumeId);
+      const refreshAllMatches = confirmRefreshAllMatches();
+      await resumeApi.parse(resumeId, refreshAllMatches);
       setMessage('已触发重新解析');
     });
     setActionState((prev) => ({ ...prev, parsingId: undefined }));
@@ -218,6 +223,8 @@ export default function ResumeManageContent() {
 
     const formData = new FormData();
     formData.append('file', file);
+    const refreshAllMatches = confirmRefreshAllMatches();
+    formData.append('refreshAllMatches', String(refreshAllMatches));
 
     try {
       await resumeApi.uploadWithProgress(formData, (percent) => {
