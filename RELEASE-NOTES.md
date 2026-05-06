@@ -1,5 +1,13 @@
 # Release Notes
 
+## 2026-05-06
+
+- refactor: 删除未启用且长期空表的聊天详情子表 `chat_message_image`、`chat_message_resume`、`chat_message_interview_invite`，聊天扩展信息继续统一保留在 `chat_message.ext`
+- feat: 新增数据库迁移 `V2026_05_06_026__drop_unused_chat_message_detail_tables.sql`，用于在存量环境幂等清理三张冗余表
+- refactor: 同步更新 `backend/src/main/resources/db/schema.sql`，移除三张冗余聊天详情表基线定义，保持基线与迁移一致
+- refactor: 删除后端未使用的三张聊天详情表 PO 映射类（`ChatMessageImagePO`、`ChatMessageResumePO`、`ChatMessageInterviewInvitePO`）
+- test: 扩展 `ChatSchemaIT`，新增三张冗余聊天详情表不存在断言，防止后续回归引入
+
 ## 2026-05-05
 
 - fix: 根据实机反馈二次优化用户端沉浸式图谱页面：收窄左侧菜单宽度、整体与右侧内间距下调、图谱舞台高度提升至更接近满屏
@@ -294,6 +302,7 @@
 
 ## 2026-05-06
 
+- docs: 补充 `public.position_type` 表及全部字段数据库注释迁移脚本（`V2026_05_06_027__add_position_type_comments.sql`），并同步更新 `schema.sql` 中 `position_type.create_time/update_time` 注释
 - fix: 用户端我的图谱页视觉与布局多轮优化，桌面端沉浸式背景改为全幅直角舞台并保持左侧菜单固定定位
 - fix: 图谱节点力导参数调优，收紧中心空洞并避免双环分层，接近单圈放射效果
 - fix: 图谱页夜间模式联动，背景渐变、节点填充/描边/文字与连线粒子随主题自动切换

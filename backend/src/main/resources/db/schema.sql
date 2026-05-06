@@ -282,6 +282,8 @@ COMMENT ON COLUMN position_type.parent_id IS '父级职位类型ID（根节点�
 COMMENT ON COLUMN position_type.level IS '层级：1-一级 2-二级 3-三级';
 COMMENT ON COLUMN position_type.sort_no IS '同级排序号';
 COMMENT ON COLUMN position_type.status IS '状态：0-禁用 1-启用';
+COMMENT ON COLUMN position_type.create_time IS '创建时间';
+COMMENT ON COLUMN position_type.update_time IS '更新时间';
 COMMENT ON COLUMN position_type.deleted IS '软删除标记：0-未删除 1-已删除';
 
 CREATE INDEX idx_position_type_parent_id ON position_type (parent_id);
@@ -546,103 +548,6 @@ COMMENT ON COLUMN chat_message.deleted IS '软删除标记：0-未删除 1-已�
 CREATE INDEX idx_chat_message_conversation_id ON chat_message (conversation_id, id DESC);
 CREATE INDEX idx_chat_message_receiver_user_id ON chat_message (receiver_user_id, id DESC);
 CREATE INDEX idx_chat_message_sender_user_id ON chat_message (sender_user_id, id DESC);
-
--- =============================================
--- 15. 图片消息详情表 chat_message_image
--- =============================================
-CREATE TABLE chat_message_image
-(
-    id          BIGSERIAL PRIMARY KEY,
-    message_id  BIGINT       NOT NULL,
-    file_path   VARCHAR(500) NOT NULL,
-    file_name   VARCHAR(255) NOT NULL,
-    create_time TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    update_time TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    deleted     SMALLINT     NOT NULL DEFAULT 0,
-
-    CONSTRAINT uk_chat_message_image_message_id UNIQUE (message_id),
-    CONSTRAINT chk_chat_message_image_deleted CHECK (deleted IN (0, 1))
-);
-
-COMMENT ON TABLE chat_message_image IS '图片消息详情表';
-COMMENT ON COLUMN chat_message_image.id IS '主键ID';
-COMMENT ON COLUMN chat_message_image.message_id IS '关联消息ID';
-COMMENT ON COLUMN chat_message_image.file_path IS '图片对象存储路径';
-COMMENT ON COLUMN chat_message_image.file_name IS '原始文件名';
-COMMENT ON COLUMN chat_message_image.create_time IS '创建时间';
-COMMENT ON COLUMN chat_message_image.update_time IS '更新时间';
-COMMENT ON COLUMN chat_message_image.deleted IS '软删除标记：0-未删除 1-已删除';
-
-CREATE INDEX idx_chat_message_image_create_time ON chat_message_image (create_time DESC);
-
--- =============================================
--- 16. 简历卡片消息详情表 chat_message_resume
--- =============================================
-CREATE TABLE chat_message_resume
-(
-    id                   BIGSERIAL PRIMARY KEY,
-    message_id           BIGINT       NOT NULL,
-    resume_id            BIGINT       NOT NULL,
-    resume_owner_user_id BIGINT       NOT NULL,
-    snapshot_file_name   VARCHAR(255) NOT NULL,
-    snapshot_file_path   VARCHAR(500) NOT NULL,
-    create_time          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    update_time          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    deleted              SMALLINT     NOT NULL DEFAULT 0,
-
-    CONSTRAINT uk_chat_message_resume_message_id UNIQUE (message_id),
-    CONSTRAINT chk_chat_message_resume_deleted CHECK (deleted IN (0, 1))
-);
-
-COMMENT ON TABLE chat_message_resume IS '简历卡片消息详情表';
-COMMENT ON COLUMN chat_message_resume.id IS '主键ID';
-COMMENT ON COLUMN chat_message_resume.message_id IS '关联消息ID';
-COMMENT ON COLUMN chat_message_resume.resume_id IS '来源简历ID';
-COMMENT ON COLUMN chat_message_resume.resume_owner_user_id IS '简历所属求职者用户ID';
-COMMENT ON COLUMN chat_message_resume.snapshot_file_name IS '快照文件名';
-COMMENT ON COLUMN chat_message_resume.snapshot_file_path IS '快照文件路径';
-COMMENT ON COLUMN chat_message_resume.create_time IS '创建时间';
-COMMENT ON COLUMN chat_message_resume.update_time IS '更新时间';
-COMMENT ON COLUMN chat_message_resume.deleted IS '软删除标记：0-未删除 1-已删除';
-
-CREATE INDEX idx_chat_message_resume_owner_user_id ON chat_message_resume (resume_owner_user_id, create_time DESC);
-
--- =============================================
--- 17. 面试邀请卡片消息详情表 chat_message_interview_invite
--- =============================================
-CREATE TABLE chat_message_interview_invite
-(
-    id                BIGSERIAL PRIMARY KEY,
-    message_id        BIGINT        NOT NULL,
-    job_id            BIGINT        NOT NULL,
-    inviter_user_id   BIGINT        NOT NULL,
-    candidate_user_id BIGINT        NOT NULL,
-    interview_time    TIMESTAMP     NOT NULL,
-    location          VARCHAR(255)  NOT NULL,
-    remark            VARCHAR(1000),
-    create_time       TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    update_time       TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    deleted           SMALLINT      NOT NULL DEFAULT 0,
-
-    CONSTRAINT uk_chat_message_interview_invite_message_id UNIQUE (message_id),
-    CONSTRAINT chk_chat_message_interview_invite_deleted CHECK (deleted IN (0, 1))
-);
-
-COMMENT ON TABLE chat_message_interview_invite IS '面试邀请卡片消息详情表';
-COMMENT ON COLUMN chat_message_interview_invite.id IS '主键ID';
-COMMENT ON COLUMN chat_message_interview_invite.message_id IS '关联消息ID';
-COMMENT ON COLUMN chat_message_interview_invite.job_id IS '岗位ID';
-COMMENT ON COLUMN chat_message_interview_invite.inviter_user_id IS '发起邀请的招聘者用户ID';
-COMMENT ON COLUMN chat_message_interview_invite.candidate_user_id IS '被邀请求职者用户ID';
-COMMENT ON COLUMN chat_message_interview_invite.interview_time IS '面试时间';
-COMMENT ON COLUMN chat_message_interview_invite.location IS '面试地点';
-COMMENT ON COLUMN chat_message_interview_invite.remark IS '面试备注';
-COMMENT ON COLUMN chat_message_interview_invite.create_time IS '创建时间';
-COMMENT ON COLUMN chat_message_interview_invite.update_time IS '更新时间';
-COMMENT ON COLUMN chat_message_interview_invite.deleted IS '软删除标记：0-未删除 1-已删除';
-
-CREATE INDEX idx_chat_message_interview_invite_candidate_time
-    ON chat_message_interview_invite (candidate_user_id, interview_time DESC);
 
 -- =============================================
 -- 表结构扩展
