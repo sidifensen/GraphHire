@@ -35,6 +35,7 @@ public class ResumeParseMQConsumer implements RocketMQListener<String> {
     private static final Logger log = LoggerFactory.getLogger(ResumeParseMQConsumer.class);
 
     private static final String TOPIC_RESUME_PARSED = "resume-parsed";
+    private static final int MAX_PARSE_RESULT_LOG_LENGTH = 5000;
 
     @Autowired
     private ResumeRepository resumeRepository;
@@ -107,6 +108,7 @@ public class ResumeParseMQConsumer implements RocketMQListener<String> {
             // 步骤5：用解析结果更新resume
             long persistStartNanos = System.nanoTime();
             resume.setParseResult(parseResult != null ? JSON.toJSONString(parseResult) : "{}");
+            logParseResult(resumeId, parseResult);
             resume.setStatus(ParseStatus.SUCCESS);
             resume.setConfidence(BigDecimal.valueOf(0.85));
             resumeRepository.save(resume);
@@ -159,5 +161,24 @@ public class ResumeParseMQConsumer implements RocketMQListener<String> {
 
     private static long elapsedMs(long startNanos) {
         return (System.nanoTime() - startNanos) / 1_000_000;
+    }
+
+    private void logParseResult(Long resumeId, Map<String, Object> parseResult) {
+        if (parseResult == null) {
+            log.info("简历解析结构化结果: resumeId={}, parseResult={}", resumeId, "{}");
+            return;
+        }
+        String json = JSON.toJSONString(parseResult);
+        if (json.length() <= MAX_PARSE_RESULT_LOG_LENGTH) {
+            log.info("简历解析结构化结果: resumeId={}, parseResult={}", resumeId, json);
+            return;
+        }
+        String truncated = json.substring(0, MAX_PARSE_RESULT_LOG_LENGTH);
+        log.info(
+            "简历解析结构化结果(已截断): resumeId={}, parseResultPrefix={}, totalLength={}",
+            resumeId,
+            truncated,
+            json.length()
+        );
     }
 }

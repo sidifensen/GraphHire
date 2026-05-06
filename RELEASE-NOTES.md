@@ -24,6 +24,7 @@
 - test: 更新个人图谱与职位类型分类相关后端测试，覆盖“无 industryMatch 返回”的新契约与职位类型分类路径
 - fix: 个人图谱重建前强制清理旧分类关系（上传/重解析成功、设为默认时），避免历史残留导致“未分类”等旧节点混入
 - fix: 前端图谱分类分组改为技能名标准化匹配（如 `JS/JavaScript`、`SpringBoot/Spring Boot`），减少误判到“未分类”
+- feat: 简历解析消费者新增结构化结果日志输出（`parseResult`，超长自动截断），便于排查图谱分类与落图异常
 
 - fix: 认证持久化改造，后端新增官方 `sa-token-redis-jackson` 依赖并接入 Redis 持久化，修复后端重启后前端登录态失效问题
 - refactor: 认证续期策略对齐 Sa-Token 官方会话模型（`timeout/active-timeout/auto-renew`），移除项目内非官方 `allow-refresh-token` / `refresh-token-timeout` 配置
