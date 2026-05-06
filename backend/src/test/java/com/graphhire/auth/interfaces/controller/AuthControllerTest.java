@@ -7,7 +7,6 @@ import com.graphhire.auth.domain.vo.UserType;
 import com.graphhire.auth.interfaces.dto.request.CompanyRegisterRequest;
 import com.graphhire.auth.interfaces.dto.request.LoginRequest;
 import com.graphhire.auth.interfaces.dto.request.PersonRegisterRequest;
-import com.graphhire.auth.interfaces.dto.request.RefreshTokenRequest;
 import com.graphhire.auth.interfaces.dto.response.LoginResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -483,41 +482,10 @@ class AuthControllerTest {
     class RefreshTokenTests {
 
         @Test
-        @DisplayName("刷新Token成功")
-        void refreshToken_Success() {
-            // Given
-            String refreshToken = "old_refresh_token";
-            LoginResponse newLoginResponse = new LoginResponse(
-                "new_token", "new_refresh_token", 86400L, UserType.PERSON, 1L
-            );
-            when(authService.refreshToken(refreshToken)).thenReturn(newLoginResponse);
-
-            // When
-            RefreshTokenRequest request = new RefreshTokenRequest();
-            request.setRefreshToken(refreshToken);
-            var result = authController.refreshToken(request, null);
-
-            // Then
-            assertNotNull(result);
-            assertEquals(200, result.getCode());
-            assertNotNull(result.getData());
-            assertEquals("new_token", result.getData().getAccessToken());
-            assertEquals("new_refresh_token", result.getData().getRefreshToken());
-            verify(authService).refreshToken(refreshToken);
-        }
-
-        @Test
-        @DisplayName("刷新Token失败 - Token无效")
-        void refreshToken_InvalidToken() {
-            // Given
-            String refreshToken = "invalid_refresh_token";
-            when(authService.refreshToken(refreshToken))
-                .thenThrow(new RuntimeException("Refresh token 无效或已过期"));
-
-            // When & Then
-            RefreshTokenRequest request = new RefreshTokenRequest();
-            request.setRefreshToken(refreshToken);
-            assertThrows(RuntimeException.class, () -> authController.refreshToken(request, null));
+        @DisplayName("刷新Token接口已下线")
+        void refreshToken_Disabled() {
+            assertThrows(RuntimeException.class, () -> authController.refreshToken());
+            verifyNoInteractions(authService);
         }
     }
 }

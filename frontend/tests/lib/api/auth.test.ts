@@ -150,18 +150,6 @@ describe('authApi', () => {
     });
   });
 
-  describe('refreshToken', () => {
-    it('should call /auth/refresh-token', async () => {
-      mockPost.mockResolvedValue({ data: { accessToken: 'new-token' } });
-      const data = { refreshToken: 'refresh' };
-
-      const result = await authApi.refreshToken(data);
-
-      expect(mockPost).toHaveBeenCalledWith('/auth/refresh-token', data);
-      expect(result.accessToken).toBe('new-token');
-    });
-  });
-
   describe('changePassword', () => {
     it('should call /auth/change-password', async () => {
       mockPost.mockResolvedValue({});

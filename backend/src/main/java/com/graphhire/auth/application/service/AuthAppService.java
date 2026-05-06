@@ -50,7 +50,6 @@ import java.util.concurrent.TimeUnit;
  * - resetPassword()：重置密码
  * - validateToken()：校验 Token
  * - logout()：登出
- * - refreshToken()：刷新 Token
  */
 @Service
 @Slf4j
@@ -445,37 +444,6 @@ public class AuthAppService {
         StpUtil.logout(userId);
     }
 
-    /**
-     * 刷新 Token
-     * 【功能说明】使用 refresh token 重新生成登录 Token，实现无感知续期。
-     * 【业务步骤】
-     * 步骤1：根据 refresh token 查找 userId
-     * 步骤2：查询用户，不存在则抛异常
-     * 步骤3：先登出旧 token
-     * 步骤4：重新执行登录
-     * 步骤5：返回新的登录响应
-     */
-    public LoginResponse refreshToken(String refreshToken) {
-        // 步骤1：根据 refresh token 查找 userId
-        Long userId = findUserIdByRefreshToken(refreshToken);
-        if (userId == null) {
-            throw com.graphhire.common.vo.Exceptions.BusinessException.of("Refresh token 无效或已过期");
-        }
-
-        // 步骤2：查询用户
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> com.graphhire.common.vo.Exceptions.BusinessException.of("用户不存在"));
-
-        // 步骤3：先登出旧 token
-        StpUtil.logout(userId);
-
-        // 步骤4：重新登录
-        doLogin(user);
-
-        // 步骤5：返回新的登录响应
-        return buildLoginResponse(user);
-    }
-
     // =====================================================
     // 【第四部分】私有辅助方法
     // =====================================================
@@ -543,13 +511,6 @@ public class AuthAppService {
     private LoginResponse buildLoginResponse(User user) {
         String token = StpUtil.getTokenValue();
         return new LoginResponse(token, null, 86400L, user.getUserType(), user.getId());
-    }
-
-    /** 根据 refresh token 查找 userId，从 Redis 中读取 `satoken:refresh:{refreshToken}` */
-    private Long findUserIdByRefreshToken(String refreshToken) {
-        String key = "satoken:refresh:" + refreshToken;
-        String userId = redisTemplate.opsForValue().get(key);
-        return userId != null ? Long.parseLong(userId) : null;
     }
 
     private boolean enforceVerifyCodeThrottle(String username, String type) {

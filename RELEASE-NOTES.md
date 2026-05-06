@@ -2,6 +2,11 @@
 
 ## 2026-05-06
 
+- fix: 认证持久化改造，后端新增官方 `sa-token-redis-jackson` 依赖并接入 Redis 持久化，修复后端重启后前端登录态失效问题
+- refactor: 认证续期策略对齐 Sa-Token 官方会话模型（`timeout/active-timeout/auto-renew`），移除项目内非官方 `allow-refresh-token` / `refresh-token-timeout` 配置
+- refactor: 下线 `/auth/refresh-token` 业务伪接口，统一返回“官方会话模式下不提供 refresh-token 接口，请重新登录”
+- test: 更新认证前后端测试（AuthController 单测/集测、frontend authApi 测试），并通过后端定向测试与前端构建+全量测试
+
 - refactor: 删除 `position_type.code` 冗余字段，新增迁移 `V2026_05_06_028__drop_position_type_code_column.sql` 并同步更新 `schema.sql` 与 `V2026_05_06_027__add_position_type_comments.sql`
 - refactor: 清理职位类型后端 `code/nextCode` 链路（PositionType/PO/Repository/Mapper/AppService/Admin DTO）并移除管理端职位类型详情“编码”展示
 - refactor: 调整职位类型 seed SQL 与生成脚本，`INSERT` 去除 `code` 列，幂等冲突键由 `ON CONFLICT (code)` 改为 `ON CONFLICT (id)`

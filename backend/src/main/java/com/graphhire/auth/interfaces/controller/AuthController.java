@@ -9,13 +9,11 @@ import com.graphhire.auth.domain.repository.UserRepository;
 import com.graphhire.auth.interfaces.dto.request.CompanyRegisterRequest;
 import com.graphhire.auth.interfaces.dto.request.LoginRequest;
 import com.graphhire.auth.interfaces.dto.request.PersonRegisterRequest;
-import com.graphhire.auth.interfaces.dto.request.RefreshTokenRequest;
 import com.graphhire.auth.interfaces.dto.response.AuthContextResponse;
 import com.graphhire.auth.interfaces.dto.response.LoginResponse;
 import com.graphhire.common.vo.Exceptions;
 import com.graphhire.common.vo.Result;
 import jakarta.validation.Valid;
-import org.springframework.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -128,20 +126,9 @@ public class AuthController {
         return Result.success(StpUtil.getLoginIdAsLong());
     }
 
-    /**
-     * 刷新 Token
-     * 使用 refresh-token 机制自动续期
-     * @param refreshToken 刷新令牌
-     * @return 新的登录响应（token、userType）
-     */
     @PostMapping("/refresh-token")
-    public Result<LoginResponse> refreshToken(@RequestBody(required = false) RefreshTokenRequest request,
-                                              @RequestParam(required = false) String refreshToken) {
-        String token = request != null ? request.getRefreshToken() : refreshToken;
-        if (!StringUtils.hasText(token)) {
-            throw Exceptions.BusinessException.of("refreshToken不能为空");
-        }
-        return Result.success(authService.refreshToken(token));
+    public Result<Void> refreshToken() {
+        throw Exceptions.BusinessException.of(404, "Sa-Token 官方会话模式下不提供 refresh-token 接口，请重新登录");
     }
 
     /**

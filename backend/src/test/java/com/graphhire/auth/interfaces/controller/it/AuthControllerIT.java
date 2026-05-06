@@ -151,25 +151,13 @@ class AuthControllerIT extends BaseControllerIT {
     }
 
     @Test
-    @DisplayName("08 - 刷新Token")
-    @Disabled("需要Redis且refresh token机制需验证")
-    void refreshToken_Success() throws Exception {
-        String loginJson = String.format("{\"username\":\"%s\",\"password\":\"%s\"}",
-            TEST_PERSON_USERNAME, TEST_PERSON_PASSWORD);
-        MvcResult loginResult = mockMvc.perform(post("/auth/login")
+    @DisplayName("08 - 刷新Token接口已下线")
+    void refreshToken_Disabled() throws Exception {
+        mockMvc.perform(post("/auth/refresh-token")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(loginJson))
-            .andReturn();
-
-        JsonNode loginNode = objectMapper.readTree(loginResult.getResponse().getContentAsString());
-        String refreshToken = loginNode.path("data").path("refreshToken").asText();
-
-        if (refreshToken != null && !refreshToken.isEmpty()) {
-            mockMvc.perform(post("/auth/refresh-token")
-                    .param("refreshToken", refreshToken))
-                .andExpect(jsonPath("$.code").value(200))
-                .andExpect(jsonPath("$.data.accessToken").isNotEmpty());
-        }
+                .content("{}"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value(404));
     }
 
     @Test

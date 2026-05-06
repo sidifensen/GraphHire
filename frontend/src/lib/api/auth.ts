@@ -8,7 +8,6 @@ import type {
   SendVerifyCodeRequest,
   ForgotPasswordRequest,
   ResetPasswordRequest,
-  RefreshTokenRequest,
   ChangePasswordRequest,
   SendResetCodeRequest,
 } from '@/lib/types';
@@ -71,11 +70,6 @@ export const authApi = {
 
   resetPassword: async (data: ResetPasswordRequest): Promise<void> => {
     await apiClient.post('/auth/reset-password', data);
-  },
-
-  refreshToken: async (data: RefreshTokenRequest): Promise<LoginResponse> => {
-    const response = await apiClient.post<LoginResponse>('/auth/refresh-token', data);
-    return response.data;
   },
 
   changePassword: async (data: ChangePasswordRequest): Promise<void> => {
