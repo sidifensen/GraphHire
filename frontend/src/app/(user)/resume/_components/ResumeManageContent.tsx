@@ -2,20 +2,11 @@
 
 import React, { useMemo, useRef, useState } from 'react';
 import { TopNav } from '@/app/(user)/_mock/components/TopNav';
-import { CheckCircle, Clock, Trash2, Eye, CloudUpload, XCircle } from 'lucide-react';
+import { CheckCircle, Clock, Trash2, Eye, CloudUpload, X, XCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { resumeApi, type Resume } from '@/lib/api/resume';
 import { UPLOAD_ERRORS } from '@/lib/constants/upload-errors';
 import UserWorkbenchSidebar from '@/app/(user)/_components/UserWorkbenchSidebar';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Checkbox } from '@/components/ui/checkbox';
 
 function formatDate(value?: string) {
   if (!value) {
@@ -498,51 +489,74 @@ export default function ResumeManageContent() {
         </div>
       ) : null}
 
-      <Dialog
-        open={refreshDialogState.open}
-        onOpenChange={(open) => {
-          if (actionAfterConfirm) {
-            return;
-          }
-          setRefreshDialogState((prev) => ({ ...prev, open }));
-        }}
-      >
-        <DialogContent aria-label="匹配刷新确认弹窗">
-          <DialogHeader>
-            <DialogTitle>{resolveActionTitle(refreshDialogState.actionType)}</DialogTitle>
-            <DialogDescription>{resolveActionDescription(refreshDialogState.actionType)}</DialogDescription>
-          </DialogHeader>
-          <label className="mt-2 flex items-center gap-3 text-sm text-on-surface">
-            <Checkbox
-              checked={refreshDialogState.refreshAllMatches}
-              onCheckedChange={(checked) => {
-                setRefreshDialogState((prev) => ({ ...prev, refreshAllMatches: checked === true }));
-              }}
-              aria-label="刷新所有职位匹配记录"
-            />
-            <span>刷新所有职位匹配记录</span>
-          </label>
-          <p className="mt-2 text-xs text-on-surface-variant">不勾选时，不触发全量职位匹配；技能与图谱仍会刷新。</p>
-          <DialogFooter className="mt-6">
+      {refreshDialogState.open ? (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
+          <button
+            type="button"
+            aria-label="关闭匹配刷新确认弹窗"
+            className="absolute inset-0 bg-black/55"
+            onClick={() => {
+              if (actionAfterConfirm) {
+                return;
+              }
+              setRefreshDialogState((prev) => ({ ...prev, open: false }));
+            }}
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="匹配刷新确认弹窗"
+            className="relative z-[201] w-full max-w-[560px] rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-[0_24px_64px_rgba(15,23,42,0.24)]"
+          >
             <button
               type="button"
-              className="inline-flex h-10 items-center justify-center rounded-lg border border-surface-mid px-4 text-sm font-semibold text-on-surface hover:bg-surface-low"
+              className="absolute right-4 top-4 rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
               onClick={() => setRefreshDialogState((prev) => ({ ...prev, open: false }))}
               disabled={actionAfterConfirm}
+              aria-label="关闭"
             >
-              取消
+              <X size={18} />
             </button>
-            <button
-              type="button"
-              className="inline-flex h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-60"
-              onClick={() => void handleConfirmAction()}
-              disabled={actionAfterConfirm}
-            >
-              {actionAfterConfirm ? '处理中...' : '确认'}
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <div className="flex items-start justify-between gap-4 pr-8">
+              <div>
+                <h2 className="text-xl font-semibold leading-tight">{resolveActionTitle(refreshDialogState.actionType)}</h2>
+                <p className="mt-2 text-sm text-slate-600">{resolveActionDescription(refreshDialogState.actionType)}</p>
+              </div>
+            </div>
+            <label className="mt-6 flex cursor-pointer items-center gap-3 text-base text-slate-900">
+              <input
+                type="checkbox"
+                checked={refreshDialogState.refreshAllMatches}
+                onChange={(event) => {
+                  setRefreshDialogState((prev) => ({ ...prev, refreshAllMatches: event.target.checked }));
+                }}
+                className="h-5 w-5 rounded border-slate-300 accent-primary"
+                aria-label="刷新所有职位匹配记录"
+              />
+              <span>刷新所有职位匹配记录</span>
+            </label>
+            <p className="mt-3 text-xs text-slate-500">不勾选时，不触发全量职位匹配；技能与图谱仍会刷新。</p>
+            <div className="mt-8 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-300 px-4 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+                onClick={() => setRefreshDialogState((prev) => ({ ...prev, open: false }))}
+                disabled={actionAfterConfirm}
+              >
+                取消
+              </button>
+              <button
+                type="button"
+                className="inline-flex h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-60"
+                onClick={() => void handleConfirmAction()}
+                disabled={actionAfterConfirm}
+              >
+                {actionAfterConfirm ? '处理中...' : '确认'}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
     </div>
   );
