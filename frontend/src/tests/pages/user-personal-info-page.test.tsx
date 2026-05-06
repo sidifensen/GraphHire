@@ -87,7 +87,9 @@ describe('User PersonalInfo page', () => {
     expect(screen.getByLabelText('期望薪资')).toHaveValue(35000);
     expect(screen.getAllByText('Java开发工程师').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Golang开发工程师').length).toBeGreaterThan(0);
-    expect(screen.getByLabelText('默认职位')).toHaveValue('100101');
+    const defaultPositionCombobox = screen.getByRole('combobox', { name: '默认职位' });
+    expect(defaultPositionCombobox.tagName).toBe('BUTTON');
+    expect(defaultPositionCombobox).toHaveTextContent('Java开发工程师');
   });
 
   it('keeps desktop sidebar alignment wrapper consistent with profile page', async () => {
@@ -113,7 +115,8 @@ describe('User PersonalInfo page', () => {
     await user.type(screen.getByLabelText('电话'), '13900001111');
     await user.clear(screen.getByLabelText('期望薪资'));
     await user.type(screen.getByLabelText('期望薪资'), '42000');
-    await user.selectOptions(screen.getByLabelText('默认职位'), '100102');
+    await user.click(screen.getByRole('combobox', { name: '默认职位' }));
+    await user.click(screen.getByRole('option', { name: 'Golang开发工程师' }));
     await user.click(screen.getByRole('button', { name: '保存修改' }));
 
     await waitFor(() => {

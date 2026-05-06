@@ -2,6 +2,9 @@
 
 ## 2026-05-07
 
+- refactor: 用户端个人资料页“默认职位”下拉切换为 shadcn Select，交互从原生 select 改为统一 combobox 体验
+- test: 更新 `user-personal-info-page` 测试为 shadcn Select 交互断言（combobox/option 点击），并保持保存参数校验
+- docs: 新增本次“默认职位下拉 shadcn 化”设计、验收与实现计划文档（`docs/superpowers/specs|acceptance|plans/2026-05-07-002929-*`）
 - feat: 默认简历全职位匹配改为并发批量执行（并发度固定 4），显著降低串行 AI 匹配总耗时
 - feat: 单职位匹配新增失败重试机制（最多 3 次），失败后跳过当前职位并继续处理其他职位
 - fix: 匹配失败容错升级为“局部失败不影响整体”，避免单条异常中断整批匹配流程

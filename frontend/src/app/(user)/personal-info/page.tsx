@@ -9,6 +9,13 @@ import { userAuthStore } from '@/lib/stores/auth-store';
 import UserWorkbenchSidebar from '@/app/(user)/_components/UserWorkbenchSidebar';
 import { publicApi, type PublicTreeNode } from '@/lib/api/public';
 import PositionTypePickerModal from '@/components/user/PositionTypePickerModal';
+import {
+  Select as ShadcnSelect,
+  SelectContent as ShadcnSelectContent,
+  SelectItem as ShadcnSelectItem,
+  SelectTrigger as ShadcnSelectTrigger,
+  SelectValue as ShadcnSelectValue,
+} from '@/components/ui/select';
 
 type FormState = {
   realName: string;
@@ -41,6 +48,8 @@ const EMPTY_FORM: FormState = {
   defaultPositionTypeId: '',
   avatarUrl: '',
 };
+
+const UNSET_DEFAULT_POSITION_VALUE = '__unset_default_position__';
 
 function toFormState(profile: PersonProfile | null): FormState {
   if (!profile) {
@@ -312,7 +321,7 @@ export default function PersonalInfo() {
                     disabled={loading}
                   />
                 </div>
-                <Select
+                <FormSelect
                   label="性别"
                   options={[
                     { label: '未设置', value: '' },
@@ -440,18 +449,35 @@ export default function PersonalInfo() {
                     </div>
                   </div>
                 </div>
-                <Select
-                  label="默认职位"
-                  options={[
-                    { label: '未设置', value: '' },
-                    ...formData.expectedPositionTypeIds
-                      .map((id) => ({ label: leafIdNameMap.get(id), value: String(id) }))
-                      .filter((item): item is { label: string; value: string } => Boolean(item.label)),
-                  ]}
-                  value={formData.defaultPositionTypeId}
-                  onChange={(value) => setField('defaultPositionTypeId', value)}
-                  disabled={loading || formData.expectedPositionTypeIds.length === 0}
-                />
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="default-position-select" className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">
+                    默认职位
+                  </label>
+                  <ShadcnSelect
+                    value={formData.defaultPositionTypeId || UNSET_DEFAULT_POSITION_VALUE}
+                    onValueChange={(value) => setField('defaultPositionTypeId', value === UNSET_DEFAULT_POSITION_VALUE ? '' : value)}
+                    disabled={loading || formData.expectedPositionTypeIds.length === 0}
+                  >
+                    <ShadcnSelectTrigger
+                      id="default-position-select"
+                      aria-label="默认职位"
+                      className="h-12 rounded-xl border border-surface-mid bg-surface-low px-4 text-sm font-medium text-on-surface focus:ring-primary/40 disabled:opacity-60"
+                    >
+                      <ShadcnSelectValue placeholder="未设置" />
+                    </ShadcnSelectTrigger>
+                    <ShadcnSelectContent>
+                      <ShadcnSelectItem value={UNSET_DEFAULT_POSITION_VALUE}>未设置</ShadcnSelectItem>
+                      {formData.expectedPositionTypeIds
+                        .map((id) => ({ label: leafIdNameMap.get(id), value: String(id) }))
+                        .filter((item): item is { label: string; value: string } => Boolean(item.label))
+                        .map((item) => (
+                          <ShadcnSelectItem key={item.value} value={item.value}>
+                            {item.label}
+                          </ShadcnSelectItem>
+                        ))}
+                    </ShadcnSelectContent>
+                  </ShadcnSelect>
+                </div>
 
                 <div className="mt-2 rounded-2xl border border-primary/10 bg-primary/5 p-5">
                   <h4 className="mb-2 text-sm font-black uppercase tracking-wider text-primary">智能推荐优化</h4>
@@ -545,7 +571,7 @@ type SelectProps = {
   disabled?: boolean;
 };
 
-function Select({ label, options, value, onChange, disabled = false }: SelectProps) {
+function FormSelect({ label, options, value, onChange, disabled = false }: SelectProps) {
   const id = `select-${label}`;
   return (
     <div className="flex flex-col gap-1.5">
