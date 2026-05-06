@@ -1,9 +1,9 @@
 package com.graphhire.industryskill.application.service;
 
 import cn.hutool.json.JSONUtil;
-import com.graphhire.industry.application.service.IndustryAppService;
-import com.graphhire.industry.domain.model.Industry;
 import com.graphhire.match.infrastructure.ai.DeepSeekClient;
+import com.graphhire.positiontype.application.service.PositionTypeAppService;
+import com.graphhire.positiontype.domain.model.PositionType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,13 +13,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class IndustrySkillProfileBootstrapService {
 
     @Autowired
-    private IndustryAppService industryAppService;
+    private PositionTypeAppService positionTypeAppService;
 
     @Autowired
     private IndustrySkillProfileAppService profileAppService;
@@ -29,19 +28,18 @@ public class IndustrySkillProfileBootstrapService {
 
     @Transactional
     public int bootstrapAllLeafIndustries() {
-        List<Industry> all = industryAppService.listIndustries(1);
-        Map<Long, Industry> byId = all.stream()
-            .filter(item -> item.getId() != null)
-            .collect(Collectors.toMap(Industry::getId, item -> item, (left, right) -> left));
-        List<Industry> leafIndustries = all.stream()
-            .filter(item -> Integer.valueOf(2).equals(item.getLevel()))
+        List<PositionType> all = positionTypeAppService.listAll();
+        List<PositionType> leafPositionTypes = all.stream()
+            .filter(item -> Integer.valueOf(3).equals(item.getLevel()))
+            .filter(item -> Integer.valueOf(1).equals(item.getStatus()))
+            .filter(item -> !Integer.valueOf(1).equals(item.getDeleted()))
             .toList();
         int affected = 0;
-        for (Industry leaf : leafIndustries) {
+        for (PositionType leaf : leafPositionTypes) {
             if (leaf.getId() == null) {
                 continue;
             }
-            Industry parent = leaf.getParentId() == null ? null : byId.get(leaf.getParentId());
+            PositionType parent = resolveParent(all, leaf.getParentId());
             String parentName = parent == null ? null : parent.getName();
             Map<String, Object> generated = deepSeekClient.generateIndustryProfile(parentName, leaf.getName());
             String profileJson = normalizeProfileJson(generated, leaf.getName());
@@ -52,27 +50,34 @@ public class IndustrySkillProfileBootstrapService {
     }
 
     @Transactional
-    public void bootstrapByIndustryId(Long industryId) {
-        if (industryId == null) {
+    public void bootstrapByPositionTypeId(Long positionTypeId) {
+        if (positionTypeId == null) {
             return;
         }
-        List<Industry> all = industryAppService.listIndustries(1);
-        Optional<Industry> leafOpt = all.stream()
-            .filter(item -> Objects.equals(item.getId(), industryId))
-            .filter(item -> Integer.valueOf(2).equals(item.getLevel()))
+        List<PositionType> all = positionTypeAppService.listAll();
+        Optional<PositionType> leafOpt = all.stream()
+            .filter(item -> Objects.equals(item.getId(), positionTypeId))
+            .filter(item -> Integer.valueOf(3).equals(item.getLevel()))
             .findFirst();
         if (leafOpt.isEmpty()) {
             return;
         }
-        Industry leaf = leafOpt.get();
-        Industry parent = all.stream()
-            .filter(item -> Objects.equals(item.getId(), leaf.getParentId()))
-            .findFirst()
-            .orElse(null);
+        PositionType leaf = leafOpt.get();
+        PositionType parent = resolveParent(all, leaf.getParentId());
         String parentName = parent == null ? null : parent.getName();
         Map<String, Object> generated = deepSeekClient.generateIndustryProfile(parentName, leaf.getName());
         String profileJson = normalizeProfileJson(generated, leaf.getName());
         profileAppService.saveOrUpdate(leaf.getId(), profileJson);
+    }
+
+    private PositionType resolveParent(List<PositionType> all, Long parentId) {
+        if (parentId == null) {
+            return null;
+        }
+        return all.stream()
+            .filter(item -> Objects.equals(item.getId(), parentId))
+            .findFirst()
+            .orElse(null);
     }
 
     private String normalizeProfileJson(Map<String, Object> generated, String childIndustryName) {

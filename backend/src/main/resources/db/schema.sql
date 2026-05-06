@@ -138,32 +138,30 @@ CREATE INDEX idx_company_code ON company (code);
 CREATE INDEX idx_company_industry_id ON company (industry_id);
 
 -- =============================================
--- 3.1 二级行业技能分类配置表 industry_skill_profile
+-- 3.1 职位类型技能分类配置表 position_type_skill_profile
 -- =============================================
-CREATE TABLE industry_skill_profile
+CREATE TABLE position_type_skill_profile
 (
-    id           BIGSERIAL PRIMARY KEY,
-    industry_id  BIGINT    NOT NULL,
-    profile_json JSONB     NOT NULL,
-    create_time  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    update_time  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    deleted      SMALLINT  NOT NULL DEFAULT 0,
+    id               BIGSERIAL PRIMARY KEY,
+    position_type_id BIGINT    NOT NULL,
+    profile_json     JSONB     NOT NULL,
+    create_time      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted          SMALLINT  NOT NULL DEFAULT 0,
 
-    CONSTRAINT uk_industry_skill_profile_industry UNIQUE (industry_id),
-    CONSTRAINT fk_industry_skill_profile_industry
-        FOREIGN KEY (industry_id) REFERENCES industry(id),
-    CONSTRAINT chk_industry_skill_profile_deleted CHECK (deleted IN (0, 1))
+    CONSTRAINT chk_position_type_skill_profile_deleted CHECK (deleted IN (0, 1))
 );
 
-COMMENT ON TABLE industry_skill_profile IS '二级行业技能分类配置表';
-COMMENT ON COLUMN industry_skill_profile.id IS '主键ID';
-COMMENT ON COLUMN industry_skill_profile.industry_id IS 'industry表二级子行业ID（level=2）';
-COMMENT ON COLUMN industry_skill_profile.profile_json IS '技能分类JSON，结构: {"categories":[{"code":"...","name":"..."}]}';
-COMMENT ON COLUMN industry_skill_profile.create_time IS '创建时间';
-COMMENT ON COLUMN industry_skill_profile.update_time IS '更新时间';
-COMMENT ON COLUMN industry_skill_profile.deleted IS '软删除标记：0-未删除 1-已删除';
+COMMENT ON TABLE position_type_skill_profile IS '职位类型技能分类配置表';
+COMMENT ON COLUMN position_type_skill_profile.id IS '主键ID';
+COMMENT ON COLUMN position_type_skill_profile.position_type_id IS 'position_type 表叶子节点ID（建议 level=3）';
+COMMENT ON COLUMN position_type_skill_profile.profile_json IS '技能分类JSON，结构: {"categories":[{"code":"...","name":"..."}]}';
+COMMENT ON COLUMN position_type_skill_profile.create_time IS '创建时间';
+COMMENT ON COLUMN position_type_skill_profile.update_time IS '更新时间';
+COMMENT ON COLUMN position_type_skill_profile.deleted IS '软删除标记：0-未删除 1-已删除';
 
-CREATE INDEX idx_industry_skill_profile_deleted ON industry_skill_profile (deleted);
+CREATE INDEX idx_position_type_skill_profile_position_type_id ON position_type_skill_profile (position_type_id);
+CREATE INDEX idx_position_type_skill_profile_deleted ON position_type_skill_profile (deleted);
 
 -- =============================================
 -- 4. 企业员工关联表 company_staff
@@ -287,6 +285,10 @@ COMMENT ON COLUMN position_type.deleted IS '软删除标记：0-未删除 1-已�
 CREATE INDEX idx_position_type_parent_id ON position_type (parent_id);
 CREATE INDEX idx_position_type_level ON position_type (level);
 CREATE INDEX idx_position_type_deleted_status ON position_type (deleted, status);
+
+ALTER TABLE position_type_skill_profile
+    ADD CONSTRAINT fk_position_type_skill_profile_position_type
+        FOREIGN KEY (position_type_id) REFERENCES position_type(id);
 
 -- =============================================
 -- 7. 职位表 job

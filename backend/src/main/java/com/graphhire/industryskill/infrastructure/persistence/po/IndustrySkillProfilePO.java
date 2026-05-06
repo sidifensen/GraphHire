@@ -8,12 +8,12 @@ import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.time.LocalDateTime;
 
-@TableName("industry_skill_profile")
+@TableName("position_type_skill_profile")
 public class IndustrySkillProfilePO {
     @TableId(type = IdType.AUTO)
     private Long id;
-    @TableField("industry_id")
-    private Long industryId;
+    @TableField("position_type_id")
+    private Long positionTypeId;
     @TableField("profile_json")
     private String profileJson;
     @TableLogic
@@ -31,12 +31,12 @@ public class IndustrySkillProfilePO {
         this.id = id;
     }
 
-    public Long getIndustryId() {
-        return industryId;
+    public Long getPositionTypeId() {
+        return positionTypeId;
     }
 
-    public void setIndustryId(Long industryId) {
-        this.industryId = industryId;
+    public void setPositionTypeId(Long positionTypeId) {
+        this.positionTypeId = positionTypeId;
     }
 
     public String getProfileJson() {

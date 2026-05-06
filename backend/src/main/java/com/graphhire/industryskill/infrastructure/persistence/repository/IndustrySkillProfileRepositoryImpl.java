@@ -18,8 +18,8 @@ public class IndustrySkillProfileRepositoryImpl implements IndustrySkillProfileR
     private IndustrySkillProfileMapper mapper;
 
     @Override
-    public Optional<IndustrySkillProfile> findByIndustryId(Long industryId) {
-        return Optional.ofNullable(mapper.selectByIndustryId(industryId)).map(this::toDomain);
+    public Optional<IndustrySkillProfile> findByPositionTypeId(Long positionTypeId) {
+        return Optional.ofNullable(mapper.selectByPositionTypeId(positionTypeId)).map(this::toDomain);
     }
 
     @Override

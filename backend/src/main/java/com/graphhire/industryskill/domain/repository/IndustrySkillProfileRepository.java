@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface IndustrySkillProfileRepository {
-    Optional<IndustrySkillProfile> findByIndustryId(Long industryId);
+    Optional<IndustrySkillProfile> findByPositionTypeId(Long positionTypeId);
     List<IndustrySkillProfile> findAll();
     IndustrySkillProfile save(IndustrySkillProfile profile);
 }

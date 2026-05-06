@@ -18,14 +18,14 @@ public class IndustrySkillProfileAppService {
         this.repository = repository;
     }
 
-    public Optional<IndustrySkillProfile> getByIndustryId(Long industryId) {
-        return repository.findByIndustryId(industryId);
+    public Optional<IndustrySkillProfile> getByPositionTypeId(Long positionTypeId) {
+        return repository.findByPositionTypeId(positionTypeId);
     }
 
     @Transactional
-    public IndustrySkillProfile saveOrUpdate(Long industryId, String profileJson) {
-        IndustrySkillProfile profile = repository.findByIndustryId(industryId).orElseGet(IndustrySkillProfile::new);
-        profile.setIndustryId(industryId);
+    public IndustrySkillProfile saveOrUpdate(Long positionTypeId, String profileJson) {
+        IndustrySkillProfile profile = repository.findByPositionTypeId(positionTypeId).orElseGet(IndustrySkillProfile::new);
+        profile.setPositionTypeId(positionTypeId);
         profile.setProfileJson(profileJson);
         profile.setDeleted(0);
         return repository.save(profile);

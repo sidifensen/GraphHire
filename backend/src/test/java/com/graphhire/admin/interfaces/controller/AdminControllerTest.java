@@ -408,10 +408,10 @@ class AdminControllerTest {
     @Test
     @DisplayName("行业技能分类配置单行业初始化")
     void bootstrapIndustrySkillProfileByIndustrySuccess() {
-        var result = adminController.bootstrapIndustrySkillProfileByIndustry(12L);
+        var result = adminController.bootstrapIndustrySkillProfileByIndustry(100101L);
 
         assertEquals(200, result.getCode());
-        verify(industrySkillProfileBootstrapService).bootstrapByIndustryId(12L);
+        verify(industrySkillProfileBootstrapService).bootstrapByPositionTypeId(100101L);
     }
 }
 

@@ -310,6 +310,11 @@
 
 ## 2026-05-06
 
+- refactor: 废弃 `industry_skill_profile` 并切换为 `position_type_skill_profile`，新增迁移脚本 `V2026_05_06_029__replace_industry_skill_profile_with_position_type_skill_profile.sql`，同步更新 `schema.sql`（字段：`id/position_type_id/profile_json/create_time/update_time/deleted`）
+- refactor: `industryskill` 模块持久化键由 `industry_id` 全面改为 `position_type_id`（Domain/Repository/PO/Mapper/AppService 同步调整）
+- refactor: 管理端初始化接口改为职位类型语义与新路由：`POST /admin/position-type-skill-profile/bootstrap`、`POST /admin/position-type-skill-profile/bootstrap/{positionTypeId}`
+- feat: 个人技能分类结果新增 `positionTypeMatch` 字段，并基于职位类型技能画像进行分类读取
+- test: 更新并通过相关后端测试（schema 断言、分类服务、画像服务、初始化服务、管理端控制器），后端 `mvn compile`、`mvn test` 全通过
 - docs: 补充 `public.position_type` 表及全部字段数据库注释迁移脚本（`V2026_05_06_027__add_position_type_comments.sql`），并同步更新 `schema.sql` 中 `position_type.create_time/update_time` 注释
 - fix: 用户端我的图谱页视觉与布局多轮优化，桌面端沉浸式背景改为全幅直角舞台并保持左侧菜单固定定位
 - fix: 图谱节点力导参数调优，收紧中心空洞并避免双环分层，接近单圈放射效果

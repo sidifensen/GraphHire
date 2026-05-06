@@ -11,12 +11,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class IndustrySkillProfileSchemaSqlTest {
 
     @Test
-    void shouldContainIndustrySkillProfileTableDefinition() throws IOException {
+    void shouldContainPositionTypeSkillProfileTableDefinition() throws IOException {
         Path schemaPath = Path.of("src/main/resources/db/schema.sql");
         String schemaSql = Files.readString(schemaPath);
 
-        assertTrue(schemaSql.contains("CREATE TABLE industry_skill_profile"));
-        assertTrue(schemaSql.contains("uk_industry_skill_profile_industry"));
-        assertTrue(schemaSql.contains("profile_json JSONB"));
+        assertTrue(schemaSql.contains("CREATE TABLE position_type_skill_profile"));
+        assertTrue(schemaSql.contains("position_type_id BIGINT"));
+        assertTrue(schemaSql.contains("profile_json     JSONB"));
+        assertTrue(schemaSql.contains("fk_position_type_skill_profile_position_type"));
+        assertTrue(schemaSql.contains("CREATE INDEX idx_position_type_skill_profile_position_type_id ON position_type_skill_profile (position_type_id);"));
     }
 }

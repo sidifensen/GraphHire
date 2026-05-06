@@ -188,14 +188,14 @@ public class AdminController {
         return Result.success();
     }
 
-    @PostMapping("/industry-skill-profile/bootstrap")
+    @PostMapping("/position-type-skill-profile/bootstrap")
     public Result<Integer> bootstrapIndustrySkillProfiles() {
         return Result.success(industrySkillProfileBootstrapService.bootstrapAllLeafIndustries());
     }
 
-    @PostMapping("/industry-skill-profile/bootstrap/{industryId}")
-    public Result<Void> bootstrapIndustrySkillProfileByIndustry(@PathVariable Long industryId) {
-        industrySkillProfileBootstrapService.bootstrapByIndustryId(industryId);
+    @PostMapping("/position-type-skill-profile/bootstrap/{positionTypeId}")
+    public Result<Void> bootstrapIndustrySkillProfileByIndustry(@PathVariable Long positionTypeId) {
+        industrySkillProfileBootstrapService.bootstrapByPositionTypeId(positionTypeId);
         return Result.success();
     }
 

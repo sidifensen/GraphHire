@@ -4,6 +4,8 @@ import cn.hutool.core.util.StrUtil;
 import com.graphhire.industry.application.service.IndustryAppService;
 import com.graphhire.industry.domain.model.Industry;
 import com.graphhire.match.infrastructure.ai.DeepSeekClient;
+import com.graphhire.positiontype.application.service.PositionTypeAppService;
+import com.graphhire.positiontype.domain.model.PositionType;
 import com.graphhire.skill.application.service.SkillTagAppService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,9 @@ public class IndustrySkillClassificationService {
 
     @Autowired
     private IndustrySkillProfileAppService profileAppService;
+
+    @Autowired
+    private PositionTypeAppService positionTypeAppService;
 
     @Autowired
     private SkillTagAppService skillTagAppService;
@@ -77,14 +82,72 @@ public class IndustrySkillClassificationService {
                 .orElse(null);
         }
 
-        Optional<com.graphhire.industryskill.domain.model.IndustrySkillProfile> profileOpt = profileAppService.getByIndustryId(industryId);
+        PositionType matchedPositionType = resolvePositionTypeByIndustryName(industryName);
+        Long positionTypeId = matchedPositionType == null ? null : matchedPositionType.getId();
+        String positionTypeName = matchedPositionType == null ? null : matchedPositionType.getName();
+        if (positionTypeId == null) {
+            return buildResult(industryId, industryName, List.of(), null, null);
+        }
+
+        Optional<com.graphhire.industryskill.domain.model.IndustrySkillProfile> profileOpt = profileAppService.getByPositionTypeId(positionTypeId);
         if (profileOpt.isEmpty()) {
-            return buildResult(industryId, industryName, List.of());
+            return buildResult(industryId, industryName, List.of(), positionTypeId, positionTypeName);
         }
 
         Map<String, Object> categoryResult = deepSeekClient.categorizeSkillsByProfile(normalizedSkills, profileOpt.get().getProfileJson());
         List<Map<String, Object>> skillCategories = parseCategoryList(categoryResult.get("skillCategories"));
-        return buildResult(industryId, industryName, skillCategories);
+        return buildResult(industryId, industryName, skillCategories, positionTypeId, positionTypeName);
+    }
+
+    private PositionType resolvePositionTypeByIndustryName(String industryName) {
+        if (StrUtil.isBlank(industryName)) {
+            return null;
+        }
+        List<PositionType> all = positionTypeAppService.listAll();
+        List<PositionType> candidates = all.stream()
+            .filter(item -> Integer.valueOf(3).equals(item.getLevel()))
+            .filter(item -> Integer.valueOf(1).equals(item.getStatus()))
+            .filter(item -> !Integer.valueOf(1).equals(item.getDeleted()))
+            .toList();
+        if (candidates.isEmpty()) {
+            return null;
+        }
+
+        String normalizedIndustry = normalizeComparableName(industryName);
+        Optional<PositionType> exact = candidates.stream()
+            .filter(item -> normalizeComparableName(item.getName()).equals(normalizedIndustry))
+            .findFirst();
+        if (exact.isPresent()) {
+            return exact.get();
+        }
+
+        // 兼容行业名与职位类型名不完全一致的情况，例如“计算机软件”与“软件开发工程师”。
+        // 这里用头部2字和尾部2字做轻量语义对齐，避免误判到完全无关岗位。
+        String headToken = normalizedIndustry.length() >= 2 ? normalizedIndustry.substring(0, 2) : normalizedIndustry;
+        String tailToken = normalizedIndustry.length() >= 2 ? normalizedIndustry.substring(normalizedIndustry.length() - 2) : normalizedIndustry;
+        Optional<PositionType> tokenMatched = candidates.stream()
+            .filter(item -> {
+                String normalizedPositionType = normalizeComparableName(item.getName());
+                return normalizedPositionType.contains(headToken) || normalizedPositionType.contains(tailToken);
+            })
+            .findFirst();
+        if (tokenMatched.isPresent()) {
+            return tokenMatched.get();
+        }
+
+        return candidates.stream()
+            .filter(item -> {
+                String normalizedPositionType = normalizeComparableName(item.getName());
+                return normalizedPositionType.contains(normalizedIndustry) || normalizedIndustry.contains(normalizedPositionType);
+            })
+            .findFirst()
+            .orElse(null);
+    }
+
+    private String normalizeComparableName(String text) {
+        String normalized = StrUtil.blankToDefault(text, "").toLowerCase();
+        normalized = normalized.replaceAll("[^a-z0-9\\u4e00-\\u9fa5]", "");
+        return normalized;
     }
 
     private Map<String, Object> toCandidate(Industry industry) {
@@ -95,17 +158,29 @@ public class IndustrySkillClassificationService {
     }
 
     private Map<String, Object> buildFallback() {
-        return buildResult(null, null, List.of());
+        return buildResult(null, null, List.of(), null, null);
     }
 
-    private Map<String, Object> buildResult(Long industryId, String industryName, List<Map<String, Object>> skillCategories) {
+    private Map<String, Object> buildResult(
+        Long industryId,
+        String industryName,
+        List<Map<String, Object>> skillCategories,
+        Long positionTypeId,
+        String positionTypeName
+    ) {
         Map<String, Object> industryMatch = new HashMap<>();
         industryMatch.put("industryId", industryId);
         industryMatch.put("industryName", industryName);
         industryMatch.put("matched", industryId != null);
 
+        Map<String, Object> positionTypeMatch = new HashMap<>();
+        positionTypeMatch.put("positionTypeId", positionTypeId);
+        positionTypeMatch.put("positionTypeName", positionTypeName);
+        positionTypeMatch.put("matched", positionTypeId != null);
+
         Map<String, Object> result = new HashMap<>();
         result.put("industryMatch", industryMatch);
+        result.put("positionTypeMatch", positionTypeMatch);
         result.put("skillCategories", skillCategories == null ? List.of() : skillCategories);
         return result;
     }

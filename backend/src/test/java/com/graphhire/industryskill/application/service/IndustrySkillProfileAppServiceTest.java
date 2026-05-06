@@ -28,17 +28,17 @@ class IndustrySkillProfileAppServiceTest {
 
     @Test
     @DisplayName("按行业ID查询技能分类配置")
-    void shouldGetProfileByIndustryId() {
+    void shouldGetProfileByPositionTypeId() {
         IndustrySkillProfile profile = new IndustrySkillProfile();
         profile.setId(10L);
-        profile.setIndustryId(12L);
+        profile.setPositionTypeId(100101L);
         profile.setProfileJson("{\"categories\":[{\"code\":\"backend\",\"name\":\"后端开发\"}]}");
-        when(repository.findByIndustryId(12L)).thenReturn(Optional.of(profile));
+        when(repository.findByPositionTypeId(100101L)).thenReturn(Optional.of(profile));
 
-        Optional<IndustrySkillProfile> result = appService.getByIndustryId(12L);
+        Optional<IndustrySkillProfile> result = appService.getByPositionTypeId(100101L);
 
         assertTrue(result.isPresent());
-        assertEquals(12L, result.get().getIndustryId());
+        assertEquals(100101L, result.get().getPositionTypeId());
         assertEquals("{\"categories\":[{\"code\":\"backend\",\"name\":\"后端开发\"}]}", result.get().getProfileJson());
     }
 
@@ -47,16 +47,16 @@ class IndustrySkillProfileAppServiceTest {
     void shouldSaveOrUpdateProfile() {
         IndustrySkillProfile saved = new IndustrySkillProfile();
         saved.setId(11L);
-        saved.setIndustryId(13L);
+        saved.setPositionTypeId(100102L);
         saved.setProfileJson("{\"categories\":[{\"code\":\"frontend\",\"name\":\"前端开发\"}]}");
         when(repository.save(any(IndustrySkillProfile.class))).thenReturn(saved);
 
         IndustrySkillProfile result = appService.saveOrUpdate(
-            13L,
+            100102L,
             "{\"categories\":[{\"code\":\"frontend\",\"name\":\"前端开发\"}]}"
         );
 
-        assertEquals(13L, result.getIndustryId());
+        assertEquals(100102L, result.getPositionTypeId());
         assertEquals("{\"categories\":[{\"code\":\"frontend\",\"name\":\"前端开发\"}]}", result.getProfileJson());
         verify(repository).save(any(IndustrySkillProfile.class));
     }

@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 public class IndustrySkillProfile extends BaseAggregateRoot {
     private Long id;
-    private Long industryId;
+    private Long positionTypeId;
     private String profileJson;
     private Integer deleted;
     private LocalDateTime createTime;
@@ -20,12 +20,12 @@ public class IndustrySkillProfile extends BaseAggregateRoot {
         this.id = id;
     }
 
-    public Long getIndustryId() {
-        return industryId;
+    public Long getPositionTypeId() {
+        return positionTypeId;
     }
 
-    public void setIndustryId(Long industryId) {
-        this.industryId = industryId;
+    public void setPositionTypeId(Long positionTypeId) {
+        this.positionTypeId = positionTypeId;
     }
 
     public String getProfileJson() {
