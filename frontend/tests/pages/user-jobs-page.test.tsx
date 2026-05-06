@@ -244,7 +244,7 @@ describe('user jobs page filters', () => {
 
     const embeddedPanel = await screen.findByTestId('mobile-category-dropdown');
     expect(within(embeddedPanel).getByText('选择职位类别')).toBeInTheDocument();
-    expect(within(embeddedPanel).getByText('技术')).toBeInTheDocument();
+    expect(within(embeddedPanel).getByText('Java')).toBeInTheDocument();
   });
 
   it('opens embedded location panel inside mobile dropdown when clicking 工作地点', async () => {

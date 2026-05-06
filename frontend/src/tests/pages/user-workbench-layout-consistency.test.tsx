@@ -9,10 +9,12 @@ const {
   getMyResumesMock,
   listConversationsMock,
   getProfileMock,
+  getPositionTypeTreeMock,
 } = vi.hoisted(() => ({
   getMyResumesMock: vi.fn(),
   listConversationsMock: vi.fn(),
   getProfileMock: vi.fn(),
+  getPositionTypeTreeMock: vi.fn(),
 }));
 
 vi.mock('@/lib/api/resume', () => ({
@@ -41,6 +43,14 @@ vi.mock('@/lib/api/chat', () => ({
   },
 }));
 
+vi.mock('@/lib/api/public', () => ({
+  publicApi: {
+    jobs: {
+      getPositionTypeTree: getPositionTypeTreeMock,
+    },
+  },
+}));
+
 function expectMaxWidthContainerWithoutHorizontalPadding(layoutMenu: HTMLElement) {
   const maxWidthContainer =
     (layoutMenu.closest('.max-w-7xl') as HTMLElement | null) ??
@@ -57,6 +67,7 @@ describe('User workbench desktop layout consistency', () => {
     getMyResumesMock.mockResolvedValue([]);
     listConversationsMock.mockResolvedValue([]);
     getProfileMock.mockResolvedValue(null);
+    getPositionTypeTreeMock.mockResolvedValue([]);
   });
 
   it('keeps resume manage page desktop wrapper consistent with personal info page', async () => {

@@ -4,7 +4,8 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.graphhire.common.vo.Result;
 import com.graphhire.match.application.service.MatchAppService;
 import com.graphhire.match.interfaces.dto.response.MatchDetailResponse;
-import com.graphhire.industryskill.application.service.IndustrySkillClassificationService;
+import com.graphhire.positiontype.domain.model.PositionType;
+import com.graphhire.positiontypeskill.application.service.PositionTypeSkillClassificationService;
 import com.graphhire.resume.application.service.PersonAbilityAssessmentService;
 import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.repository.PersonInfoRepository;
@@ -12,11 +13,13 @@ import com.graphhire.resume.interfaces.dto.AbilityAssessmentResponse;
 import com.graphhire.resume.interfaces.dto.PersonInfoResponse;
 import com.graphhire.resume.interfaces.dto.request.PersonUpdateRequest;
 import com.graphhire.skill.infrastructure.graph.SkillGraphClient;
+import com.graphhire.positiontype.application.service.PositionTypeAppService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * 个人用户接口
@@ -39,7 +42,10 @@ public class PersonController {
     private PersonAbilityAssessmentService personAbilityAssessmentService;
 
     @Autowired
-    private IndustrySkillClassificationService industrySkillClassificationService;
+    private PositionTypeSkillClassificationService positionTypeSkillClassificationService;
+
+    @Autowired
+    private PositionTypeAppService positionTypeAppService;
 
     /**
      * 获取个人信息
@@ -66,6 +72,8 @@ public class PersonController {
             personInfo.getCity(),
             personInfo.getTargetCity(),
             personInfo.getExpectedSalary(),
+            personInfo.getExpectedPositionTypeIds(),
+            personInfo.getDefaultPositionTypeId(),
             personInfo.getAvatarUrl() == null ? null : "/person/avatar/public/" + userId
         );
         return Result.success(response);
@@ -97,6 +105,10 @@ public class PersonController {
         personInfo.setCity(request.getCity());
         personInfo.setTargetCity(request.getTargetCity());
         personInfo.setExpectedSalary(request.getExpectedSalary());
+        List<Long> normalizedExpectedPositionTypeIds = normalizeExpectedPositionTypeIds(request.getExpectedPositionTypeIds());
+        Long normalizedDefaultPositionTypeId = normalizeDefaultPositionTypeId(request.getDefaultPositionTypeId(), normalizedExpectedPositionTypeIds);
+        personInfo.setExpectedPositionTypeIds(normalizedExpectedPositionTypeIds);
+        personInfo.setDefaultPositionTypeId(normalizedDefaultPositionTypeId);
 
         personInfoRepository.save(personInfo);
         return Result.success();
@@ -126,7 +138,8 @@ public class PersonController {
         );
 
         List<String> skills = extractSkills(graph.get("skills"));
-        Map<String, Object> classified = industrySkillClassificationService.classifyPersonSkills(skills);
+        Long preferredPositionTypeId = personInfo == null ? null : personInfo.getDefaultPositionTypeId();
+        Map<String, Object> classified = positionTypeSkillClassificationService.classifyPersonSkills(skills, preferredPositionTypeId);
         @SuppressWarnings("unchecked")
         Map<String, Object> industryMatch = (Map<String, Object>) classified.get("industryMatch");
         @SuppressWarnings("unchecked")
@@ -174,6 +187,31 @@ public class PersonController {
         } catch (Exception ignored) {
             return null;
         }
+    }
+
+    private List<Long> normalizeExpectedPositionTypeIds(List<Long> rawIds) {
+        if (rawIds == null || rawIds.isEmpty()) {
+            return List.of();
+        }
+        List<Long> enabledLeafIds = positionTypeAppService.listAll().stream()
+            .filter(item -> Integer.valueOf(3).equals(item.getLevel()))
+            .filter(item -> Integer.valueOf(1).equals(item.getStatus()))
+            .filter(item -> !Integer.valueOf(1).equals(item.getDeleted()))
+            .map(PositionType::getId)
+            .filter(Objects::nonNull)
+            .toList();
+        return rawIds.stream()
+            .filter(Objects::nonNull)
+            .distinct()
+            .filter(enabledLeafIds::contains)
+            .toList();
+    }
+
+    private Long normalizeDefaultPositionTypeId(Long rawDefaultPositionTypeId, List<Long> expectedPositionTypeIds) {
+        if (rawDefaultPositionTypeId == null || expectedPositionTypeIds == null || expectedPositionTypeIds.isEmpty()) {
+            return null;
+        }
+        return expectedPositionTypeIds.contains(rawDefaultPositionTypeId) ? rawDefaultPositionTypeId : null;
     }
 
     /**

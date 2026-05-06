@@ -7,11 +7,13 @@ const {
   getProfileMock,
   updateProfileMock,
   uploadAvatarMock,
+  getPositionTypeTreeMock,
 } = vi.hoisted(() => {
   return {
     getProfileMock: vi.fn(),
     updateProfileMock: vi.fn(),
     uploadAvatarMock: vi.fn(),
+    getPositionTypeTreeMock: vi.fn(),
   };
 });
 
@@ -20,6 +22,14 @@ vi.mock('@/lib/api/person', () => ({
     getProfile: getProfileMock,
     updateProfile: updateProfileMock,
     uploadAvatar: uploadAvatarMock,
+  },
+}));
+
+vi.mock('@/lib/api/public', () => ({
+  publicApi: {
+    jobs: {
+      getPositionTypeTree: getPositionTypeTreeMock,
+    },
   },
 }));
 
@@ -40,9 +50,27 @@ describe('User PersonalInfo page', () => {
       targetCity: '北京/上海',
       expectedSalary: 35000,
       avatarUrl: 'https://example.com/avatar-old.png',
+      expectedPositionTypeIds: [100101, 100102],
+      defaultPositionTypeId: 100101,
     });
     updateProfileMock.mockResolvedValue(undefined);
     uploadAvatarMock.mockResolvedValue('https://example.com/avatar-new.png');
+    getPositionTypeTreeMock.mockResolvedValue([
+      {
+        id: 1000,
+        name: '技术',
+        children: [
+          {
+            id: 100100,
+            name: '后端开发',
+            children: [
+              { id: 100101, name: 'Java开发工程师', children: [] },
+              { id: 100102, name: 'Golang开发工程师', children: [] },
+            ],
+          },
+        ],
+      },
+    ]);
   });
 
   it('loads profile fields from backend', async () => {
@@ -57,6 +85,9 @@ describe('User PersonalInfo page', () => {
     expect(screen.getByLabelText('所在城市')).toHaveValue('北京市');
     expect(screen.getByLabelText('目标城市')).toHaveValue('北京/上海');
     expect(screen.getByLabelText('期望薪资')).toHaveValue(35000);
+    expect(screen.getAllByText('Java开发工程师').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Golang开发工程师').length).toBeGreaterThan(0);
+    expect(screen.getByLabelText('默认职位')).toHaveValue('100101');
   });
 
   it('keeps desktop sidebar alignment wrapper consistent with profile page', async () => {
@@ -82,6 +113,7 @@ describe('User PersonalInfo page', () => {
     await user.type(screen.getByLabelText('电话'), '13900001111');
     await user.clear(screen.getByLabelText('期望薪资'));
     await user.type(screen.getByLabelText('期望薪资'), '42000');
+    await user.selectOptions(screen.getByLabelText('默认职位'), '100102');
     await user.click(screen.getByRole('button', { name: '保存修改' }));
 
     await waitFor(() => {
@@ -97,6 +129,8 @@ describe('User PersonalInfo page', () => {
           city: '北京市',
           targetCity: '北京/上海',
           expectedSalary: 42000,
+          expectedPositionTypeIds: [100101, 100102],
+          defaultPositionTypeId: 100102,
         }),
       );
     });

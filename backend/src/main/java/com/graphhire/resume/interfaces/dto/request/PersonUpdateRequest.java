@@ -11,6 +11,8 @@ public class PersonUpdateRequest {
     private String city;
     private String targetCity;
     private Integer expectedSalary;
+    private java.util.List<Long> expectedPositionTypeIds;
+    private Long defaultPositionTypeId;
 
     public String getRealName() {
         return realName;
@@ -90,5 +92,21 @@ public class PersonUpdateRequest {
 
     public void setExpectedSalary(Integer expectedSalary) {
         this.expectedSalary = expectedSalary;
+    }
+
+    public java.util.List<Long> getExpectedPositionTypeIds() {
+        return expectedPositionTypeIds;
+    }
+
+    public void setExpectedPositionTypeIds(java.util.List<Long> expectedPositionTypeIds) {
+        this.expectedPositionTypeIds = expectedPositionTypeIds;
+    }
+
+    public Long getDefaultPositionTypeId() {
+        return defaultPositionTypeId;
+    }
+
+    public void setDefaultPositionTypeId(Long defaultPositionTypeId) {
+        this.defaultPositionTypeId = defaultPositionTypeId;
     }
 }

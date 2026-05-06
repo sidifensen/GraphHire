@@ -1,6 +1,7 @@
 package com.graphhire.resume.domain.model;
 
 import com.graphhire.common.model.BaseEntity;
+import java.util.List;
 
 /**
  * 人员信息领域模型
@@ -31,6 +32,10 @@ public class PersonInfo extends BaseEntity {
     private String targetCity;
     /** 期望薪资 */
     private Integer expectedSalary;
+    /** 期望职位类型ID列表（叶子职位） */
+    private List<Long> expectedPositionTypeIds;
+    /** 默认期望职位类型ID */
+    private Long defaultPositionTypeId;
     /** 头像URL */
     private String avatarUrl;
 
@@ -128,6 +133,22 @@ public class PersonInfo extends BaseEntity {
 
     public void setExpectedSalary(Integer expectedSalary) {
         this.expectedSalary = expectedSalary;
+    }
+
+    public List<Long> getExpectedPositionTypeIds() {
+        return expectedPositionTypeIds;
+    }
+
+    public void setExpectedPositionTypeIds(List<Long> expectedPositionTypeIds) {
+        this.expectedPositionTypeIds = expectedPositionTypeIds;
+    }
+
+    public Long getDefaultPositionTypeId() {
+        return defaultPositionTypeId;
+    }
+
+    public void setDefaultPositionTypeId(Long defaultPositionTypeId) {
+        this.defaultPositionTypeId = defaultPositionTypeId;
     }
 
     public String getAvatarUrl() {

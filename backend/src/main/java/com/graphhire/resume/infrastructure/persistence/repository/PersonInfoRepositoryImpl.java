@@ -1,7 +1,6 @@
 package com.graphhire.resume.infrastructure.persistence.repository;
 
 import cn.hutool.core.bean.BeanUtil;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.repository.PersonInfoRepository;
@@ -44,20 +43,7 @@ public class PersonInfoRepositoryImpl implements PersonInfoRepository {
             personInfoMapper.insert(po);
             personInfo.setId(po.getId());
         } else {
-            UpdateWrapper<PersonInfoPO> wrapper = new UpdateWrapper<>();
-            wrapper.eq("id", personInfo.getId())
-                .set("real_name", po.getRealName())
-                .set("gender", po.getGender())
-                .set("age", po.getAge())
-                .set("education", po.getEducation())
-                .set("city", po.getCity())
-                .set("target_city", po.getTargetCity())
-                .set("phone", po.getPhone())
-                .set("email", po.getEmail())
-                .set("school", po.getSchool())
-                .set("expected_salary", po.getExpectedSalary())
-                .set("avatar_url", po.getAvatarUrl());
-            personInfoMapper.update(null, wrapper);
+            personInfoMapper.updateByIdForce(po);
         }
         return personInfo;
     }

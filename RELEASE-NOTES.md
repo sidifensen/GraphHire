@@ -2,6 +2,19 @@
 
 ## 2026-05-06
 
+- feat: 个人资料页新增“期望职位”多选与“默认职位”设置，期望职位可从职位树选择并随资料保存
+- refactor: 抽离并复用职位选择弹窗组件 `PositionTypePickerModal`，用户职位页与个人资料页共用同一交互能力
+- feat: `/person/info` 扩展 `expectedPositionTypeIds/defaultPositionTypeId` 读写字段，后端新增有效叶子职位校验
+- feat: 个人图谱分类新增“默认职位优先”策略：存在默认职位时按该职位技能分类配置执行；无配置时触发 AI bootstrap 后继续分类
+- feat: 数据库新增迁移 `V2026_05_06_030__add_person_expected_position_fields.sql`，并同步更新 `schema.sql`
+- test: 更新后端 `PersonControllerTest`、`PositionTypeSkillClassificationServiceTest` 与前端个人资料/职位页相关测试，目标用例通过
+
+- feat: 简历上传与重新解析新增“是否刷新所有职位匹配记录”可选开关，前端默认勾选刷新，用户可取消后仅执行解析
+- feat: 后端 `POST /resume/my/upload` 与 `POST /resume/{id}/parse` 新增 `refreshAllMatches` 参数并贯通至 MQ 消息链路
+- refactor: 解析消息格式扩展为 `resumeId,parseTaskId,refreshAllMatches`，默认简历仅在 `refreshAllMatches=true` 时触发全量职位匹配刷新
+- fix: 保持 `resume-parsed` 事件始终发送，确保技能提取与图数据库图谱更新不受匹配刷新开关影响
+- test: 新增并更新前后端测试，覆盖上传/重解析参数透传、默认简历 refresh=false 不触发匹配、前端默认勾选与取消分支
+
 - fix: 认证持久化改造，后端新增官方 `sa-token-redis-jackson` 依赖并接入 Redis 持久化，修复后端重启后前端登录态失效问题
 - refactor: 认证续期策略对齐 Sa-Token 官方会话模型（`timeout/active-timeout/auto-renew`），移除项目内非官方 `allow-refresh-token` / `refresh-token-timeout` 配置
 - refactor: 下线 `/auth/refresh-token` 业务伪接口，统一返回“官方会话模式下不提供 refresh-token 接口，请重新登录”

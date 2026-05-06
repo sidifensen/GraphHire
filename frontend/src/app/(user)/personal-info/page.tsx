@@ -2,11 +2,13 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { TopNav } from '@/app/(user)/_mock/components/TopNav';
-import { Camera, MapPin, ChevronDown } from 'lucide-react';
+import { Camera, MapPin, ChevronDown, X } from 'lucide-react';
 import { personApi, type PersonProfile } from '@/lib/api/person';
 import { UPLOAD_ERRORS } from '@/lib/constants/upload-errors';
 import { userAuthStore } from '@/lib/stores/auth-store';
 import UserWorkbenchSidebar from '@/app/(user)/_components/UserWorkbenchSidebar';
+import { publicApi, type PublicTreeNode } from '@/lib/api/public';
+import PositionTypePickerModal from '@/components/user/PositionTypePickerModal';
 
 type FormState = {
   realName: string;
@@ -19,6 +21,8 @@ type FormState = {
   city: string;
   targetCity: string;
   expectedSalary: string;
+  expectedPositionTypeIds: number[];
+  defaultPositionTypeId: string;
   avatarUrl: string;
 };
 
@@ -33,6 +37,8 @@ const EMPTY_FORM: FormState = {
   city: '',
   targetCity: '',
   expectedSalary: '',
+  expectedPositionTypeIds: [],
+  defaultPositionTypeId: '',
   avatarUrl: '',
 };
 
@@ -52,6 +58,8 @@ function toFormState(profile: PersonProfile | null): FormState {
     city: profile.city ?? '',
     targetCity: profile.targetCity ?? '',
     expectedSalary: profile.expectedSalary == null ? '' : String(profile.expectedSalary),
+    expectedPositionTypeIds: profile.expectedPositionTypeIds ?? [],
+    defaultPositionTypeId: profile.defaultPositionTypeId == null ? '' : String(profile.defaultPositionTypeId),
     avatarUrl: profile.avatarUrl ?? '',
   };
 }
@@ -76,6 +84,8 @@ function normalizeInt(value: string): number | null {
 export default function PersonalInfo() {
   const MAX_AVATAR_FILE_SIZE = 2 * 1024 * 1024;
   const [formData, setFormData] = useState<FormState>({ ...EMPTY_FORM });
+  const [positionTree, setPositionTree] = useState<PublicTreeNode[]>([]);
+  const [showPositionPicker, setShowPositionPicker] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -112,9 +122,48 @@ export default function PersonalInfo() {
     };
   }, []);
 
+  useEffect(() => {
+    let active = true;
+    publicApi.jobs
+      .getPositionTypeTree()
+      .then((tree) => {
+        if (!active) return;
+        setPositionTree(tree);
+      })
+      .catch(() => {
+        if (!active) return;
+        setPositionTree([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const setField = (key: keyof FormState, value: string) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
+
+  const leafIdNameMap = React.useMemo(() => {
+    const map = new Map<number, string>();
+    const stack = [...positionTree];
+    while (stack.length > 0) {
+      const node = stack.pop()!;
+      if (!node.children || node.children.length === 0) {
+        map.set(node.id, node.name);
+      } else {
+        stack.push(...node.children);
+      }
+    }
+    return map;
+  }, [positionTree]);
+
+  const selectedExpectedPositionNames = React.useMemo(
+    () =>
+      formData.expectedPositionTypeIds
+        .map((id) => leafIdNameMap.get(id))
+        .filter((name): name is string => Boolean(name)),
+    [formData.expectedPositionTypeIds, leafIdNameMap],
+  );
 
   const handleSave = async () => {
     setSaving(true);
@@ -132,6 +181,8 @@ export default function PersonalInfo() {
         city: normalizeString(formData.city),
         targetCity: normalizeString(formData.targetCity),
         expectedSalary: normalizeInt(formData.expectedSalary),
+        expectedPositionTypeIds: formData.expectedPositionTypeIds,
+        defaultPositionTypeId: formData.defaultPositionTypeId ? Number(formData.defaultPositionTypeId) : null,
       });
 
       const authState = userAuthStore.getState();
@@ -337,6 +388,70 @@ export default function PersonalInfo() {
                   onChange={(value) => setField('expectedSalary', value)}
                   disabled={loading}
                 />
+                <div className="flex flex-col gap-2">
+                  <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">期望职位</span>
+                  <div className="rounded-xl border border-surface-mid bg-surface-low p-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="text-sm font-medium text-on-surface">
+                        {selectedExpectedPositionNames.length > 0 ? `已选择 ${selectedExpectedPositionNames.length} 个职位` : '未选择期望职位'}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowPositionPicker(true)}
+                        className="px-3 h-8 rounded-full border border-primary/30 text-primary text-xs font-bold hover:bg-primary/10"
+                        disabled={loading}
+                      >
+                        选择职位
+                      </button>
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {selectedExpectedPositionNames.length === 0 ? (
+                        <span className="text-xs text-on-surface-variant">暂无</span>
+                      ) : (
+                        selectedExpectedPositionNames.map((name) => (
+                          <span
+                            key={name}
+                            className="inline-flex h-7 items-center gap-1 rounded-full border border-primary/30 bg-white px-3 text-xs text-primary"
+                          >
+                            {name}
+                            <button
+                              type="button"
+                              aria-label={`移除${name}`}
+                              onClick={() => {
+                                const idToRemove = Array.from(leafIdNameMap.entries()).find((entry) => entry[1] === name)?.[0];
+                                if (!idToRemove) return;
+                                setFormData((prev) => {
+                                  const nextIds = prev.expectedPositionTypeIds.filter((id) => id !== idToRemove);
+                                  const keepDefault = prev.defaultPositionTypeId && nextIds.includes(Number(prev.defaultPositionTypeId));
+                                  return {
+                                    ...prev,
+                                    expectedPositionTypeIds: nextIds,
+                                    defaultPositionTypeId: keepDefault ? prev.defaultPositionTypeId : '',
+                                  };
+                                });
+                              }}
+                              className="text-primary/70 hover:text-primary"
+                            >
+                              <X size={12} />
+                            </button>
+                          </span>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <Select
+                  label="默认职位"
+                  options={[
+                    { label: '未设置', value: '' },
+                    ...formData.expectedPositionTypeIds
+                      .map((id) => ({ label: leafIdNameMap.get(id), value: String(id) }))
+                      .filter((item): item is { label: string; value: string } => Boolean(item.label)),
+                  ]}
+                  value={formData.defaultPositionTypeId}
+                  onChange={(value) => setField('defaultPositionTypeId', value)}
+                  disabled={loading || formData.expectedPositionTypeIds.length === 0}
+                />
 
                 <div className="mt-2 rounded-2xl border border-primary/10 bg-primary/5 p-5">
                   <h4 className="mb-2 text-sm font-black uppercase tracking-wider text-primary">智能推荐优化</h4>
@@ -361,6 +476,31 @@ export default function PersonalInfo() {
           </div>
         </div>
       </main>
+      <PositionTypePickerModal
+        open={showPositionPicker}
+        tree={positionTree}
+        value={selectedExpectedPositionNames}
+        onClose={() => setShowPositionPicker(false)}
+        onConfirm={(selectedNames) => {
+          const nextIds = selectedNames
+            .map((name) => Array.from(leafIdNameMap.entries()).find((entry) => entry[1] === name)?.[0])
+            .filter((id): id is number => typeof id === 'number');
+          setFormData((prev) => {
+            const keepDefault = prev.defaultPositionTypeId && nextIds.includes(Number(prev.defaultPositionTypeId));
+            return {
+              ...prev,
+              expectedPositionTypeIds: nextIds,
+              defaultPositionTypeId: keepDefault ? prev.defaultPositionTypeId : nextIds[0] ? String(nextIds[0]) : '',
+            };
+          });
+          setShowPositionPicker(false);
+        }}
+        title="选择期望职位"
+        selectedLabel="已选"
+        containerTestId="personal-expected-position-modal"
+        selectedTagsTestId="personal-expected-position-selected-tags"
+        clearButtonText="清空"
+      />
     </div>
   );
 }

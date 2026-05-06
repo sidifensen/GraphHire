@@ -1,7 +1,9 @@
 package com.graphhire.resume.interfaces.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
-import com.graphhire.industryskill.application.service.IndustrySkillClassificationService;
+import com.graphhire.positiontypeskill.application.service.PositionTypeSkillClassificationService;
+import com.graphhire.positiontype.application.service.PositionTypeAppService;
+import com.graphhire.positiontype.domain.model.PositionType;
 import com.graphhire.resume.application.service.PersonAbilityAssessmentService;
 import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.repository.PersonInfoRepository;
@@ -48,7 +50,10 @@ class PersonControllerTest {
     private PersonAbilityAssessmentService personAbilityAssessmentService;
 
     @Mock
-    private IndustrySkillClassificationService industrySkillClassificationService;
+    private PositionTypeSkillClassificationService positionTypeSkillClassificationService;
+
+    @Mock
+    private PositionTypeAppService positionTypeAppService;
 
     @InjectMocks
     private PersonController personController;
@@ -64,6 +69,19 @@ class PersonControllerTest {
             request.setRealName("测试用户");
             request.setGender(0);
             request.setExpectedSalary(32000);
+            request.setExpectedPositionTypeIds(List.of(100101L, 100102L));
+            request.setDefaultPositionTypeId(100102L);
+            PositionType javaType = new PositionType();
+            javaType.setId(100101L);
+            javaType.setLevel(3);
+            javaType.setStatus(1);
+            javaType.setDeleted(0);
+            PositionType goType = new PositionType();
+            goType.setId(100102L);
+            goType.setLevel(3);
+            goType.setStatus(1);
+            goType.setDeleted(0);
+            when(positionTypeAppService.listAll()).thenReturn(List.of(javaType, goType));
 
             personController.updatePersonInfo(request);
 
@@ -73,6 +91,8 @@ class PersonControllerTest {
             assertEquals(100L, saved.getUserId());
             assertNull(saved.getGender());
             assertEquals(32000, saved.getExpectedSalary());
+            assertEquals(List.of(100101L, 100102L), saved.getExpectedPositionTypeIds());
+            assertEquals(100102L, saved.getDefaultPositionTypeId());
         }
     }
 
@@ -109,12 +129,16 @@ class PersonControllerTest {
             existing.setUserId(300L);
             existing.setRealName("头像用户");
             existing.setAvatarUrl("s3://resumes/avatar_300.jpg");
+            existing.setExpectedPositionTypeIds(List.of(100101L, 100102L));
+            existing.setDefaultPositionTypeId(100102L);
             when(personInfoRepository.findByUserId(300L)).thenReturn(Optional.of(existing));
 
             var result = personController.getPersonInfo();
 
             assertNotNull(result.getData());
             assertEquals("/person/avatar/public/300", result.getData().getAvatarUrl());
+            assertEquals(List.of(100101L, 100102L), result.getData().getExpectedPositionTypeIds());
+            assertEquals(100102L, result.getData().getDefaultPositionTypeId());
         }
     }
 
@@ -157,8 +181,9 @@ class PersonControllerTest {
             personInfo.setUserId(400L);
             personInfo.setRealName("斯蒂芬森");
             personInfo.setAvatarUrl("avatar/user_400.png");
+            personInfo.setDefaultPositionTypeId(100101L);
             when(personInfoRepository.findByUserId(400L)).thenReturn(Optional.of(personInfo));
-            when(industrySkillClassificationService.classifyPersonSkills(List.of("Java", "Spring Boot"))).thenReturn(
+            when(positionTypeSkillClassificationService.classifyPersonSkills(List.of("Java", "Spring Boot"), 100101L)).thenReturn(
                 Map.of(
                     "industryMatch", Map.of("industryId", 12L, "industryName", "计算机软件", "matched", true),
                     "skillCategories", List.of(Map.of("code", "backend", "name", "后端开发", "skills", List.of("Java", "Spring Boot")))
@@ -174,6 +199,7 @@ class PersonControllerTest {
             assertNotNull(result.getData().get("industryMatch"));
             assertNotNull(result.getData().get("skillCategories"));
             verify(skillGraphClient).upsertPersonIndustryClassification(eq(400L), eq(12L), eq("计算机软件"), any());
+            verify(positionTypeSkillClassificationService).classifyPersonSkills(List.of("Java", "Spring Boot"), 100101L);
         }
     }
 
@@ -191,7 +217,7 @@ class PersonControllerTest {
             unmatchedIndustry.put("industryId", null);
             unmatchedIndustry.put("industryName", null);
             unmatchedIndustry.put("matched", false);
-            when(industrySkillClassificationService.classifyPersonSkills(List.of("React"))).thenReturn(
+            when(positionTypeSkillClassificationService.classifyPersonSkills(List.of("React"), null)).thenReturn(
                 Map.of(
                     "industryMatch", unmatchedIndustry,
                     "skillCategories", List.of()
@@ -204,6 +230,7 @@ class PersonControllerTest {
             assertNull(result.getData().get("realName"));
             assertNull(result.getData().get("avatarUrl"));
             assertEquals(List.of("React"), result.getData().get("skills"));
+            verify(positionTypeSkillClassificationService).classifyPersonSkills(List.of("React"), null);
         }
     }
 }

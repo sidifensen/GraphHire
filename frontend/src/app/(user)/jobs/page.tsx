@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Skeleton } from '@/app/(user)/_mock/components/Skeleton';
 import { publicApi, type Job, type PublicTreeNode, type ProvinceCityItem } from '@/lib/api/public';
 import { getApiBaseUrl } from '@/lib/api/base-url';
+import PositionTypePickerModal from '@/components/user/PositionTypePickerModal';
 import {
   Select,
   SelectContent,
@@ -244,8 +245,6 @@ export default function JobList() {
   const [draftCategoryNames, setDraftCategoryNames] = useState<string[]>([]);
   const [draftIndustryNames, setDraftIndustryNames] = useState<string[]>([]);
   const [draftCityNames, setDraftCityNames] = useState<string[]>([]);
-  const [activePositionRootId, setActivePositionRootId] = useState<number | null>(null);
-  const [activePositionMidId, setActivePositionMidId] = useState<number | null>(null);
   const [activeIndustryRootId, setActiveIndustryRootId] = useState<number | null>(null);
   const [activeIndustryMidId, setActiveIndustryMidId] = useState<number | null>(null);
   const [provinceCities, setProvinceCities] = useState<ProvinceCityItem[]>(FALLBACK_PROVINCE_CITIES);
@@ -333,13 +332,12 @@ export default function JobList() {
     setShowLocationModal(true);
   };
 
-  const applyCategoryDraft = () => {
+  const applyCategoryNames = (names: string[]) => {
     setSelectedFilters((prev) => {
       const remained = prev.filter((item) => !item.id.startsWith('category:'));
-      const next = draftCategoryNames.map((name) => ({ id: `category:${name}`, label: `职位类别: ${name}` }));
+      const next = names.map((name) => ({ id: `category:${name}`, label: `职位类别: ${name}` }));
       return [...remained, ...next];
     });
-    setShowPositionModal(false);
   };
 
   const applyIndustryDraft = () => {
@@ -377,8 +375,6 @@ export default function JobList() {
       if (!active) return;
       setPositionTree(positionData);
       setIndustryTree(industryData);
-      setActivePositionRootId(positionData[0]?.id ?? null);
-      setActivePositionMidId(positionData[0]?.children?.[0]?.id ?? null);
       setActiveIndustryRootId(industryData[0]?.id ?? null);
       setActiveIndustryMidId(industryData[0]?.children?.[0]?.id ?? null);
       setTaxonomyReady(true);
@@ -623,9 +619,9 @@ export default function JobList() {
                     className="w-full h-full rounded-none bg-surface-lowest border border-surface-mid/70 overflow-hidden flex flex-col"
                   >
                     <div className="px-4 py-3 border-b bg-surface-lowest text-base font-bold">选择职位类别</div>
-                     <div className="px-4 py-2 border-b bg-primary/5 text-sm">
-                       <div className="flex items-center gap-2 flex-wrap">
-                         <span className="font-medium text-primary">已选（{draftCategoryNames.length}）：</span>
+                    <div className="px-4 py-2 border-b bg-primary/5 text-sm">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium text-primary">已选（{draftCategoryNames.length}）：</span>
                         <div data-testid="mobile-category-selected-tags" className="flex items-center gap-2 flex-wrap">
                           {draftCategoryNames.length === 0 ? (
                             <span className="text-on-surface-variant">暂无</span>
@@ -643,80 +639,30 @@ export default function JobList() {
                             ))
                           )}
                         </div>
-                       </div>
-                     </div>
-                    <div className="grid grid-cols-3 flex-1 min-h-0 bg-surface-lowest">
-                      <div className="border-r overflow-y-auto hide-scrollbar p-2 min-h-0">
-                         {positionTree.map((root) => (
-                           <button
-                             key={root.id}
-                             onClick={() => {
-                               setActivePositionRootId(root.id);
-                               setActivePositionMidId(root.children?.[0]?.id ?? null);
-                             }}
-                             className={`flex h-9 w-full items-center rounded-lg border px-2 mb-1 text-xs transition-colors ${
-                               activePositionRootId === root.id
-                                 ? 'border-primary/30 bg-primary/10 text-primary'
-                                 : 'border-transparent text-on-surface hover:border-primary/20 hover:bg-primary/5'
-                             }`}
-                           >
-                             {root.name}
-                           </button>
-                         ))}
-                       </div>
-                      <div className="border-r overflow-y-auto hide-scrollbar p-2 min-h-0">
-                         {treeChildrenById(positionTree, activePositionRootId).map((mid) => (
-                           (() => {
-                             const isLeafMid = !mid.children || mid.children.length === 0;
-                             const active = draftCategoryNames.includes(mid.name);
-                             return (
-                               <button
-                                 key={mid.id}
-                                 onClick={() => {
-                                   setActivePositionMidId(mid.id);
-                                   if (isLeafMid) {
-                                     setDraftCategoryNames((prev) =>
-                                       active ? prev.filter((item) => item !== mid.name) : [...prev, mid.name],
-                                     );
-                                   }
-                                 }}
-                                 className={`flex h-9 w-full items-center rounded-lg border px-2 mb-1 text-xs transition-colors ${
-                                   activePositionMidId === mid.id || (isLeafMid && active)
-                                     ? 'border-primary bg-primary/10 text-primary'
-                                     : 'border-transparent text-on-surface hover:border-primary/20 hover:bg-primary/5'
-                                 }`}
-                               >
-                                 {mid.name}
-                               </button>
-                             );
-                           })()
-                         ))}
-                       </div>
-                      <div className="overflow-y-auto hide-scrollbar p-2 min-h-0">
-                         {treeChildrenById(positionTree, activePositionMidId).map((leaf) => {
-                           const active = draftCategoryNames.includes(leaf.name);
-                           return (
-                             <button
-                               key={leaf.id}
-                               aria-pressed={active}
-                               onClick={() =>
-                                 setDraftCategoryNames((prev) =>
-                                   active ? prev.filter((item) => item !== leaf.name) : [...prev, leaf.name],
-                                 )
-                               }
-                               className={`flex h-9 w-full items-center justify-between rounded-lg border px-2 mb-1 text-xs transition-colors ${
-                                 active
-                                   ? 'border-primary bg-primary/10 text-primary'
-                                   : 'border-transparent text-on-surface hover:border-primary/20 hover:bg-primary/5'
-                               }`}
-                             >
-                               <span className="truncate pr-1">{leaf.name}</span>
-                               {active && <CheckCircle size={12} className="text-primary shrink-0" />}
-                             </button>
-                           );
-                         })}
-                       </div>
-                     </div>
+                      </div>
+                    </div>
+                    <div className="flex-1 min-h-0 overflow-y-auto p-3">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {collectLeafNames(positionTree).map((name) => {
+                          const active = draftCategoryNames.includes(name);
+                          return (
+                            <button
+                              key={name}
+                              onClick={() =>
+                                setDraftCategoryNames((prev) => (active ? prev.filter((item) => item !== name) : [...prev, name]))
+                              }
+                              className={`inline-flex h-9 items-center rounded-full border px-3 text-xs transition-colors ${
+                                active
+                                  ? 'border-primary bg-primary/10 text-primary'
+                                  : 'border-surface-mid text-on-surface hover:border-primary/20 hover:bg-primary/5'
+                              }`}
+                            >
+                              {name}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
                     <div className="px-3 py-2 border-t flex justify-end gap-2 bg-surface-lowest shrink-0">
                       <button
                         onClick={() => setDraftCategoryNames([])}
@@ -727,21 +673,21 @@ export default function JobList() {
                       <button
                         onClick={() => setOpenDropdown(null)}
                         className="px-3 h-8 rounded-full border border-surface-mid text-on-surface text-xs"
-                       >
-                         取消
-                       </button>
-                       <button
-                         onClick={() => {
-                           applyCategoryDraft();
-                           setOpenDropdown(null);
-                         }}
-                         className="px-3 h-8 rounded-full bg-primary text-white hover:bg-primary-container transition-colors text-xs"
-                       >
-                         确定
-                       </button>
-                     </div>
-                   </div>
-                 ) : openDropdown === 'city' ? (
+                      >
+                        取消
+                      </button>
+                      <button
+                        onClick={() => {
+                          applyCategoryNames(draftCategoryNames);
+                          setOpenDropdown(null);
+                        }}
+                        className="px-3 h-8 rounded-full bg-primary text-white hover:bg-primary-container transition-colors text-xs"
+                      >
+                        确定
+                      </button>
+                    </div>
+                  </div>
+                ) : openDropdown === 'city' ? (
                   <div
                     data-testid="mobile-location-dropdown"
                     className="w-full h-full rounded-none bg-surface-lowest border border-surface-mid/70 overflow-hidden flex flex-col"
@@ -1149,112 +1095,22 @@ export default function JobList() {
         </div>
       </main>
 
-      {showPositionModal && (
-        <div className="fixed inset-0 z-[80] bg-black/45 flex items-center justify-center p-4">
-          <div data-testid="category-modal" className="w-full max-w-5xl rounded-2xl bg-white overflow-hidden">
-            <div className="px-6 py-4 border-b text-lg font-bold">选择职能</div>
-            <div className="px-6 py-3 border-b bg-primary/5 text-sm">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-medium text-primary">已选（{draftCategoryNames.length}）：</span>
-                <div data-testid="category-selected-tags" className="flex items-center gap-2 flex-wrap">
-                  {draftCategoryNames.length === 0 ? (
-                    <span className="text-on-surface-variant">暂无</span>
-                  ) : (
-                    draftCategoryNames.map((name) => (
-                      <button
-                        key={name}
-                        type="button"
-                        onClick={() => setDraftCategoryNames((prev) => prev.filter((item) => item !== name))}
-                        className="inline-flex h-7 items-center gap-1 rounded-full border border-primary/30 bg-white px-3 text-xs text-primary hover:bg-primary/10"
-                      >
-                        <span>{name}</span>
-                        <X size={12} />
-                      </button>
-                    ))
-                  )}
-                </div>
-              </div>
-            </div>
-            <div className="grid grid-cols-3 h-[420px]">
-              <div className="border-r overflow-y-auto p-3">
-                {positionTree.map((root) => (
-                  <button
-                    key={root.id}
-                    onClick={() => {
-                      setActivePositionRootId(root.id);
-                      setActivePositionMidId(root.children?.[0]?.id ?? null);
-                    }}
-                    className={`flex h-10 w-full items-center rounded-lg border px-3 mb-1 transition-colors ${
-                      activePositionRootId === root.id
-                        ? 'border-primary/30 bg-primary/10 text-primary'
-                        : 'border-transparent text-on-surface hover:border-primary/20 hover:bg-primary/5'
-                    }`}
-                  >
-                    {root.name}
-                  </button>
-                ))}
-              </div>
-              <div className="border-r overflow-y-auto p-3">
-                {treeChildrenById(positionTree, activePositionRootId).map((mid) => (
-                  (() => {
-                    const isLeafMid = !mid.children || mid.children.length === 0;
-                    const active = draftCategoryNames.includes(mid.name);
-                    return (
-                      <button
-                        key={mid.id}
-                        onClick={() => {
-                          setActivePositionMidId(mid.id);
-                          if (isLeafMid) {
-                            setDraftCategoryNames((prev) =>
-                              active ? prev.filter((item) => item !== mid.name) : [...prev, mid.name],
-                            );
-                          }
-                        }}
-                        className={`flex h-10 w-full items-center rounded-lg border px-3 mb-1 transition-colors ${
-                          activePositionMidId === mid.id || (isLeafMid && active)
-                            ? 'border-primary bg-primary/10 text-primary'
-                            : 'border-transparent text-on-surface hover:border-primary/20 hover:bg-primary/5'
-                        }`}
-                      >
-                        {mid.name}
-                      </button>
-                    );
-                  })()
-                ))}
-              </div>
-              <div className="overflow-y-auto p-3">
-                {treeChildrenById(positionTree, activePositionMidId).map((leaf) => {
-                  const active = draftCategoryNames.includes(leaf.name);
-                  return (
-                    <button
-                      key={leaf.id}
-                      aria-pressed={active}
-                      onClick={() =>
-                        setDraftCategoryNames((prev) =>
-                          active ? prev.filter((item) => item !== leaf.name) : [...prev, leaf.name],
-                        )
-                      }
-                      className={`flex h-10 w-full items-center justify-between rounded-lg border px-3 mb-1 transition-colors ${
-                        active
-                          ? 'border-primary bg-primary/10 text-primary'
-                          : 'border-transparent text-on-surface hover:border-primary/20 hover:bg-primary/5'
-                      }`}
-                    >
-                      <span>{leaf.name}</span>
-                      {active && <CheckCircle size={14} className="text-primary" />}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-            <div className="px-6 py-3 border-t flex justify-end gap-2">
-              <button onClick={() => setDraftCategoryNames([])} className="px-5 h-10 rounded-full border border-surface-mid text-on-surface">清空筛选</button>
-              <button onClick={() => setShowPositionModal(false)} className="px-5 h-10 rounded-full border border-surface-mid text-on-surface">取消</button>
-              <button onClick={applyCategoryDraft} className="px-5 h-10 rounded-full bg-primary text-white hover:bg-primary-container transition-colors">确定</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <PositionTypePickerModal
+        open={showPositionModal}
+        tree={positionTree}
+        value={draftCategoryNames}
+        onClose={() => setShowPositionModal(false)}
+        onConfirm={(selectedNames) => {
+          setDraftCategoryNames(selectedNames);
+          applyCategoryNames(selectedNames);
+          setShowPositionModal(false);
+        }}
+        title="选择职能"
+        selectedLabel="已选"
+        containerTestId="category-modal"
+        selectedTagsTestId="category-selected-tags"
+        clearButtonText="清空筛选"
+      />
 
       {showIndustryModal && (
         <div className="fixed inset-0 z-[80] bg-black/45 flex items-center justify-center p-4">

@@ -4,14 +4,16 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.graphhire.resume.infrastructure.persistence.typehandler.LongListArrayTypeHandler;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 人员信息持久化对象
  * 对应数据库 person_info 表
  */
-@TableName("person_info")
+@TableName(value = "person_info", autoResultMap = true)
 public class PersonInfoPO {
     /** 人员信息ID（自增） */
     @TableId(type = IdType.AUTO)
@@ -49,6 +51,12 @@ public class PersonInfoPO {
     /** 期望薪资 */
     @TableField("expected_salary")
     private Integer expectedSalary;
+    /** 期望职位类型ID列表 */
+    @TableField(value = "expected_position_type_ids", typeHandler = LongListArrayTypeHandler.class)
+    private List<Long> expectedPositionTypeIds;
+    /** 默认期望职位类型ID */
+    @TableField("default_position_type_id")
+    private Long defaultPositionTypeId;
     /** 头像存储路径 */
     @TableField("avatar_url")
     private String avatarUrl;
@@ -97,6 +105,12 @@ public class PersonInfoPO {
 
     public Integer getExpectedSalary() { return expectedSalary; }
     public void setExpectedSalary(Integer expectedSalary) { this.expectedSalary = expectedSalary; }
+
+    public List<Long> getExpectedPositionTypeIds() { return expectedPositionTypeIds; }
+    public void setExpectedPositionTypeIds(List<Long> expectedPositionTypeIds) { this.expectedPositionTypeIds = expectedPositionTypeIds; }
+
+    public Long getDefaultPositionTypeId() { return defaultPositionTypeId; }
+    public void setDefaultPositionTypeId(Long defaultPositionTypeId) { this.defaultPositionTypeId = defaultPositionTypeId; }
 
     public String getAvatarUrl() { return avatarUrl; }
     public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }

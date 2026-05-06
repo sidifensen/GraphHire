@@ -13,6 +13,8 @@ public class PersonInfoResponse {
     private String city;
     private String targetCity;
     private Integer expectedSalary;
+    private java.util.List<Long> expectedPositionTypeIds;
+    private Long defaultPositionTypeId;
     private String avatarUrl;
 
     public PersonInfoResponse() {
@@ -20,7 +22,7 @@ public class PersonInfoResponse {
 
     public PersonInfoResponse(Long id, Long userId, String realName, Integer gender, Integer age,
                               String phone, String email, String education, String school, String city, String targetCity,
-                              Integer expectedSalary, String avatarUrl) {
+                              Integer expectedSalary, java.util.List<Long> expectedPositionTypeIds, Long defaultPositionTypeId, String avatarUrl) {
         this.id = id;
         this.userId = userId;
         this.realName = realName;
@@ -33,6 +35,8 @@ public class PersonInfoResponse {
         this.city = city;
         this.targetCity = targetCity;
         this.expectedSalary = expectedSalary;
+        this.expectedPositionTypeIds = expectedPositionTypeIds;
+        this.defaultPositionTypeId = defaultPositionTypeId;
         this.avatarUrl = avatarUrl;
     }
 
@@ -130,6 +134,22 @@ public class PersonInfoResponse {
 
     public void setExpectedSalary(Integer expectedSalary) {
         this.expectedSalary = expectedSalary;
+    }
+
+    public java.util.List<Long> getExpectedPositionTypeIds() {
+        return expectedPositionTypeIds;
+    }
+
+    public void setExpectedPositionTypeIds(java.util.List<Long> expectedPositionTypeIds) {
+        this.expectedPositionTypeIds = expectedPositionTypeIds;
+    }
+
+    public Long getDefaultPositionTypeId() {
+        return defaultPositionTypeId;
+    }
+
+    public void setDefaultPositionTypeId(Long defaultPositionTypeId) {
+        this.defaultPositionTypeId = defaultPositionTypeId;
     }
 
     public String getAvatarUrl() {

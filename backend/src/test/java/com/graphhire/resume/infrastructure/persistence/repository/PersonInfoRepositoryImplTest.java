@@ -93,12 +93,12 @@ class PersonInfoRepositoryImplTest {
             PersonInfo personInfo = createPersonInfo(1L);
             PersonInfoPO po = createPersonInfoPO(123L);
             po.setId(1L);
-            when(personInfoMapper.update(any(), any())).thenReturn(1);
+            when(personInfoMapper.updateByIdForce(any(PersonInfoPO.class))).thenReturn(1);
 
             PersonInfo result = personInfoRepository.save(personInfo);
 
             assertNotNull(result);
-            verify(personInfoMapper, times(1)).update(any(), any());
+            verify(personInfoMapper, times(1)).updateByIdForce(any(PersonInfoPO.class));
         }
     }
 

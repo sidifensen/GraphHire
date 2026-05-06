@@ -27,6 +27,8 @@ export interface PersonProfile {
   city?: string | null;
   targetCity?: string | null;
   expectedSalary?: number | null;
+  expectedPositionTypeIds?: number[] | null;
+  defaultPositionTypeId?: number | null;
   avatarUrl?: string | null;
 }
 
