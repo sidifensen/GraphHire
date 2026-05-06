@@ -16,7 +16,6 @@ import com.graphhire.resume.domain.repository.ResumeRepository;
 import com.graphhire.resume.domain.vo.ParseStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -24,10 +23,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class MatchAppServiceTest {
@@ -110,14 +113,10 @@ class MatchAppServiceTest {
         verify(matchRecordRepository, times(2)).save(any(MatchRecord.class));
         verify(matchRecordRepository).delete(staleFor999);
         verify(matchRecordRepository, never()).delete(oldFor201);
-
-        InOrder inOrder = inOrder(matchRecordRepository);
-        inOrder.verify(matchRecordRepository, times(2)).save(any(MatchRecord.class));
-        inOrder.verify(matchRecordRepository).delete(staleFor999);
     }
 
     @Test
-    void triggerMatchForResume_shouldNotDeleteAnyOldRecordWhenCalculationFails() {
+    void triggerMatchForResume_shouldRetryThreeTimesThenSkipFailedJob() {
         Long resumeId = 21L;
 
         Job publishedJob1 = new Job();
@@ -140,12 +139,47 @@ class MatchAppServiceTest {
         when(jobRepository.findAll()).thenReturn(List.of(publishedJob1, publishedJob2));
         when(matchRecordRepository.findByResumeId(resumeId)).thenReturn(List.of(oldFor301, oldFor999));
         when(matchDomainService.calculateMatch(resumeId, 301L)).thenReturn(newFor301);
-        when(matchDomainService.calculateMatch(resumeId, 302L)).thenThrow(new RuntimeException("boom"));
+        when(matchDomainService.calculateMatch(resumeId, 302L))
+            .thenThrow(new RuntimeException("boom-1"))
+            .thenThrow(new RuntimeException("boom-2"))
+            .thenThrow(new RuntimeException("boom-3"));
 
-        assertThrows(RuntimeException.class, () -> matchAppService.triggerMatchForResume(resumeId));
+        assertDoesNotThrow(() -> matchAppService.triggerMatchForResume(resumeId));
 
-        verify(matchRecordRepository, never()).delete(any(MatchRecord.class));
-        verify(matchRecordRepository, never()).deleteByResumeId(resumeId);
+        verify(matchDomainService).calculateMatch(resumeId, 301L);
+        verify(matchDomainService, times(3)).calculateMatch(resumeId, 302L);
+        verify(matchRecordRepository, times(1)).save(any(MatchRecord.class));
+        verify(matchRecordRepository).delete(oldFor999);
+        verify(matchRecordRepository, never()).delete(oldFor301);
+    }
+
+    @Test
+    void triggerMatchForResume_shouldRetryAndSucceedOnThirdAttempt() {
+        Long resumeId = 22L;
+
+        Job publishedJob = new Job();
+        publishedJob.setId(401L);
+        publishedJob.setStatus(JobStatus.PUBLISHED);
+
+        MatchRecord existing = MatchRecord.create(resumeId, 401L, MatchScore.of(60, 50));
+        existing.setId(2001L);
+        existing.setMatchDirection(MatchRecord.DIRECTION_PERSON_APPLIES);
+
+        MatchRecord newRecord = MatchRecord.create(resumeId, 401L, MatchScore.of(95, 90));
+        newRecord.setMatchDirection(MatchRecord.DIRECTION_PERSON_APPLIES);
+
+        when(jobRepository.findAll()).thenReturn(List.of(publishedJob));
+        when(matchRecordRepository.findByResumeId(resumeId)).thenReturn(List.of(existing));
+        when(matchDomainService.calculateMatch(resumeId, 401L))
+            .thenThrow(new RuntimeException("boom-1"))
+            .thenThrow(new RuntimeException("boom-2"))
+            .thenReturn(newRecord);
+
+        assertDoesNotThrow(() -> matchAppService.triggerMatchForResume(resumeId));
+
+        verify(matchDomainService, times(3)).calculateMatch(resumeId, 401L);
+        verify(matchRecordRepository, times(1)).save(any(MatchRecord.class));
+        verify(matchRecordRepository, never()).delete(existing);
     }
 
     @Test

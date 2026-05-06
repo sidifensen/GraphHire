@@ -1,5 +1,12 @@
 ﻿# Release Notes
 
+## 2026-05-07
+
+- feat: 默认简历全职位匹配改为并发批量执行（并发度固定 4），显著降低串行 AI 匹配总耗时
+- feat: 单职位匹配新增失败重试机制（最多 3 次），失败后跳过当前职位并继续处理其他职位
+- fix: 匹配失败容错升级为“局部失败不影响整体”，避免单条异常中断整批匹配流程
+- refactor: `MatchAppService.triggerMatchForResume` 新增并发汇总日志，输出成功数/跳过数/总耗时
+- test: 扩展 `MatchAppServiceTest`，覆盖“失败三次后跳过”与“第三次重试成功”场景
 ## 2026-05-06
 
 - feat: 个人资料页新增“期望职位”多选与“默认职位”设置，期望职位可从职位树选择并随资料保存
@@ -356,4 +363,3 @@
 - feat: 管理端新增行业技能分类初始化接口：`POST /admin/industry-skill-profile/bootstrap` 与 `POST /admin/industry-skill-profile/bootstrap/{industryId}`
 - feat: 用户端图谱页接入行业匹配与技能分类结果，技能节点按分类着色并展示行业名称
 - test: 新增并通过行业技能配置、分类服务、图数据库分类落图、管理端初始化接口相关单测；前后端全量构建与测试通过
-

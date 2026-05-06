@@ -32,12 +32,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class MatchAppService {
 
     private static final Logger log = LoggerFactory.getLogger(MatchAppService.class);
+    private static final int RESUME_MATCH_CONCURRENCY = 4;
+    private static final int RESUME_MATCH_MAX_ATTEMPTS = 3;
 
     @Autowired
     private MatchRecordRepository matchRecordRepository;
@@ -87,6 +93,7 @@ public class MatchAppService {
      */
     @Transactional
     public void triggerMatchForResume(Long resumeId) {
+        long totalStartNanos = System.nanoTime();
         List<Job> publishedJobs = jobRepository.findAll().stream()
             .filter(job -> job.getStatus() == JobStatus.PUBLISHED)
             .toList();
@@ -102,21 +109,37 @@ public class MatchAppService {
         }
 
         Set<Long> publishedJobIds = new HashSet<>();
+        List<Long> targetJobIds = new ArrayList<>();
         for (Job job : publishedJobs) {
             if (job.getId() == null) {
                 continue;
             }
             publishedJobIds.add(job.getId());
-            MatchRecord record = matchDomainService.calculateMatch(resumeId, job.getId());
-            MatchRecord existing = existingByJobId.get(job.getId());
-            if (existing != null) {
-                record.setId(existing.getId());
-                if (record.getMatchDirection() == null) {
-                    record.setMatchDirection(existing.getMatchDirection());
-                }
-            }
-            matchRecordRepository.save(record);
+            targetJobIds.add(job.getId());
         }
+
+        AtomicInteger successCount = new AtomicInteger();
+        AtomicInteger skippedCount = new AtomicInteger();
+        long matchLoopStartNanos = System.nanoTime();
+
+        ExecutorService executor = Executors.newFixedThreadPool(RESUME_MATCH_CONCURRENCY);
+        try {
+            List<CompletableFuture<Void>> futures = targetJobIds.stream()
+                .map(jobId -> CompletableFuture.runAsync(() -> {
+                    boolean success = calculateAndSaveWithRetry(resumeId, jobId, existingByJobId);
+                    if (success) {
+                        successCount.incrementAndGet();
+                    } else {
+                        skippedCount.incrementAndGet();
+                    }
+                }, executor))
+                .toList();
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        } finally {
+            shutdownExecutor(executor);
+        }
+
+        long matchLoopCostMs = elapsedMs(matchLoopStartNanos);
 
         for (MatchRecord existing : existingRecords) {
             Long oldJobId = existing.getJobId();
@@ -124,6 +147,11 @@ public class MatchAppService {
                 matchRecordRepository.delete(existing);
             }
         }
+
+        log.info(
+            "简历全职位匹配完成：resumeId={}, 已发布职位数={}, 成功数={}, 跳过数={}, 匹配执行耗时={}ms, 总耗时={}ms",
+            resumeId, targetJobIds.size(), successCount.get(), skippedCount.get(), matchLoopCostMs, elapsedMs(totalStartNanos)
+        );
     }
 
     /**
@@ -165,6 +193,48 @@ public class MatchAppService {
 
     private static long elapsedMs(long startNanos) {
         return (System.nanoTime() - startNanos) / 1_000_000;
+    }
+
+    private boolean calculateAndSaveWithRetry(Long resumeId, Long jobId, Map<Long, MatchRecord> existingByJobId) {
+        for (int attempt = 1; attempt <= RESUME_MATCH_MAX_ATTEMPTS; attempt++) {
+            try {
+                MatchRecord record = matchDomainService.calculateMatch(resumeId, jobId);
+                MatchRecord existing = existingByJobId.get(jobId);
+                if (existing != null) {
+                    record.setId(existing.getId());
+                    if (record.getMatchDirection() == null) {
+                        record.setMatchDirection(existing.getMatchDirection());
+                    }
+                }
+                matchRecordRepository.save(record);
+                return true;
+            } catch (Exception ex) {
+                if (attempt < RESUME_MATCH_MAX_ATTEMPTS) {
+                    log.warn(
+                        "简历匹配任务失败，准备重试：resumeId={}, jobId={}, attempt={}/{}, reason={}",
+                        resumeId, jobId, attempt, RESUME_MATCH_MAX_ATTEMPTS, ex.getMessage()
+                    );
+                    continue;
+                }
+                log.error(
+                    "简历匹配任务失败，达到重试上限后跳过：resumeId={}, jobId={}, attempts={}, reason={}",
+                    resumeId, jobId, RESUME_MATCH_MAX_ATTEMPTS, ex.getMessage()
+                );
+            }
+        }
+        return false;
+    }
+
+    private void shutdownExecutor(ExecutorService executor) {
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException ex) {
+            executor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 
     @Transactional
