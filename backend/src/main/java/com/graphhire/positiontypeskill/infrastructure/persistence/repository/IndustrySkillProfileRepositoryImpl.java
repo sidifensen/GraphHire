@@ -1,10 +1,10 @@
-package com.graphhire.industryskill.infrastructure.persistence.repository;
+package com.graphhire.positiontypeskill.infrastructure.persistence.repository;
 
 import cn.hutool.core.bean.BeanUtil;
-import com.graphhire.industryskill.domain.model.IndustrySkillProfile;
-import com.graphhire.industryskill.domain.repository.IndustrySkillProfileRepository;
-import com.graphhire.industryskill.infrastructure.persistence.mapper.IndustrySkillProfileMapper;
-import com.graphhire.industryskill.infrastructure.persistence.po.IndustrySkillProfilePO;
+import com.graphhire.positiontypeskill.domain.model.IndustrySkillProfile;
+import com.graphhire.positiontypeskill.domain.repository.IndustrySkillProfileRepository;
+import com.graphhire.positiontypeskill.infrastructure.persistence.mapper.IndustrySkillProfileMapper;
+import com.graphhire.positiontypeskill.infrastructure.persistence.po.IndustrySkillProfilePO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -16,6 +16,11 @@ public class IndustrySkillProfileRepositoryImpl implements IndustrySkillProfileR
 
     @Autowired
     private IndustrySkillProfileMapper mapper;
+
+    @Override
+    public Optional<IndustrySkillProfile> findById(Long id) {
+        return Optional.ofNullable(mapper.selectById(id)).map(this::toDomain);
+    }
 
     @Override
     public Optional<IndustrySkillProfile> findByPositionTypeId(Long positionTypeId) {

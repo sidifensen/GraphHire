@@ -5,6 +5,8 @@ import com.graphhire.match.infrastructure.ai.DeepSeekClient;
 import com.graphhire.positiontype.application.service.PositionTypeAppService;
 import com.graphhire.positiontype.domain.model.PositionType;
 import com.graphhire.skill.application.service.SkillTagAppService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +20,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class PositionTypeSkillClassificationService {
+
+    private static final Logger log = LoggerFactory.getLogger(PositionTypeSkillClassificationService.class);
 
     @Autowired
     private IndustrySkillProfileAppService profileAppService;
@@ -81,6 +85,7 @@ public class PositionTypeSkillClassificationService {
         Map<String, Object> categoryResult = deepSeekClient.categorizeSkillsByProfile(normalizedSkills, profileOpt.get().getProfileJson());
         List<Map<String, Object>> skillCategories = parseCategoryList(categoryResult.get("skillCategories"));
         skillCategories = ensureNonEmptyCategoryAssignments(skillCategories, normalizedSkills);
+        logClassificationResult(positionTypeId, positionTypeName, skillCategories);
         return buildResult(skillCategories, positionTypeId, positionTypeName);
     }
 
@@ -181,6 +186,48 @@ public class PositionTypeSkillClassificationService {
         result.put("positionTypeMatch", positionTypeMatch);
         result.put("skillCategories", skillCategories == null ? List.of() : skillCategories);
         return result;
+    }
+
+    private void logClassificationResult(
+        Long positionTypeId,
+        String positionTypeName,
+        List<Map<String, Object>> skillCategories
+    ) {
+        List<Map<String, Object>> categories = skillCategories == null ? List.of() : skillCategories;
+        log.info(
+            "AI技能分类结果: positionTypeId={}, positionTypeName={}, categoryCount={}, categories={}",
+            positionTypeId,
+            positionTypeName,
+            categories.size(),
+            buildCategorySummary(categories)
+        );
+    }
+
+    private String buildCategorySummary(List<Map<String, Object>> categories) {
+        if (categories == null || categories.isEmpty()) {
+            return "[]";
+        }
+        StringBuilder summary = new StringBuilder("[");
+        for (int i = 0; i < categories.size(); i++) {
+            Map<String, Object> category = categories.get(i);
+            String name = category == null ? null : String.valueOf(category.get("name"));
+            @SuppressWarnings("unchecked")
+            List<String> skills = category != null && category.get("skills") instanceof List<?>
+                ? (List<String>) category.get("skills")
+                : List.of();
+            if (i > 0) {
+                summary.append("; ");
+            }
+            summary.append(StrUtil.blankToDefault(name, "未命名分类"))
+                .append(":")
+                .append(skills == null ? List.of() : skills);
+            if (summary.length() >= 2000) {
+                summary.append("...(truncated)");
+                break;
+            }
+        }
+        summary.append("]");
+        return summary.toString();
     }
 
     @SuppressWarnings("unchecked")

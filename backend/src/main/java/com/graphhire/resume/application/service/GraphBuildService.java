@@ -54,7 +54,8 @@ public class GraphBuildService {
             if (skills != null && !skills.isEmpty()) {
                 // 构建图谱关系
                 skillGraphClient.buildPersonSkillGraph(resume.getUserId(), skills);
-                log.info("为用户{}构建人员技能图谱，包含{}项技能", resume.getUserId(), skills.size());
+                log.info("简历{}图谱构建结果: userId={}, skillCount={}, skills={}",
+                    resume.getId(), resume.getUserId(), skills.size(), skills);
             } else {
                 log.info("简历{}解析结果中未找到技能", resume.getId());
             }
@@ -156,3 +157,4 @@ public class GraphBuildService {
         return skills;
     }
 }
+

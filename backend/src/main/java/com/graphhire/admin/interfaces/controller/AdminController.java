@@ -8,7 +8,7 @@ import com.graphhire.admin.interfaces.dto.response.*;
 import com.graphhire.auth.application.service.AuthAppService;
 import com.graphhire.auth.interfaces.dto.request.LoginRequest;
 import com.graphhire.auth.interfaces.dto.response.LoginResponse;
-import com.graphhire.industryskill.application.service.IndustrySkillProfileBootstrapService;
+import com.graphhire.positiontypeskill.application.service.IndustrySkillProfileBootstrapService;
 import com.graphhire.common.vo.Result;
 import com.graphhire.skill.domain.model.SkillTag;
 import org.springframework.beans.factory.annotation.Autowired;

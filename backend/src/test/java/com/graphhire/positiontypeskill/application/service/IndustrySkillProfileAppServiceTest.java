@@ -1,7 +1,7 @@
-package com.graphhire.industryskill.application.service;
+package com.graphhire.positiontypeskill.application.service;
 
-import com.graphhire.industryskill.domain.model.IndustrySkillProfile;
-import com.graphhire.industryskill.domain.repository.IndustrySkillProfileRepository;
+import com.graphhire.positiontypeskill.domain.model.IndustrySkillProfile;
+import com.graphhire.positiontypeskill.domain.repository.IndustrySkillProfileRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

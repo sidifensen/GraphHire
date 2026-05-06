@@ -2,6 +2,10 @@
 
 ## 2026-05-07
 
+- refactor: 行业技能画像模块整体迁移到职位类型技能画像命名空间（`industryskill` -> `positiontypeskill`），清理旧领域模型、仓储与测试文件
+- feat: 管理端技能画像初始化入口与服务调用统一切换到 `PositionTypeSkill` 语义，并补充对应新模块实现文件
+- refactor: 技能分类链路与持久化查询细节同步调整（含 `SkillTag` 仓储查询与分类服务分支），对齐职位类型画像读取路径
+- chore: 提交当前后端在途重构代码快照（含 `.mcp.json` 与临时脚本目录变更）
 - refactor: 用户端个人资料页“默认职位”下拉切换为 shadcn Select，交互从原生 select 改为统一 combobox 体验
 - test: 更新 `user-personal-info-page` 测试为 shadcn Select 交互断言（combobox/option 点击），并保持保存参数校验
 - docs: 新增本次“默认职位下拉 shadcn 化”设计、验收与实现计划文档（`docs/superpowers/specs|acceptance|plans/2026-05-07-002929-*`）

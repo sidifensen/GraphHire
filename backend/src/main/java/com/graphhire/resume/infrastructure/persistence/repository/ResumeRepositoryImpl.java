@@ -138,7 +138,10 @@ public class ResumeRepositoryImpl implements ResumeRepository {
     @SuppressWarnings("unchecked")
     private ResumePO toPO(Resume resume) {
         ResumePO po = new ResumePO();
-        cn.hutool.log.StaticLog.info("DEBUG toPO: resume.parseResult={}", resume.getParseResult());
+        cn.hutool.log.StaticLog.info(
+                "DEBUG toPO: resume.parseResult=\n{}",
+                prettyJsonForLog(resume.getParseResult())
+        );
         // 排除 parseResult 和 isDefault，避免类型转换问题
         BeanUtil.copyProperties(resume, po, "parseResult", "isDefault");
         if (resume.getStatus() != null) {
@@ -151,5 +154,17 @@ public class ResumeRepositoryImpl implements ResumeRepository {
         // isDefault: Boolean -> Integer(0/1)
         po.setIsDefault(resume.getIsDefault() != null && resume.getIsDefault() ? 1 : 0);
         return po;
+    }
+
+    private String prettyJsonForLog(String jsonText) {
+        if (jsonText == null || jsonText.isBlank()) {
+            return jsonText;
+        }
+        try {
+            return JSONUtil.toJsonPrettyStr(JSONUtil.parse(jsonText));
+        } catch (Exception ignored) {
+            // 非法 JSON 时回退原文，避免日志打印中断
+            return jsonText;
+        }
     }
 }

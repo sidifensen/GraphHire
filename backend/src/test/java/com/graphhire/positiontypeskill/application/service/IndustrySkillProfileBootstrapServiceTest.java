@@ -1,4 +1,4 @@
-package com.graphhire.industryskill.application.service;
+package com.graphhire.positiontypeskill.application.service;
 
 import cn.hutool.json.JSONUtil;
 import cn.hutool.json.JSONObject;
@@ -57,7 +57,8 @@ class IndustrySkillProfileBootstrapServiceTest {
         leaf.setDeleted(0);
 
         when(positionTypeAppService.listAll()).thenReturn(List.of(parent, leaf));
-        when(deepSeekClient.generateIndustryProfile("技术", "后端开发工程师")).thenReturn(Map.of(
+        when(deepSeekClient.generatePositionTypeSkillProfile("技术", "后端开发工程师")).thenReturn(Map.of(
+            "categoryCount", 5,
             "categories", List.of(
                 Map.of("code", "backend", "name", "后端开发"),
                 Map.of("code", "frontend", "name", "前端开发"),
@@ -98,7 +99,8 @@ class IndustrySkillProfileBootstrapServiceTest {
         leaf.setDeleted(0);
 
         when(positionTypeAppService.listAll()).thenReturn(List.of(parent, leaf));
-        when(deepSeekClient.generateIndustryProfile("技术", "后端开发工程师")).thenReturn(Map.of(
+        when(deepSeekClient.generatePositionTypeSkillProfile("技术", "后端开发工程师")).thenReturn(Map.of(
+            "categoryCount", 5,
             "categories", List.of(
                 Map.of("code", "backend", "name", "后端开发"),
                 Map.of("code", "frontend", "name", "前端开发"),

@@ -37,7 +37,7 @@ public interface SkillTagMapper extends BaseMapper<SkillTagPO> {
         "SELECT id, name, synonyms::text AS synonyms, create_time, update_time FROM skill_tag, jsonb_array_elements_text(synonyms) AS syn",
         "WHERE LOWER(syn) = LOWER(#{synonym})"
     })
-    SkillTagPO selectBySynonymCaseInsensitive(@Param("synonym") String synonym);
+    List<SkillTagPO> selectBySynonymCaseInsensitive(@Param("synonym") String synonym);
 
     @Select("SELECT id, name, synonyms::text AS synonyms, create_time, update_time FROM skill_tag")
     List<SkillTagPO> selectAllWithSynonyms();

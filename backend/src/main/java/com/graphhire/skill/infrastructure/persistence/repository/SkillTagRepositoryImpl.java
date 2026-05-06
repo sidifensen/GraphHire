@@ -8,6 +8,8 @@ import com.graphhire.skill.infrastructure.persistence.mapper.SkillTagMapper;
 import com.graphhire.skill.infrastructure.persistence.po.SkillTagPO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -32,6 +34,7 @@ import java.util.Optional;
  */
 @Repository
 public class SkillTagRepositoryImpl implements SkillTagRepository {
+    private static final Logger log = LoggerFactory.getLogger(SkillTagRepositoryImpl.class);
 
     @Autowired
     private SkillTagMapper skillTagMapper;
@@ -59,8 +62,38 @@ public class SkillTagRepositoryImpl implements SkillTagRepository {
      */
     @Override
     public Optional<SkillTag> findBySynonym(String synonym) {
-        SkillTagPO po = skillTagMapper.selectBySynonymCaseInsensitive(synonym);
-        return Optional.ofNullable(po).map(this::toDomain);
+        if (synonym == null || synonym.isBlank()) {
+            return Optional.empty();
+        }
+        List<SkillTagPO> candidates = skillTagMapper.selectBySynonymCaseInsensitive(synonym);
+        if (candidates == null || candidates.isEmpty()) {
+            return Optional.empty();
+        }
+        if (candidates.size() == 1) {
+            return Optional.ofNullable(candidates.get(0)).map(this::toDomain);
+        }
+
+        String normalized = synonym.trim().toLowerCase();
+        SkillTagPO preferred = candidates.stream()
+            .filter(item -> item.getName() != null && item.getName().trim().toLowerCase().equals(normalized))
+            .findFirst()
+            .orElse(null);
+        if (preferred == null) {
+            preferred = candidates.stream()
+                .filter(item -> item.getName() != null && item.getName().trim().toLowerCase().contains(normalized))
+                .min(java.util.Comparator.comparingInt(item -> item.getName().trim().length()))
+                .orElse(null);
+        }
+        if (preferred == null) {
+            preferred = candidates.stream()
+                .filter(item -> item.getId() != null)
+                .min(java.util.Comparator.comparingLong(SkillTagPO::getId))
+                .orElse(candidates.get(0));
+        }
+
+        log.warn("同义词'{}'命中{}个技能标签，已按规则回退到id={} name={}",
+            synonym, candidates.size(), preferred.getId(), preferred.getName());
+        return Optional.ofNullable(preferred).map(this::toDomain);
     }
 
     /**

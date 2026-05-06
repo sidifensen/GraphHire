@@ -1,7 +1,7 @@
-package com.graphhire.industryskill.infrastructure.persistence.mapper;
+package com.graphhire.positiontypeskill.infrastructure.persistence.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.graphhire.industryskill.infrastructure.persistence.po.IndustrySkillProfilePO;
+import com.graphhire.positiontypeskill.infrastructure.persistence.po.IndustrySkillProfilePO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;

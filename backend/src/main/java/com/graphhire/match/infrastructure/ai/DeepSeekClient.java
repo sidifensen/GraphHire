@@ -74,6 +74,8 @@ public class DeepSeekClient {
     private String industrySkillCategorizeUserPrompt;
     private String industryProfileGenerateSystemPrompt;
     private String industryProfileGenerateUserPrompt;
+    private String positionTypeSkillProfileGenerateSystemPrompt;
+    private String positionTypeSkillProfileGenerateUserPrompt;
 
     public DeepSeekClient() {
         loadPrompts();
@@ -96,6 +98,8 @@ public class DeepSeekClient {
         industrySkillCategorizeUserPrompt = loadPrompt("prompts/industry-skill-categorize.md", "## user prompt");
         industryProfileGenerateSystemPrompt = loadPrompt("prompts/industry-profile-generate.md", "## system prompt");
         industryProfileGenerateUserPrompt = loadPrompt("prompts/industry-profile-generate.md", "## user prompt");
+        positionTypeSkillProfileGenerateSystemPrompt = loadPrompt("prompts/position-type-skill-profile-generate.md", "## system prompt");
+        positionTypeSkillProfileGenerateUserPrompt = loadPrompt("prompts/position-type-skill-profile-generate.md", "## user prompt");
     }
 
     private String loadPrompt(String resourcePath, String... sectionMarkers) {
@@ -638,6 +642,7 @@ public class DeepSeekClient {
             case "classifyIndustrySecondPass" -> "二级行业筛选";
             case "categorizeSkillsByProfile" -> "子行业技能分类";
             case "generateIndustryProfile" -> "子行业分类配置生成";
+            case "generatePositionTypeSkillProfile" -> "职位类型分类配置生成";
             default -> "处理请求";
         };
     }
@@ -749,6 +754,24 @@ public class DeepSeekClient {
         );
         Map<String, Object> fallback = new HashMap<>();
         fallback.put("categories", defaultGeneratedCategories(childIndustryName));
+        return parseGenericJsonObject(content, fallback);
+    }
+
+    public Map<String, Object> generatePositionTypeSkillProfile(String parentPositionTypeName, String positionTypeName) {
+        if (!isAiAvailable("generatePositionTypeSkillProfile")) {
+            return Map.of("categories", defaultGeneratedCategories(positionTypeName));
+        }
+        String content = invokeChatCompletion(
+            "generatePositionTypeSkillProfile",
+            positionTypeSkillProfileGenerateSystemPrompt,
+            String.format(
+                positionTypeSkillProfileGenerateUserPrompt,
+                StrUtil.blankToDefault(parentPositionTypeName, "未知父级职位类型"),
+                StrUtil.blankToDefault(positionTypeName, "未知职位类型")
+            )
+        );
+        Map<String, Object> fallback = new HashMap<>();
+        fallback.put("categories", defaultGeneratedCategories(positionTypeName));
         return parseGenericJsonObject(content, fallback);
     }
 

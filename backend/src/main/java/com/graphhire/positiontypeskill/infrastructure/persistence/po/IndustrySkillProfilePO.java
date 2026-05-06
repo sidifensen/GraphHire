@@ -1,15 +1,26 @@
-package com.graphhire.industryskill.domain.model;
+package com.graphhire.positiontypeskill.infrastructure.persistence.po;
 
-import com.graphhire.common.model.BaseAggregateRoot;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.time.LocalDateTime;
 
-public class IndustrySkillProfile extends BaseAggregateRoot {
+@TableName("position_type_skill_profile")
+public class IndustrySkillProfilePO {
+    @TableId(type = IdType.AUTO)
     private Long id;
+    @TableField("position_type_id")
     private Long positionTypeId;
+    @TableField("profile_json")
     private String profileJson;
+    @TableLogic
     private Integer deleted;
+    @TableField("create_time")
     private LocalDateTime createTime;
+    @TableField("update_time")
     private LocalDateTime updateTime;
 
     public Long getId() {

@@ -15,7 +15,7 @@ import com.graphhire.auth.application.service.AuthAppService;
 import com.graphhire.auth.domain.vo.UserType;
 import com.graphhire.auth.interfaces.dto.request.LoginRequest;
 import com.graphhire.auth.interfaces.dto.response.LoginResponse;
-import com.graphhire.industryskill.application.service.IndustrySkillProfileBootstrapService;
+import com.graphhire.positiontypeskill.application.service.IndustrySkillProfileBootstrapService;
 import com.graphhire.skill.domain.model.SkillTag;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
