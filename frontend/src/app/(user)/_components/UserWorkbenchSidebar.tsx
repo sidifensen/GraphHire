@@ -20,10 +20,10 @@ export default function UserWorkbenchSidebar() {
   const transparent = pathname === '/skill-graph' || pathname.startsWith('/skill-graph/');
 
   return (
-    <aside className="hidden lg:block lg:w-24 lg:shrink-0">
+    <aside className={`hidden lg:block lg:shrink-0 ${transparent ? 'lg:w-0' : 'lg:w-24'}`}>
       <nav
         aria-label="我的页面菜单"
-        className={`fixed left-8 top-24 z-30 inline-block ${
+        className={`fixed left-8 top-28 z-30 inline-block ${
           transparent ? 'bg-transparent backdrop-blur-[1px]' : ''
         }`}
       >

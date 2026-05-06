@@ -55,12 +55,12 @@ describe('User Skill Graph page', () => {
 
     expect(screen.getByRole('navigation', { name: '我的页面菜单' })).toBeInTheDocument();
     expect(screen.getAllByTestId('force-graph-stage').length).toBeGreaterThan(0);
-    expect(screen.getByText('斯蒂芬森')).toBeInTheDocument();
     expect(screen.getByText('86')).toBeInTheDocument();
     expect(screen.getByText('综合分')).toBeInTheDocument();
     expect(screen.getByText('3 知识节点')).toBeInTheDocument();
-    expect(screen.getByText('Top 5% 职场精英')).toBeInTheDocument();
-    expect(screen.getByText(/Java · Spring Boot · React/)).toBeInTheDocument();
+    expect(screen.queryByText('斯蒂芬森')).not.toBeInTheDocument();
+    expect(screen.queryByText('Top 5% 职场精英')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Java · Spring Boot · React/)).not.toBeInTheDocument();
   });
 
   it('renders empty state when no graph skills', async () => {
@@ -93,8 +93,8 @@ describe('User Skill Graph page', () => {
       expect(getAbilityAssessmentMock).toHaveBeenCalledTimes(1);
     });
 
-    expect(screen.getByText('求职者')).toBeInTheDocument();
     expect(screen.getByText('0 知识节点')).toBeInTheDocument();
-    expect(screen.getByText('暂无技能标签')).toBeInTheDocument();
+    expect(screen.queryByText('求职者')).not.toBeInTheDocument();
+    expect(screen.queryByText('暂无技能标签')).not.toBeInTheDocument();
   });
 });
