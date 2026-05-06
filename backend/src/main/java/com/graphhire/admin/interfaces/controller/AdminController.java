@@ -8,6 +8,7 @@ import com.graphhire.admin.interfaces.dto.response.*;
 import com.graphhire.auth.application.service.AuthAppService;
 import com.graphhire.auth.interfaces.dto.request.LoginRequest;
 import com.graphhire.auth.interfaces.dto.response.LoginResponse;
+import com.graphhire.industryskill.application.service.IndustrySkillProfileBootstrapService;
 import com.graphhire.common.vo.Result;
 import com.graphhire.skill.domain.model.SkillTag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,9 @@ public class AdminController {
 
     @Autowired
     private AuthAppService authAppService;
+
+    @Autowired
+    private IndustrySkillProfileBootstrapService industrySkillProfileBootstrapService;
 
     @PostMapping("/login")
     public Result<LoginResponse> adminLogin(@RequestBody LoginRequest request) {
@@ -181,6 +185,17 @@ public class AdminController {
     @DeleteMapping("/industry/{id}")
     public Result<Void> deleteIndustry(@PathVariable Long id) {
         adminAppService.deleteIndustry(id);
+        return Result.success();
+    }
+
+    @PostMapping("/industry-skill-profile/bootstrap")
+    public Result<Integer> bootstrapIndustrySkillProfiles() {
+        return Result.success(industrySkillProfileBootstrapService.bootstrapAllLeafIndustries());
+    }
+
+    @PostMapping("/industry-skill-profile/bootstrap/{industryId}")
+    public Result<Void> bootstrapIndustrySkillProfileByIndustry(@PathVariable Long industryId) {
+        industrySkillProfileBootstrapService.bootstrapByIndustryId(industryId);
         return Result.success();
     }
 

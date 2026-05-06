@@ -8,13 +8,49 @@ import UserWorkbenchSidebar from '@/app/(user)/_components/UserWorkbenchSidebar'
 import { personApi, type AbilityAssessment } from '@/lib/api/person';
 import type { ForceGraphMethods, LinkObject, NodeObject } from 'react-force-graph-2d';
 
-const ForceGraph2D = dynamic(() => import('react-force-graph-2d'), { ssr: false });
+const ForceGraph2D = dynamic(() => import('react-force-graph-2d'), { ssr: false }) as unknown as React.ComponentType<{
+  ref?: React.Ref<ForceGraphMethods<GraphNodeType, GraphLinkType>>;
+  graphData: GraphData;
+  backgroundColor?: string;
+  linkColor?: (link: LinkObject<GraphNodeType, GraphLinkType>) => string;
+  linkWidth?: number;
+  linkDirectionalParticles?: number;
+  linkDirectionalParticleWidth?: number;
+  linkDirectionalParticleSpeed?: (link: LinkObject<GraphNodeType, GraphLinkType>) => number;
+  linkDirectionalParticleColor?: (link: LinkObject<GraphNodeType, GraphLinkType>) => string;
+  nodeRelSize?: number;
+  nodeCanvasObject?: (node: NodeObject<GraphNodeType>, ctx: CanvasRenderingContext2D, globalScale: number) => void;
+  nodePointerAreaPaint?: (node: NodeObject<GraphNodeType>, color: string, ctx: CanvasRenderingContext2D) => void;
+  nodeLabel?: (node: NodeObject<GraphNodeType>) => string;
+  d3VelocityDecay?: number;
+  d3AlphaDecay?: number;
+  warmupTicks?: number;
+  cooldownTicks?: number;
+  onEngineStop?: () => void;
+  enableNodeDrag?: boolean;
+  enablePanInteraction?: boolean;
+  enableZoomInteraction?: boolean;
+  minZoom?: number;
+  maxZoom?: number;
+  onNodeDragEnd?: (node: NodeObject<GraphNodeType>) => void;
+  onBackgroundClick?: () => void;
+}>;
 
 type SkillGraphPayload = {
   personId?: number;
   realName?: string | null;
   avatarUrl?: string | null;
   skills?: string[];
+  industryMatch?: {
+    industryId?: number | null;
+    industryName?: string | null;
+    matched?: boolean;
+  };
+  skillCategories?: Array<{
+    code?: string;
+    name?: string;
+    skills?: string[];
+  }>;
   success?: boolean;
 };
 
@@ -22,6 +58,8 @@ type GraphNodeType = {
   id: string;
   label: string;
   kind: 'person' | 'skill';
+  categoryCode?: string;
+  categoryName?: string;
   color: string;
   strokeColor: string;
   textColor: string;
@@ -78,7 +116,49 @@ function safeSkillCount(assessment: AbilityAssessment | null, skills: string[]):
   return fromApi > 0 ? fromApi : skills.length;
 }
 
-function buildGraphData(personId: number, personName: string, skills: string[], isDarkMode: boolean): GraphData {
+function normalizeSkillCategories(input: unknown): Array<{ code: string; name: string; skills: string[] }> {
+  if (!Array.isArray(input)) {
+    return [];
+  }
+  const categories: Array<{ code: string; name: string; skills: string[] }> = [];
+  for (const item of input) {
+    if (typeof item !== 'object' || item === null) {
+      continue;
+    }
+    const record = item as { code?: unknown; name?: unknown; skills?: unknown };
+    const code = typeof record.code === 'string' ? record.code.trim() : '';
+    const name = typeof record.name === 'string' ? record.name.trim() : '';
+    if (!code || !name) {
+      continue;
+    }
+    categories.push({
+      code,
+      name,
+      skills: normalizeSkills(record.skills),
+    });
+  }
+  return categories;
+}
+
+function colorByCategory(code: string, isDarkMode: boolean): { fill: string; stroke: string; text: string } {
+  const paletteLight = ['#BFD2FF', '#CDEAC0', '#FFE2B8', '#FFD1D1', '#E0D4FF', '#BFE9E8', '#FCD6A4'];
+  const paletteDark = ['#1F3559', '#1E3A2A', '#4A341A', '#4A2323', '#2D2450', '#153A3A', '#4B341F'];
+  const hash = Array.from(code).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  const idx = hash % paletteLight.length;
+  return {
+    fill: isDarkMode ? paletteDark[idx] : paletteLight[idx],
+    stroke: isDarkMode ? 'rgba(147,197,253,0.72)' : 'rgba(0,82,255,0.32)',
+    text: isDarkMode ? '#DDEAFE' : '#1B2A57',
+  };
+}
+
+function buildGraphData(
+  personId: number,
+  personName: string,
+  skills: string[],
+  skillCategories: Array<{ code: string; name: string; skills: string[] }>,
+  isDarkMode: boolean
+): GraphData {
   const centerNodeId = `person:${personId}`;
   const personNode: NodeObject<GraphNodeType> = {
     id: centerNodeId,
@@ -92,15 +172,30 @@ function buildGraphData(personId: number, personName: string, skills: string[], 
     fy: 0,
   };
 
-  const skillNodes: NodeObject<GraphNodeType>[] = skills.map((skill) => ({
-    id: `skill:${skill}`,
-    label: skill,
-    kind: 'skill',
-    color: isDarkMode ? '#1F3559' : '#BFD2FF',
-    strokeColor: isDarkMode ? 'rgba(96, 165, 250, 0.72)' : 'rgba(0, 82, 255, 0.32)',
-    textColor: isDarkMode ? '#DDEAFE' : '#1B2A57',
-    radius: 9,
-  }));
+  const categoryBySkill = new Map<string, { code: string; name: string }>();
+  for (const category of skillCategories) {
+    for (const skill of category.skills) {
+      if (!categoryBySkill.has(skill)) {
+        categoryBySkill.set(skill, { code: category.code, name: category.name });
+      }
+    }
+  }
+
+  const skillNodes: NodeObject<GraphNodeType>[] = skills.map((skill) => {
+    const category = categoryBySkill.get(skill);
+    const colors = colorByCategory(category?.code ?? 'uncategorized', isDarkMode);
+    return {
+      id: `skill:${skill}`,
+      label: skill,
+      kind: 'skill',
+      categoryCode: category?.code ?? 'uncategorized',
+      categoryName: category?.name ?? '未分类',
+      color: colors.fill,
+      strokeColor: colors.stroke,
+      textColor: colors.text,
+      radius: 8,
+    };
+  });
 
   const links: LinkObject<GraphNodeType, GraphLinkType>[] = skillNodes.map((node) => ({
     source: centerNodeId,
@@ -139,12 +234,14 @@ function drawNode(node: NodeObject<GraphNodeType>, ctx: CanvasRenderingContext2D
 
 export default function KnowledgeGraph() {
   const [skills, setSkills] = React.useState<string[]>([]);
+  const [skillCategories, setSkillCategories] = React.useState<Array<{ code: string; name: string; skills: string[] }>>([]);
+  const [industryName, setIndustryName] = React.useState<string | null>(null);
   const [assessment, setAssessment] = React.useState<AbilityAssessment | null>(null);
   const [personId, setPersonId] = React.useState<number>(0);
   const [personName, setPersonName] = React.useState<string>('求职者');
   const [graphData, setGraphData] = React.useState<GraphData>({ nodes: [], links: [] });
   const [loading, setLoading] = React.useState(true);
-  const stageRef = React.useRef<ForceGraphMethods<GraphNodeType, GraphLinkType>>();
+  const stageRef = React.useRef<ForceGraphMethods<GraphNodeType, GraphLinkType> | null>(null);
   const initialFitDoneRef = React.useRef(false);
   const [isMobileViewport, setIsMobileViewport] = React.useState(false);
   const [isDarkMode, setIsDarkMode] = React.useState(false);
@@ -191,10 +288,14 @@ export default function KnowledgeGraph() {
 
         const graph = (graphResponse ?? {}) as SkillGraphPayload;
         const nextSkills = normalizeSkills(graph.skills);
+        const nextCategories = normalizeSkillCategories(graph.skillCategories);
         const nextPersonId = Number.isFinite(graph.personId) ? Number(graph.personId) : 0;
         const nextPersonName = graph.realName?.trim() ? graph.realName.trim() : '求职者';
+        const nextIndustryName = graph.industryMatch?.industryName?.trim() ? graph.industryMatch.industryName.trim() : null;
 
         setSkills(nextSkills);
+        setSkillCategories(nextCategories);
+        setIndustryName(nextIndustryName);
         setPersonId(nextPersonId);
         setPersonName(nextPersonName);
         setAssessment(assessmentResponse);
@@ -203,6 +304,8 @@ export default function KnowledgeGraph() {
           return;
         }
         setSkills([]);
+        setSkillCategories([]);
+        setIndustryName(null);
         setPersonId(0);
         setPersonName('求职者');
         setAssessment(null);
@@ -221,9 +324,9 @@ export default function KnowledgeGraph() {
   }, []);
 
   React.useEffect(() => {
-    setGraphData(buildGraphData(personId, personName, skills, isDarkMode));
+    setGraphData(buildGraphData(personId, personName, skills, skillCategories, isDarkMode));
     initialFitDoneRef.current = false;
-  }, [personId, personName, skills, isDarkMode]);
+  }, [personId, personName, skills, skillCategories, isDarkMode]);
 
   React.useEffect(() => {
     if (!stageRef.current || graphData.nodes.length === 0) {
@@ -233,19 +336,21 @@ export default function KnowledgeGraph() {
     const d3ForceFn = graph.d3Force;
     if (typeof d3ForceFn === 'function') {
       const linkForce = d3ForceFn('link');
-      if (linkForce && typeof (linkForce as { distance?: (value: number) => unknown }).distance === 'function') {
-        ((linkForce as { distance: (value: number) => unknown }).distance(isMobileViewport ? 150 : 112));
+      const linkForceWithDistance = linkForce as unknown as { distance?: (value: number) => unknown } | null;
+      if (linkForceWithDistance && typeof linkForceWithDistance.distance === 'function') {
+        linkForceWithDistance.distance(isMobileViewport ? 186 : 112);
       }
       const chargeForce = d3ForceFn('charge');
-      if (chargeForce && typeof (chargeForce as { strength?: (value: number) => unknown }).strength === 'function') {
-        ((chargeForce as { strength: (value: number) => unknown }).strength(isMobileViewport ? -320 : -175));
+      const chargeForceWithStrength = chargeForce as unknown as { strength?: (value: number) => unknown } | null;
+      if (chargeForceWithStrength && typeof chargeForceWithStrength.strength === 'function') {
+        chargeForceWithStrength.strength(isMobileViewport ? -380 : -175);
       }
     }
     graph.d3ReheatSimulation?.();
 
     const timer = window.setTimeout(() => {
-      graph.zoomToFit(900, isMobileViewport ? 8 : 36);
-      graph.zoom(isMobileViewport ? 1.42 : 1.18, 320);
+      graph.zoomToFit(900, isMobileViewport ? 52 : 36);
+      graph.zoom(isMobileViewport ? 0.86 : 1.18, 320);
       graph.centerAt(0, 0, 240);
       initialFitDoneRef.current = true;
     }, 220);
@@ -261,8 +366,8 @@ export default function KnowledgeGraph() {
       return;
     }
     graph.centerAt(0, 0, 450);
-    graph.zoomToFit(650, isMobileViewport ? 16 : 40);
-    graph.zoom(isMobileViewport ? 1.08 : 1.12, 280);
+    graph.zoomToFit(650, isMobileViewport ? 56 : 40);
+    graph.zoom(isMobileViewport ? 0.86 : 1.12, 280);
     graph.d3ReheatSimulation();
   }, [isMobileViewport]);
 
@@ -273,7 +378,7 @@ export default function KnowledgeGraph() {
       </div>
 
       <main className="flex-1 px-3 pb-2 pt-3 md:p-0">
-        <div className="mx-auto flex h-full w-full max-w-[1800px] gap-3 md:max-w-none md:gap-0">
+        <div className="mx-auto flex h-full w-full max-w-[1700px] gap-3 md:max-w-none md:gap-0">
           <UserWorkbenchSidebar />
 
           <section
@@ -317,8 +422,8 @@ export default function KnowledgeGraph() {
                   if (!graph) {
                     return;
                   }
-                  graph.zoomToFit(900, 8);
-                  graph.zoom(1.42, 280);
+                  graph.zoomToFit(900, 52);
+                  graph.zoom(0.86, 280);
                   graph.centerAt(0, 0, 200);
                   initialFitDoneRef.current = true;
                 }}
@@ -354,6 +459,7 @@ export default function KnowledgeGraph() {
             <div className="absolute bottom-3 right-3 z-20 text-right md:bottom-5 md:right-5">
               <div className="text-4xl font-black text-primary md:text-6xl">{totalScore}</div>
               <div className="mt-0.5 text-sm font-extrabold uppercase tracking-[0.2em] text-on-surface/85">综合分</div>
+              {industryName ? <div className="mt-1 text-sm font-bold text-on-surface">{industryName}</div> : null}
               <div className="mt-1.5 text-base font-black text-on-surface md:text-lg">{skillCount} 知识节点</div>
             </div>
           </section>

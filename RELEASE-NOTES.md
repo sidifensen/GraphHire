@@ -299,3 +299,9 @@
 - fix: 图谱页夜间模式联动，背景渐变、节点填充/描边/文字与连线粒子随主题自动切换
 - fix: 移动端图谱首屏缩团问题修复，改为引擎收敛后二次缩放居中，确保先展开后定格
 - test: 更新并通过图谱页前端测试，覆盖新布局与展示行为
+- feat: 新增 `industry_skill_profile` 子行业技能分类配置能力，补充 PostgreSQL 表结构与 schema 基线定义（`industry_id + profile_json`）
+- feat: 新增行业技能分类后端模块（`industryskill`），支持按子行业读取/写入配置、两阶段 AI 行业判定与技能分类
+- feat: 个人图谱接口 `/person/graph` 新增 `industryMatch` 与 `skillCategories` 返回，并在分类后同步写入 Memgraph（Person-Industry-SkillCategory-Skill 关系）
+- feat: 管理端新增行业技能分类初始化接口：`POST /admin/industry-skill-profile/bootstrap` 与 `POST /admin/industry-skill-profile/bootstrap/{industryId}`
+- feat: 用户端图谱页接入行业匹配与技能分类结果，技能节点按分类着色并展示行业名称
+- test: 新增并通过行业技能配置、分类服务、图数据库分类落图、管理端初始化接口相关单测；前后端全量构建与测试通过

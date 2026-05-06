@@ -4,6 +4,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.graphhire.common.vo.Result;
 import com.graphhire.match.application.service.MatchAppService;
 import com.graphhire.match.interfaces.dto.response.MatchDetailResponse;
+import com.graphhire.industryskill.application.service.IndustrySkillClassificationService;
 import com.graphhire.resume.application.service.PersonAbilityAssessmentService;
 import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.repository.PersonInfoRepository;
@@ -36,6 +37,9 @@ public class PersonController {
 
     @Autowired
     private PersonAbilityAssessmentService personAbilityAssessmentService;
+
+    @Autowired
+    private IndustrySkillClassificationService industrySkillClassificationService;
 
     /**
      * 获取个人信息
@@ -121,7 +125,55 @@ public class PersonController {
             personInfo == null || personInfo.getAvatarUrl() == null ? null : "/person/avatar/public/" + userId
         );
 
+        List<String> skills = extractSkills(graph.get("skills"));
+        Map<String, Object> classified = industrySkillClassificationService.classifyPersonSkills(skills);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> industryMatch = (Map<String, Object>) classified.get("industryMatch");
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> skillCategories = (List<Map<String, Object>>) classified.get("skillCategories");
+        if (industryMatch == null) {
+            Map<String, Object> fallbackIndustry = new java.util.HashMap<>();
+            fallbackIndustry.put("industryId", null);
+            fallbackIndustry.put("industryName", null);
+            fallbackIndustry.put("matched", false);
+            graph.put("industryMatch", fallbackIndustry);
+        } else {
+            graph.put("industryMatch", industryMatch);
+        }
+        graph.put("skillCategories", skillCategories == null ? List.of() : skillCategories);
+        if (industryMatch != null) {
+            Long industryId = toLong(industryMatch.get("industryId"));
+            String industryName = industryMatch.get("industryName") == null ? null : String.valueOf(industryMatch.get("industryName"));
+            skillGraphClient.upsertPersonIndustryClassification(userId, industryId, industryName, skillCategories == null ? List.of() : skillCategories);
+        }
+
         return Result.success(graph);
+    }
+
+    private List<String> extractSkills(Object skillsObj) {
+        if (!(skillsObj instanceof List<?> rawSkills)) {
+            return List.of();
+        }
+        return rawSkills.stream()
+            .filter(item -> item instanceof String)
+            .map(item -> ((String) item).trim())
+            .filter(item -> !item.isEmpty())
+            .distinct()
+            .toList();
+    }
+
+    private Long toLong(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        try {
+            return Long.parseLong(String.valueOf(value));
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 
     /**

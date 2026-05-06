@@ -15,6 +15,7 @@ import com.graphhire.auth.application.service.AuthAppService;
 import com.graphhire.auth.domain.vo.UserType;
 import com.graphhire.auth.interfaces.dto.request.LoginRequest;
 import com.graphhire.auth.interfaces.dto.response.LoginResponse;
+import com.graphhire.industryskill.application.service.IndustrySkillProfileBootstrapService;
 import com.graphhire.skill.domain.model.SkillTag;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -38,6 +39,9 @@ class AdminControllerTest {
 
     @Mock
     private AuthAppService authAppService;
+
+    @Mock
+    private IndustrySkillProfileBootstrapService industrySkillProfileBootstrapService;
 
     @InjectMocks
     private AdminController adminController;
@@ -387,6 +391,27 @@ class AdminControllerTest {
 
         assertEquals(200, result.getCode());
         verify(adminAppService).batchApproveCompany(List.of(1L, 2L));
+    }
+
+    @Test
+    @DisplayName("行业技能分类配置全量初始化")
+    void bootstrapIndustrySkillProfilesSuccess() {
+        when(industrySkillProfileBootstrapService.bootstrapAllLeafIndustries()).thenReturn(61);
+
+        var result = adminController.bootstrapIndustrySkillProfiles();
+
+        assertEquals(200, result.getCode());
+        assertEquals(61, result.getData());
+        verify(industrySkillProfileBootstrapService).bootstrapAllLeafIndustries();
+    }
+
+    @Test
+    @DisplayName("行业技能分类配置单行业初始化")
+    void bootstrapIndustrySkillProfileByIndustrySuccess() {
+        var result = adminController.bootstrapIndustrySkillProfileByIndustry(12L);
+
+        assertEquals(200, result.getCode());
+        verify(industrySkillProfileBootstrapService).bootstrapByIndustryId(12L);
     }
 }
 

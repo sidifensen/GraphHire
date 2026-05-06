@@ -86,7 +86,9 @@ class PersonControllerIT extends BaseControllerIT {
     void getPersonGraph_Success() throws Exception {
         mockMvc.perform(get("/person/graph")
                 .headers(personHeaders))
-            .andExpect(jsonPath("$.code").value(200));
+            .andExpect(jsonPath("$.code").value(200))
+            .andExpect(jsonPath("$.data.industryMatch").exists())
+            .andExpect(jsonPath("$.data.skillCategories").exists());
     }
 
     @Test

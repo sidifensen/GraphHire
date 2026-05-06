@@ -66,6 +66,14 @@ public class DeepSeekClient {
     private String parseJobUserPrompt;
     private String generateMatchReasonSystemPrompt;
     private String generateMatchReasonUserPrompt;
+    private String industryFirstPassSystemPrompt;
+    private String industryFirstPassUserPrompt;
+    private String industrySecondPassSystemPrompt;
+    private String industrySecondPassUserPrompt;
+    private String industrySkillCategorizeSystemPrompt;
+    private String industrySkillCategorizeUserPrompt;
+    private String industryProfileGenerateSystemPrompt;
+    private String industryProfileGenerateUserPrompt;
 
     public DeepSeekClient() {
         loadPrompts();
@@ -80,6 +88,14 @@ public class DeepSeekClient {
         parseJobUserPrompt = loadPrompt("prompts/parse-job.md", "## user prompt");
         generateMatchReasonSystemPrompt = loadPrompt("prompts/generate-match-reason.md", "## DeepSeek", "## system prompt");
         generateMatchReasonUserPrompt = loadPrompt("prompts/generate-match-reason.md", "## user prompt", "---");
+        industryFirstPassSystemPrompt = loadPrompt("prompts/industry-first-pass.md", "## system prompt");
+        industryFirstPassUserPrompt = loadPrompt("prompts/industry-first-pass.md", "## user prompt");
+        industrySecondPassSystemPrompt = loadPrompt("prompts/industry-second-pass.md", "## system prompt");
+        industrySecondPassUserPrompt = loadPrompt("prompts/industry-second-pass.md", "## user prompt");
+        industrySkillCategorizeSystemPrompt = loadPrompt("prompts/industry-skill-categorize.md", "## system prompt");
+        industrySkillCategorizeUserPrompt = loadPrompt("prompts/industry-skill-categorize.md", "## user prompt");
+        industryProfileGenerateSystemPrompt = loadPrompt("prompts/industry-profile-generate.md", "## system prompt");
+        industryProfileGenerateUserPrompt = loadPrompt("prompts/industry-profile-generate.md", "## user prompt");
     }
 
     private String loadPrompt(String resourcePath, String... sectionMarkers) {
@@ -618,6 +634,10 @@ public class DeepSeekClient {
             case "calculateMatch" -> "计算人岗匹配分数";
             case "parseResume" -> "解析简历";
             case "parseJob" -> "解析职位";
+            case "classifyIndustryFirstPass" -> "一级行业筛选";
+            case "classifyIndustrySecondPass" -> "二级行业筛选";
+            case "categorizeSkillsByProfile" -> "子行业技能分类";
+            case "generateIndustryProfile" -> "子行业分类配置生成";
             default -> "处理请求";
         };
     }
@@ -647,5 +667,113 @@ public class DeepSeekClient {
     }
 
     private record ChatCompletionResult(String content, int attemptCount, long lastAttemptCostMs, long totalCostMs) {
+    }
+
+    // =====================================================
+    // 【第五部分】行业与技能分类
+    // =====================================================
+
+    public Map<String, Object> classifyIndustryFirstPass(
+        java.util.List<String> skills,
+        java.util.List<Map<String, Object>> parentIndustries
+    ) {
+        if (!isAiAvailable("classifyIndustryFirstPass")) {
+            return Map.of("parentIndustryIds", java.util.Collections.emptyList(), "reason", "AI不可用");
+        }
+        String content = invokeChatCompletion(
+            "classifyIndustryFirstPass",
+            industryFirstPassSystemPrompt,
+            String.format(
+                industryFirstPassUserPrompt,
+                JSONUtil.toJsonStr(skills == null ? java.util.Collections.emptyList() : skills),
+                JSONUtil.toJsonStr(parentIndustries == null ? java.util.Collections.emptyList() : parentIndustries)
+            )
+        );
+        return parseGenericJsonObject(content, Map.of("parentIndustryIds", java.util.Collections.emptyList(), "reason", "解析失败"));
+    }
+
+    public Map<String, Object> classifyIndustrySecondPass(
+        java.util.List<String> skills,
+        java.util.List<Map<String, Object>> childIndustries
+    ) {
+        Map<String, Object> fallback = new HashMap<>();
+        fallback.put("industryId", null);
+        fallback.put("industryName", null);
+        fallback.put("confidence", 0);
+        if (!isAiAvailable("classifyIndustrySecondPass")) {
+            return fallback;
+        }
+        String content = invokeChatCompletion(
+            "classifyIndustrySecondPass",
+            industrySecondPassSystemPrompt,
+            String.format(
+                industrySecondPassUserPrompt,
+                JSONUtil.toJsonStr(skills == null ? java.util.Collections.emptyList() : skills),
+                JSONUtil.toJsonStr(childIndustries == null ? java.util.Collections.emptyList() : childIndustries)
+            )
+        );
+        return parseGenericJsonObject(content, fallback);
+    }
+
+    public Map<String, Object> categorizeSkillsByProfile(
+        java.util.List<String> skills,
+        String profileJson
+    ) {
+        if (!isAiAvailable("categorizeSkillsByProfile")) {
+            return Map.of("skillCategories", java.util.Collections.emptyList());
+        }
+        String content = invokeChatCompletion(
+            "categorizeSkillsByProfile",
+            industrySkillCategorizeSystemPrompt,
+            String.format(
+                industrySkillCategorizeUserPrompt,
+                JSONUtil.toJsonStr(skills == null ? java.util.Collections.emptyList() : skills),
+                StrUtil.blankToDefault(profileJson, "{\"categories\":[]}")
+            )
+        );
+        return parseGenericJsonObject(content, Map.of("skillCategories", java.util.Collections.emptyList()));
+    }
+
+    public Map<String, Object> generateIndustryProfile(String parentIndustryName, String childIndustryName) {
+        if (!isAiAvailable("generateIndustryProfile")) {
+            return Map.of("categories", defaultGeneratedCategories(childIndustryName));
+        }
+        String content = invokeChatCompletion(
+            "generateIndustryProfile",
+            industryProfileGenerateSystemPrompt,
+            String.format(
+                industryProfileGenerateUserPrompt,
+                StrUtil.blankToDefault(parentIndustryName, "未知父行业"),
+                StrUtil.blankToDefault(childIndustryName, "未知子行业")
+            )
+        );
+        Map<String, Object> fallback = new HashMap<>();
+        fallback.put("categories", defaultGeneratedCategories(childIndustryName));
+        return parseGenericJsonObject(content, fallback);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> parseGenericJsonObject(String content, Map<String, Object> fallback) {
+        if (StrUtil.isBlank(content)) {
+            return fallback;
+        }
+        try {
+            JSONObject jsonObj = JSONUtil.parseObj(cleanJsonContent(content));
+            return jsonObj;
+        } catch (Exception e) {
+            log.warn("行业分类结果解析失败: {}", safeMessage(e));
+            return fallback;
+        }
+    }
+
+    private java.util.List<Map<String, Object>> defaultGeneratedCategories(String childIndustryName) {
+        String scope = StrUtil.blankToDefault(childIndustryName, "通用");
+        java.util.List<Map<String, Object>> categories = new java.util.ArrayList<>();
+        categories.add(Map.of("code", "core_skill", "name", scope + "核心技能"));
+        categories.add(Map.of("code", "domain_knowledge", "name", scope + "领域知识"));
+        categories.add(Map.of("code", "tooling", "name", scope + "工具能力"));
+        categories.add(Map.of("code", "delivery", "name", scope + "交付能力"));
+        categories.add(Map.of("code", "collaboration", "name", scope + "协作能力"));
+        return categories;
     }
 }

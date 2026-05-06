@@ -29,6 +29,15 @@ describe('User Skill Graph page', () => {
       realName: '斯蒂芬森',
       avatarUrl: '/person/avatar/public/99',
       skills: ['Java', 'Spring Boot', 'React'],
+      industryMatch: {
+        industryId: 12,
+        industryName: '计算机软件',
+        matched: true,
+      },
+      skillCategories: [
+        { code: 'backend', name: '后端开发', skills: ['Java', 'Spring Boot'] },
+        { code: 'frontend', name: '前端开发', skills: ['React'] },
+      ],
       success: true,
       mock: false,
     });
@@ -57,6 +66,7 @@ describe('User Skill Graph page', () => {
     expect(screen.getAllByTestId('force-graph-stage').length).toBeGreaterThan(0);
     expect(screen.getByText('86')).toBeInTheDocument();
     expect(screen.getByText('综合分')).toBeInTheDocument();
+    expect(screen.getByText('计算机软件')).toBeInTheDocument();
     expect(screen.getByText('3 知识节点')).toBeInTheDocument();
     expect(screen.queryByText('斯蒂芬森')).not.toBeInTheDocument();
     expect(screen.queryByText('Top 5% 职场精英')).not.toBeInTheDocument();
@@ -69,6 +79,12 @@ describe('User Skill Graph page', () => {
       realName: null,
       avatarUrl: null,
       skills: [],
+      industryMatch: {
+        industryId: null,
+        industryName: null,
+        matched: false,
+      },
+      skillCategories: [],
       success: true,
       mock: false,
     });

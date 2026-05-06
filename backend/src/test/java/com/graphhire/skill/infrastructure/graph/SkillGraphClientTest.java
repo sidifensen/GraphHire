@@ -136,4 +136,29 @@ class SkillGraphClientTest {
         assertTrue(response.getEdges().stream().anyMatch(edge -> "HAS_JOB".equals(edge.getType())));
         assertTrue(response.getEdges().stream().anyMatch(edge -> "REQUIRES_SKILL".equals(edge.getType())));
     }
+
+    @Test
+    @DisplayName("无驱动时写入个人行业分类不抛异常")
+    void upsertPersonIndustryClassification_WhenDriverUnavailable_ShouldNotThrow() {
+        SkillGraphClient client = new SkillGraphClient();
+
+        List<Map<String, Object>> categories = List.of(
+            Map.of("code", "backend", "name", "后端开发", "skills", List.of("Java", "Spring Boot"))
+        );
+
+        assertDoesNotThrow(() -> client.upsertPersonIndustryClassification(1L, 12L, "计算机软件", categories));
+    }
+
+    @Test
+    @DisplayName("无驱动时读取个人行业分类返回空结构")
+    void getPersonIndustryClassification_WhenDriverUnavailable_ReturnsEmpty() {
+        SkillGraphClient client = new SkillGraphClient();
+
+        Map<String, Object> result = client.getPersonIndustryClassification(1L);
+
+        assertEquals(1L, result.get("personId"));
+        assertEquals(false, result.get("success"));
+        assertNotNull(result.get("industryMatch"));
+        assertNotNull(result.get("skillCategories"));
+    }
 }

@@ -314,6 +314,168 @@ public class SkillGraphClient {
     }
 
     /**
+     * 写入个人行业判定与技能分类关系
+     */
+    public void upsertPersonIndustryClassification(
+        Long personId,
+        Long industryId,
+        String industryName,
+        List<Map<String, Object>> skillCategories
+    ) {
+        if (driver == null || personId == null) {
+            log.info("跳过个人行业分类落图: driverAvailable={}, personId={}", driver != null, personId);
+            return;
+        }
+
+        try (Session session = driver.session()) {
+            session.writeTransaction(tx -> {
+                tx.run(
+                    "MERGE (p:Person {id: $personId}) " +
+                    "WITH p OPTIONAL MATCH (p)-[r:BELONGS_TO_INDUSTRY]->(:Industry) DELETE r",
+                    Values.parameters("personId", personId)
+                );
+                tx.run(
+                    "MATCH (p:Person {id: $personId}) " +
+                    "OPTIONAL MATCH (p)-[r:HAS_SKILL_CATEGORY]->(c:SkillCategory) " +
+                    "OPTIONAL MATCH (c)-[rc:CONTAINS_SKILL]->(:Skill) " +
+                    "DELETE rc, r",
+                    Values.parameters("personId", personId)
+                );
+
+                if (industryId != null) {
+                    tx.run(
+                        "MATCH (p:Person {id: $personId}) " +
+                        "MERGE (i:Industry {id: $industryId}) " +
+                        "SET i.name = $industryName " +
+                        "MERGE (p)-[:BELONGS_TO_INDUSTRY]->(i)",
+                        Values.parameters(
+                            "personId", personId,
+                            "industryId", industryId,
+                            "industryName", StrUtil.blankToDefault(industryName, "未命名行业")
+                        )
+                    );
+                }
+
+                if (CollUtil.isNotEmpty(skillCategories)) {
+                    for (Map<String, Object> category : skillCategories) {
+                        String code = category == null ? null : StrUtil.trimToNull((String) category.get("code"));
+                        String name = category == null ? null : StrUtil.trimToNull((String) category.get("name"));
+                        List<String> skills = extractSkillList(category == null ? null : category.get("skills"));
+                        if (code == null || name == null) {
+                            continue;
+                        }
+                        tx.run(
+                            "MATCH (p:Person {id: $personId}) " +
+                            "MERGE (c:SkillCategory {personId: $personId, code: $code}) " +
+                            "SET c.name = $name " +
+                            "MERGE (p)-[:HAS_SKILL_CATEGORY]->(c)",
+                            Values.parameters(
+                                "personId", personId,
+                                "code", code,
+                                "name", name
+                            )
+                        );
+                        for (String skill : skills) {
+                            if (StrUtil.isBlank(skill)) {
+                                continue;
+                            }
+                            tx.run(
+                                "MATCH (c:SkillCategory {personId: $personId, code: $code}) " +
+                                "MERGE (s:Skill {name: $skill}) " +
+                                "MERGE (c)-[:CONTAINS_SKILL]->(s)",
+                                Values.parameters(
+                                    "personId", personId,
+                                    "code", code,
+                                    "skill", skill
+                                )
+                            );
+                        }
+                    }
+                }
+                return null;
+            });
+        } catch (Exception e) {
+            log.warn("写入个人行业分类图谱失败: personId={}, error={}", personId, e.getMessage());
+        }
+    }
+
+    /**
+     * 读取个人行业判定与技能分类关系
+     */
+    public Map<String, Object> getPersonIndustryClassification(Long personId) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("personId", personId);
+        if (driver == null) {
+            result.put("success", false);
+            Map<String, Object> industryMatch = new HashMap<>();
+            industryMatch.put("industryId", null);
+            industryMatch.put("industryName", null);
+            industryMatch.put("matched", false);
+            result.put("industryMatch", industryMatch);
+            result.put("skillCategories", List.of());
+            return result;
+        }
+
+        try (Session session = driver.session()) {
+            org.neo4j.driver.Result industryRs = session.run(
+                "MATCH (p:Person {id: $personId})-[:BELONGS_TO_INDUSTRY]->(i:Industry) " +
+                "RETURN i.id AS industryId, i.name AS industryName LIMIT 1",
+                Values.parameters("personId", personId)
+            );
+            Map<String, Object> industryMatch = new HashMap<>();
+            if (industryRs.hasNext()) {
+                Record record = industryRs.next();
+                Long industryId = readLong(record.get("industryId"));
+                String industryName = readString(record.get("industryName"));
+                industryMatch.put("industryId", industryId);
+                industryMatch.put("industryName", industryName);
+                industryMatch.put("matched", industryId != null);
+            } else {
+                industryMatch.put("industryId", null);
+                industryMatch.put("industryName", null);
+                industryMatch.put("matched", false);
+            }
+
+            org.neo4j.driver.Result categoryRs = session.run(
+                "MATCH (p:Person {id: $personId})-[:HAS_SKILL_CATEGORY]->(c:SkillCategory) " +
+                "OPTIONAL MATCH (c)-[:CONTAINS_SKILL]->(s:Skill) " +
+                "RETURN c.code AS code, c.name AS name, collect(s.name) AS skills",
+                Values.parameters("personId", personId)
+            );
+            List<Map<String, Object>> categories = new ArrayList<>();
+            while (categoryRs.hasNext()) {
+                Record record = categoryRs.next();
+                String code = readString(record.get("code"));
+                String name = readString(record.get("name"));
+                List<String> skills = record.get("skills").asList(Value::asString).stream()
+                    .filter(StrUtil::isNotBlank)
+                    .distinct()
+                    .toList();
+                Map<String, Object> item = new HashMap<>();
+                item.put("code", code);
+                item.put("name", name);
+                item.put("skills", skills);
+                categories.add(item);
+            }
+
+            result.put("success", true);
+            result.put("industryMatch", industryMatch);
+            result.put("skillCategories", categories);
+            return result;
+        } catch (Exception e) {
+            log.warn("读取个人行业分类图谱失败: personId={}, error={}", personId, e.getMessage());
+            result.put("success", false);
+            Map<String, Object> industryMatch = new HashMap<>();
+            industryMatch.put("industryId", null);
+            industryMatch.put("industryName", null);
+            industryMatch.put("matched", false);
+            result.put("industryMatch", industryMatch);
+            result.put("skillCategories", List.of());
+            return result;
+        }
+    }
+
+    /**
      * 获取职位技能图谱数据
      */
     public Map<String, Object> getJobSkillGraph(Long jobId) {
@@ -448,6 +610,24 @@ public class SkillGraphClient {
 
     private String normalizeSkillLabel(String skill) {
         return StrUtil.trimToNull(skill);
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<String> extractSkillList(Object value) {
+        if (!(value instanceof List<?> rawList)) {
+            return List.of();
+        }
+        List<String> skills = new ArrayList<>();
+        for (Object item : rawList) {
+            if (!(item instanceof String text)) {
+                continue;
+            }
+            String normalized = normalizeSkillLabel(text);
+            if (StrUtil.isNotBlank(normalized)) {
+                skills.add(normalized);
+            }
+        }
+        return skills;
     }
 
     private String defaultCompanyName(Company company) {

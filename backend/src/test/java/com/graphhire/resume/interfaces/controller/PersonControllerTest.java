@@ -1,6 +1,7 @@
 package com.graphhire.resume.interfaces.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
+import com.graphhire.industryskill.application.service.IndustrySkillClassificationService;
 import com.graphhire.resume.application.service.PersonAbilityAssessmentService;
 import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.repository.PersonInfoRepository;
@@ -28,6 +29,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
 @ExtendWith(MockitoExtension.class)
 class PersonControllerTest {
@@ -43,6 +46,9 @@ class PersonControllerTest {
 
     @Mock
     private PersonAbilityAssessmentService personAbilityAssessmentService;
+
+    @Mock
+    private IndustrySkillClassificationService industrySkillClassificationService;
 
     @InjectMocks
     private PersonController personController;
@@ -152,6 +158,12 @@ class PersonControllerTest {
             personInfo.setRealName("斯蒂芬森");
             personInfo.setAvatarUrl("avatar/user_400.png");
             when(personInfoRepository.findByUserId(400L)).thenReturn(Optional.of(personInfo));
+            when(industrySkillClassificationService.classifyPersonSkills(List.of("Java", "Spring Boot"))).thenReturn(
+                Map.of(
+                    "industryMatch", Map.of("industryId", 12L, "industryName", "计算机软件", "matched", true),
+                    "skillCategories", List.of(Map.of("code", "backend", "name", "后端开发", "skills", List.of("Java", "Spring Boot")))
+                )
+            );
 
             var result = personController.getPersonGraph();
 
@@ -159,6 +171,9 @@ class PersonControllerTest {
             assertEquals("斯蒂芬森", result.getData().get("realName"));
             assertEquals("/person/avatar/public/400", result.getData().get("avatarUrl"));
             assertEquals(List.of("Java", "Spring Boot"), result.getData().get("skills"));
+            assertNotNull(result.getData().get("industryMatch"));
+            assertNotNull(result.getData().get("skillCategories"));
+            verify(skillGraphClient).upsertPersonIndustryClassification(eq(400L), eq(12L), eq("计算机软件"), any());
         }
     }
 
@@ -172,6 +187,16 @@ class PersonControllerTest {
             graph.put("skills", List.of("React"));
             graph.put("success", true);
             when(skillGraphClient.getPersonSkillGraph(401L)).thenReturn(graph);
+            Map<String, Object> unmatchedIndustry = new HashMap<>();
+            unmatchedIndustry.put("industryId", null);
+            unmatchedIndustry.put("industryName", null);
+            unmatchedIndustry.put("matched", false);
+            when(industrySkillClassificationService.classifyPersonSkills(List.of("React"))).thenReturn(
+                Map.of(
+                    "industryMatch", unmatchedIndustry,
+                    "skillCategories", List.of()
+                )
+            );
 
             var result = personController.getPersonGraph();
 

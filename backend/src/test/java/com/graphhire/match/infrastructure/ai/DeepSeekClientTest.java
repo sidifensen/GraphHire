@@ -153,6 +153,58 @@ class DeepSeekClientTest {
         assertThat(attempts.get()).isEqualTo(2);
     }
 
+    @Test
+    void classifyIndustryFirstPass_shouldReturnJsonObject() throws Exception {
+        startServer(exchange -> writeResponse(exchange, 200, chatCompletionResponse(
+            "{\"parentIndustryIds\":[1,2],\"reason\":\"技能集中在互联网与金融\"}"
+        )));
+        DeepSeekClient client = createClient();
+
+        Map<String, Object> result = client.classifyIndustryFirstPass(
+            List.of("Java", "Spring Boot", "Redis"),
+            List.of(
+                Map.of("id", 1, "name", "计算机/互联网/通信/电子"),
+                Map.of("id", 2, "name", "会计/金融/银行/保险")
+            )
+        );
+
+        assertThat(result.get("parentIndustryIds").toString()).contains("1", "2");
+    }
+
+    @Test
+    void classifyIndustrySecondPass_shouldReturnJsonObject() throws Exception {
+        startServer(exchange -> writeResponse(exchange, 200, chatCompletionResponse(
+            "{\"industryId\":12,\"industryName\":\"计算机软件\",\"confidence\":0.88}"
+        )));
+        DeepSeekClient client = createClient();
+
+        Map<String, Object> result = client.classifyIndustrySecondPass(
+            List.of("Java", "Spring Boot", "MySQL"),
+            List.of(
+                Map.of("id", 12, "name", "计算机软件"),
+                Map.of("id", 17, "name", "互联网/电子商务")
+            )
+        );
+
+        assertThat(result.get("industryId").toString()).isEqualTo("12");
+        assertThat(result.get("industryName").toString()).isEqualTo("计算机软件");
+    }
+
+    @Test
+    void categorizeSkillsByProfile_shouldReturnCategories() throws Exception {
+        startServer(exchange -> writeResponse(exchange, 200, chatCompletionResponse(
+            "{\"skillCategories\":[{\"code\":\"backend\",\"name\":\"后端开发\",\"skills\":[\"Java\",\"Spring Boot\"]}]}"
+        )));
+        DeepSeekClient client = createClient();
+
+        Map<String, Object> result = client.categorizeSkillsByProfile(
+            List.of("Java", "Spring Boot", "React"),
+            "{\"categories\":[{\"code\":\"backend\",\"name\":\"后端开发\"},{\"code\":\"frontend\",\"name\":\"前端开发\"}]}"
+        );
+
+        assertThat(result.get("skillCategories").toString()).contains("backend", "Java");
+    }
+
     private DeepSeekClient createClient() {
         DeepSeekClient client = new DeepSeekClient();
         ReflectionTestUtils.setField(client, "enabled", true);

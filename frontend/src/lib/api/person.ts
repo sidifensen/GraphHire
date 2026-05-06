@@ -35,6 +35,16 @@ export interface SkillGraph {
   realName?: string | null;
   avatarUrl?: string | null;
   skills?: string[];
+  industryMatch?: {
+    industryId?: number | null;
+    industryName?: string | null;
+    matched?: boolean;
+  };
+  skillCategories?: Array<{
+    code: string;
+    name: string;
+    skills: string[];
+  }>;
   success?: boolean;
   mock?: boolean;
 }
