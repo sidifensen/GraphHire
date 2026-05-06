@@ -26,9 +26,24 @@ class ChatSchemaIT extends BaseControllerIT {
             "SELECT COUNT(*) FROM information_schema.tables WHERE table_name='chat_message'",
             Integer.class
         );
+        Integer imageDetailTableCount = jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM information_schema.tables WHERE table_name='chat_message_image'",
+            Integer.class
+        );
+        Integer resumeDetailTableCount = jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM information_schema.tables WHERE table_name='chat_message_resume'",
+            Integer.class
+        );
+        Integer interviewInviteDetailTableCount = jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM information_schema.tables WHERE table_name='chat_message_interview_invite'",
+            Integer.class
+        );
         assertEquals(1, ownerColumnCount);
         assertEquals(1, conversationTableCount);
         assertEquals(1, messageTableCount);
+        assertEquals(0, imageDetailTableCount);
+        assertEquals(0, resumeDetailTableCount);
+        assertEquals(0, interviewInviteDetailTableCount);
     }
 
     @Test

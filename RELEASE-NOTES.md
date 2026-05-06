@@ -2,6 +2,9 @@
 
 ## 2026-05-06
 
+- refactor: 清理聊天冗余详情子表落地提交：删除 `chat_message_image`、`chat_message_resume`、`chat_message_interview_invite` 三表及对应未使用 PO，保留 `chat_message.ext` 作为统一扩展字段承载
+- feat: 新增迁移脚本 `V2026_05_06_026__drop_unused_chat_message_detail_tables.sql` 并在实库执行删表，确保代码基线与运行库结构一致
+- test: `ChatSchemaIT` 新增“三张冗余详情表不存在”断言并通过，后端 `mvn compile` / `mvn test` 全量通过
 - refactor: 删除未启用且长期空表的聊天详情子表 `chat_message_image`、`chat_message_resume`、`chat_message_interview_invite`，聊天扩展信息继续统一保留在 `chat_message.ext`
 - feat: 新增数据库迁移 `V2026_05_06_026__drop_unused_chat_message_detail_tables.sql`，用于在存量环境幂等清理三张冗余表
 - refactor: 同步更新 `backend/src/main/resources/db/schema.sql`，移除三张冗余聊天详情表基线定义，保持基线与迁移一致
