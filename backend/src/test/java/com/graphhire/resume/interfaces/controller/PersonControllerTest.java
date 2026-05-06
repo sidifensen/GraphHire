@@ -185,7 +185,7 @@ class PersonControllerTest {
             when(personInfoRepository.findByUserId(400L)).thenReturn(Optional.of(personInfo));
             when(positionTypeSkillClassificationService.classifyPersonSkills(List.of("Java", "Spring Boot"), 100101L)).thenReturn(
                 Map.of(
-                    "industryMatch", Map.of("industryId", 12L, "industryName", "计算机软件", "matched", true),
+                    "positionTypeMatch", Map.of("positionTypeId", 100101L, "positionTypeName", "软件开发工程师", "matched", true),
                     "skillCategories", List.of(Map.of("code", "backend", "name", "后端开发", "skills", List.of("Java", "Spring Boot")))
                 )
             );
@@ -196,9 +196,10 @@ class PersonControllerTest {
             assertEquals("斯蒂芬森", result.getData().get("realName"));
             assertEquals("/person/avatar/public/400", result.getData().get("avatarUrl"));
             assertEquals(List.of("Java", "Spring Boot"), result.getData().get("skills"));
-            assertNotNull(result.getData().get("industryMatch"));
+            assertNull(result.getData().get("industryMatch"));
+            assertNotNull(result.getData().get("positionTypeMatch"));
             assertNotNull(result.getData().get("skillCategories"));
-            verify(skillGraphClient).upsertPersonIndustryClassification(eq(400L), eq(12L), eq("计算机软件"), any());
+            verify(skillGraphClient).upsertPersonPositionTypeClassification(eq(400L), eq(100101L), eq("软件开发工程师"), any());
             verify(positionTypeSkillClassificationService).classifyPersonSkills(List.of("Java", "Spring Boot"), 100101L);
         }
     }
@@ -213,13 +214,13 @@ class PersonControllerTest {
             graph.put("skills", List.of("React"));
             graph.put("success", true);
             when(skillGraphClient.getPersonSkillGraph(401L)).thenReturn(graph);
-            Map<String, Object> unmatchedIndustry = new HashMap<>();
-            unmatchedIndustry.put("industryId", null);
-            unmatchedIndustry.put("industryName", null);
-            unmatchedIndustry.put("matched", false);
+            Map<String, Object> unmatchedPositionType = new HashMap<>();
+            unmatchedPositionType.put("positionTypeId", null);
+            unmatchedPositionType.put("positionTypeName", null);
+            unmatchedPositionType.put("matched", false);
             when(positionTypeSkillClassificationService.classifyPersonSkills(List.of("React"), null)).thenReturn(
                 Map.of(
-                    "industryMatch", unmatchedIndustry,
+                    "positionTypeMatch", unmatchedPositionType,
                     "skillCategories", List.of()
                 )
             );

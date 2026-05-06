@@ -41,9 +41,9 @@ type SkillGraphPayload = {
   realName?: string | null;
   avatarUrl?: string | null;
   skills?: string[];
-  industryMatch?: {
-    industryId?: number | null;
-    industryName?: string | null;
+  positionTypeMatch?: {
+    positionTypeId?: number | null;
+    positionTypeName?: string | null;
     matched?: boolean;
   };
   skillCategories?: Array<{
@@ -57,7 +57,7 @@ type SkillGraphPayload = {
 type GraphNodeType = {
   id: string;
   label: string;
-  kind: 'person' | 'skill';
+  kind: 'person' | 'category' | 'skill';
   categoryCode?: string;
   categoryName?: string;
   color: string;
@@ -71,10 +71,17 @@ type GraphLinkType = {
   target: string;
 };
 
+type ForceLinkWithNodes = GraphLinkType & {
+  source?: unknown;
+  target?: unknown;
+};
+
 type GraphData = {
   nodes: NodeObject<GraphNodeType>[];
   links: LinkObject<GraphNodeType, GraphLinkType>[];
 };
+
+type SkillCategory = { code: string; name: string; skills: string[] };
 
 function normalizeSkills(input: unknown): string[] {
   if (!Array.isArray(input)) {
@@ -152,11 +159,50 @@ function colorByCategory(code: string, isDarkMode: boolean): { fill: string; str
   };
 }
 
+function groupSkillsByCategory(skills: string[], skillCategories: SkillCategory[]): SkillCategory[] {
+  const firstCategoryBySkill = new Map<string, { code: string; name: string }>();
+  for (const category of skillCategories) {
+    for (const skill of category.skills) {
+      if (!firstCategoryBySkill.has(skill)) {
+        firstCategoryBySkill.set(skill, { code: category.code, name: category.name });
+      }
+    }
+  }
+
+  const grouped = new Map<string, SkillCategory>();
+  const order: string[] = [];
+  const ensureCategory = (code: string, name: string) => {
+    if (!grouped.has(code)) {
+      grouped.set(code, { code, name, skills: [] });
+      order.push(code);
+    }
+  };
+
+  for (const category of skillCategories) {
+    ensureCategory(category.code, category.name);
+  }
+
+  for (const skill of skills) {
+    const matched = firstCategoryBySkill.get(skill);
+    if (matched) {
+      ensureCategory(matched.code, matched.name);
+      grouped.get(matched.code)?.skills.push(skill);
+      continue;
+    }
+    ensureCategory('uncategorized', '未分类');
+    grouped.get('uncategorized')?.skills.push(skill);
+  }
+
+  return order
+    .map((code) => grouped.get(code))
+    .filter((item): item is SkillCategory => Boolean(item && item.skills.length > 0));
+}
+
 function buildGraphData(
   personId: number,
   personName: string,
   skills: string[],
-  skillCategories: Array<{ code: string; name: string; skills: string[] }>,
+  skillCategories: SkillCategory[],
   isDarkMode: boolean
 ): GraphData {
   const centerNodeId = `person:${personId}`;
@@ -172,39 +218,52 @@ function buildGraphData(
     fy: 0,
   };
 
-  const categoryBySkill = new Map<string, { code: string; name: string }>();
-  for (const category of skillCategories) {
-    for (const skill of category.skills) {
-      if (!categoryBySkill.has(skill)) {
-        categoryBySkill.set(skill, { code: category.code, name: category.name });
-      }
-    }
-  }
+  const groupedCategories = groupSkillsByCategory(skills, skillCategories);
 
-  const skillNodes: NodeObject<GraphNodeType>[] = skills.map((skill) => {
-    const category = categoryBySkill.get(skill);
-    const colors = colorByCategory(category?.code ?? 'uncategorized', isDarkMode);
+  const categoryNodes: NodeObject<GraphNodeType>[] = groupedCategories.map((category) => {
+    const colors = colorByCategory(category.code, isDarkMode);
     return {
-      id: `skill:${skill}`,
-      label: skill,
-      kind: 'skill',
-      categoryCode: category?.code ?? 'uncategorized',
-      categoryName: category?.name ?? '未分类',
+      id: `category:${category.code}`,
+      label: category.name,
+      kind: 'category',
+      categoryCode: category.code,
+      categoryName: category.name,
       color: colors.fill,
       strokeColor: colors.stroke,
       textColor: colors.text,
-      radius: 8,
+      radius: 11,
     };
   });
 
-  const links: LinkObject<GraphNodeType, GraphLinkType>[] = skillNodes.map((node) => ({
+  const skillNodes: NodeObject<GraphNodeType>[] = groupedCategories.flatMap((category) => {
+    const colors = colorByCategory(category.code, isDarkMode);
+    return category.skills.map((skill) => ({
+      id: `skill:${skill}`,
+      label: skill,
+      kind: 'skill',
+      categoryCode: category.code,
+      categoryName: category.name,
+      color: colors.fill,
+      strokeColor: colors.stroke,
+      textColor: colors.text,
+      radius: 7.4,
+    }));
+  });
+
+  const categoryLinks: LinkObject<GraphNodeType, GraphLinkType>[] = categoryNodes.map((node) => ({
     source: centerNodeId,
     target: node.id as string,
   }));
+  const skillLinks: LinkObject<GraphNodeType, GraphLinkType>[] = groupedCategories.flatMap((category) =>
+    category.skills.map((skill) => ({
+      source: `category:${category.code}`,
+      target: `skill:${skill}`,
+    }))
+  );
 
   return {
-    nodes: [personNode, ...skillNodes],
-    links,
+    nodes: [personNode, ...categoryNodes, ...skillNodes],
+    links: [...categoryLinks, ...skillLinks],
   };
 }
 
@@ -223,8 +282,8 @@ function drawNode(node: NodeObject<GraphNodeType>, ctx: CanvasRenderingContext2D
   ctx.lineWidth = node.kind === 'person' ? 3 : 1.5;
   ctx.stroke();
 
-  const fontSize = node.kind === 'person' ? 11 / globalScale : 8 / globalScale;
-  ctx.font = `${node.kind === 'person' ? 800 : 700} ${fontSize}px Manrope, sans-serif`;
+  const fontSize = node.kind === 'person' ? 11 / globalScale : node.kind === 'category' ? 8.6 / globalScale : 7.8 / globalScale;
+  ctx.font = `${node.kind === 'person' ? 800 : node.kind === 'category' ? 800 : 700} ${fontSize}px Manrope, sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = node.textColor ?? (node.kind === 'person' ? '#FFFFFF' : '#1B2A57');
@@ -235,7 +294,7 @@ function drawNode(node: NodeObject<GraphNodeType>, ctx: CanvasRenderingContext2D
 export default function KnowledgeGraph() {
   const [skills, setSkills] = React.useState<string[]>([]);
   const [skillCategories, setSkillCategories] = React.useState<Array<{ code: string; name: string; skills: string[] }>>([]);
-  const [industryName, setIndustryName] = React.useState<string | null>(null);
+  const [positionTypeName, setPositionTypeName] = React.useState<string | null>(null);
   const [assessment, setAssessment] = React.useState<AbilityAssessment | null>(null);
   const [personId, setPersonId] = React.useState<number>(0);
   const [personName, setPersonName] = React.useState<string>('求职者');
@@ -291,11 +350,11 @@ export default function KnowledgeGraph() {
         const nextCategories = normalizeSkillCategories(graph.skillCategories);
         const nextPersonId = Number.isFinite(graph.personId) ? Number(graph.personId) : 0;
         const nextPersonName = graph.realName?.trim() ? graph.realName.trim() : '求职者';
-        const nextIndustryName = graph.industryMatch?.industryName?.trim() ? graph.industryMatch.industryName.trim() : null;
+        const nextPositionTypeName = graph.positionTypeMatch?.positionTypeName?.trim() ? graph.positionTypeMatch.positionTypeName.trim() : null;
 
         setSkills(nextSkills);
         setSkillCategories(nextCategories);
-        setIndustryName(nextIndustryName);
+        setPositionTypeName(nextPositionTypeName);
         setPersonId(nextPersonId);
         setPersonName(nextPersonName);
         setAssessment(assessmentResponse);
@@ -305,7 +364,7 @@ export default function KnowledgeGraph() {
         }
         setSkills([]);
         setSkillCategories([]);
-        setIndustryName(null);
+        setPositionTypeName(null);
         setPersonId(0);
         setPersonName('求职者');
         setAssessment(null);
@@ -336,14 +395,27 @@ export default function KnowledgeGraph() {
     const d3ForceFn = graph.d3Force;
     if (typeof d3ForceFn === 'function') {
       const linkForce = d3ForceFn('link');
-      const linkForceWithDistance = linkForce as unknown as { distance?: (value: number) => unknown } | null;
+      const linkForceWithDistance = linkForce as unknown as { distance?: (value: number | ((link: ForceLinkWithNodes) => number)) => unknown } | null;
       if (linkForceWithDistance && typeof linkForceWithDistance.distance === 'function') {
-        linkForceWithDistance.distance(isMobileViewport ? 186 : 112);
+        linkForceWithDistance.distance((link) => {
+          const sourceCandidate = link.source;
+          const sourceKind =
+            typeof sourceCandidate === 'object' &&
+            sourceCandidate !== null &&
+            'kind' in sourceCandidate &&
+            typeof (sourceCandidate as { kind?: unknown }).kind === 'string'
+              ? (sourceCandidate as { kind: string }).kind
+              : null;
+          if (sourceKind === 'person') {
+            return isMobileViewport ? 122 : 88;
+          }
+          return isMobileViewport ? 94 : 72;
+        });
       }
       const chargeForce = d3ForceFn('charge');
       const chargeForceWithStrength = chargeForce as unknown as { strength?: (value: number) => unknown } | null;
       if (chargeForceWithStrength && typeof chargeForceWithStrength.strength === 'function') {
-        chargeForceWithStrength.strength(isMobileViewport ? -380 : -175);
+        chargeForceWithStrength.strength(isMobileViewport ? -290 : -152);
       }
     }
     graph.d3ReheatSimulation?.();
@@ -359,6 +431,7 @@ export default function KnowledgeGraph() {
 
   const totalScore = safeScore(assessment);
   const skillCount = safeSkillCount(assessment, skills);
+  const categorySummaries = React.useMemo(() => groupSkillsByCategory(skills, skillCategories), [skills, skillCategories]);
 
   const handleResetView = React.useCallback(() => {
     const graph = stageRef.current;
@@ -459,8 +532,23 @@ export default function KnowledgeGraph() {
             <div className="absolute bottom-3 right-3 z-20 text-right md:bottom-5 md:right-5">
               <div className="text-4xl font-black text-primary md:text-6xl">{totalScore}</div>
               <div className="mt-0.5 text-sm font-extrabold uppercase tracking-[0.2em] text-on-surface/85">综合分</div>
-              {industryName ? <div className="mt-1 text-sm font-bold text-on-surface">{industryName}</div> : null}
+              {positionTypeName ? <div className="mt-1 text-sm font-bold text-on-surface">{positionTypeName}</div> : null}
               <div className="mt-1.5 text-base font-black text-on-surface md:text-lg">{skillCount} 知识节点</div>
+              <div className="mt-2 text-xs font-extrabold uppercase tracking-[0.18em] text-on-surface/80">技能分类</div>
+              {categorySummaries.length > 0 ? (
+                <div className="mt-1.5 flex max-w-[260px] flex-wrap justify-end gap-1.5">
+                  {categorySummaries.map((category) => (
+                    <span
+                      key={`category-summary-${category.code}`}
+                      className="rounded-full border border-surface-mid bg-surface-lowest/85 px-2 py-0.5 text-xs font-semibold text-on-surface"
+                    >
+                      {category.name} · {category.skills.length}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-1 text-xs text-on-surface-variant">暂无分类</div>
+              )}
             </div>
           </section>
         </div>

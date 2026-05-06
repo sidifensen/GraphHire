@@ -141,24 +141,29 @@ public class PersonController {
         Long preferredPositionTypeId = personInfo == null ? null : personInfo.getDefaultPositionTypeId();
         Map<String, Object> classified = positionTypeSkillClassificationService.classifyPersonSkills(skills, preferredPositionTypeId);
         @SuppressWarnings("unchecked")
-        Map<String, Object> industryMatch = (Map<String, Object>) classified.get("industryMatch");
+        Map<String, Object> positionTypeMatch = (Map<String, Object>) classified.get("positionTypeMatch");
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> skillCategories = (List<Map<String, Object>>) classified.get("skillCategories");
-        if (industryMatch == null) {
-            Map<String, Object> fallbackIndustry = new java.util.HashMap<>();
-            fallbackIndustry.put("industryId", null);
-            fallbackIndustry.put("industryName", null);
-            fallbackIndustry.put("matched", false);
-            graph.put("industryMatch", fallbackIndustry);
+        if (positionTypeMatch == null) {
+            Map<String, Object> fallbackPositionType = new java.util.HashMap<>();
+            fallbackPositionType.put("positionTypeId", null);
+            fallbackPositionType.put("positionTypeName", null);
+            fallbackPositionType.put("matched", false);
+            graph.put("positionTypeMatch", fallbackPositionType);
         } else {
-            graph.put("industryMatch", industryMatch);
+            graph.put("positionTypeMatch", positionTypeMatch);
         }
         graph.put("skillCategories", skillCategories == null ? List.of() : skillCategories);
-        if (industryMatch != null) {
-            Long industryId = toLong(industryMatch.get("industryId"));
-            String industryName = industryMatch.get("industryName") == null ? null : String.valueOf(industryMatch.get("industryName"));
-            skillGraphClient.upsertPersonIndustryClassification(userId, industryId, industryName, skillCategories == null ? List.of() : skillCategories);
-        }
+        Long positionTypeId = positionTypeMatch == null ? null : toLong(positionTypeMatch.get("positionTypeId"));
+        String positionTypeName = positionTypeMatch == null || positionTypeMatch.get("positionTypeName") == null
+            ? null
+            : String.valueOf(positionTypeMatch.get("positionTypeName"));
+        skillGraphClient.upsertPersonPositionTypeClassification(
+            userId,
+            positionTypeId,
+            positionTypeName,
+            skillCategories == null ? List.of() : skillCategories
+        );
 
         return Result.success(graph);
     }

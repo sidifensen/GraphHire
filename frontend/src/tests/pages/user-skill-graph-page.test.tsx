@@ -29,9 +29,9 @@ describe('User Skill Graph page', () => {
       realName: '斯蒂芬森',
       avatarUrl: '/person/avatar/public/99',
       skills: ['Java', 'Spring Boot', 'React'],
-      industryMatch: {
-        industryId: 12,
-        industryName: '计算机软件',
+      positionTypeMatch: {
+        positionTypeId: 100101,
+        positionTypeName: '软件开发工程师',
         matched: true,
       },
       skillCategories: [
@@ -66,8 +66,11 @@ describe('User Skill Graph page', () => {
     expect(screen.getAllByTestId('force-graph-stage').length).toBeGreaterThan(0);
     expect(screen.getByText('86')).toBeInTheDocument();
     expect(screen.getByText('综合分')).toBeInTheDocument();
-    expect(screen.getByText('计算机软件')).toBeInTheDocument();
+    expect(screen.getByText('软件开发工程师')).toBeInTheDocument();
     expect(screen.getByText('3 知识节点')).toBeInTheDocument();
+    expect(screen.getByText('技能分类')).toBeInTheDocument();
+    expect(screen.getByText('后端开发 · 2')).toBeInTheDocument();
+    expect(screen.getByText('前端开发 · 1')).toBeInTheDocument();
     expect(screen.queryByText('斯蒂芬森')).not.toBeInTheDocument();
     expect(screen.queryByText('Top 5% 职场精英')).not.toBeInTheDocument();
     expect(screen.queryByText(/Java · Spring Boot · React/)).not.toBeInTheDocument();
@@ -79,9 +82,9 @@ describe('User Skill Graph page', () => {
       realName: null,
       avatarUrl: null,
       skills: [],
-      industryMatch: {
-        industryId: null,
-        industryName: null,
+      positionTypeMatch: {
+        positionTypeId: null,
+        positionTypeName: null,
         matched: false,
       },
       skillCategories: [],
@@ -110,6 +113,8 @@ describe('User Skill Graph page', () => {
     });
 
     expect(screen.getByText('0 知识节点')).toBeInTheDocument();
+    expect(screen.getByText('技能分类')).toBeInTheDocument();
+    expect(screen.getByText('暂无分类')).toBeInTheDocument();
     expect(screen.queryByText('求职者')).not.toBeInTheDocument();
     expect(screen.queryByText('暂无技能标签')).not.toBeInTheDocument();
   });

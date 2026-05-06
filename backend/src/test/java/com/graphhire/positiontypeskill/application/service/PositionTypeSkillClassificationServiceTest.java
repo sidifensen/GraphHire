@@ -1,7 +1,5 @@
 package com.graphhire.positiontypeskill.application.service;
 
-import com.graphhire.industry.application.service.IndustryAppService;
-import com.graphhire.industry.domain.model.Industry;
 import com.graphhire.positiontypeskill.domain.model.IndustrySkillProfile;
 import com.graphhire.positiontypeskill.application.service.IndustrySkillProfileBootstrapService;
 import com.graphhire.match.infrastructure.ai.DeepSeekClient;
@@ -30,9 +28,6 @@ import static org.mockito.Mockito.when;
 class PositionTypeSkillClassificationServiceTest {
 
     @Mock
-    private IndustryAppService industryAppService;
-
-    @Mock
     private IndustrySkillProfileAppService profileAppService;
 
     @Mock
@@ -51,25 +46,9 @@ class PositionTypeSkillClassificationServiceTest {
     private PositionTypeSkillClassificationService service;
 
     @Test
-    @DisplayName("按两阶段AI筛选并返回技能分类")
-    void classifyPersonSkills_ShouldReturnIndustryAndCategories() {
-        Industry parent = new Industry();
-        parent.setId(1L);
-        parent.setName("计算机/互联网/通信/电子");
-        parent.setLevel(1);
-        parent.setEnabled(1);
-
-        Industry child = new Industry();
-        child.setId(12L);
-        child.setName("计算机软件");
-        child.setParentId(1L);
-        child.setLevel(2);
-        child.setEnabled(1);
-
+    @DisplayName("技能命中职位类型后返回职位匹配与技能分类")
+    void classifyPersonSkills_ShouldReturnPositionTypeAndCategories() {
         when(skillTagAppService.normalizeSkills(List.of("Java", "Spring Boot"))).thenReturn(List.of("Java", "Spring Boot"));
-        when(industryAppService.listIndustries(1)).thenReturn(List.of(parent, child));
-        when(deepSeekClient.classifyIndustryFirstPass(anyList(), anyList())).thenReturn(Map.of("parentIndustryIds", List.of(1)));
-        when(deepSeekClient.classifyIndustrySecondPass(anyList(), anyList())).thenReturn(Map.of("industryId", 12, "industryName", "计算机软件"));
         PositionType leafPositionType = new PositionType();
         leafPositionType.setId(100101L);
         leafPositionType.setName("软件开发工程师");
@@ -78,51 +57,18 @@ class PositionTypeSkillClassificationServiceTest {
         leafPositionType.setDeleted(0);
         when(positionTypeAppService.listAll()).thenReturn(List.of(leafPositionType));
 
-        IndustrySkillProfile profile = new IndustrySkillProfile();
-        profile.setPositionTypeId(100101L);
-        profile.setProfileJson("{\"categories\":[{\"code\":\"backend\",\"name\":\"后端开发\"}]}");
-        when(profileAppService.getByPositionTypeId(100101L)).thenReturn(Optional.of(profile));
-
-        Map<String, Object> aiCategory = new HashMap<>();
-        aiCategory.put("skillCategories", List.of(
-            Map.of("code", "backend", "name", "后端开发", "skills", List.of("Java", "Spring Boot"))
-        ));
-        when(deepSeekClient.categorizeSkillsByProfile(anyList(), anyString())).thenReturn(aiCategory);
-
         Map<String, Object> result = service.classifyPersonSkills(List.of("Java", "Spring Boot"));
 
-        assertNotNull(result.get("industryMatch"));
-        Map<String, Object> industryMatch = (Map<String, Object>) result.get("industryMatch");
-        assertEquals(12L, ((Number) industryMatch.get("industryId")).longValue());
-        assertEquals("计算机软件", industryMatch.get("industryName"));
-        assertEquals(true, industryMatch.get("matched"));
         Map<String, Object> positionTypeMatch = (Map<String, Object>) result.get("positionTypeMatch");
-        assertEquals(100101L, ((Number) positionTypeMatch.get("positionTypeId")).longValue());
-        assertEquals("软件开发工程师", positionTypeMatch.get("positionTypeName"));
-        assertEquals(true, positionTypeMatch.get("matched"));
+        assertEquals(false, positionTypeMatch.get("matched"));
+        assertEquals(null, positionTypeMatch.get("positionTypeId"));
         assertNotNull(result.get("skillCategories"));
     }
 
     @Test
-    @DisplayName("AI返回空skills时回退到首分类承接全部技能")
+    @DisplayName("存在默认职位且AI返回空skills时回退到首分类承接全部技能")
     void classifyPersonSkills_WhenAiReturnsEmptySkills_ShouldFallbackToFirstCategory() {
-        Industry parent = new Industry();
-        parent.setId(1L);
-        parent.setName("计算机/互联网/通信/电子");
-        parent.setLevel(1);
-        parent.setEnabled(1);
-
-        Industry child = new Industry();
-        child.setId(12L);
-        child.setName("计算机软件");
-        child.setParentId(1L);
-        child.setLevel(2);
-        child.setEnabled(1);
-
         when(skillTagAppService.normalizeSkills(List.of("Java", "Spring Boot"))).thenReturn(List.of("Java", "Spring Boot"));
-        when(industryAppService.listIndustries(1)).thenReturn(List.of(parent, child));
-        when(deepSeekClient.classifyIndustryFirstPass(anyList(), anyList())).thenReturn(Map.of("parentIndustryIds", List.of(1)));
-        when(deepSeekClient.classifyIndustrySecondPass(anyList(), anyList())).thenReturn(Map.of("industryId", 12, "industryName", "计算机软件"));
 
         PositionType leafPositionType = new PositionType();
         leafPositionType.setId(100101L);
@@ -144,7 +90,7 @@ class PositionTypeSkillClassificationServiceTest {
         ));
         when(deepSeekClient.categorizeSkillsByProfile(anyList(), anyString())).thenReturn(aiCategory);
 
-        Map<String, Object> result = service.classifyPersonSkills(List.of("Java", "Spring Boot"));
+        Map<String, Object> result = service.classifyPersonSkills(List.of("Java", "Spring Boot"), 100101L);
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> categories = (List<Map<String, Object>>) result.get("skillCategories");
         assertEquals(2, categories.size());
@@ -160,9 +106,6 @@ class PositionTypeSkillClassificationServiceTest {
 
         Map<String, Object> result = service.classifyPersonSkills(List.of());
 
-        Map<String, Object> industryMatch = (Map<String, Object>) result.get("industryMatch");
-        assertEquals(false, industryMatch.get("matched"));
-        assertEquals(null, industryMatch.get("industryId"));
         Map<String, Object> positionTypeMatch = (Map<String, Object>) result.get("positionTypeMatch");
         assertEquals(false, positionTypeMatch.get("matched"));
         assertEquals(null, positionTypeMatch.get("positionTypeId"));

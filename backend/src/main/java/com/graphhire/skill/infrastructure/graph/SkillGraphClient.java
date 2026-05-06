@@ -141,8 +141,17 @@ public class SkillGraphClient {
         }
 
         try (Session session = driver.session()) {
-            String cypher = buildPersonSkillCypher(personId, skills);
-            session.run(cypher);
+            // 重建模式：每次按最新简历技能覆盖旧的 HAS_SKILL 关系，避免历史解析累计污染图谱。
+            session.writeTransaction(tx -> {
+                tx.run(
+                    "MERGE (p:Person {id: $personId}) " +
+                    "WITH p OPTIONAL MATCH (p)-[r:HAS_SKILL]->(:Skill) DELETE r",
+                    Values.parameters("personId", personId)
+                );
+                String cypher = buildPersonSkillCypher(personId, skills);
+                tx.run(cypher);
+                return null;
+            });
             log.info("为人员 {} 构建技能图谱，包含 {} 项技能", personId, skills.size());
         } catch (Exception e) {
             log.error("为人员 {} 构建技能图谱失败: {}", personId, e.getMessage());
@@ -314,16 +323,16 @@ public class SkillGraphClient {
     }
 
     /**
-     * 写入个人行业判定与技能分类关系
+     * 写入个人职位类型判定与技能分类关系
      */
-    public void upsertPersonIndustryClassification(
+    public void upsertPersonPositionTypeClassification(
         Long personId,
-        Long industryId,
-        String industryName,
+        Long positionTypeId,
+        String positionTypeName,
         List<Map<String, Object>> skillCategories
     ) {
         if (driver == null || personId == null) {
-            log.info("跳过个人行业分类落图: driverAvailable={}, personId={}", driver != null, personId);
+            log.info("跳过个人职位类型分类落图: driverAvailable={}, personId={}", driver != null, personId);
             return;
         }
 
@@ -331,7 +340,7 @@ public class SkillGraphClient {
             session.writeTransaction(tx -> {
                 tx.run(
                     "MERGE (p:Person {id: $personId}) " +
-                    "WITH p OPTIONAL MATCH (p)-[r:BELONGS_TO_INDUSTRY]->(:Industry) DELETE r",
+                    "WITH p OPTIONAL MATCH (p)-[r:BELONGS_TO_POSITION_TYPE]->(:PositionType) DELETE r",
                     Values.parameters("personId", personId)
                 );
                 tx.run(
@@ -342,16 +351,16 @@ public class SkillGraphClient {
                     Values.parameters("personId", personId)
                 );
 
-                if (industryId != null) {
+                if (positionTypeId != null) {
                     tx.run(
                         "MATCH (p:Person {id: $personId}) " +
-                        "MERGE (i:Industry {id: $industryId}) " +
-                        "SET i.name = $industryName " +
-                        "MERGE (p)-[:BELONGS_TO_INDUSTRY]->(i)",
+                        "MERGE (t:PositionType {id: $positionTypeId}) " +
+                        "SET t.name = $positionTypeName " +
+                        "MERGE (p)-[:BELONGS_TO_POSITION_TYPE]->(t)",
                         Values.parameters(
                             "personId", personId,
-                            "industryId", industryId,
-                            "industryName", StrUtil.blankToDefault(industryName, "未命名行业")
+                            "positionTypeId", positionTypeId,
+                            "positionTypeName", StrUtil.blankToDefault(positionTypeName, "未命名职位类型")
                         )
                     );
                 }
@@ -395,7 +404,7 @@ public class SkillGraphClient {
                 return null;
             });
         } catch (Exception e) {
-            log.warn("写入个人行业分类图谱失败: personId={}, error={}", personId, e.getMessage());
+            log.warn("写入个人职位类型分类图谱失败: personId={}, error={}", personId, e.getMessage());
         }
     }
 

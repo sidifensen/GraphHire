@@ -18,6 +18,10 @@
 - refactor: 简历管理页上传/重解析/设默认统一改为 shadcn 风格确认弹窗（含复选框），替换原生浏览器确认框
 - test: 补充并通过设默认刷新开关相关前后端测试，覆盖 `refreshAllMatches` 透传与关闭刷新分支
 - fix: 修复简历管理确认弹窗层级与渲染异常，改为项目内自定义弹窗实现（高层级遮罩 + 实体白底弹层），避免页面透明但弹层显示错位问题
+- refactor: 个人图谱匹配链路去行业化：`/person/graph` 不再返回 `industryMatch`，仅保留 `positionTypeMatch + skillCategories`，并改为仅基于 `public.position_type_skill_profile` 分类
+- refactor: `PositionTypeSkillClassificationService` 移除两阶段行业筛选逻辑（`classifyIndustryFirstPass/SecondPass`），默认路径仅按技能命中职位类型后读取职位类型画像分类
+- refactor: 图数据库分类关系改为 `BELONGS_TO_POSITION_TYPE`，个人图谱落图接口改为 `upsertPersonPositionTypeClassification`
+- test: 更新个人图谱与职位类型分类相关后端测试，覆盖“无 industryMatch 返回”的新契约与职位类型分类路径
 
 - fix: 认证持久化改造，后端新增官方 `sa-token-redis-jackson` 依赖并接入 Redis 持久化，修复后端重启后前端登录态失效问题
 - refactor: 认证续期策略对齐 Sa-Token 官方会话模型（`timeout/active-timeout/auto-renew`），移除项目内非官方 `allow-refresh-token` / `refresh-token-timeout` 配置

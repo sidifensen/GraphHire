@@ -138,15 +138,15 @@ class SkillGraphClientTest {
     }
 
     @Test
-    @DisplayName("无驱动时写入个人行业分类不抛异常")
-    void upsertPersonIndustryClassification_WhenDriverUnavailable_ShouldNotThrow() {
+    @DisplayName("无驱动时写入个人职位类型分类不抛异常")
+    void upsertPersonPositionTypeClassification_WhenDriverUnavailable_ShouldNotThrow() {
         SkillGraphClient client = new SkillGraphClient();
 
         List<Map<String, Object>> categories = List.of(
             Map.of("code", "backend", "name", "后端开发", "skills", List.of("Java", "Spring Boot"))
         );
 
-        assertDoesNotThrow(() -> client.upsertPersonIndustryClassification(1L, 12L, "计算机软件", categories));
+        assertDoesNotThrow(() -> client.upsertPersonPositionTypeClassification(1L, 100101L, "软件开发工程师", categories));
     }
 
     @Test

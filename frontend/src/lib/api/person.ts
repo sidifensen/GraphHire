@@ -37,9 +37,9 @@ export interface SkillGraph {
   realName?: string | null;
   avatarUrl?: string | null;
   skills?: string[];
-  industryMatch?: {
-    industryId?: number | null;
-    industryName?: string | null;
+  positionTypeMatch?: {
+    positionTypeId?: number | null;
+    positionTypeName?: string | null;
     matched?: boolean;
   };
   skillCategories?: Array<{
