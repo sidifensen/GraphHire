@@ -1,6 +1,11 @@
-# Release Notes
+﻿# Release Notes
 
 ## 2026-05-06
+
+- refactor: 删除 `position_type.code` 冗余字段，新增迁移 `V2026_05_06_028__drop_position_type_code_column.sql` 并同步更新 `schema.sql` 与 `V2026_05_06_027__add_position_type_comments.sql`
+- refactor: 清理职位类型后端 `code/nextCode` 链路（PositionType/PO/Repository/Mapper/AppService/Admin DTO）并移除管理端职位类型详情“编码”展示
+- refactor: 调整职位类型 seed SQL 与生成脚本，`INSERT` 去除 `code` 列，幂等冲突键由 `ON CONFLICT (code)` 改为 `ON CONFLICT (id)`
+- test: 更新职位类型相关测试断言与数据（`JobSchemaSqlTest`、`PositionTypeSeedSqlTest`、`PositionTypeAppServiceTest`、`AdminAppServiceTest`、`admin-position-types-page.test.tsx`），前后端全量构建与测试通过
 
 - refactor: 清理聊天冗余详情子表落地提交：删除 `chat_message_image`、`chat_message_resume`、`chat_message_interview_invite` 三表及对应未使用 PO，保留 `chat_message.ext` 作为统一扩展字段承载
 - feat: 新增迁移脚本 `V2026_05_06_026__drop_unused_chat_message_detail_tables.sql` 并在实库执行删表，确保代码基线与运行库结构一致
@@ -317,3 +322,4 @@
 - feat: 管理端新增行业技能分类初始化接口：`POST /admin/industry-skill-profile/bootstrap` 与 `POST /admin/industry-skill-profile/bootstrap/{industryId}`
 - feat: 用户端图谱页接入行业匹配与技能分类结果，技能节点按分类着色并展示行业名称
 - test: 新增并通过行业技能配置、分类服务、图数据库分类落图、管理端初始化接口相关单测；前后端全量构建与测试通过
+

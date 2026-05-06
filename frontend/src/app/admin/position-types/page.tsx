@@ -336,7 +336,7 @@ function NodeDetailPanel({
       <h3 className="mb-4 text-base font-bold">节点详情</h3>
       {selectedNode ? (
         <div className="space-y-4">
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3">
             <label className="text-sm">
               <span className="mb-1 block text-outline">名称</span>
               <input
@@ -345,10 +345,6 @@ function NodeDetailPanel({
                 className="w-full rounded-lg border border-outline-variant/30 px-3 py-2"
               />
             </label>
-            <div className="text-sm">
-              <span className="mb-1 block text-outline">编码</span>
-              <div className="rounded-lg border border-outline-variant/30 bg-slate-50 px-3 py-2">{selectedNode.code}</div>
-            </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <button type="button" className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-semibold" onClick={() => void onSaveName()}>保存名称</button>

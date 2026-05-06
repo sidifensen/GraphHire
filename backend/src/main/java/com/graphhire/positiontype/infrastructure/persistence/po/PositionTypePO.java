@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 public class PositionTypePO {
     @TableId(type = IdType.AUTO)
     private Long id;
-    private Long code;
     private String name;
     @TableField("parent_id")
     private Long parentId;
@@ -31,14 +30,6 @@ public class PositionTypePO {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Long getCode() {
-        return code;
-    }
-
-    public void setCode(Long code) {
-        this.code = code;
     }
 
     public String getName() {
@@ -105,4 +96,3 @@ public class PositionTypePO {
         this.updateTime = updateTime;
     }
 }
-

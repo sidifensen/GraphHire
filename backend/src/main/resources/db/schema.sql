@@ -260,7 +260,6 @@ CREATE INDEX idx_skill_tag_synonyms ON skill_tag USING GIN (synonyms);
 CREATE TABLE position_type
 (
     id          BIGSERIAL PRIMARY KEY,
-    code        BIGINT       NOT NULL UNIQUE,
     name        VARCHAR(100) NOT NULL,
     parent_id   BIGINT,
     level       SMALLINT     NOT NULL,
@@ -276,7 +275,6 @@ CREATE TABLE position_type
 
 COMMENT ON TABLE position_type IS '职位类型树表：存储岗位类别层级（一级/二级/三级）';
 COMMENT ON COLUMN position_type.id IS '主键ID';
-COMMENT ON COLUMN position_type.code IS '职位类型业务编码（外部同步编码）';
 COMMENT ON COLUMN position_type.name IS '职位类型名称';
 COMMENT ON COLUMN position_type.parent_id IS '父级职位类型ID（根节点为NULL）';
 COMMENT ON COLUMN position_type.level IS '层级：1-一级 2-二级 3-三级';

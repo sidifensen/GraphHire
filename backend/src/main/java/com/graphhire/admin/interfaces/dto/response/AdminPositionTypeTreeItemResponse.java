@@ -5,7 +5,6 @@ import java.util.List;
 
 public class AdminPositionTypeTreeItemResponse {
     private Long id;
-    private Long code;
     private String name;
     private Long parentId;
     private Integer level;
@@ -21,14 +20,6 @@ public class AdminPositionTypeTreeItemResponse {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Long getCode() {
-        return code;
-    }
-
-    public void setCode(Long code) {
-        this.code = code;
     }
 
     public String getName() {
@@ -95,4 +86,3 @@ public class AdminPositionTypeTreeItemResponse {
         this.children = children == null ? new ArrayList<>() : children;
     }
 }
-

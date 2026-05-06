@@ -51,7 +51,6 @@ public class PositionTypeAppService {
         item.setStatus(status == null ? 1 : status);
         item.setDeleted(0);
         item.setSortNo(nextSiblingSortNo(all, parentId));
-        item.setCode(resolveNextCode());
         return positionTypeRepository.save(item);
     }
 
@@ -209,12 +208,4 @@ public class PositionTypeAppService {
         return name.trim();
     }
 
-    private Long resolveNextCode() {
-        Long nextCode = positionTypeRepository.nextCode();
-        if (nextCode == null || nextCode <= 0) {
-            return System.currentTimeMillis();
-        }
-        return nextCode;
-    }
 }
-

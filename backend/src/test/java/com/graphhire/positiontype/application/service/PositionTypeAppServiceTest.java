@@ -126,7 +126,6 @@ class PositionTypeAppServiceTest {
     private PositionType node(Long id, String name, Long parentId, int level, int status, int sortNo) {
         PositionType item = new PositionType();
         item.setId(id);
-        item.setCode(id);
         item.setName(name);
         item.setParentId(parentId);
         item.setLevel(level);
@@ -135,4 +134,3 @@ class PositionTypeAppServiceTest {
         return item;
     }
 }
-

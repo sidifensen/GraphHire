@@ -20,8 +20,8 @@ class JobSchemaSqlTest {
                 "必须包含 position_type 表"
         );
         assertTrue(
-                schemaSql.contains("code        BIGINT       NOT NULL UNIQUE"),
-                "position_type.code 必须唯一"
+                !schemaSql.contains("code        BIGINT       NOT NULL UNIQUE"),
+                "position_type.code 不应继续存在"
         );
         assertTrue(
                 schemaSql.contains("CONSTRAINT chk_position_type_level CHECK (level IN (1, 2, 3))"),

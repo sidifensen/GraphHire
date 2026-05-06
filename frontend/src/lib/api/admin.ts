@@ -163,7 +163,6 @@ export type IndustrySortDir = 'asc' | 'desc';
 
 export interface AdminPositionTypeItem {
   id: number;
-  code: number;
   name: string;
   parentId: number | null;
   level: number;

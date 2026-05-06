@@ -10,7 +10,6 @@ const {
   getPositionTypeTree: vi.fn().mockResolvedValue([
     {
       id: 1000000,
-      code: 1000000,
       name: '技术',
       parentId: null,
       level: 1,
@@ -20,7 +19,6 @@ const {
       children: [
         {
           id: 1001000,
-          code: 1001000,
           name: '后端开发',
           parentId: 1000000,
           level: 2,
@@ -30,7 +28,6 @@ const {
           children: [
             {
               id: 1001002,
-              code: 1001002,
               name: 'Java',
               parentId: 1001000,
               level: 3,
@@ -41,7 +38,6 @@ const {
             },
             {
               id: 1001003,
-              code: 1001003,
               name: 'Go',
               parentId: 1001000,
               level: 3,
@@ -56,7 +52,6 @@ const {
     },
     {
       id: 2000000,
-      code: 2000000,
       name: '产品',
       parentId: null,
       level: 1,
@@ -66,7 +61,6 @@ const {
       children: [
         {
           id: 2001000,
-          code: 2001000,
           name: '产品经理',
           parentId: 2000000,
           level: 2,

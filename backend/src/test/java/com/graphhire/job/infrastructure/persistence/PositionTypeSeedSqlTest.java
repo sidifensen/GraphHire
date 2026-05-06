@@ -19,6 +19,6 @@ class PositionTypeSeedSqlTest {
         assertTrue(sql.contains("后端开发"));
         assertTrue(sql.contains("Java"));
         assertTrue(sql.contains("parent_id"));
-        assertTrue(sql.contains("ON CONFLICT (code) DO UPDATE"));
+        assertTrue(sql.contains("ON CONFLICT (id) DO UPDATE"));
     }
 }

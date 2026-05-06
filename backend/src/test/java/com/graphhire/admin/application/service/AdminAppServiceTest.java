@@ -330,7 +330,6 @@ class AdminAppServiceTest {
         void getPositionTypeTreeWithFilters() {
             PositionType root = new PositionType();
             root.setId(1000000L);
-            root.setCode(1000000L);
             root.setName("技术");
             root.setLevel(1);
             root.setStatus(1);
@@ -338,7 +337,6 @@ class AdminAppServiceTest {
 
             PositionType child = new PositionType();
             child.setId(1001000L);
-            child.setCode(1001000L);
             child.setName("后端开发");
             child.setParentId(1000000L);
             child.setLevel(2);
@@ -347,7 +345,6 @@ class AdminAppServiceTest {
 
             PositionType leaf = new PositionType();
             leaf.setId(1001002L);
-            leaf.setCode(1001002L);
             leaf.setName("Java");
             leaf.setParentId(1001000L);
             leaf.setLevel(3);

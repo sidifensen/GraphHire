@@ -45,11 +45,6 @@ public class PositionTypeRepositoryImpl implements PositionTypeRepository {
         return positionType;
     }
 
-    @Override
-    public Long nextCode() {
-        return positionTypeMapper.nextCode();
-    }
-
     private PositionTypePO toPO(PositionType positionType) {
         PositionTypePO po = new PositionTypePO();
         BeanUtil.copyProperties(positionType, po);
@@ -62,4 +57,3 @@ public class PositionTypeRepositoryImpl implements PositionTypeRepository {
         return item;
     }
 }
-

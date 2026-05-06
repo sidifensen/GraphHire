@@ -1075,7 +1075,6 @@ public class AdminAppService {
     private AdminPositionTypeTreeItemResponse toAdminPositionTypeTreeItem(PositionType positionType) {
         AdminPositionTypeTreeItemResponse item = new AdminPositionTypeTreeItemResponse();
         item.setId(positionType.getId());
-        item.setCode(positionType.getCode());
         item.setName(positionType.getName());
         item.setParentId(positionType.getParentId());
         item.setLevel(positionType.getLevel());

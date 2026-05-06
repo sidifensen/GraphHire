@@ -1,0 +1,1 @@
+ALTER TABLE position_type DROP COLUMN IF EXISTS code;

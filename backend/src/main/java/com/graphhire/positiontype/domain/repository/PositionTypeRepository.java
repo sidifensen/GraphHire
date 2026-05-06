@@ -11,7 +11,4 @@ public interface PositionTypeRepository {
     List<PositionType> findAllNotDeletedOrdered();
 
     PositionType save(PositionType positionType);
-
-    Long nextCode();
 }
-

@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 
 public class PositionType {
     private Long id;
-    private Long code;
     private String name;
     private Long parentId;
     private Integer level;
@@ -20,14 +19,6 @@ public class PositionType {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Long getCode() {
-        return code;
-    }
-
-    public void setCode(Long code) {
-        this.code = code;
     }
 
     public String getName() {
@@ -94,4 +85,3 @@ public class PositionType {
         this.updateTime = updateTime;
     }
 }
-
