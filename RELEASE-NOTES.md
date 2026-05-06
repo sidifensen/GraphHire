@@ -370,3 +370,10 @@
 - feat: 管理端新增行业技能分类初始化接口：`POST /admin/industry-skill-profile/bootstrap` 与 `POST /admin/industry-skill-profile/bootstrap/{industryId}`
 - feat: 用户端图谱页接入行业匹配与技能分类结果，技能节点按分类着色并展示行业名称
 - test: 新增并通过行业技能配置、分类服务、图数据库分类落图、管理端初始化接口相关单测；前后端全量构建与测试通过
+
+## 2026-05-07
+
+- fix: 个人图谱查询 `/person/graph` 改为仅读取 Memgraph 已落图的职位分类结果，不再在查询链路实时触发 AI 技能分类，避免刷新页面重复调用 AI
+- fix: 图谱构建阶段（默认简历切换/解析后重建）新增职位分类落图流程：按技能分类结果写入 `positionTypeMatch + skillCategories`，将分类计算前置到简历变更事件
+- fix: 分类结果写入前补齐“未分配技能”归并逻辑（优先并入首分类），避免分类漏项导致前端长期出现 `未分类` 兜底节点
+- test: 新增并更新 `PersonControllerTest`、`GraphBuildServiceTest`、`SkillGraphClientTest`，覆盖“查询不触发 AI、构建时落图、分类读取接口”回归场景；后端 `mvn compile`、`mvn test` 全通过

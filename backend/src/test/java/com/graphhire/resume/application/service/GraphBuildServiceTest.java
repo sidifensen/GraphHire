@@ -1,8 +1,11 @@
 package com.graphhire.resume.application.service;
 
 import com.graphhire.job.domain.model.Job;
+import com.graphhire.positiontypeskill.application.service.PositionTypeSkillClassificationService;
+import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.model.Resume;
 import com.graphhire.resume.domain.vo.ParseStatus;
+import com.graphhire.resume.domain.repository.PersonInfoRepository;
 import com.graphhire.skill.infrastructure.graph.SkillGraphClient;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -15,6 +18,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -25,6 +30,12 @@ class GraphBuildServiceTest {
 
     @Mock
     private SkillGraphClient skillGraphClient;
+
+    @Mock
+    private PositionTypeSkillClassificationService positionTypeSkillClassificationService;
+
+    @Mock
+    private PersonInfoRepository personInfoRepository;
 
     @InjectMocks
     private GraphBuildService graphBuildService;
@@ -42,12 +53,35 @@ class GraphBuildServiceTest {
             resume.setUserId(100L);
             resume.setStatus(ParseStatus.SUCCESS);
             resume.setParseResult("{\"skills\": [\"Java\", \"Python\", \"Spring\"]}");
+            PersonInfo personInfo = new PersonInfo();
+            personInfo.setUserId(100L);
+            personInfo.setDefaultPositionTypeId(100101L);
+            when(personInfoRepository.findByUserId(100L)).thenReturn(Optional.of(personInfo));
+            when(positionTypeSkillClassificationService.classifyPersonSkills(
+                Arrays.asList("Java", "Python", "Spring"), 100101L
+            )).thenReturn(
+                Map.of(
+                    "positionTypeMatch", Map.of("positionTypeId", 100101L, "positionTypeName", "Java工程师", "matched", true),
+                    "skillCategories", List.of(
+                        Map.of("code", "java_core", "name", "Java核心", "skills", List.of("Java", "Python", "Spring"))
+                    )
+                )
+            );
 
             // When
             graphBuildService.buildGraphForResume(resume);
 
             // Then
             verify(skillGraphClient).buildPersonSkillGraph(eq(100L), eq(Arrays.asList("Java", "Python", "Spring")));
+            verify(positionTypeSkillClassificationService).classifyPersonSkills(
+                Arrays.asList("Java", "Python", "Spring"), 100101L
+            );
+            verify(skillGraphClient).upsertPersonPositionTypeClassification(
+                eq(100L),
+                eq(100101L),
+                eq("Java工程师"),
+                eq(List.of(Map.of("code", "java_core", "name", "Java核心", "skills", List.of("Java", "Python", "Spring"))))
+            );
         }
 
         @Test

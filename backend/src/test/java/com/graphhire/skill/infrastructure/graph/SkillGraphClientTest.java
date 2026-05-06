@@ -161,4 +161,17 @@ class SkillGraphClientTest {
         assertNotNull(result.get("industryMatch"));
         assertNotNull(result.get("skillCategories"));
     }
+
+    @Test
+    @DisplayName("无驱动时读取个人职位分类返回空结构")
+    void getPersonPositionTypeClassification_WhenDriverUnavailable_ReturnsEmpty() {
+        SkillGraphClient client = new SkillGraphClient();
+
+        Map<String, Object> result = client.getPersonPositionTypeClassification(1L);
+
+        assertEquals(1L, result.get("personId"));
+        assertEquals(false, result.get("success"));
+        assertNotNull(result.get("positionTypeMatch"));
+        assertNotNull(result.get("skillCategories"));
+    }
 }

@@ -515,6 +515,82 @@ public class SkillGraphClient {
     }
 
     /**
+     * 读取个人职位类型判定与技能分类关系
+     */
+    public Map<String, Object> getPersonPositionTypeClassification(Long personId) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("personId", personId);
+        if (driver == null) {
+            result.put("success", false);
+            Map<String, Object> positionTypeMatch = new HashMap<>();
+            positionTypeMatch.put("positionTypeId", null);
+            positionTypeMatch.put("positionTypeName", null);
+            positionTypeMatch.put("matched", false);
+            result.put("positionTypeMatch", positionTypeMatch);
+            result.put("skillCategories", List.of());
+            return result;
+        }
+
+        try (Session session = driver.session()) {
+            Result positionTypeRs = session.run(
+                "MATCH (p:Person {id: $personId})-[:BELONGS_TO_POSITION_TYPE]->(t:PositionType) " +
+                "RETURN t.id AS positionTypeId, t.name AS positionTypeName LIMIT 1",
+                Values.parameters("personId", personId)
+            );
+            Map<String, Object> positionTypeMatch = new HashMap<>();
+            if (positionTypeRs.hasNext()) {
+                Record record = positionTypeRs.next();
+                Long positionTypeId = readLong(record.get("positionTypeId"));
+                String positionTypeName = readString(record.get("positionTypeName"));
+                positionTypeMatch.put("positionTypeId", positionTypeId);
+                positionTypeMatch.put("positionTypeName", positionTypeName);
+                positionTypeMatch.put("matched", positionTypeId != null);
+            } else {
+                positionTypeMatch.put("positionTypeId", null);
+                positionTypeMatch.put("positionTypeName", null);
+                positionTypeMatch.put("matched", false);
+            }
+
+            Result categoryRs = session.run(
+                "MATCH (p:Person {id: $personId})-[:HAS_SKILL_CATEGORY]->(c:SkillCategory) " +
+                "OPTIONAL MATCH (c)-[:CONTAINS_SKILL]->(s:Skill) " +
+                "RETURN c.code AS code, c.name AS name, collect(s.name) AS skills",
+                Values.parameters("personId", personId)
+            );
+            List<Map<String, Object>> categories = new ArrayList<>();
+            while (categoryRs.hasNext()) {
+                Record record = categoryRs.next();
+                String code = readString(record.get("code"));
+                String name = readString(record.get("name"));
+                List<String> skills = record.get("skills").asList(Value::asString).stream()
+                    .filter(StrUtil::isNotBlank)
+                    .distinct()
+                    .toList();
+                Map<String, Object> category = new HashMap<>();
+                category.put("code", code);
+                category.put("name", name);
+                category.put("skills", skills);
+                categories.add(category);
+            }
+
+            result.put("success", true);
+            result.put("positionTypeMatch", positionTypeMatch);
+            result.put("skillCategories", categories);
+            return result;
+        } catch (Exception e) {
+            log.warn("读取个人职位分类图谱失败: personId={}, error={}", personId, e.getMessage());
+            result.put("success", false);
+            Map<String, Object> positionTypeMatch = new HashMap<>();
+            positionTypeMatch.put("positionTypeId", null);
+            positionTypeMatch.put("positionTypeName", null);
+            positionTypeMatch.put("matched", false);
+            result.put("positionTypeMatch", positionTypeMatch);
+            result.put("skillCategories", List.of());
+            return result;
+        }
+    }
+
+    /**
      * 获取职位技能图谱数据
      */
     public Map<String, Object> getJobSkillGraph(Long jobId) {

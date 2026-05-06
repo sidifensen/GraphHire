@@ -5,7 +5,6 @@ import com.graphhire.common.vo.Result;
 import com.graphhire.match.application.service.MatchAppService;
 import com.graphhire.match.interfaces.dto.response.MatchDetailResponse;
 import com.graphhire.positiontype.domain.model.PositionType;
-import com.graphhire.positiontypeskill.application.service.PositionTypeSkillClassificationService;
 import com.graphhire.resume.application.service.PersonAbilityAssessmentService;
 import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.repository.PersonInfoRepository;
@@ -19,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Objects;
 
 /**
@@ -40,9 +40,6 @@ public class PersonController {
 
     @Autowired
     private PersonAbilityAssessmentService personAbilityAssessmentService;
-
-    @Autowired
-    private PositionTypeSkillClassificationService positionTypeSkillClassificationService;
 
     @Autowired
     private PositionTypeAppService positionTypeAppService;
@@ -129,6 +126,7 @@ public class PersonController {
     public Result<Map<String, Object>> getPersonGraph() {
         Long userId = StpUtil.getLoginIdAsLong();
         Map<String, Object> graph = skillGraphClient.getPersonSkillGraph(userId);
+        Map<String, Object> classification = skillGraphClient.getPersonPositionTypeClassification(userId);
         PersonInfo personInfo = personInfoRepository.findByUserId(userId).orElse(null);
 
         graph.put("realName", personInfo == null ? null : personInfo.getRealName());
@@ -137,61 +135,35 @@ public class PersonController {
             personInfo == null || personInfo.getAvatarUrl() == null ? null : "/person/avatar/public/" + userId
         );
 
-        List<String> skills = extractSkills(graph.get("skills"));
-        Long preferredPositionTypeId = personInfo == null ? null : personInfo.getDefaultPositionTypeId();
-        Map<String, Object> classified = positionTypeSkillClassificationService.classifyPersonSkills(skills, preferredPositionTypeId);
         @SuppressWarnings("unchecked")
-        Map<String, Object> positionTypeMatch = (Map<String, Object>) classified.get("positionTypeMatch");
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> skillCategories = (List<Map<String, Object>>) classified.get("skillCategories");
-        if (positionTypeMatch == null) {
-            Map<String, Object> fallbackPositionType = new java.util.HashMap<>();
-            fallbackPositionType.put("positionTypeId", null);
-            fallbackPositionType.put("positionTypeName", null);
-            fallbackPositionType.put("matched", false);
-            graph.put("positionTypeMatch", fallbackPositionType);
-        } else {
-            graph.put("positionTypeMatch", positionTypeMatch);
-        }
-        graph.put("skillCategories", skillCategories == null ? List.of() : skillCategories);
-        Long positionTypeId = positionTypeMatch == null ? null : toLong(positionTypeMatch.get("positionTypeId"));
-        String positionTypeName = positionTypeMatch == null || positionTypeMatch.get("positionTypeName") == null
+        Map<String, Object> positionTypeMatch = classification == null
             ? null
-            : String.valueOf(positionTypeMatch.get("positionTypeName"));
-        skillGraphClient.upsertPersonPositionTypeClassification(
-            userId,
-            positionTypeId,
-            positionTypeName,
-            skillCategories == null ? List.of() : skillCategories
-        );
+            : (Map<String, Object>) classification.get("positionTypeMatch");
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> skillCategories = classification == null
+            ? null
+            : (List<Map<String, Object>>) classification.get("skillCategories");
+        graph.put("positionTypeMatch", normalizePositionTypeMatch(positionTypeMatch));
+        graph.put("skillCategories", skillCategories == null ? List.of() : skillCategories);
 
         return Result.success(graph);
     }
 
-    private List<String> extractSkills(Object skillsObj) {
-        if (!(skillsObj instanceof List<?> rawSkills)) {
-            return List.of();
+    private Map<String, Object> normalizePositionTypeMatch(Map<String, Object> rawMatch) {
+        if (rawMatch == null) {
+            Map<String, Object> fallback = new HashMap<>();
+            fallback.put("positionTypeId", null);
+            fallback.put("positionTypeName", null);
+            fallback.put("matched", false);
+            return fallback;
         }
-        return rawSkills.stream()
-            .filter(item -> item instanceof String)
-            .map(item -> ((String) item).trim())
-            .filter(item -> !item.isEmpty())
-            .distinct()
-            .toList();
-    }
-
-    private Long toLong(Object value) {
-        if (value == null) {
-            return null;
-        }
-        if (value instanceof Number number) {
-            return number.longValue();
-        }
-        try {
-            return Long.parseLong(String.valueOf(value));
-        } catch (Exception ignored) {
-            return null;
-        }
+        Object rawMatched = rawMatch.get("matched");
+        boolean matched = rawMatched instanceof Boolean value ? value : false;
+        Map<String, Object> normalized = new HashMap<>();
+        normalized.put("positionTypeId", rawMatch.get("positionTypeId"));
+        normalized.put("positionTypeName", rawMatch.get("positionTypeName"));
+        normalized.put("matched", matched);
+        return normalized;
     }
 
     private List<Long> normalizeExpectedPositionTypeIds(List<Long> rawIds) {

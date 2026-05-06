@@ -1,7 +1,6 @@
 package com.graphhire.resume.interfaces.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
-import com.graphhire.positiontypeskill.application.service.PositionTypeSkillClassificationService;
 import com.graphhire.positiontype.application.service.PositionTypeAppService;
 import com.graphhire.positiontype.domain.model.PositionType;
 import com.graphhire.resume.application.service.PersonAbilityAssessmentService;
@@ -29,9 +28,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,9 +48,6 @@ class PersonControllerTest {
 
     @Mock
     private PersonAbilityAssessmentService personAbilityAssessmentService;
-
-    @Mock
-    private PositionTypeSkillClassificationService positionTypeSkillClassificationService;
 
     @Mock
     private PositionTypeAppService positionTypeAppService;
@@ -181,9 +178,8 @@ class PersonControllerTest {
             personInfo.setUserId(400L);
             personInfo.setRealName("斯蒂芬森");
             personInfo.setAvatarUrl("avatar/user_400.png");
-            personInfo.setDefaultPositionTypeId(100101L);
             when(personInfoRepository.findByUserId(400L)).thenReturn(Optional.of(personInfo));
-            when(positionTypeSkillClassificationService.classifyPersonSkills(List.of("Java", "Spring Boot"), 100101L)).thenReturn(
+            when(skillGraphClient.getPersonPositionTypeClassification(400L)).thenReturn(
                 Map.of(
                     "positionTypeMatch", Map.of("positionTypeId", 100101L, "positionTypeName", "软件开发工程师", "matched", true),
                     "skillCategories", List.of(Map.of("code", "backend", "name", "后端开发", "skills", List.of("Java", "Spring Boot")))
@@ -199,8 +195,7 @@ class PersonControllerTest {
             assertNull(result.getData().get("industryMatch"));
             assertNotNull(result.getData().get("positionTypeMatch"));
             assertNotNull(result.getData().get("skillCategories"));
-            verify(skillGraphClient).upsertPersonPositionTypeClassification(eq(400L), eq(100101L), eq("软件开发工程师"), any());
-            verify(positionTypeSkillClassificationService).classifyPersonSkills(List.of("Java", "Spring Boot"), 100101L);
+            verify(skillGraphClient).getPersonPositionTypeClassification(400L);
         }
     }
 
@@ -214,15 +209,8 @@ class PersonControllerTest {
             graph.put("skills", List.of("React"));
             graph.put("success", true);
             when(skillGraphClient.getPersonSkillGraph(401L)).thenReturn(graph);
-            Map<String, Object> unmatchedPositionType = new HashMap<>();
-            unmatchedPositionType.put("positionTypeId", null);
-            unmatchedPositionType.put("positionTypeName", null);
-            unmatchedPositionType.put("matched", false);
-            when(positionTypeSkillClassificationService.classifyPersonSkills(List.of("React"), null)).thenReturn(
-                Map.of(
-                    "positionTypeMatch", unmatchedPositionType,
-                    "skillCategories", List.of()
-                )
+            when(skillGraphClient.getPersonPositionTypeClassification(401L)).thenReturn(
+                buildUnmatchedClassification()
             );
 
             var result = personController.getPersonGraph();
@@ -231,7 +219,24 @@ class PersonControllerTest {
             assertNull(result.getData().get("realName"));
             assertNull(result.getData().get("avatarUrl"));
             assertEquals(List.of("React"), result.getData().get("skills"));
-            verify(positionTypeSkillClassificationService).classifyPersonSkills(List.of("React"), null);
+            verify(skillGraphClient).getPersonPositionTypeClassification(401L);
+            verify(skillGraphClient, never()).upsertPersonPositionTypeClassification(
+                eq(401L),
+                isNull(),
+                isNull(),
+                eq(List.of())
+            );
         }
+    }
+
+    private Map<String, Object> buildUnmatchedClassification() {
+        Map<String, Object> positionTypeMatch = new HashMap<>();
+        positionTypeMatch.put("positionTypeId", null);
+        positionTypeMatch.put("positionTypeName", null);
+        positionTypeMatch.put("matched", false);
+        Map<String, Object> classification = new HashMap<>();
+        classification.put("positionTypeMatch", positionTypeMatch);
+        classification.put("skillCategories", List.of());
+        return classification;
     }
 }
