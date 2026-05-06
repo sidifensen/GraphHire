@@ -11,6 +11,7 @@ import com.graphhire.resume.domain.repository.ParseTaskRepository;
 import com.graphhire.resume.domain.repository.ResumeRepository;
 import com.graphhire.resume.domain.vo.ParseStatus;
 import com.graphhire.resume.infrastructure.ai.DocumentParser;
+import com.graphhire.skill.infrastructure.graph.SkillGraphClient;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -55,6 +56,8 @@ class ResumeParseMQConsumerTest {
 
     @Mock
     private MatchAppService matchAppService;
+    @Mock
+    private SkillGraphClient skillGraphClient;
 
     @InjectMocks
     private ResumeParseMQConsumer consumer;
@@ -143,6 +146,7 @@ class ResumeParseMQConsumerTest {
             assertEquals("简历解析完成", notification.getTitle());
             assertEquals(resumeId, notification.getReferenceId());
 
+            verify(skillGraphClient).clearPersonPositionTypeClassification(100L);
             verify(matchAppService).triggerMatchForResume(resumeId);
         }
 

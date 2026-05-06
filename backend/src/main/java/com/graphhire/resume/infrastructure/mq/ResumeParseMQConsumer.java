@@ -11,6 +11,7 @@ import com.graphhire.resume.domain.repository.ParseTaskRepository;
 import com.graphhire.resume.domain.repository.ResumeRepository;
 import com.graphhire.resume.domain.vo.ParseStatus;
 import com.graphhire.resume.infrastructure.ai.DocumentParser;
+import com.graphhire.skill.infrastructure.graph.SkillGraphClient;
 import com.graphhire.match.application.service.MatchAppService;
 import com.graphhire.match.infrastructure.ai.DeepSeekClient;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
@@ -55,6 +56,8 @@ public class ResumeParseMQConsumer implements RocketMQListener<String> {
 
     @Autowired
     private MatchAppService matchAppService;
+    @Autowired
+    private SkillGraphClient skillGraphClient;
 
     @Override
     public void onMessage(String message) {
@@ -107,6 +110,7 @@ public class ResumeParseMQConsumer implements RocketMQListener<String> {
             resume.setStatus(ParseStatus.SUCCESS);
             resume.setConfidence(BigDecimal.valueOf(0.85));
             resumeRepository.save(resume);
+            skillGraphClient.clearPersonPositionTypeClassification(resume.getUserId());
 
             // 步骤6：将parse_task更新为SUCCESS(2)
             task.setStatus(ParseTask.TaskStatus.SUCCESS);

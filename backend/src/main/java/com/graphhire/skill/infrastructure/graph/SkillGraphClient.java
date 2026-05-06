@@ -409,6 +409,36 @@ public class SkillGraphClient {
     }
 
     /**
+     * 清理个人职位类型判定与技能分类关系
+     * 用于在重建个人技能图谱前移除旧分类数据，避免历史残留影响展示。
+     */
+    public void clearPersonPositionTypeClassification(Long personId) {
+        if (driver == null || personId == null) {
+            return;
+        }
+
+        try (Session session = driver.session()) {
+            session.writeTransaction(tx -> {
+                tx.run(
+                    "MERGE (p:Person {id: $personId}) " +
+                    "WITH p OPTIONAL MATCH (p)-[r:BELONGS_TO_POSITION_TYPE]->(:PositionType) DELETE r",
+                    Values.parameters("personId", personId)
+                );
+                tx.run(
+                    "MATCH (p:Person {id: $personId}) " +
+                    "OPTIONAL MATCH (p)-[r:HAS_SKILL_CATEGORY]->(c:SkillCategory) " +
+                    "OPTIONAL MATCH (c)-[rc:CONTAINS_SKILL]->(:Skill) " +
+                    "DELETE rc, r",
+                    Values.parameters("personId", personId)
+                );
+                return null;
+            });
+        } catch (Exception e) {
+            log.warn("清理个人职位类型分类图谱失败: personId={}, error={}", personId, e.getMessage());
+        }
+    }
+
+    /**
      * 读取个人行业判定与技能分类关系
      */
     public Map<String, Object> getPersonIndustryClassification(Long personId) {

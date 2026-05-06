@@ -26,6 +26,7 @@ import java.io.IOException;
 import com.graphhire.resume.interfaces.dto.ResumeVO;
 import com.graphhire.resume.infrastructure.file.RustFSClient;
 import com.graphhire.resume.infrastructure.mq.ResumeMQProducer;
+import com.graphhire.skill.infrastructure.graph.SkillGraphClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +65,8 @@ public class ResumeAppService {
     private MatchAppService matchAppService;
     @Autowired
     private UploadProperties uploadProperties;
+    @Autowired
+    private SkillGraphClient skillGraphClient;
 
     @Transactional
     public Resume uploadResume(UploadResumeCmd cmd, boolean refreshAllMatches) throws IOException {
@@ -245,6 +248,7 @@ public class ResumeAppService {
         // 将此简历设为默认
         resume.setIsDefault(true);
         resumeRepository.save(resume);
+        skillGraphClient.clearPersonPositionTypeClassification(userId);
         if (refreshAllMatches) {
             matchAppService.triggerMatchForResume(resume.getId());
             if (previousDefaultResumeId != null && !previousDefaultResumeId.equals(resume.getId())) {

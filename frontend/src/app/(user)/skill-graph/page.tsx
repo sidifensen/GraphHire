@@ -159,12 +159,38 @@ function colorByCategory(code: string, isDarkMode: boolean): { fill: string; str
   };
 }
 
+function normalizeSkillToken(value: string): string {
+  const base = value.trim().toLowerCase();
+  if (!base) {
+    return '';
+  }
+  const noSpace = base.replace(/[\s\-_.]+/g, '');
+  const cnPunc = noSpace.replace(/[（）()，、·]/g, '');
+  if (cnPunc === 'js' || cnPunc === 'javascript') {
+    return 'javascript';
+  }
+  if (cnPunc === 'springboot') {
+    return 'springboot';
+  }
+  if (cnPunc === 'springmvc') {
+    return 'springmvc';
+  }
+  if (cnPunc === 'mybatisplus') {
+    return 'mybatisplus';
+  }
+  return cnPunc;
+}
+
 function groupSkillsByCategory(skills: string[], skillCategories: SkillCategory[]): SkillCategory[] {
   const firstCategoryBySkill = new Map<string, { code: string; name: string }>();
   for (const category of skillCategories) {
     for (const skill of category.skills) {
-      if (!firstCategoryBySkill.has(skill)) {
-        firstCategoryBySkill.set(skill, { code: category.code, name: category.name });
+      const key = normalizeSkillToken(skill);
+      if (!key) {
+        continue;
+      }
+      if (!firstCategoryBySkill.has(key)) {
+        firstCategoryBySkill.set(key, { code: category.code, name: category.name });
       }
     }
   }
@@ -183,7 +209,8 @@ function groupSkillsByCategory(skills: string[], skillCategories: SkillCategory[
   }
 
   for (const skill of skills) {
-    const matched = firstCategoryBySkill.get(skill);
+    const key = normalizeSkillToken(skill);
+    const matched = key ? firstCategoryBySkill.get(key) : undefined;
     if (matched) {
       ensureCategory(matched.code, matched.name);
       grouped.get(matched.code)?.skills.push(skill);

@@ -14,6 +14,7 @@ import com.graphhire.resume.domain.vo.ParseStatus;
 import com.graphhire.resume.infrastructure.file.RustFSClient;
 import com.graphhire.resume.infrastructure.mq.ResumeMQProducer;
 import com.graphhire.match.application.service.MatchAppService;
+import com.graphhire.skill.infrastructure.graph.SkillGraphClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -64,6 +65,8 @@ class ResumeAppServiceTest {
     @Mock
     private MatchAppService matchAppService;
     @Mock
+    private SkillGraphClient skillGraphClient;
+    @Mock
     private UploadProperties uploadProperties;
 
     private ResumeAppService resumeAppService;
@@ -79,6 +82,7 @@ class ResumeAppServiceTest {
         setField(resumeAppService, "graphBuildService", graphBuildService);
         setField(resumeAppService, "matchAppService", matchAppService);
         setField(resumeAppService, "uploadProperties", uploadProperties);
+        setField(resumeAppService, "skillGraphClient", skillGraphClient);
 
         UploadProperties.Resume resumeUpload = new UploadProperties.Resume();
         resumeUpload.setMaxFileSize(DataSize.ofMegabytes(10));
@@ -288,6 +292,7 @@ class ResumeAppServiceTest {
 
         resumeAppService.setDefaultResume(30L, 9L, false, true);
 
+        verify(skillGraphClient).clearPersonPositionTypeClassification(9L);
         verify(graphBuildService).buildGraphForResume(resume);
         verify(mqProducer).sendResumeDefaultChangedMessage(30L);
         verifyNoInteractions(personInfoRepository);
@@ -311,6 +316,7 @@ class ResumeAppServiceTest {
 
         resumeAppService.setDefaultResume(60L, 9L, false, false);
 
+        verify(skillGraphClient).clearPersonPositionTypeClassification(9L);
         verifyNoInteractions(matchAppService);
         verify(graphBuildService).buildGraphForResume(resume);
     }
