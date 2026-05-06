@@ -224,7 +224,7 @@ public class ResumeAppService {
      * 步骤4：将目标简历设为默认并保存
      */
     @Transactional
-    public void setDefaultResume(Long resumeId, Long userId, boolean syncPersonInfo) {
+    public void setDefaultResume(Long resumeId, Long userId, boolean syncPersonInfo, boolean refreshAllMatches) {
         Resume resume = getResumeById(resumeId);
         if (!resume.getUserId().equals(userId)) {
             throw new RuntimeException("无权设置此简历");
@@ -245,9 +245,11 @@ public class ResumeAppService {
         // 将此简历设为默认
         resume.setIsDefault(true);
         resumeRepository.save(resume);
-        matchAppService.triggerMatchForResume(resume.getId());
-        if (previousDefaultResumeId != null && !previousDefaultResumeId.equals(resume.getId())) {
-            matchAppService.clearOldMatchDataForResume(previousDefaultResumeId);
+        if (refreshAllMatches) {
+            matchAppService.triggerMatchForResume(resume.getId());
+            if (previousDefaultResumeId != null && !previousDefaultResumeId.equals(resume.getId())) {
+                matchAppService.clearOldMatchDataForResume(previousDefaultResumeId);
+            }
         }
         graphBuildService.buildGraphForResume(resume);
         if (syncPersonInfo) {

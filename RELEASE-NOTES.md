@@ -14,6 +14,9 @@
 - refactor: 解析消息格式扩展为 `resumeId,parseTaskId,refreshAllMatches`，默认简历仅在 `refreshAllMatches=true` 时触发全量职位匹配刷新
 - fix: 保持 `resume-parsed` 事件始终发送，确保技能提取与图数据库图谱更新不受匹配刷新开关影响
 - test: 新增并更新前后端测试，覆盖上传/重解析参数透传、默认简历 refresh=false 不触发匹配、前端默认勾选与取消分支
+- feat: 设为默认简历新增“是否刷新所有职位匹配记录”可选开关，默认勾选，用户可取消后仅切换默认简历与图谱刷新
+- refactor: 简历管理页上传/重解析/设默认统一改为 shadcn 风格确认弹窗（含复选框），替换原生浏览器确认框
+- test: 补充并通过设默认刷新开关相关前后端测试，覆盖 `refreshAllMatches` 透传与关闭刷新分支
 
 - fix: 认证持久化改造，后端新增官方 `sa-token-redis-jackson` 依赖并接入 Redis 持久化，修复后端重启后前端登录态失效问题
 - refactor: 认证续期策略对齐 Sa-Token 官方会话模型（`timeout/active-timeout/auto-renew`），移除项目内非官方 `allow-refresh-token` / `refresh-token-timeout` 配置

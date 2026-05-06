@@ -109,7 +109,26 @@ describe('User Resume Manage page', () => {
     const setDefaultButton = screen.getByRole('button', { name: '设为默认-2' });
     await user.click(setDefaultButton);
 
-    await waitFor(() => expect(setDefaultMock).toHaveBeenCalledWith(2));
+    const confirmButton = await screen.findByRole('button', { name: '确认' });
+    await user.click(confirmButton);
+    await waitFor(() => expect(setDefaultMock).toHaveBeenCalledWith(2, false, true));
+  });
+
+  it('calls setDefault with refreshAllMatches=false when unchecking option', async () => {
+    const user = userEvent.setup();
+    render(<ResumeManagePage />);
+
+    await waitFor(() => expect(getMyResumesMock).toHaveBeenCalledTimes(1));
+
+    const setDefaultButton = screen.getByRole('button', { name: '设为默认-2' });
+    await user.click(setDefaultButton);
+
+    const checkbox = await screen.findByRole('checkbox', { name: '刷新所有职位匹配记录' });
+    await user.click(checkbox);
+    const confirmButton = screen.getByRole('button', { name: '确认' });
+    await user.click(confirmButton);
+
+    await waitFor(() => expect(setDefaultMock).toHaveBeenCalledWith(2, false, false));
   });
 
   it('calls parse when clicking reparse', async () => {
@@ -118,12 +137,12 @@ describe('User Resume Manage page', () => {
 
     await waitFor(() => expect(getMyResumesMock).toHaveBeenCalledTimes(1));
 
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     const parseButton = screen.getByRole('button', { name: '重新解析-1' });
     await user.click(parseButton);
+    const confirmButton = await screen.findByRole('button', { name: '确认' });
+    await user.click(confirmButton);
 
     await waitFor(() => expect(parseMock).toHaveBeenCalledWith(1, true));
-    expect(confirmSpy).toHaveBeenCalled();
   });
 
   it('calls parse with refreshAllMatches=false when user unchecks option in confirm text', async () => {
@@ -132,12 +151,14 @@ describe('User Resume Manage page', () => {
 
     await waitFor(() => expect(getMyResumesMock).toHaveBeenCalledTimes(1));
 
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
     const parseButton = screen.getByRole('button', { name: '重新解析-1' });
     await user.click(parseButton);
+    const checkbox = await screen.findByRole('checkbox', { name: '刷新所有职位匹配记录' });
+    await user.click(checkbox);
+    const confirmButton = screen.getByRole('button', { name: '确认' });
+    await user.click(confirmButton);
 
     await waitFor(() => expect(parseMock).toHaveBeenCalledWith(1, false));
-    expect(confirmSpy).toHaveBeenCalled();
   });
 
   it('uploads file through uploadWithProgress', async () => {
@@ -146,10 +167,11 @@ describe('User Resume Manage page', () => {
 
     await waitFor(() => expect(getMyResumesMock).toHaveBeenCalledTimes(1));
 
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
     const file = new File(['resume-content'], 'resume.pdf', { type: 'application/pdf' });
     const input = screen.getByTestId('resume-upload-input');
     await user.upload(input, file);
+    const confirmButton = await screen.findByRole('button', { name: '确认' });
+    await user.click(confirmButton);
 
     await waitFor(() => expect(uploadWithProgressMock).toHaveBeenCalledTimes(1));
 
@@ -166,10 +188,13 @@ describe('User Resume Manage page', () => {
 
     await waitFor(() => expect(getMyResumesMock).toHaveBeenCalledTimes(1));
 
-    vi.spyOn(window, 'confirm').mockReturnValue(false);
     const file = new File(['resume-content'], 'resume.pdf', { type: 'application/pdf' });
     const input = screen.getByTestId('resume-upload-input');
     await user.upload(input, file);
+    const checkbox = await screen.findByRole('checkbox', { name: '刷新所有职位匹配记录' });
+    await user.click(checkbox);
+    const confirmButton = screen.getByRole('button', { name: '确认' });
+    await user.click(confirmButton);
 
     await waitFor(() => expect(uploadWithProgressMock).toHaveBeenCalledTimes(1));
 

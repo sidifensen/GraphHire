@@ -265,15 +265,15 @@ class ResumeControllerTest {
                 Long resumeId = 1L;
                 stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(userId);
 
-                doNothing().when(resumeAppService).setDefaultResume(resumeId, userId, false);
+                doNothing().when(resumeAppService).setDefaultResume(resumeId, userId, false, true);
 
                 // When
-                Result<Void> result = resumeController.setDefaultResume(resumeId, false);
+                Result<Void> result = resumeController.setDefaultResume(resumeId, false, true);
 
                 // Then
                 assertNotNull(result);
                 assertEquals(200, result.getCode());
-                verify(resumeAppService).setDefaultResume(resumeId, userId, false);
+                verify(resumeAppService).setDefaultResume(resumeId, userId, false, true);
             }
         }
 
@@ -287,10 +287,10 @@ class ResumeControllerTest {
                 stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(userId);
 
                 doThrow(new RuntimeException("无权设置此简历"))
-                    .when(resumeAppService).setDefaultResume(resumeId, userId, true);
+                    .when(resumeAppService).setDefaultResume(resumeId, userId, true, false);
 
                 // When & Then
-                assertThrows(RuntimeException.class, () -> resumeController.setDefaultResume(resumeId, true));
+                assertThrows(RuntimeException.class, () -> resumeController.setDefaultResume(resumeId, true, false));
             }
         }
     }

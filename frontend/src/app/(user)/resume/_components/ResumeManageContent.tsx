@@ -7,6 +7,15 @@ import { motion } from 'framer-motion';
 import { resumeApi, type Resume } from '@/lib/api/resume';
 import { UPLOAD_ERRORS } from '@/lib/constants/upload-errors';
 import UserWorkbenchSidebar from '@/app/(user)/_components/UserWorkbenchSidebar';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 
 function formatDate(value?: string) {
   if (!value) {
@@ -24,6 +33,16 @@ type ActionState = {
   parsingId?: number;
   deletingId?: number;
   previewingId?: number;
+};
+
+type RefreshActionType = 'upload' | 'parse' | 'set-default';
+
+type RefreshDialogState = {
+  open: boolean;
+  actionType: RefreshActionType;
+  resumeId?: number;
+  file?: File;
+  refreshAllMatches: boolean;
 };
 
 function statusMeta(status: Resume['status']) {
@@ -79,10 +98,12 @@ export default function ResumeManageContent() {
   const [uploadPercent, setUploadPercent] = useState<number>(0);
   const [uploading, setUploading] = useState(false);
   const uploadInputRef = useRef<HTMLInputElement | null>(null);
-
-  const confirmRefreshAllMatches = React.useCallback(() => {
-    return window.confirm('是否刷新所有职位匹配记录？\n确定：刷新（默认勾选）\n取消：不刷新');
-  }, []);
+  const [refreshDialogState, setRefreshDialogState] = useState<RefreshDialogState>({
+    open: false,
+    actionType: 'upload',
+    refreshAllMatches: true,
+  });
+  const [actionAfterConfirm, setActionAfterConfirm] = useState(false);
 
   const closePreviewModal = React.useCallback(() => {
     setPreviewModal((prev) => {
@@ -146,18 +167,35 @@ export default function ResumeManageContent() {
   };
 
   const handleSetDefault = async (resumeId: number) => {
+    setRefreshDialogState({
+      open: true,
+      actionType: 'set-default',
+      resumeId,
+      refreshAllMatches: true,
+    });
+  };
+
+  const handleSetDefaultConfirmed = async (resumeId: number, refreshAllMatches: boolean) => {
     setActionState((prev) => ({ ...prev, settingDefaultId: resumeId }));
     await runAction(async () => {
-      await resumeApi.setDefault(resumeId);
+      await resumeApi.setDefault(resumeId, false, refreshAllMatches);
       setMessage('默认简历已更新');
     });
     setActionState((prev) => ({ ...prev, settingDefaultId: undefined }));
   };
 
   const handleParse = async (resumeId: number) => {
+    setRefreshDialogState({
+      open: true,
+      actionType: 'parse',
+      resumeId,
+      refreshAllMatches: true,
+    });
+  };
+
+  const handleParseConfirmed = async (resumeId: number, refreshAllMatches: boolean) => {
     setActionState((prev) => ({ ...prev, parsingId: resumeId }));
     await runAction(async () => {
-      const refreshAllMatches = confirmRefreshAllMatches();
       await resumeApi.parse(resumeId, refreshAllMatches);
       setMessage('已触发重新解析');
     });
@@ -216,6 +254,16 @@ export default function ResumeManageContent() {
       return;
     }
 
+    setRefreshDialogState({
+      open: true,
+      actionType: 'upload',
+      file,
+      refreshAllMatches: true,
+    });
+    event.target.value = '';
+  };
+
+  const handleUploadConfirmed = async (file: File, refreshAllMatches: boolean) => {
     setUploading(true);
     setUploadPercent(0);
     setError(null);
@@ -223,7 +271,6 @@ export default function ResumeManageContent() {
 
     const formData = new FormData();
     formData.append('file', file);
-    const refreshAllMatches = confirmRefreshAllMatches();
     formData.append('refreshAllMatches', String(refreshAllMatches));
 
     try {
@@ -237,7 +284,46 @@ export default function ResumeManageContent() {
       setError(errorMessage || '上传失败');
     } finally {
       setUploading(false);
-      event.target.value = '';
+    }
+  };
+
+  const resolveActionTitle = React.useCallback((type: RefreshActionType) => {
+    if (type === 'upload') {
+      return '确认上传简历';
+    }
+    if (type === 'parse') {
+      return '确认重新解析';
+    }
+    return '确认设为默认简历';
+  }, []);
+
+  const resolveActionDescription = React.useCallback((type: RefreshActionType) => {
+    if (type === 'upload') {
+      return '上传后会触发简历解析，技能与图谱会自动刷新。';
+    }
+    if (type === 'parse') {
+      return '重新解析后，技能与图谱会自动刷新。';
+    }
+    return '设为默认后，技能与图谱会自动刷新。';
+  }, []);
+
+  const handleConfirmAction = async () => {
+    if (actionAfterConfirm) {
+      return;
+    }
+    const { actionType, resumeId, file, refreshAllMatches } = refreshDialogState;
+    setActionAfterConfirm(true);
+    try {
+      if (actionType === 'upload' && file) {
+        await handleUploadConfirmed(file, refreshAllMatches);
+      } else if (actionType === 'parse' && resumeId != null) {
+        await handleParseConfirmed(resumeId, refreshAllMatches);
+      } else if (actionType === 'set-default' && resumeId != null) {
+        await handleSetDefaultConfirmed(resumeId, refreshAllMatches);
+      }
+      setRefreshDialogState((prev) => ({ ...prev, open: false }));
+    } finally {
+      setActionAfterConfirm(false);
     }
   };
 
@@ -411,6 +497,52 @@ export default function ResumeManageContent() {
           </div>
         </div>
       ) : null}
+
+      <Dialog
+        open={refreshDialogState.open}
+        onOpenChange={(open) => {
+          if (actionAfterConfirm) {
+            return;
+          }
+          setRefreshDialogState((prev) => ({ ...prev, open }));
+        }}
+      >
+        <DialogContent aria-label="匹配刷新确认弹窗">
+          <DialogHeader>
+            <DialogTitle>{resolveActionTitle(refreshDialogState.actionType)}</DialogTitle>
+            <DialogDescription>{resolveActionDescription(refreshDialogState.actionType)}</DialogDescription>
+          </DialogHeader>
+          <label className="mt-2 flex items-center gap-3 text-sm text-on-surface">
+            <Checkbox
+              checked={refreshDialogState.refreshAllMatches}
+              onCheckedChange={(checked) => {
+                setRefreshDialogState((prev) => ({ ...prev, refreshAllMatches: checked === true }));
+              }}
+              aria-label="刷新所有职位匹配记录"
+            />
+            <span>刷新所有职位匹配记录</span>
+          </label>
+          <p className="mt-2 text-xs text-on-surface-variant">不勾选时，不触发全量职位匹配；技能与图谱仍会刷新。</p>
+          <DialogFooter className="mt-6">
+            <button
+              type="button"
+              className="inline-flex h-10 items-center justify-center rounded-lg border border-surface-mid px-4 text-sm font-semibold text-on-surface hover:bg-surface-low"
+              onClick={() => setRefreshDialogState((prev) => ({ ...prev, open: false }))}
+              disabled={actionAfterConfirm}
+            >
+              取消
+            </button>
+            <button
+              type="button"
+              className="inline-flex h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-60"
+              onClick={() => void handleConfirmAction()}
+              disabled={actionAfterConfirm}
+            >
+              {actionAfterConfirm ? '处理中...' : '确认'}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
     </div>
   );

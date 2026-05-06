@@ -268,7 +268,7 @@ class ResumeAppServiceTest {
 
         Exceptions.BusinessException ex = assertThrows(
             Exceptions.BusinessException.class,
-            () -> resumeAppService.setDefaultResume(20L, 9L, false)
+            () -> resumeAppService.setDefaultResume(20L, 9L, false, true)
         );
 
         assertEquals("请先解析成功后再设为默认", ex.getMessage());
@@ -286,7 +286,7 @@ class ResumeAppServiceTest {
         when(resumeRepository.findById(30L)).thenReturn(Optional.of(resume));
         when(resumeRepository.findByUserId(9L)).thenReturn(List.of(oldDefault, resume));
 
-        resumeAppService.setDefaultResume(30L, 9L, false);
+        resumeAppService.setDefaultResume(30L, 9L, false, true);
 
         verify(graphBuildService).buildGraphForResume(resume);
         verify(mqProducer).sendResumeDefaultChangedMessage(30L);
@@ -295,6 +295,24 @@ class ResumeAppServiceTest {
         InOrder inOrder = org.mockito.Mockito.inOrder(matchAppService);
         inOrder.verify(matchAppService).triggerMatchForResume(30L);
         inOrder.verify(matchAppService).clearOldMatchDataForResume(31L);
+    }
+
+    @Test
+    @DisplayName("setDefaultResume 关闭全量匹配刷新时不触发匹配重建与旧记录清理")
+    void setDefaultResume_shouldSkipMatchWhenRefreshAllMatchesFalse() {
+        Resume resume = buildResume(60L, 9L, "resume.pdf", "s3://r.pdf", "pdf");
+        resume.setStatus(ParseStatus.SUCCESS);
+        resume.setIsDefault(false);
+        Resume oldDefault = buildResume(61L, 9L, "old.pdf", "s3://old.pdf", "pdf");
+        oldDefault.setStatus(ParseStatus.SUCCESS);
+        oldDefault.setIsDefault(true);
+        when(resumeRepository.findById(60L)).thenReturn(Optional.of(resume));
+        when(resumeRepository.findByUserId(9L)).thenReturn(List.of(oldDefault, resume));
+
+        resumeAppService.setDefaultResume(60L, 9L, false, false);
+
+        verifyNoInteractions(matchAppService);
+        verify(graphBuildService).buildGraphForResume(resume);
     }
 
     @Test
@@ -310,7 +328,7 @@ class ResumeAppServiceTest {
         when(resumeRepository.findByUserId(10L)).thenReturn(List.of(resume));
         when(personInfoRepository.findByUserId(10L)).thenReturn(Optional.empty());
 
-        resumeAppService.setDefaultResume(40L, 10L, true);
+        resumeAppService.setDefaultResume(40L, 10L, true, true);
 
         org.mockito.ArgumentCaptor<PersonInfo> captor = org.mockito.ArgumentCaptor.forClass(PersonInfo.class);
         verify(personInfoRepository).save(captor.capture());

@@ -90,9 +90,10 @@ public class ResumeController {
      */
     @PutMapping("/{id}/default")
     public Result<Void> setDefaultResume(@PathVariable Long id,
-                                         @RequestParam(defaultValue = "false") boolean syncPersonInfo) {
+                                         @RequestParam(defaultValue = "false") boolean syncPersonInfo,
+                                         @RequestParam(defaultValue = "true") boolean refreshAllMatches) {
         Long userId = StpUtil.getLoginIdAsLong();
-        resumeService.setDefaultResume(id, userId, syncPersonInfo);
+        resumeService.setDefaultResume(id, userId, syncPersonInfo, refreshAllMatches);
         return Result.success();
     }
 
