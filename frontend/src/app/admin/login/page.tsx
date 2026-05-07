@@ -9,8 +9,8 @@ import { adminAuthStore } from '@/lib/stores/auth-store';
 
 const isDev = process.env.NODE_ENV === 'development';
 const DEV_ADMIN_CREDENTIALS = {
-  username: process.env.NEXT_PUBLIC_DEV_ADMIN_USERNAME ?? '',
-  password: process.env.NEXT_PUBLIC_DEV_ADMIN_PASSWORD ?? '',
+  username: process.env.NEXT_PUBLIC_DEV_ADMIN_USERNAME ?? 'admin@graphhire.com',
+  password: process.env.NEXT_PUBLIC_DEV_ADMIN_PASSWORD ?? 'password123',
 };
 
 export default function AdminLoginPage() {

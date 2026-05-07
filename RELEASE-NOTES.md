@@ -399,3 +399,5 @@
 - fix: 图谱构建阶段（默认简历切换/解析后重建）新增职位分类落图流程：按技能分类结果写入 `positionTypeMatch + skillCategories`，将分类计算前置到简历变更事件
 - fix: 分类结果写入前补齐“未分配技能”归并逻辑（优先并入首分类），避免分类漏项导致前端长期出现 `未分类` 兜底节点
 - test: 新增并更新 `PersonControllerTest`、`GraphBuildServiceTest`、`SkillGraphClientTest`，覆盖“查询不触发 AI、构建时落图、分类读取接口”回归场景；后端 `mvn compile`、`mvn test` 全通过
+
+- fix: 恢复开发环境登录自动填充：用户登录页按角色自动预填内置 dev 账号（支持 `NEXT_PUBLIC_DEV_JOBSEEKER_*`、`NEXT_PUBLIC_DEV_RECRUITER_*` 覆盖），管理登录页恢复 dev 默认预填（支持 `NEXT_PUBLIC_DEV_ADMIN_*` 覆盖），生产环境仍保持不预填

@@ -12,12 +12,12 @@ import type { CompanyRegisterRequest, LoginRequest, PersonRegisterRequest } from
 const isDev = process.env.NODE_ENV === 'development';
 const LOGIN_DEV_ACCOUNTS = {
   jobseeker: {
-    username: process.env.NEXT_PUBLIC_DEV_JOBSEEKER_USERNAME ?? '',
-    password: process.env.NEXT_PUBLIC_DEV_JOBSEEKER_PASSWORD ?? '',
+    username: process.env.NEXT_PUBLIC_DEV_JOBSEEKER_USERNAME ?? '13800138001@phone.com',
+    password: process.env.NEXT_PUBLIC_DEV_JOBSEEKER_PASSWORD ?? 'password123',
   },
   recruiter: {
-    username: process.env.NEXT_PUBLIC_DEV_RECRUITER_USERNAME ?? '',
-    password: process.env.NEXT_PUBLIC_DEV_RECRUITER_PASSWORD ?? '',
+    username: process.env.NEXT_PUBLIC_DEV_RECRUITER_USERNAME ?? 'hr@techchina.com',
+    password: process.env.NEXT_PUBLIC_DEV_RECRUITER_PASSWORD ?? 'password123',
   },
 } as const;
 
