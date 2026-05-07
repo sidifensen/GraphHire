@@ -1,16 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import JobDetailPage from '@/app/(user)/jobs/[id]/page';
 
 const hoisted = vi.hoisted(() => ({
   getJobByIdMock: vi.fn(),
   getCompanyByIdMock: vi.fn(),
+  routerPushMock: vi.fn(),
   params: { id: '501' } as Record<string, string>,
 }));
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
-    push: vi.fn(),
+    push: hoisted.routerPushMock,
     replace: vi.fn(),
     back: vi.fn(),
     forward: vi.fn(),
@@ -36,6 +38,7 @@ vi.mock('@/lib/api/public', () => ({
 describe('user job detail page real company card', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    hoisted.routerPushMock.mockReset();
     hoisted.params = { id: '501' };
 
     hoisted.getJobByIdMock.mockResolvedValue({
@@ -96,5 +99,16 @@ describe('user job detail page real company card', () => {
     expect(screen.getByText('人工智能')).toBeInTheDocument();
     expect(screen.getAllByText('1000-9999人').length).toBeGreaterThan(0);
     expect(screen.getByRole('link', { name: /进入公司主页/i })).toHaveAttribute('href', '/companies/101');
+  });
+
+  it('navigates to skill graph page when smart match button is clicked', async () => {
+    const user = userEvent.setup();
+    render(<JobDetailPage />);
+
+    await screen.findByText('高级前端开发工程师');
+
+    await user.click(screen.getByRole('button', { name: '智能匹配竞争力' }));
+
+    expect(hoisted.routerPushMock).toHaveBeenCalledWith('/skill-graph?jobId=501');
   });
 });
