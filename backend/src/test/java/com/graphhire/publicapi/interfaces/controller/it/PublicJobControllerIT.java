@@ -1,6 +1,7 @@
 package com.graphhire.publicapi.interfaces.controller.it;
 
 import com.graphhire.BaseControllerIT;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -125,6 +126,56 @@ class PublicJobControllerIT extends BaseControllerIT {
             .andExpect(jsonPath("$.data.records[0].title").value("PUBLIC_JOB_IT_AI算法岗"));
     }
 
+    @Test
+    @DisplayName("公开职位搜索会写入热门词并可读取")
+    void searchJobs_recordsAndListsHotKeywords() throws Exception {
+        Long companyUserId = createUser("public_job_it_hot_company@graphhire.com");
+        Long companyId = createCompany(companyUserId, "PUBLIC_JOB_IT_HOT_热词企业");
+        createJob(companyId, "PUBLIC_JOB_IT_HOT_后端工程师", "北京", 22000, 32000, 1);
+        String highKeyword = "JAVA_HOT_" + Math.abs(System.nanoTime());
+        String lowKeyword = "GO_HOT_" + Math.abs((System.nanoTime() / 7));
+
+        mockMvc.perform(get("/public/jobs")
+                .param("keyword", highKeyword))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value(200));
+
+        mockMvc.perform(get("/public/jobs")
+                .param("keyword", highKeyword))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value(200));
+
+        mockMvc.perform(get("/public/jobs")
+                .param("keyword", lowKeyword))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value(200));
+
+        MvcResult hotResult = mockMvc.perform(get("/public/jobs/hot-searches"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value(200))
+            .andReturn();
+
+        JsonNode data = objectMapper.readTree(hotResult.getResponse().getContentAsString()).path("data");
+        assertThat(data.isArray()).isTrue();
+
+        Double highScore = null;
+        Double lowScore = null;
+        for (JsonNode node : data) {
+            String keyword = node.path("keyword").asText();
+            if (highKeyword.equals(keyword)) {
+                highScore = node.path("score").asDouble();
+            }
+            if (lowKeyword.equals(keyword)) {
+                lowScore = node.path("score").asDouble();
+            }
+        }
+        assertThat(highScore).isNotNull();
+        assertThat(lowScore).isNotNull();
+        assertThat(highScore).isGreaterThanOrEqualTo(2D);
+        assertThat(lowScore).isGreaterThanOrEqualTo(1D);
+        assertThat(highScore).isGreaterThan(lowScore);
+    }
+
     private Long createUser(String username) {
         jdbcTemplate.update(
             "INSERT INTO sys_user (username, password, user_type, status, deleted, create_time, update_time) VALUES (?, 'pwd', 2, 1, 0, NOW(), NOW())",
@@ -169,12 +220,12 @@ class PublicJobControllerIT extends BaseControllerIT {
     }
 
     private long createPositionType(Long parentId, String name, int level, int status) {
-        long baseCode = Math.abs(System.nanoTime() % 1_000_000_000L) + 9000000000L;
+        long nextId = 9000000000L + Math.abs(System.nanoTime() % 1_000_000_000L);
         jdbcTemplate.update(
-            "INSERT INTO position_type (code, name, parent_id, level, sort_no, status, deleted, create_time, update_time) VALUES (?, ?, ?, ?, 1, ?, 0, NOW(), NOW())",
-            baseCode, name, parentId, level, status
+            "INSERT INTO position_type (id, name, parent_id, level, sort_no, status, deleted, create_time, update_time) VALUES (?, ?, ?, ?, 1, ?, 0, NOW(), NOW())",
+            nextId, name, parentId, level, status
         );
-        return jdbcTemplate.queryForObject("SELECT LASTVAL()", Long.class);
+        return nextId;
     }
 
     private long createIndustry(Long parentId, String name, int level, int enabled) {

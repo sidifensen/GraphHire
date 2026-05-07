@@ -1,9 +1,11 @@
 package com.graphhire.publicapi.interfaces.controller.it;
 
 import com.graphhire.BaseControllerIT;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.web.servlet.MvcResult;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
@@ -12,6 +14,7 @@ import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class PublicCompanyControllerIT extends BaseControllerIT {
 
@@ -148,6 +151,56 @@ class PublicCompanyControllerIT extends BaseControllerIT {
             .andExpect(jsonPath("$.data.records[0].industryId").value(industryLeafAiId))
             .andExpect(jsonPath("$.data.records[0].industryName").value(industryAiName))
             .andExpect(jsonPath("$.data.records[0].scale").value("5"));
+    }
+
+    @Test
+    @DisplayName("公开企业搜索会写入热门词并可读取")
+    void searchCompanies_recordsAndListsHotKeywords() throws Exception {
+        Long companyUserId = createUser("public_company_it_hot_company@graphhire.com");
+        Long companyId = createCompany(companyUserId, "PUBLIC_COMPANY_IT_HOT_热词企业");
+        createJob(companyId, "PUBLIC_COMPANY_IT_HOT_后端工程师", "北京", 22000, 32000, 1);
+        String highKeyword = "BYTE_HOT_" + Math.abs(System.nanoTime());
+        String lowKeyword = "ALI_HOT_" + Math.abs((System.nanoTime() / 11));
+
+        mockMvc.perform(get("/public/companies")
+                .param("keyword", highKeyword))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value(200));
+
+        mockMvc.perform(get("/public/companies")
+                .param("keyword", highKeyword))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value(200));
+
+        mockMvc.perform(get("/public/companies")
+                .param("keyword", lowKeyword))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value(200));
+
+        MvcResult hotResult = mockMvc.perform(get("/public/companies/hot-searches"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value(200))
+            .andReturn();
+
+        JsonNode data = objectMapper.readTree(hotResult.getResponse().getContentAsString()).path("data");
+        assertThat(data.isArray()).isTrue();
+
+        Double highScore = null;
+        Double lowScore = null;
+        for (JsonNode node : data) {
+            String keyword = node.path("keyword").asText();
+            if (highKeyword.equals(keyword)) {
+                highScore = node.path("score").asDouble();
+            }
+            if (lowKeyword.equals(keyword)) {
+                lowScore = node.path("score").asDouble();
+            }
+        }
+        assertThat(highScore).isNotNull();
+        assertThat(lowScore).isNotNull();
+        assertThat(highScore).isGreaterThanOrEqualTo(2D);
+        assertThat(lowScore).isGreaterThanOrEqualTo(1D);
+        assertThat(highScore).isGreaterThan(lowScore);
     }
 
     private Long createUser(String username) {

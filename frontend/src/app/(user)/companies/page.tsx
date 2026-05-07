@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Skeleton } from '@/app/(user)/_mock/components/Skeleton';
 import { publicApi, type Company, type ProvinceCityItem } from '@/lib/api/public';
 import { getApiBaseUrl } from '@/lib/api/base-url';
+import { HotSearchDropdown } from '@/components/ui/hot-search-dropdown';
 import {
   COMPANY_SCALE_OPTIONS,
   DEFAULT_CITY_OPTIONS,
@@ -44,6 +45,9 @@ function resolveLogoUrl(url?: string | null) {
 
 export default function CompanyList() {
   const [search, setSearch] = useState('');
+  const [hotSearchOpen, setHotSearchOpen] = useState(false);
+  const [hotSearchLoading, setHotSearchLoading] = useState(false);
+  const [hotSearchItems, setHotSearchItems] = useState<Array<{ keyword: string; score: number }>>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -361,18 +365,55 @@ export default function CompanyList() {
     return roots.flatMap((node) => (node.children && node.children.length > 0 ? node.children : [node]));
   }, [industryTree, activeIndustryRootId]);
 
+  const loadHotSearches = async () => {
+    setHotSearchLoading(true);
+    try {
+      const items = await publicApi.companies.getHotSearches(10);
+      setHotSearchItems(items);
+    } finally {
+      setHotSearchLoading(false);
+    }
+  };
+
+  const handleSearchInputFocus = () => {
+    setHotSearchOpen(true);
+    void loadHotSearches();
+  };
+
+  const handleSearchInputBlur = () => {
+    window.setTimeout(() => {
+      setHotSearchOpen(false);
+    }, 120);
+  };
+
+  const applyHotSearchKeyword = (keyword: string) => {
+    setSearch(keyword);
+    setHotSearchOpen(false);
+  };
+
   return (
     <div className="flex flex-col bg-surface-background pb-24 md:pb-0">
       <header className="sticky top-0 z-50 bg-surface-lowest shadow-sm md:hidden">
         <div className="border-b border-surface-mid px-4 py-2">
-          <div className="flex h-9 items-center rounded-full bg-surface-low px-3">
-            <Search className="mr-2 shrink-0 text-outline" size={16} />
-            <input
-              type="text"
-              placeholder="搜索公司"
-              className="min-w-0 flex-1 bg-transparent text-sm text-on-surface outline-none"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+          <div className="relative">
+            <div className="flex h-9 items-center rounded-full bg-surface-low px-3">
+              <Search className="mr-2 shrink-0 text-outline" size={16} />
+              <input
+                type="text"
+                placeholder="搜索公司"
+                className="min-w-0 flex-1 bg-transparent text-sm text-on-surface outline-none"
+                value={search}
+                onFocus={handleSearchInputFocus}
+                onBlur={handleSearchInputBlur}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <HotSearchDropdown
+              open={hotSearchOpen}
+              loading={hotSearchLoading}
+              items={hotSearchItems}
+              onSelect={applyHotSearchKeyword}
+              className="mt-1"
             />
           </div>
         </div>
@@ -655,14 +696,25 @@ export default function CompanyList() {
         <section data-testid="desktop-company-filter-band" className="hidden w-full bg-surface-low md:block">
           <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-4 px-5 py-6 md:px-8">
             <div data-testid="desktop-company-search-row" className="flex w-full md:mx-0 md:w-full">
-              <div className="flex h-12 flex-1 items-center overflow-hidden rounded-l-lg border border-primary bg-surface-lowest shadow-sm md:border-2 md:border-r-0 md:border-primary">
-                <Search className="ml-3 mr-2 text-outline" size={16} />
-                <input
-                  type="text"
-                  placeholder="搜索公司"
-                  className="h-full flex-1 bg-transparent px-1 text-body-md outline-none"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+              <div className="relative flex-1">
+                <div className="flex h-12 flex-1 items-center overflow-hidden rounded-l-lg border border-primary bg-surface-lowest shadow-sm md:border-2 md:border-r-0 md:border-primary">
+                  <Search className="ml-3 mr-2 text-outline" size={16} />
+                  <input
+                    type="text"
+                    placeholder="搜索公司"
+                    className="h-full flex-1 bg-transparent px-1 text-body-md outline-none"
+                    value={search}
+                    onFocus={handleSearchInputFocus}
+                    onBlur={handleSearchInputBlur}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                </div>
+                <HotSearchDropdown
+                  open={hotSearchOpen}
+                  loading={hotSearchLoading}
+                  items={hotSearchItems}
+                  onSelect={applyHotSearchKeyword}
+                  className="mt-2 rounded-r-xl"
                 />
               </div>
               <button className="h-12 rounded-r-lg bg-primary px-6 text-sm font-bold text-white shadow-sm transition-colors hover:bg-primary/90 md:px-10 md:text-base">

@@ -69,6 +69,11 @@ export interface HomeOverviewResponse {
   hotCities: string[];
 }
 
+export interface HotSearchItem {
+  keyword: string;
+  score: number;
+}
+
 const inFlightRequests = new Map<string, Promise<unknown>>();
 
 function withInFlightDedupe<T>(key: string, factory: () => Promise<T>): Promise<T> {
@@ -114,6 +119,13 @@ export const publicApi = {
       return response.data;
     },
 
+    getHotSearches: async (limit?: number): Promise<HotSearchItem[]> => {
+      const response = await apiClient.get<HotSearchItem[]>('/public/companies/hot-searches', {
+        params: { limit },
+      });
+      return response.data ?? [];
+    },
+
     getById: async (id: number): Promise<Company> =>
       withInFlightDedupe(`GET:/public/companies/${id}`, async () => {
         const response = await apiClient.get<Company>(`/public/companies/${id}`);
@@ -144,6 +156,13 @@ export const publicApi = {
         const response = await apiClient.get<BackendPageResult<Job>>('/public/jobs', { params });
         return response.data;
       });
+    },
+
+    getHotSearches: async (limit?: number): Promise<HotSearchItem[]> => {
+      const response = await apiClient.get<HotSearchItem[]>('/public/jobs/hot-searches', {
+        params: { limit },
+      });
+      return response.data ?? [];
     },
 
     getPositionTypeTree: async (): Promise<PublicTreeNode[]> => {

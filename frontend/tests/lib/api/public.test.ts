@@ -154,4 +154,38 @@ describe('publicApi in-flight dedupe', () => {
       }),
     );
   });
+
+  it('requests job hot searches with optional limit', async () => {
+    hoisted.getMock.mockResolvedValueOnce({
+      data: [{ keyword: 'Java', score: 12 }],
+    });
+
+    const { publicApi } = await import('@/lib/api/public');
+    const result = await publicApi.jobs.getHotSearches(8);
+
+    expect(hoisted.getMock).toHaveBeenCalledWith(
+      '/public/jobs/hot-searches',
+      expect.objectContaining({
+        params: { limit: 8 },
+      }),
+    );
+    expect(result).toEqual([{ keyword: 'Java', score: 12 }]);
+  });
+
+  it('requests company hot searches with optional limit', async () => {
+    hoisted.getMock.mockResolvedValueOnce({
+      data: [{ keyword: '字节', score: 7 }],
+    });
+
+    const { publicApi } = await import('@/lib/api/public');
+    const result = await publicApi.companies.getHotSearches(6);
+
+    expect(hoisted.getMock).toHaveBeenCalledWith(
+      '/public/companies/hot-searches',
+      expect.objectContaining({
+        params: { limit: 6 },
+      }),
+    );
+    expect(result).toEqual([{ keyword: '字节', score: 7 }]);
+  });
 });

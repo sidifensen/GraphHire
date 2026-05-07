@@ -401,3 +401,9 @@
 - test: 新增并更新 `PersonControllerTest`、`GraphBuildServiceTest`、`SkillGraphClientTest`，覆盖“查询不触发 AI、构建时落图、分类读取接口”回归场景；后端 `mvn compile`、`mvn test` 全通过
 
 - fix: 恢复开发环境登录自动填充：用户登录页按角色自动预填内置 dev 账号（支持 `NEXT_PUBLIC_DEV_JOBSEEKER_*`、`NEXT_PUBLIC_DEV_RECRUITER_*` 覆盖），管理登录页恢复 dev 默认预填（支持 `NEXT_PUBLIC_DEV_ADMIN_*` 覆盖），生产环境仍保持不预填
+
+- feat: 新增公开热门搜索能力（Redis ZSet）：后端增加 `GET /public/jobs/hot-searches` 与 `GET /public/companies/hot-searches`，并在 `GET /public/jobs`、`GET /public/companies` 搜索时自动统计有效关键词热度
+- feat: 用户端职位页与公司页搜索框新增热门搜索下拉：点击/聚焦搜索框即展示热门词（含热度），支持点击一键回填关键词并触发同页检索链路
+- refactor: 新增前端通用组件 `hot-search-dropdown`，统一处理 loading/empty/item 交互；`publicApi` 同步补充 jobs/companies 热搜读取方法
+- test: 新增并通过后端热门搜索集成测试（`PublicJobControllerIT`、`PublicCompanyControllerIT`）与前端 API/组件测试（`public.test.ts`、`hot-search-dropdown.test.tsx`）
+- test: 按前后端联合改动面完成全量验证：`mvn compile`、`mvn test`、`npm run build`、`npm run test:run` 全通过

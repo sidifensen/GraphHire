@@ -16,6 +16,8 @@ import com.graphhire.job.domain.vo.SalaryRange;
 import com.graphhire.job.interfaces.dto.response.CompanyAvatarUrlResolver;
 import com.graphhire.positiontype.application.service.PositionTypeAppService;
 import com.graphhire.positiontype.domain.model.PositionType;
+import com.graphhire.publicapi.application.service.HotSearchAppService;
+import com.graphhire.publicapi.interfaces.dto.response.PublicHotSearchItemResponse;
 import com.graphhire.publicapi.interfaces.dto.response.PublicJobCardResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -48,6 +50,9 @@ public class PublicJobController {
     @Autowired
     private CompanyAvatarUrlResolver companyAvatarUrlResolver;
 
+    @Autowired
+    private HotSearchAppService hotSearchAppService;
+
     @GetMapping
     public Result<PageResult<PublicJobCardResponse>> searchJobs(
             @RequestParam(required = false) String keyword,
@@ -65,6 +70,8 @@ public class PublicJobController {
             @RequestParam(required = false, defaultValue = "createTime") String sortBy,
             @RequestParam(required = false, defaultValue = "1") Integer page,
             @RequestParam(required = false, defaultValue = "10") Integer size) {
+
+        hotSearchAppService.recordJobKeyword(keyword);
 
         List<Job> allPublishedJobs = jobRepository.findByStatus(JobStatus.PUBLISHED);
         List<String> normalizedCityList = normalizeCityList(cityList, city);
@@ -127,6 +134,12 @@ public class PublicJobController {
                 : List.of();
 
         return Result.success(new PageResult<>(pagedJobs, (long) total, safePage, safeSize));
+    }
+
+    @GetMapping("/hot-searches")
+    public Result<List<PublicHotSearchItemResponse>> listHotSearches(
+            @RequestParam(required = false) Integer limit) {
+        return Result.success(hotSearchAppService.listJobHotSearches(limit));
     }
 
     @GetMapping("/{id}")

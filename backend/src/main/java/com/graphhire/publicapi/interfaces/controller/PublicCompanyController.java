@@ -13,7 +13,9 @@ import com.graphhire.job.domain.model.Job;
 import com.graphhire.job.domain.repository.JobRepository;
 import com.graphhire.job.domain.vo.JobStatus;
 import com.graphhire.job.interfaces.dto.response.CompanyAvatarUrlResolver;
+import com.graphhire.publicapi.application.service.HotSearchAppService;
 import com.graphhire.publicapi.interfaces.dto.response.PublicCompanyCardResponse;
+import com.graphhire.publicapi.interfaces.dto.response.PublicHotSearchItemResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,6 +41,9 @@ public class PublicCompanyController {
     @Autowired
     private IndustryAppService industryAppService;
 
+    @Autowired
+    private HotSearchAppService hotSearchAppService;
+
     @GetMapping
     public Result<PageResult<PublicCompanyCardResponse>> searchCompanies(
             @RequestParam(required = false) String keyword,
@@ -47,6 +52,8 @@ public class PublicCompanyController {
             @RequestParam(required = false) List<String> cityList,
             @RequestParam(required = false, defaultValue = "1") Integer page,
             @RequestParam(required = false, defaultValue = "10") Integer size) {
+
+        hotSearchAppService.recordCompanyKeyword(keyword);
 
         List<Company> allApprovedCompanies = companyAppService.getCompaniesByAuthStatus(AuthStatus.VERIFIED);
         List<Long> normalizedIndustryLeafIds = normalizeIndustryLeafIds(industryLeafIds);
@@ -72,6 +79,12 @@ public class PublicCompanyController {
         List<PublicCompanyCardResponse> pagedCompanies = fromIndex < total ? cards.subList(fromIndex, toIndex) : List.of();
 
         return Result.success(new PageResult<>(pagedCompanies, (long) total, page, size));
+    }
+
+    @GetMapping("/hot-searches")
+    public Result<List<PublicHotSearchItemResponse>> listHotSearches(
+            @RequestParam(required = false) Integer limit) {
+        return Result.success(hotSearchAppService.listCompanyHotSearches(limit));
     }
 
     @GetMapping("/{id}")

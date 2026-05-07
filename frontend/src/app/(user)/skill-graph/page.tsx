@@ -83,6 +83,19 @@ type GraphData = {
 
 type SkillCategory = { code: string; name: string; skills: string[] };
 
+function resolveLinkNodeId(node: unknown): string | null {
+  if (typeof node === 'string') {
+    return node;
+  }
+  if (typeof node === 'object' && node !== null && 'id' in node) {
+    const id = (node as { id?: unknown }).id;
+    if (typeof id === 'string') {
+      return id;
+    }
+  }
+  return null;
+}
+
 function normalizeSkills(input: unknown): string[] {
   if (!Array.isArray(input)) {
     return [];
@@ -425,19 +438,23 @@ export default function KnowledgeGraph() {
       const linkForceWithDistance = linkForce as unknown as { distance?: (value: number | ((link: ForceLinkWithNodes) => number)) => unknown } | null;
       if (linkForceWithDistance && typeof linkForceWithDistance.distance === 'function') {
         linkForceWithDistance.distance((link) => {
-          const sourceCandidate = link.source;
-          const sourceKind =
-            typeof sourceCandidate === 'object' &&
-            sourceCandidate !== null &&
-            'kind' in sourceCandidate &&
-            typeof (sourceCandidate as { kind?: unknown }).kind === 'string'
-              ? (sourceCandidate as { kind: string }).kind
-              : null;
-          if (sourceKind === 'person') {
-            return isMobileViewport ? 122 : 88;
+          const sourceId = resolveLinkNodeId(link.source);
+          const targetId = resolveLinkNodeId(link.target);
+          const isCenterLink = sourceId?.startsWith('person:') || targetId?.startsWith('person:');
+          if (isCenterLink) {
+            return isMobileViewport ? 60 : 42;
           }
           return isMobileViewport ? 94 : 72;
         });
+        const linkForceWithStrength = linkForce as unknown as { strength?: (value: number | ((link: ForceLinkWithNodes) => number)) => unknown } | null;
+        if (linkForceWithStrength && typeof linkForceWithStrength.strength === 'function') {
+          linkForceWithStrength.strength((link) => {
+            const sourceId = resolveLinkNodeId(link.source);
+            const targetId = resolveLinkNodeId(link.target);
+            const isCenterLink = sourceId?.startsWith('person:') || targetId?.startsWith('person:');
+            return isCenterLink ? 1.25 : 1;
+          });
+        }
       }
       const chargeForce = d3ForceFn('charge');
       const chargeForceWithStrength = chargeForce as unknown as { strength?: (value: number) => unknown } | null;
@@ -556,25 +573,25 @@ export default function KnowledgeGraph() {
               <RefreshCw size={18} />
             </button>
 
-            <div className="absolute bottom-3 right-3 z-20 text-right md:bottom-5 md:right-5">
-              <div className="text-4xl font-black text-primary md:text-6xl">{totalScore}</div>
-              <div className="mt-0.5 text-sm font-extrabold uppercase tracking-[0.2em] text-on-surface/85">综合分</div>
-              {positionTypeName ? <div className="mt-1 text-sm font-bold text-on-surface">{positionTypeName}</div> : null}
-              <div className="mt-1.5 text-base font-black text-on-surface md:text-lg">{skillCount} 知识节点</div>
-              <div className="mt-2 text-xs font-extrabold uppercase tracking-[0.18em] text-on-surface/80">技能分类</div>
+            <div className="absolute bottom-3 right-3 z-20 text-right opacity-50 md:bottom-5 md:right-5">
+              <div className="text-4xl font-black text-primary/90 md:text-6xl">{totalScore}</div>
+              <div className="mt-0.5 text-sm font-extrabold uppercase tracking-[0.2em] text-on-surface/72">综合分</div>
+              {positionTypeName ? <div className="mt-1 text-sm font-bold text-on-surface/78">{positionTypeName}</div> : null}
+              <div className="mt-1.5 text-base font-black text-on-surface/82 md:text-lg">{skillCount} 知识节点</div>
+              <div className="mt-2 text-xs font-extrabold uppercase tracking-[0.18em] text-on-surface/70">技能分类</div>
               {categorySummaries.length > 0 ? (
                 <div className="mt-1.5 flex max-w-[260px] flex-wrap justify-end gap-1.5">
                   {categorySummaries.map((category) => (
                     <span
                       key={`category-summary-${category.code}`}
-                      className="rounded-full border border-surface-mid bg-surface-lowest/85 px-2 py-0.5 text-xs font-semibold text-on-surface"
+                      className="rounded-full border border-surface-mid/80 bg-surface-lowest/70 px-2 py-0.5 text-xs font-semibold text-on-surface/80"
                     >
                       {category.name} · {category.skills.length}
                     </span>
                   ))}
                 </div>
               ) : (
-                <div className="mt-1 text-xs text-on-surface-variant">暂无分类</div>
+                <div className="mt-1 text-xs text-on-surface-variant/80">暂无分类</div>
               )}
             </div>
           </section>

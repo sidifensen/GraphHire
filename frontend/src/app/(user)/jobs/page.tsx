@@ -8,6 +8,7 @@ import { Skeleton } from '@/app/(user)/_mock/components/Skeleton';
 import { publicApi, type Job, type PublicTreeNode, type ProvinceCityItem } from '@/lib/api/public';
 import { getApiBaseUrl } from '@/lib/api/base-url';
 import PositionTypePickerModal from '@/components/user/PositionTypePickerModal';
+import { HotSearchDropdown } from '@/components/ui/hot-search-dropdown';
 import {
   Select,
   SelectContent,
@@ -232,6 +233,9 @@ function resolveLogoUrl(url?: string | null) {
 
 export default function JobList() {
   const [search, setSearch] = useState('');
+  const [hotSearchOpen, setHotSearchOpen] = useState(false);
+  const [hotSearchLoading, setHotSearchLoading] = useState(false);
+  const [hotSearchItems, setHotSearchItems] = useState<Array<{ keyword: string; score: number }>>([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [activeAdvancedCategory, setActiveAdvancedCategory] = useState(ADVANCED_FILTERS[0].id);
@@ -268,6 +272,32 @@ export default function JobList() {
     companyLogo?: string;
     hrAvatar?: string;
   }>>([]);
+
+  const loadHotSearches = async () => {
+    setHotSearchLoading(true);
+    try {
+      const items = await publicApi.jobs.getHotSearches(10);
+      setHotSearchItems(items);
+    } finally {
+      setHotSearchLoading(false);
+    }
+  };
+
+  const handleSearchInputFocus = () => {
+    setHotSearchOpen(true);
+    void loadHotSearches();
+  };
+
+  const handleSearchInputBlur = () => {
+    window.setTimeout(() => {
+      setHotSearchOpen(false);
+    }, 120);
+  };
+
+  const applyHotSearchKeyword = (keyword: string) => {
+    setSearch(keyword);
+    setHotSearchOpen(false);
+  };
 
   const currentCategoryNames = useMemo(
     () => selectedFilters.filter((item) => item.id.startsWith('category:')).map((item) => item.id.replace('category:', '')),
@@ -534,14 +564,25 @@ export default function JobList() {
       <header className="md:hidden sticky top-0 z-50 bg-surface-lowest flex flex-col shadow-sm">
         {/* Search Bar */}
         <div className="flex items-center gap-3 px-4 py-2 border-b border-surface-mid">
-          <div className="flex-1 flex items-center bg-surface-low rounded-full h-9 px-3">
-            <Search className="text-outline mr-2 shrink-0" size={16} />
-            <input 
-              type="text" 
-              placeholder="搜索职位关键词" 
-              className="flex-1 bg-transparent outline-none text-sm text-on-surface min-w-0"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+          <div className="relative flex-1">
+            <div className="flex items-center bg-surface-low rounded-full h-9 px-3">
+              <Search className="text-outline mr-2 shrink-0" size={16} />
+              <input
+                type="text"
+                placeholder="搜索职位关键词"
+                className="flex-1 bg-transparent outline-none text-sm text-on-surface min-w-0"
+                value={search}
+                onFocus={handleSearchInputFocus}
+                onBlur={handleSearchInputBlur}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <HotSearchDropdown
+              open={hotSearchOpen}
+              loading={hotSearchLoading}
+              items={hotSearchItems}
+              onSelect={applyHotSearchKeyword}
+              className="mt-1"
             />
           </div>
         </div>
@@ -885,18 +926,29 @@ export default function JobList() {
           
           {/* Desktop Search Bar */}
           <div className="hidden md:flex w-full">
-             <div className="flex flex-1 items-center bg-surface-lowest border border-primary md:border-2 md:rounded-[24px] overflow-hidden h-[48px] shadow-sm pl-6 pr-1">
+             <div className="relative flex-1">
+               <div className="flex flex-1 items-center bg-surface-lowest border border-primary md:border-2 md:rounded-[24px] overflow-hidden h-[48px] shadow-sm pl-6 pr-1">
                 <Search className="text-outline shrink-0 mr-2" size={18} />
-                <input 
-                  type="text" 
-                  placeholder="输入职位关键词搜索" 
+                <input
+                  type="text"
+                  placeholder="输入职位关键词搜索"
                   className="flex-1 h-full bg-transparent outline-none text-body-md text-on-surface"
                   value={search}
+                  onFocus={handleSearchInputFocus}
+                  onBlur={handleSearchInputBlur}
                   onChange={(e) => setSearch(e.target.value)}
                 />
                 <button className="bg-[#4169E1] text-white font-bold h-10 px-8 rounded-[20px] hover:bg-[#3458c9] transition-colors shadow-sm ml-2">
                   搜索
                 </button>
+               </div>
+               <HotSearchDropdown
+                 open={hotSearchOpen}
+                 loading={hotSearchLoading}
+                 items={hotSearchItems}
+                 onSelect={applyHotSearchKeyword}
+                 className="mt-2"
+               />
              </div>
           </div>
 
