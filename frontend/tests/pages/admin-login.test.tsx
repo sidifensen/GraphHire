@@ -39,12 +39,20 @@ describe('AdminLoginPage', () => {
   it('开发模式下自动填充测试账号与密码', async () => {
     vi.resetModules();
     vi.stubEnv('NODE_ENV', 'development');
+    vi.stubEnv('NEXT_PUBLIC_DEV_ADMIN_USERNAME', 'dev-admin@example.com');
+    vi.stubEnv('NEXT_PUBLIC_DEV_ADMIN_PASSWORD', 'dev-admin-password');
     const { default: DevAdminLoginPage } = await import('@/app/admin/login/page');
 
     render(<DevAdminLoginPage />);
 
-    expect(screen.getByLabelText('账号')).toHaveValue('admin@graphhire.com');
-    expect(screen.getByLabelText('密码')).toHaveValue('password123');
+    expect(screen.getByLabelText('账号')).toHaveValue('dev-admin@example.com');
+    expect(screen.getByLabelText('密码')).toHaveValue('dev-admin-password');
+  });
+
+  it('生产模式默认不预填账号与密码', () => {
+    render(<AdminLoginPage />);
+    expect(screen.getByLabelText('账号')).toHaveValue('');
+    expect(screen.getByLabelText('密码')).toHaveValue('');
   });
 
   it('展示重构后的登录页核心文案', () => {

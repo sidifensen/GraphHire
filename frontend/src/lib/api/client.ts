@@ -2,7 +2,6 @@ import axios from 'axios';
 import {
   getAuthDomainByPath,
   getAuthStoreByDomain,
-  getStorageKeyByDomain,
   type AuthDomain,
 } from '@/lib/stores/auth-store';
 import { getApiBaseUrl } from '@/lib/api/base-url';
@@ -15,38 +14,7 @@ const apiClient = axios.create({
 
 function getAccessToken() {
   const domain = getCurrentDomain();
-  const domainOrder: AuthDomain[] = [domain, 'enterprise', 'user', 'admin'].filter(
-    (value, index, array) => array.indexOf(value) === index,
-  ) as AuthDomain[];
-
-  for (const currentDomain of domainOrder) {
-    const stateToken = getAuthStoreByDomain(currentDomain).getState().accessToken;
-    if (stateToken) {
-      return stateToken;
-    }
-  }
-
-  if (typeof window === 'undefined') {
-    return null;
-  }
-
-  try {
-    for (const currentDomain of domainOrder) {
-      const storageKey = getStorageKeyByDomain(currentDomain);
-      const persisted = window.localStorage.getItem(storageKey);
-      if (!persisted) {
-        continue;
-      }
-      const parsed = JSON.parse(persisted) as { state?: { accessToken?: string | null } };
-      const token = parsed.state?.accessToken ?? null;
-      if (token) {
-        return token;
-      }
-    }
-    return null;
-  } catch {
-    return null;
-  }
+  return getAuthStoreByDomain(domain).getState().accessToken;
 }
 
 function getCurrentDomain(): AuthDomain {

@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import type { UserType } from '@/lib/types';
 
 interface AuthState {
@@ -21,40 +20,33 @@ const STORAGE_KEYS: Record<AuthDomain, string> = {
 };
 
 function createAuthStore(storageKey: string) {
-  return create<AuthState>()(
-    persist(
-      (set) => ({
+  return create<AuthState>()((set) => ({
+    accessToken: null,
+    refreshToken: null,
+    user: null,
+    isAuthenticated: false,
+
+    setAuth: (tokens, user) =>
+      set({
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken || null,
+        user,
+        isAuthenticated: true,
+      }),
+
+    updateUser: (partial) =>
+      set((state) => ({
+        user: state.user ? { ...state.user, ...partial } : state.user,
+      })),
+
+    logout: () =>
+      set({
         accessToken: null,
         refreshToken: null,
         user: null,
         isAuthenticated: false,
-
-        setAuth: (tokens, user) =>
-          set({
-            accessToken: tokens.accessToken,
-            refreshToken: tokens.refreshToken || null,
-            user,
-            isAuthenticated: true,
-          }),
-
-        updateUser: (partial) =>
-          set((state) => ({
-            user: state.user ? { ...state.user, ...partial } : state.user,
-          })),
-
-        logout: () =>
-          set({
-            accessToken: null,
-            refreshToken: null,
-            user: null,
-            isAuthenticated: false,
-          }),
       }),
-      {
-        name: storageKey,
-      }
-    )
-  );
+  }));
 }
 
 export const userAuthStore = createAuthStore(STORAGE_KEYS.user);

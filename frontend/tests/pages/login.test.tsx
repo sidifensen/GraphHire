@@ -42,10 +42,31 @@ vi.mock('@/lib/stores/auth-store', () => ({
 describe('LoginPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.unstubAllEnvs();
     Object.defineProperty(window, 'location', {
       writable: true,
       value: { ...originalLocation, search: '' },
     });
+  });
+
+  it('默认不预填测试账号密码', () => {
+    render(<LoginPage />);
+    expect(screen.getByPlaceholderText('请输入邮箱')).toHaveValue('');
+    expect(screen.getByPlaceholderText('请输入密码')).toHaveValue('');
+  });
+
+  it('development 模式下使用环境变量预填测试账号', async () => {
+    vi.resetModules();
+    vi.stubEnv('NODE_ENV', 'development');
+    vi.stubEnv('NEXT_PUBLIC_DEV_JOBSEEKER_USERNAME', 'dev-user@example.com');
+    vi.stubEnv('NEXT_PUBLIC_DEV_JOBSEEKER_PASSWORD', 'dev-password');
+    vi.stubEnv('NEXT_PUBLIC_DEV_RECRUITER_USERNAME', 'dev-hr@example.com');
+    vi.stubEnv('NEXT_PUBLIC_DEV_RECRUITER_PASSWORD', 'dev-hr-password');
+    const { default: DevLoginPage } = await import('@/app/login/page');
+
+    render(<DevLoginPage />);
+    expect(screen.getByPlaceholderText('请输入邮箱')).toHaveValue('dev-user@example.com');
+    expect(screen.getByPlaceholderText('请输入密码')).toHaveValue('dev-password');
   });
 
   it('submits email and password, then routes person user to home', async () => {
@@ -90,9 +111,8 @@ describe('LoginPage', () => {
 
     render(<LoginPage />);
     await user.click(screen.getByRole('tab', { name: '招聘者' }));
-    await waitFor(() => {
-      expect(screen.getByDisplayValue('hr@techchina.com')).toBeInTheDocument();
-    });
+    await user.type(screen.getByPlaceholderText('请输入邮箱'), 'hr@techchina.com');
+    await user.type(screen.getByPlaceholderText('请输入密码'), 'password123');
 
     await user.click(screen.getByRole('button', { name: '立即登录' }));
 
@@ -118,9 +138,8 @@ describe('LoginPage', () => {
 
     render(<LoginPage />);
     await user.click(screen.getByRole('tab', { name: '招聘者' }));
-    await waitFor(() => {
-      expect(screen.getByDisplayValue('hr@techchina.com')).toBeInTheDocument();
-    });
+    await user.type(screen.getByPlaceholderText('请输入邮箱'), 'hr@techchina.com');
+    await user.type(screen.getByPlaceholderText('请输入密码'), 'password123');
     await user.click(screen.getByRole('button', { name: '立即登录' }));
 
     await waitFor(() => {

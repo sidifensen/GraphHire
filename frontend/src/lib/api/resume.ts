@@ -179,9 +179,11 @@ export const resumeApi = {
     const response = await apiClient.get(`/resume/${id}/preview`, {
       responseType: 'blob',
     });
+    const contentTypeHeader = response.headers['content-type'];
+    const contentType = typeof contentTypeHeader === 'string' ? contentTypeHeader : 'application/octet-stream';
     return {
       blob: response.data as Blob,
-      contentType: response.headers['content-type'] || 'application/octet-stream',
+      contentType,
     };
   },
 

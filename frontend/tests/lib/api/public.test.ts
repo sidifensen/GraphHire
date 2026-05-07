@@ -70,6 +70,30 @@ describe('publicApi in-flight dedupe', () => {
     expect(r1).toEqual(r2);
   });
 
+  it('dedupes concurrent company detail requests for same id', async () => {
+    let resolveResponse: ((value: unknown) => void) | undefined;
+    hoisted.getMock.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveResponse = resolve;
+        }),
+    );
+
+    const { publicApi } = await import('@/lib/api/public');
+
+    const p1 = publicApi.companies.getById(9);
+    const p2 = publicApi.companies.getById(9);
+
+    expect(hoisted.getMock).toHaveBeenCalledTimes(1);
+
+    resolveResponse?.({
+      data: { id: 9, name: '图谱科技' },
+    });
+
+    const [r1, r2] = await Promise.all([p1, p2]);
+    expect(r1).toEqual(r2);
+  });
+
   it('dedupes concurrent province-cities requests', async () => {
     let resolveResponse: ((value: unknown) => void) | undefined;
     hoisted.getMock.mockImplementationOnce(

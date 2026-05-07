@@ -181,26 +181,6 @@ function mockConversationListReadAfterOpen() {
         lastMessageTime: '2026-05-04T09:12:00',
         unreadCount: 2,
       },
-    ])
-    .mockResolvedValue([
-      {
-        conversationId: 1,
-        jobId: 101,
-        jobTitle: '前端工程师',
-        companyId: 9,
-        companyName: '图谱科技',
-        recruiterUserId: 20,
-        candidateUserId: 10,
-        candidateName: '小王',
-        candidateEmail: 'candidate@example.com',
-        candidateAge: 26,
-        candidateGender: 1,
-        candidateEducation: '本科',
-        recruiterName: '陈HR',
-        lastMessagePreview: '你好，方便沟通吗',
-        lastMessageTime: '2026-05-04T09:12:00',
-        unreadCount: 0,
-      },
     ]);
 }
 
@@ -550,8 +530,6 @@ describe('chat workspace redesign', () => {
 
     await waitFor(() => expect(markReadMock).toHaveBeenCalled());
     expect(markReadMock).toHaveBeenCalledWith({ conversationId: 1, readUpToMessageId: 3 });
-    await waitFor(() => expect(listConversationsMock).toHaveBeenCalledTimes(2));
-
     expect(screen.queryByText('2')).not.toBeInTheDocument();
   });
 
@@ -602,6 +580,7 @@ describe('chat workspace redesign', () => {
     await waitFor(() => expect(downloadResumeMock).toHaveBeenCalledWith(1, 501));
     expect(screen.getByTestId('chat-resume-preview-modal')).toBeInTheDocument();
     expect(screen.getByTitle('简历预览')).toHaveAttribute('src', 'blob:test-url');
+    expect(screen.getByTitle('简历预览')).toHaveAttribute('sandbox', 'allow-downloads');
 
     fireEvent.click(screen.getByRole('button', { name: '关闭预览' }));
     expect(screen.queryByTestId('chat-resume-preview-modal')).not.toBeInTheDocument();

@@ -9,9 +9,16 @@ import { resolveLoginRoleDecision } from '@/lib/auth/login-role';
 import { enterpriseAuthStore, userAuthStore } from '@/lib/stores/auth-store';
 import type { CompanyRegisterRequest, LoginRequest, PersonRegisterRequest } from '@/lib/types';
 
+const isDev = process.env.NODE_ENV === 'development';
 const LOGIN_DEV_ACCOUNTS = {
-  jobseeker: { username: '13800138001@phone.com', password: 'password123' },
-  recruiter: { username: 'hr@techchina.com', password: 'password123' },
+  jobseeker: {
+    username: process.env.NEXT_PUBLIC_DEV_JOBSEEKER_USERNAME ?? '',
+    password: process.env.NEXT_PUBLIC_DEV_JOBSEEKER_PASSWORD ?? '',
+  },
+  recruiter: {
+    username: process.env.NEXT_PUBLIC_DEV_RECRUITER_USERNAME ?? '',
+    password: process.env.NEXT_PUBLIC_DEV_RECRUITER_PASSWORD ?? '',
+  },
 } as const;
 
 export type AuthMode = 'login' | 'register';
@@ -25,8 +32,8 @@ export default function AuthUnifiedPage({ initialMode }: AuthUnifiedPageProps) {
   const [mode, setMode] = useState<AuthMode>(initialMode);
 
   const [loginRole, setLoginRole] = useState<'jobseeker' | 'recruiter'>('jobseeker');
-  const [loginEmail, setLoginEmail] = useState<string>(LOGIN_DEV_ACCOUNTS.jobseeker.username);
-  const [loginPassword, setLoginPassword] = useState<string>(LOGIN_DEV_ACCOUNTS.jobseeker.password);
+  const [loginEmail, setLoginEmail] = useState<string>(isDev ? LOGIN_DEV_ACCOUNTS.jobseeker.username : '');
+  const [loginPassword, setLoginPassword] = useState<string>(isDev ? LOGIN_DEV_ACCOUNTS.jobseeker.password : '');
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState('');
   const [reviewPending, setReviewPending] = useState(false);
@@ -106,8 +113,13 @@ export default function AuthUnifiedPage({ initialMode }: AuthUnifiedPageProps) {
 
   const handleLoginRoleSwitch = (role: 'jobseeker' | 'recruiter') => {
     setLoginRole(role);
-    setLoginEmail(LOGIN_DEV_ACCOUNTS[role].username);
-    setLoginPassword(LOGIN_DEV_ACCOUNTS[role].password);
+    if (isDev) {
+      setLoginEmail(LOGIN_DEV_ACCOUNTS[role].username);
+      setLoginPassword(LOGIN_DEV_ACCOUNTS[role].password);
+      return;
+    }
+    setLoginEmail('');
+    setLoginPassword('');
   };
 
   const handleLoginSubmit = async (event: React.FormEvent) => {

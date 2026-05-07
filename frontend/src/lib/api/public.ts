@@ -114,10 +114,11 @@ export const publicApi = {
       return response.data;
     },
 
-    getById: async (id: number): Promise<Company> => {
-      const response = await apiClient.get<Company>(`/public/companies/${id}`);
-      return response.data;
-    },
+    getById: async (id: number): Promise<Company> =>
+      withInFlightDedupe(`GET:/public/companies/${id}`, async () => {
+        const response = await apiClient.get<Company>(`/public/companies/${id}`);
+        return response.data;
+      }),
   },
 
   jobs: {

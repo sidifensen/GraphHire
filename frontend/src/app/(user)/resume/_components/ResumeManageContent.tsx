@@ -482,6 +482,7 @@ export default function ResumeManageContent() {
               <iframe
                 title="简历预览内容"
                 src={previewModal.url}
+                sandbox="allow-downloads"
                 className="w-full h-full"
               />
             </div>

@@ -230,5 +230,6 @@ describe('User Resume Manage page', () => {
     expect(openSpy).not.toHaveBeenCalled();
     expect(screen.getByRole('dialog', { name: '简历预览弹窗' })).toBeInTheDocument();
     expect(screen.getByTitle('简历预览内容')).toBeInTheDocument();
+    expect(screen.getByTitle('简历预览内容')).toHaveAttribute('sandbox', 'allow-downloads');
   });
 });

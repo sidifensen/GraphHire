@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import AdminShell from '@/components/admin/AdminShell';
+import AdminAuthGuard from '@/components/admin/AdminAuthGuard';
 
 interface AdminLayoutShellProps {
   children: React.ReactNode;
@@ -10,9 +11,9 @@ interface AdminLayoutShellProps {
 export default function AdminLayoutShell({ children }: AdminLayoutShellProps) {
   const pathname = usePathname();
 
-  if (pathname === '/admin/login') {
-    return <>{children}</>;
-  }
-
-  return <AdminShell>{children}</AdminShell>;
+  return (
+    <AdminAuthGuard>
+      {pathname === '/admin/login' ? <>{children}</> : <AdminShell>{children}</AdminShell>}
+    </AdminAuthGuard>
+  );
 }

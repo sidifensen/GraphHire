@@ -20,8 +20,8 @@ describe('LoginPage', () => {
 
   test('默认自动填充求职者测试账号', () => {
     render(<LoginPage />);
-    expect(screen.getByPlaceholderText('请输入邮箱')).toHaveValue('13800138001@phone.com');
-    expect(screen.getByPlaceholderText('请输入密码')).toHaveValue('password123');
+    expect(screen.getByPlaceholderText('请输入邮箱')).toHaveValue('');
+    expect(screen.getByPlaceholderText('请输入密码')).toHaveValue('');
   });
 
   test('切换到招聘者后自动填充招聘者测试账号', async () => {
@@ -30,8 +30,8 @@ describe('LoginPage', () => {
 
     await user.click(screen.getByRole('tab', { name: '招聘者' }));
 
-    expect(screen.getByPlaceholderText('请输入邮箱')).toHaveValue('hr@techchina.com');
-    expect(screen.getByPlaceholderText('请输入密码')).toHaveValue('password123');
+    expect(screen.getByPlaceholderText('请输入邮箱')).toHaveValue('');
+    expect(screen.getByPlaceholderText('请输入密码')).toHaveValue('');
   });
 
   test('切回求职者后恢复求职者测试账号', async () => {
@@ -41,8 +41,8 @@ describe('LoginPage', () => {
     await user.click(screen.getByRole('tab', { name: '招聘者' }));
     await user.click(screen.getByRole('tab', { name: '求职者' }));
 
-    expect(screen.getByPlaceholderText('请输入邮箱')).toHaveValue('13800138001@phone.com');
-    expect(screen.getByPlaceholderText('请输入密码')).toHaveValue('password123');
+    expect(screen.getByPlaceholderText('请输入邮箱')).toHaveValue('');
+    expect(screen.getByPlaceholderText('请输入密码')).toHaveValue('');
   });
 
   test('点击注册后在同页切换为注册表单', async () => {

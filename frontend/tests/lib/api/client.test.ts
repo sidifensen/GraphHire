@@ -17,6 +17,7 @@ const {
   getRequestHandler,
   setDomainToken,
   getDomainToken,
+  localStorageGetItem,
 } = vi.hoisted(() => {
   let requestHandler: ((config: any) => any) | undefined;
   let successHandler: ((response: any) => any) | undefined;
@@ -55,6 +56,7 @@ const {
       domainTokens[domain] = token;
     },
     getDomainToken: (domain: 'user' | 'enterprise' | 'admin') => domainTokens[domain],
+    localStorageGetItem: vi.fn(),
   };
 });
 
@@ -119,10 +121,16 @@ describe('apiClient', () => {
     setDomainToken('enterprise', null);
     setDomainToken('admin', null);
     window.history.pushState({}, '', '/');
+    Object.defineProperty(window, 'localStorage', {
+      value: { getItem: localStorageGetItem },
+      configurable: true,
+      writable: true,
+    });
   });
 
-  it('uses enterprise token on login page when user token is empty', () => {
+  it('only uses current domain token and does not fallback to other domain token', () => {
     setDomainToken('enterprise', 'enterprise-token');
+    setDomainToken('user', null);
 
     const requestHandler = getRequestHandler();
     if (!requestHandler) {
@@ -132,7 +140,23 @@ describe('apiClient', () => {
     window.history.pushState({}, '', '/login');
     const config = requestHandler({ headers: {} });
 
-    expect(config.headers.satoken).toBe('enterprise-token');
+    expect(config.headers.satoken).toBeUndefined();
+    expect(localStorageGetItem).not.toHaveBeenCalled();
+  });
+
+  it('uses current domain token when available', () => {
+    setDomainToken('user', 'user-token');
+
+    const requestHandler = getRequestHandler();
+    if (!requestHandler) {
+      throw new Error('request interceptor not initialized');
+    }
+
+    window.history.pushState({}, '', '/profile');
+    const config = requestHandler({ headers: {} });
+
+    expect(config.headers.satoken).toBe('user-token');
+    expect(localStorageGetItem).not.toHaveBeenCalled();
   });
 
   it('should be defined', () => {

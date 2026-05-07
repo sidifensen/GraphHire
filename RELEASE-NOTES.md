@@ -373,6 +373,28 @@
 
 ## 2026-05-07
 
+- fix: 后端安全与性能加固（按审计项落地）：
+- fix: `skill-tags` 写操作改为仅管理员可用（新增控制器级 admin 校验），阻断匿名/普通用户篡改技能词库风险
+- fix: `/resume/list` 改为“当前登录用户数据范围”分页查询，不再返回全量用户简历；列表项 `parseResult` 不再对外暴露
+- fix: `/match` 查询与触发链路接入“当前用户上下文”权限校验：`detail/list/trigger` 均按 PERSON/COMPANY/ADMIN 角色与资源归属判定，拒绝越权访问
+- fix: 聊天图片上传新增严格校验：大小上限、MIME 白名单、扩展名白名单，非法上传统一返回 400
+- fix: WebSocket 握手移除 query token 鉴权回退，仅允许 `satoken` 请求头；`/ws/chat` 与全局 CORS 均改为可配置白名单来源
+- refactor: 匹配任务查询优化：`triggerMatchForResume` 改用 `jobRepository.findPublished()`，移除 `findAll + 内存过滤` 热路径
+- refactor: 角色鉴权优化：`SaTokenConfig` 优先使用会话 `userType`，缺失时再回源 DB，降低 `/admin/*` 与 `/company/*` 访问开销
+- refactor: 对象存储优化：`RustFSClient` 增加桶存在检查缓存，避免每次上传重复 `headBucket`
+- refactor: 简历写入热路径优化：移除新增简历时每次 `syncResumeIdSequence()` 调用，保留标准自增序列写入
+- test: 新增/更新后端测试覆盖上述安全与性能修复点（SkillTag/Resume/Match/Chat/CORS/WS/RustFS/Repository），并通过后端全量校验 `mvn compile`、`mvn test`
+
+- fix: 前端安全加固：移除登录页/管理登录页内置明文测试账号，改为仅 `development` 模式且由 `NEXT_PUBLIC_DEV_*` 环境变量可选预填，生产默认不预填
+- fix: 鉴权存储与请求策略收敛：移除前端 `auth-store` 本地持久化（不再写入 localStorage），`apiClient` 仅使用当前域内存 token，不再跨域回退读取或发送其他域 token
+- fix: 管理端鉴权接入：`AdminLayoutShell` 统一包裹 `AdminAuthGuard`，补齐 `/admin/*` 页面守卫路径，登录页保留壳层豁免但仍受守卫控制
+- fix: 文件预览安全加固：聊天与简历管理页面 PDF 预览 iframe 增加 `sandbox=\"allow-downloads\"`，降低主动内容执行风险
+- fix: 新增前端安全响应头：在 `next.config.ts` 添加 CSP、`X-Frame-Options`、`X-Content-Type-Options`、`Referrer-Policy`、`Permissions-Policy`
+- refactor: 聊天页性能优化：会话头像加载改为按 `jobId` 去重聚合请求，减少会话列表 N+1 拉取；消息已读后改为本地增量更新，不再触发会话列表二次全量刷新
+- refactor: `publicApi.companies.getById` 增加并发去重缓存，避免同 ID 并发重复请求
+- chore: 前端依赖升级 `axios` 至 `^1.15.2`，修复安全审计高危告警并同步锁文件
+- test: 新增/更新测试覆盖上述修复点（登录预填策略、admin layout 鉴权接入、token 域隔离、company detail 去重、iframe sandbox、聊天已读刷新行为），前端 `npm run build` 与 `npm run test:run` 全通过
+
 - fix: 个人图谱查询 `/person/graph` 改为仅读取 Memgraph 已落图的职位分类结果，不再在查询链路实时触发 AI 技能分类，避免刷新页面重复调用 AI
 - fix: 图谱构建阶段（默认简历切换/解析后重建）新增职位分类落图流程：按技能分类结果写入 `positionTypeMatch + skillCategories`，将分类计算前置到简历变更事件
 - fix: 分类结果写入前补齐“未分配技能”归并逻辑（优先并入首分类），避免分类漏项导致前端长期出现 `未分类` 兜底节点

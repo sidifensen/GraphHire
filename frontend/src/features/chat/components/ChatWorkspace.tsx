@@ -80,6 +80,16 @@ function getUserDisplay(role: ChatWorkspaceProps['role'], item: ChatConversation
   return item.recruiterName || `用户#${item.recruiterUserId}`;
 }
 
+function uniqueConversationTargets(list: ChatConversationSummary[]): Array<{ jobId: number; companyId: number | null }> {
+  const targetMap = new Map<number, number | null>();
+  for (const item of list) {
+    if (!targetMap.has(item.jobId)) {
+      targetMap.set(item.jobId, item.companyId ?? null);
+    }
+  }
+  return Array.from(targetMap.entries()).map(([jobId, companyId]) => ({ jobId, companyId }));
+}
+
 function normalizeCandidateDisplayName(item: ChatConversationSummary): string {
   const raw = (item.candidateName || '').trim();
   if (!raw) return `用户#${item.candidateUserId}`;
@@ -436,26 +446,33 @@ export default function ChatWorkspace({
     }
 
     void (async () => {
-      const entries = await Promise.all(
-        list.map(async (item): Promise<[number, string | null]> => {
+      const targetList = uniqueConversationTargets(list);
+      const avatarByJobId = new Map<number, string | null>();
+      await Promise.all(
+        targetList.map(async ({ jobId, companyId }) => {
           try {
-            const job = await publicApi.jobs.getById(item.jobId);
+            const job = await publicApi.jobs.getById(jobId);
             const fromJob = toAbsoluteAssetUrl(job.companyAvatarUrl);
-            if (fromJob) return [item.conversationId, fromJob];
-            if (item.companyId) {
-              try {
-                const company = await publicApi.companies.getById(item.companyId);
-                return [item.conversationId, toAbsoluteAssetUrl(company.avatarUrl)];
-              } catch {
-                return [item.conversationId, null];
-              }
+            if (fromJob) {
+              avatarByJobId.set(jobId, fromJob);
+              return;
             }
-            return [item.conversationId, null];
+            if (companyId) {
+              try {
+                const company = await publicApi.companies.getById(companyId);
+                avatarByJobId.set(jobId, toAbsoluteAssetUrl(company.avatarUrl));
+              } catch {
+                avatarByJobId.set(jobId, null);
+              }
+              return;
+            }
+            avatarByJobId.set(jobId, null);
           } catch {
-            return [item.conversationId, null];
+            avatarByJobId.set(jobId, null);
           }
         }),
       );
+      const entries = list.map((item): [number, string | null] => [item.conversationId, avatarByJobId.get(item.jobId) ?? null]);
       if (cancelled) return;
       setConversationOwnerAvatarMap((prev) => {
         const next = Object.fromEntries(entries) as Record<number, string | null>;
@@ -590,7 +607,6 @@ export default function ChatWorkspace({
           item.conversationId === selectedConversationId ? { ...item, unreadCount: 0 } : item,
         ),
       );
-      setLastReadRefreshKey((prev) => prev + 1);
     })();
   }, [messages, currentUserId, selectedConversationId]);
 
@@ -879,7 +895,7 @@ export default function ChatWorkspace({
               <img title="图片预览" src={previewUrl} alt={previewFileName || '图片预览'} className="max-h-full max-w-full object-contain" />
             </div>
           ) : (
-            <iframe title="简历预览" src={previewUrl} className="h-full w-full flex-1 bg-white" />
+            <iframe title="简历预览" src={previewUrl} sandbox="allow-downloads" className="h-full w-full flex-1 bg-white" />
           )}
         </div>
       </div>,
