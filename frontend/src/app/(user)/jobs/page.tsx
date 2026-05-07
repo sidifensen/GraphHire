@@ -946,27 +946,12 @@ export default function JobList() {
                 className="w-full bg-surface-lowest flex-1 flex flex-col max-h-[60vh] overflow-hidden rounded-b-2xl"
               >
                  <div className="flex flex-1 overflow-hidden">
-                    <div data-testid="mobile-advanced-category-menu" className="w-[100px] bg-surface-low overflow-y-auto">
-                       {ADVANCED_FILTERS.map(category => (
-                         <button
-                            key={category.id}
-                            onClick={() => {
-                              setActiveAdvancedCategory(category.id);
-                              if (category.id === 'industry' && activeIndustryRootId == null) {
-                                setActiveIndustryRootId(industryTree[0]?.id ?? null);
-                              }
-                            }}
-                            className={`w-full text-left px-3 py-3.5 text-sm relative ${
-                              activeAdvancedCategory === category.id ? 'bg-surface-lowest text-primary font-bold' : 'text-on-surface-variant'
-                            }`}
-                         >
-                           {category.name}
-                         </button>
-                       ))}
-                    </div>
-                    <div className="flex-1 bg-surface-lowest overflow-hidden">
-                      {activeAdvancedCategory === 'industry' ? (
-                        <div data-testid="mobile-advanced-industry-panel" className="h-full grid grid-cols-[96px_minmax(0,1fr)]">
+                    {activeAdvancedCategory === 'industry' ? (
+                      <div className="flex-1 bg-surface-lowest overflow-hidden">
+                        <div
+                          data-testid="mobile-advanced-industry-panel"
+                          className="h-full grid grid-cols-[minmax(132px,42%)_minmax(0,1fr)]"
+                        >
                           <div
                             data-testid="mobile-advanced-industry-root-column"
                             className="border-r border-surface-mid overflow-y-auto p-2"
@@ -975,13 +960,13 @@ export default function JobList() {
                               <button
                                 key={root.id}
                                 onClick={() => setActiveIndustryRootId(root.id)}
-                                className={`flex h-9 w-full items-center rounded-lg border px-2 mb-1 text-xs transition-colors ${
+                                className={`mb-1 flex min-h-10 w-full items-start rounded-lg border px-2 py-1.5 text-xs transition-colors ${
                                   activeIndustryRootId === root.id
                                     ? 'border-primary/30 bg-primary/10 text-primary'
                                     : 'border-transparent text-on-surface hover:border-primary/20 hover:bg-primary/5'
                                 }`}
                               >
-                                <span className="truncate">{root.name}</span>
+                                <span className="line-clamp-2 text-left leading-4">{root.name}</span>
                               </button>
                             ))}
                           </div>
@@ -997,14 +982,14 @@ export default function JobList() {
                                   key={leaf.id}
                                   aria-pressed={active}
                                   onClick={() => toggleFilter('industry', '公司行业', leaf.name)}
-                                  className={`flex h-9 w-full items-center justify-between rounded-lg border px-2 mb-1 text-xs transition-colors ${
+                                  className={`mb-1 flex min-h-10 w-full items-start justify-between rounded-lg border px-2 py-1.5 text-xs transition-colors ${
                                     active
                                       ? 'border-primary bg-primary/10 text-primary'
                                       : 'border-transparent text-on-surface hover:border-primary/20 hover:bg-primary/5'
                                   }`}
                                 >
-                                  <span className="truncate pr-1">{leaf.name}</span>
-                                  {active && <CheckCircle size={12} className="text-primary shrink-0" />}
+                                  <span className="line-clamp-2 pr-1 text-left leading-4">{leaf.name}</span>
+                                  {active && <CheckCircle size={12} className="mt-0.5 shrink-0 text-primary" />}
                                 </button>
                               );
                             })}
@@ -1013,32 +998,54 @@ export default function JobList() {
                             )}
                           </div>
                         </div>
-                      ) : (
-                        <div className="h-full overflow-y-auto p-4">
-                          <h4 className="text-xs text-outline mb-3 font-bold">{ADVANCED_FILTERS.find(c => c.id === activeAdvancedCategory)?.name}</h4>
-                          <div className="grid grid-cols-2 gap-2 pb-4">
-                            {currentAdvancedOptions.map(opt => {
-                              const filterId = `${activeAdvancedCategory}:${opt}`;
-                              const isActive = opt === '不限'
-                                ? !selectedFilters.some(f => f.id.startsWith(`${activeAdvancedCategory}:`))
-                                : selectedFilters.some(f => f.id === filterId);
-                              
-                              return (
-                                <button
-                                  key={opt}
-                                  onClick={() => toggleFilter(activeAdvancedCategory, ADVANCED_FILTERS.find(c => c.id === activeAdvancedCategory)?.name || '', opt)}
-                                  className={`h-9 px-2 rounded-lg text-xs flex items-center justify-center transition-colors truncate ${
-                                    isActive ? 'bg-primary/10 text-primary border border-primary/30 font-bold' : 'bg-surface-low text-on-surface border border-transparent'
-                                  }`}
-                                >
-                                  <span className="truncate">{opt}</span>
-                                </button>
-                              );
-                            })}
+                      </div>
+                    ) : (
+                      <>
+                        <div data-testid="mobile-advanced-category-menu" className="w-[100px] bg-surface-low overflow-y-auto">
+                          {ADVANCED_FILTERS.map(category => (
+                            <button
+                              key={category.id}
+                              onClick={() => {
+                                setActiveAdvancedCategory(category.id);
+                                if (category.id === 'industry' && activeIndustryRootId == null) {
+                                  setActiveIndustryRootId(industryTree[0]?.id ?? null);
+                                }
+                              }}
+                              className={`w-full text-left px-3 py-3.5 text-sm relative ${
+                                activeAdvancedCategory === category.id ? 'bg-surface-lowest text-primary font-bold' : 'text-on-surface-variant'
+                              }`}
+                            >
+                              {category.name}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="flex-1 bg-surface-lowest overflow-hidden">
+                          <div className="h-full overflow-y-auto p-4">
+                            <h4 className="text-xs text-outline mb-3 font-bold">{ADVANCED_FILTERS.find(c => c.id === activeAdvancedCategory)?.name}</h4>
+                            <div className="grid grid-cols-2 gap-2 pb-4">
+                              {currentAdvancedOptions.map(opt => {
+                                const filterId = `${activeAdvancedCategory}:${opt}`;
+                                const isActive = opt === '不限'
+                                  ? !selectedFilters.some(f => f.id.startsWith(`${activeAdvancedCategory}:`))
+                                  : selectedFilters.some(f => f.id === filterId);
+
+                                return (
+                                  <button
+                                    key={opt}
+                                    onClick={() => toggleFilter(activeAdvancedCategory, ADVANCED_FILTERS.find(c => c.id === activeAdvancedCategory)?.name || '', opt)}
+                                    className={`h-9 px-2 rounded-lg text-xs flex items-center justify-center transition-colors truncate ${
+                                      isActive ? 'bg-primary/10 text-primary border border-primary/30 font-bold' : 'bg-surface-low text-on-surface border border-transparent'
+                                    }`}
+                                  >
+                                    <span className="truncate">{opt}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
                           </div>
                         </div>
-                      )}
-                    </div>
+                      </>
+                    )}
                  </div>
                  <div className="flex p-3 gap-3 border-t border-surface-mid bg-surface-lowest shrink-0 shadow-[0_-4px_10px_rgba(0,0,0,0.02)] z-10">
                     <button 

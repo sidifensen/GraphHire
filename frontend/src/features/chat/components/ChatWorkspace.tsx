@@ -2,8 +2,6 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
-import { Images } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { chatApi } from '@/lib/api/chat';
 import { companyApi } from '@/lib/api/company';
@@ -12,9 +10,12 @@ import { resumeApi, type Resume } from '@/lib/api/resume';
 import { enterpriseAuthStore, userAuthStore } from '@/lib/stores/auth-store';
 import type { ChatConversationSummary, ChatMessage } from '@/lib/types/chat';
 import { getApiBaseUrl } from '@/lib/api/base-url';
-import { CHAT_EMOJI_CATEGORIES } from './emoji';
 import type { ChatJobMeta, ChatWorkspaceProps } from './ChatTypes';
-import { InterviewInviteDialog } from './InterviewInviteDialog';
+import { ChatPreviewModal } from './ChatPreviewModal';
+import { ChatConversationListPanel } from './ChatConversationListPanel';
+import { ChatDetailHeader } from './ChatDetailHeader';
+import { ChatMessageStream } from './ChatMessageStream';
+import { ChatComposerDock } from './ChatComposerDock';
 
 function parseExt(ext?: string | null): Record<string, unknown> | null {
   if (!ext) return null;
@@ -103,11 +104,6 @@ function formatGender(gender?: number | null): string {
   return '未填写';
 }
 
-function getConversationOwnerAvatarUrl(item: ChatConversationSummary): string | null {
-  if (!item.recruiterUserId) return null;
-  return buildPersonAvatarUrl(item.recruiterUserId);
-}
-
 type AuthStoreState = {
   user?: {
     id: number;
@@ -149,137 +145,6 @@ function resolveInitialConversationId(
   }
   if (list.length === 0) return null;
   return list[0].conversationId;
-}
-
-function Avatar({
-  name,
-  imageUrl,
-  testId,
-}: {
-  name: string;
-  imageUrl?: string | null;
-  testId?: string;
-}) {
-  const [broken, setBroken] = useState(false);
-  const initial = name.trim().slice(0, 1).toUpperCase() || '?';
-  useEffect(() => {
-    setBroken(false);
-  }, [imageUrl]);
-  if (imageUrl && !broken) {
-    return (
-      <img
-        src={imageUrl}
-        alt={`${name}头像`}
-        data-testid={testId}
-        onError={() => setBroken(true)}
-        className="h-9 w-9 rounded-full object-cover border border-outline-variant shrink-0"
-      />
-    );
-  }
-  return (
-    <div
-      data-testid={testId}
-      className="h-9 w-9 rounded-full shrink-0 border border-outline-variant bg-surface-low text-on-surface font-bold text-sm flex items-center justify-center"
-    >
-      {initial}
-    </div>
-  );
-}
-
-function EmojiPanel({
-  onSelect,
-}: {
-  onSelect: (emoji: string) => void;
-}) {
-  const emojisPerPage = 72;
-  const [activeCategoryId, setActiveCategoryId] = useState(CHAT_EMOJI_CATEGORIES[0]?.id ?? '');
-  const [page, setPage] = useState(1);
-
-  const activeCategory = useMemo(
-    () => CHAT_EMOJI_CATEGORIES.find((item) => item.id === activeCategoryId) ?? CHAT_EMOJI_CATEGORIES[0],
-    [activeCategoryId],
-  );
-  const totalPages = Math.max(1, Math.ceil((activeCategory?.emojis.length ?? 0) / emojisPerPage));
-  const pageStart = (page - 1) * emojisPerPage;
-  const pageEmojis = (activeCategory?.emojis ?? []).slice(pageStart, pageStart + emojisPerPage);
-
-  useEffect(() => {
-    setPage(1);
-  }, [activeCategoryId]);
-
-  useEffect(() => {
-    if (page > totalPages) {
-      setPage(totalPages);
-    }
-  }, [page, totalPages]);
-
-  return (
-    <div
-      data-testid="chat-emoji-panel"
-      className="absolute bottom-14 left-0 z-20 w-[430px] rounded-xl border border-outline-variant bg-surface-lowest p-3 shadow-lg"
-    >
-      <div className="mb-2 flex items-center gap-2 overflow-x-auto pb-1" data-testid="chat-emoji-category-tabs">
-        {CHAT_EMOJI_CATEGORIES.map((category) => (
-          <button
-            key={category.id}
-            type="button"
-            aria-pressed={activeCategory?.id === category.id}
-            onClick={() => setActiveCategoryId(category.id)}
-            className={`shrink-0 rounded-full border px-2.5 py-1 text-xs font-bold ${
-              activeCategory?.id === category.id
-                ? 'border-primary bg-primary/10 text-primary'
-                : 'border-outline-variant text-on-surface-variant hover:bg-surface-low'
-            }`}
-          >
-            {category.label}
-          </button>
-        ))}
-      </div>
-
-      <div
-        data-testid="chat-emoji-scroll-region"
-        className="h-64 overflow-y-auto rounded-lg border border-outline-variant bg-surface-low p-2"
-      >
-        <div className="grid grid-cols-10 gap-2">
-          {pageEmojis.map((emoji) => (
-            <button
-              key={emoji}
-              type="button"
-              onClick={() => onSelect(emoji)}
-              className="h-7 w-7 rounded-lg hover:bg-surface-lowest text-base leading-none"
-              aria-label={emoji}
-            >
-              {emoji}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-2 flex items-center justify-between gap-2 text-xs text-on-surface-variant">
-        <span>{activeCategory?.label ?? '表情'} · 第{page}/{totalPages}页</span>
-        <div className="flex items-center gap-1.5">
-          <button
-            type="button"
-            aria-label="上一页表情"
-            onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-            disabled={page <= 1}
-            className="rounded-md border border-outline-variant px-2 py-0.5 font-bold disabled:opacity-40"
-          >
-            上一页
-          </button>
-          <button
-            type="button"
-            aria-label="下一页表情"
-            onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
-            disabled={page >= totalPages}
-            className="rounded-md border border-outline-variant px-2 py-0.5 font-bold disabled:opacity-40"
-          >
-            下一页
-          </button>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 export default function ChatWorkspace({
@@ -419,7 +284,6 @@ export default function ChatWorkspace({
       return;
     }
     if (isUserRole) {
-      // 用户端优先展示企业头像；头像地址在职位/公司信息中获取，先清空避免误打 person 头像地址。
       setPeerAvatarUrl(null);
       return;
     }
@@ -873,330 +737,104 @@ export default function ChatWorkspace({
     }
   };
 
-  const previewModal = previewUrl && typeof window !== 'undefined'
-    ? createPortal(
-      <div data-testid="chat-resume-preview-modal" className="fixed inset-0 z-[9999] bg-black/70 p-2 md:p-6">
-        <div className="mx-auto flex h-full w-full max-w-6xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
-          <div className="flex items-center justify-between border-b border-outline-variant bg-white px-4 py-3">
-            <p className="truncate text-sm font-bold text-on-surface">{previewFileName || '简历预览'}</p>
-            <button
-              type="button"
-              onClick={closePreview}
-              className="rounded-lg border border-outline-variant px-3 py-1 text-sm text-on-surface hover:bg-surface-low"
-            >
-              关闭预览
-            </button>
-          </div>
-          {previewKind === 'image' ? (
-            <div className="flex h-full w-full flex-1 items-center justify-center bg-black/80 p-3">
-              <img title="图片预览" src={previewUrl} alt={previewFileName || '图片预览'} className="max-h-full max-w-full object-contain" />
-            </div>
-          ) : (
-            <iframe title="简历预览" src={previewUrl} sandbox="allow-downloads" className="h-full w-full flex-1 bg-white" />
-          )}
-        </div>
-      </div>,
-      document.body,
-    )
-    : null;
-
   return (
-      <section data-testid="chat-workspace" className="mx-auto w-full max-w-6xl px-0 py-0 md:px-6 md:py-4">
-        {previewModal}
+    <section data-testid="chat-workspace" className="chat-frosted-shell mx-auto w-full max-w-6xl px-0 py-0 md:px-6 md:py-4 md:rounded-[28px] md:bg-gradient-to-br md:from-[#f2f7ff] md:to-[#e9eefb] md:shadow-[0_24px_70px_rgba(15,23,42,0.12)] md:ring-1 md:ring-white/70">
+      <ChatPreviewModal
+        previewUrl={previewUrl}
+        previewFileName={previewFileName}
+        previewKind={previewKind}
+        onClose={closePreview}
+      />
       {title ? <h1 className="text-2xl font-black text-on-surface mb-4">{title}</h1> : null}
       {error ? <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">{error}</div> : null}
 
       <div
         data-testid="chat-desktop-layout"
-        className="grid grid-cols-1 md:grid-cols-[320px_minmax(0,1fr)] gap-4 md:h-[calc(100vh-96px)] min-h-[560px]"
+        className="chat-frosted-layout grid grid-cols-1 md:grid-cols-[320px_minmax(0,1fr)] gap-4 md:h-[calc(100vh-96px)] min-h-[560px]"
       >
         {(mobileMode === 'list' || mobileMode === 'detail') ? (
-          <aside
-            data-testid="chat-conversation-list-panel"
-            className={`rounded-none md:rounded-2xl border border-outline-variant bg-surface-lowest overflow-hidden ${mobileMode === 'detail' ? 'hidden md:block' : ''}`}
-          >
-            <div className="h-12 px-3 border-b border-outline-variant flex items-center">
-              <input
-                value={conversationKeyword}
-                onChange={(event) => setConversationKeyword(event.target.value)}
-                placeholder="搜索会话..."
-                className="h-9 w-full rounded-lg border border-outline-variant bg-surface-low px-3 text-sm text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-              />
-            </div>
-            <div className="h-full overflow-y-auto p-2 space-y-2">
-              {loadingList ? <div className="px-3 py-4 text-sm text-on-surface-variant">会话加载中...</div> : null}
-              {!loadingList && filteredList.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-outline-variant px-4 py-10 text-center text-sm text-on-surface-variant">暂无会话</div>
-              ) : null}
-
-              {filteredList.map((item) => {
-                const selected = item.conversationId === selectedConversationId;
-                const ownerAvatarUrl = conversationOwnerAvatarMap[item.conversationId]
-                  ?? (isUserRole ? null : (item.candidateUserId ? buildPersonAvatarUrl(item.candidateUserId) : null));
-                const candidateDisplay = normalizeCandidateDisplayName(item);
-                return (
-                  <button
-                    key={item.conversationId}
-                    type="button"
-                    onClick={() => handleSelectConversation(item.conversationId)}
-                    className={`w-full text-left rounded-xl border px-3 py-3 transition-colors ${selected ? 'border-primary bg-surface-low' : 'border-outline-variant bg-surface-lowest hover:border-primary'}`}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0 flex items-start gap-2">
-                        <Avatar
-                          name={isUserRole ? (item.recruiterName || '负责人') : candidateDisplay}
-                          imageUrl={ownerAvatarUrl}
-                          testId="chat-conversation-owner-avatar"
-                        />
-                        <div className="min-w-0">
-                          <p className="text-sm font-bold text-on-surface line-clamp-2">{item.jobTitle || `岗位 #${item.jobId}`}</p>
-                          <p className="text-xs text-on-surface-variant line-clamp-2">{isUserRole ? item.companyName || '未知企业' : candidateDisplay}</p>
-                          <p className="mt-1 text-xs text-on-surface-variant line-clamp-1">{item.lastMessagePreview || '暂无消息'}</p>
-                        </div>
-                      </div>
-                      <div className="shrink-0 text-right">
-                        <p className="text-[11px] text-outline">{formatListTime(item.lastMessageTime)}</p>
-                        {item.unreadCount > 0 ? (
-                          <span className="inline-flex mt-1 min-w-5 h-5 px-1 items-center justify-center rounded-full bg-primary text-white text-[10px] font-bold">
-                            {item.unreadCount > 99 ? '99+' : item.unreadCount}
-                          </span>
-                        ) : null}
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </aside>
+          <ChatConversationListPanel
+            mobileMode={mobileMode}
+            loadingList={loadingList}
+            filteredList={filteredList}
+            selectedConversationId={selectedConversationId}
+            conversationKeyword={conversationKeyword}
+            onKeywordChange={setConversationKeyword}
+            onSelectConversation={handleSelectConversation}
+            isUserRole={isUserRole}
+            buildPersonAvatarUrl={buildPersonAvatarUrl}
+            conversationOwnerAvatarMap={conversationOwnerAvatarMap}
+            formatListTime={formatListTime}
+            normalizeCandidateDisplayName={normalizeCandidateDisplayName}
+          />
         ) : null}
 
         <div
           data-testid="chat-conversation-detail-panel"
-          className={`${mobileMode === 'list' ? 'hidden md:flex' : ''} ${mobileMode === 'detail' && !shouldShowDetail ? 'hidden md:flex' : mobileMode === 'detail' ? 'flex' : ''} min-h-0 flex-col rounded-none md:rounded-2xl border border-outline-variant bg-surface-lowest overflow-hidden ${mobileMode === 'detail' ? 'h-[100dvh] md:h-auto' : ''}`}
+          className={`chat-frosted-detail-panel ${mobileMode === 'list' ? 'hidden md:flex' : ''} ${mobileMode === 'detail' && !shouldShowDetail ? 'hidden md:flex' : mobileMode === 'detail' ? 'flex' : ''} min-h-0 flex-col rounded-none md:rounded-3xl bg-white/72 backdrop-blur-xl ring-1 ring-white/70 shadow-[0_18px_45px_rgba(15,23,42,0.10)] overflow-hidden ${mobileMode === 'detail' ? 'h-[100dvh] md:h-auto' : ''}`}
         >
           {selectedConversation ? (
             <>
-              <header data-testid="chat-detail-header" className="shrink-0 border-b border-outline-variant px-4 py-3 bg-surface-low">
-                {mobileMode === 'detail' ? (
-                  <div className="mb-2 md:hidden">
-                    <Link
-                      data-testid="chat-mobile-back-button"
-                      href={conversationPathPrefix}
-                      className="inline-flex items-center gap-1 rounded-lg border border-outline-variant px-2.5 py-1 text-xs font-bold text-on-surface-variant hover:bg-surface-lowest"
-                    >
-                      返回会话列表
-                    </Link>
-                  </div>
-                ) : null}
-                <div className="flex items-start justify-between gap-3">
-                  {(() => {
-                    const candidateDisplayName = normalizeCandidateDisplayName(selectedConversation);
-                    const headerOwnerAvatarUrl = isUserRole
-                      ? (peerAvatarUrl ?? conversationOwnerAvatarMap[selectedConversation.conversationId] ?? null)
-                      : (selectedConversation.candidateUserId ? buildPersonAvatarUrl(selectedConversation.candidateUserId) : null);
-                    return (
-                  <div className="min-w-0 flex items-start gap-2">
-                    <Avatar
-                      name={isUserRole ? (selectedConversation.recruiterName || '负责人') : candidateDisplayName}
-                      imageUrl={headerOwnerAvatarUrl}
-                      testId="chat-header-owner-avatar"
-                    />
-                    <div className="min-w-0">
-                      {isUserRole ? (
-                        <>
-                          <p className="text-sm text-on-surface-variant">岗位负责人</p>
-                          <p className="text-base font-bold text-on-surface truncate">{jobMeta?.ownerName || selectedConversation.recruiterName || '招聘负责人'}</p>
-                          <p className="text-sm text-on-surface-variant truncate">{jobMeta?.companyName || selectedConversation.companyName || '未知企业'}</p>
-                        </>
-                      ) : (
-                        <>
-                          <p className="text-base font-bold text-on-surface line-clamp-2">{candidateDisplayName}</p>
-                          <p className="text-sm text-on-surface-variant truncate">{selectedConversation.candidateEmail || '邮箱未填写'}</p>
-                          <p className="text-xs text-on-surface-variant">
-                            {`年龄：${selectedConversation.candidateAge ?? '未填写'} · 性别：${formatGender(selectedConversation.candidateGender)} · 学历：${selectedConversation.candidateEducation || '未填写'}`}
-                          </p>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                    );
-                  })()}
-                  <Link href={jobHref} className="shrink-0 rounded-lg border border-primary px-3 py-1.5 text-sm font-bold text-primary hover:bg-primary/5">查看职位</Link>
-                </div>
-                <div className="mt-2 rounded-xl bg-surface-lowest border border-outline-variant px-3 py-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-                  <span className="font-semibold text-on-surface">{jobMeta?.jobTitle || selectedConversation.jobTitle || `岗位 #${selectedConversation.jobId}`}</span>
-                  <span className="text-primary font-bold">{jobMeta?.salaryText || '薪资面议'}</span>
-                  <span className="text-on-surface-variant">{jobMeta?.locationText || '地点待补充'}</span>
-                </div>
-              </header>
+              <ChatDetailHeader
+                mobileMode={mobileMode}
+                isUserRole={isUserRole}
+                selectedConversation={selectedConversation}
+                conversationPathPrefix={conversationPathPrefix}
+                peerAvatarUrl={peerAvatarUrl}
+                conversationOwnerAvatarMap={conversationOwnerAvatarMap}
+                buildPersonAvatarUrl={buildPersonAvatarUrl}
+                normalizeCandidateDisplayName={normalizeCandidateDisplayName}
+                formatGender={formatGender}
+                jobMeta={jobMeta}
+                jobHref={jobHref}
+              />
 
-              <div data-testid="chat-message-scroll-container" className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-3">
-                {loadingMessages ? <div className="text-sm text-on-surface-variant">消息加载中...</div> : null}
-                {!loadingMessages && messages.length === 0 ? <div className="text-sm text-on-surface-variant">暂无消息</div> : null}
+              <ChatMessageStream
+                messages={messages}
+                loadingMessages={loadingMessages}
+                currentUserId={currentUserId}
+                currentUserName={currentUserName}
+                role={role}
+                selectedConversation={selectedConversation}
+                peerAvatarUrl={peerAvatarUrl}
+                currentAvatar={currentAvatar}
+                parseExt={parseExt}
+                getDateKey={getDateKey}
+                formatDateTag={formatDateTag}
+                getUserDisplay={getUserDisplay}
+                canDownloadResume={canDownloadResume}
+                resumeFileLoading={resumeFileLoading}
+                inlineImageUrls={inlineImageUrls}
+                inlineImageErrors={inlineImageErrors}
+                onPreviewResume={handlePreviewResume}
+                onDownloadResume={handleDownloadResume}
+                onPreviewImage={handlePreviewImage}
+                onLoadInlineImage={loadInlineImage}
+                messageEndRef={messageEndRef}
+              />
 
-                {messages.map((message, index) => {
-                  const self = currentUserId != null && message.senderUserId === currentUserId;
-                  const ext = parseExt(message.ext);
-                  const currentDateKey = getDateKey(message.createTime);
-                  const prevDateKey = index > 0 ? getDateKey(messages[index - 1].createTime) : null;
-                  const showDateTag = index === 0 || currentDateKey !== prevDateKey;
-                  const senderName = self ? currentUserName : getUserDisplay(role, selectedConversation);
-
-                  const resumeCanDownload = message.messageType === 3 ? canDownloadResume(ext) : false;
-
-                  return (
-                    <div key={message.id}>
-                      {showDateTag ? (
-                        <div data-testid="chat-date-separator" className="flex justify-center my-2">
-                          <span className="rounded-full bg-surface-low px-3 py-1 text-[11px] text-on-surface-variant">{formatDateTag(message.createTime)}</span>
-                        </div>
-                      ) : null}
-                      <div className={`flex items-end gap-2 ${self ? 'justify-end' : 'justify-start'}`}>
-                        {!self ? <Avatar name={senderName} imageUrl={peerAvatarUrl} testId="chat-message-avatar" /> : null}
-                        <div className={`max-w-[78%] rounded-2xl px-3 py-2 text-sm ${self ? 'bg-primary text-white' : 'bg-surface-low text-on-surface'}`}>
-                          {message.messageType === 3 && ext ? (
-                            <div className={`rounded-xl border px-3 py-2 ${self ? 'border-primary bg-white/10' : 'border-outline-variant bg-surface-lowest'}`}>
-                              <div className="flex items-start gap-2">
-                                <span className="text-xl leading-none">📄</span>
-                                <div className="min-w-0">
-                                  <p className="font-bold">PDF简历</p>
-                                  <p className={`truncate ${self ? 'text-white/90' : 'text-on-surface-variant'}`}>
-                                    {String(ext.fileName ?? '未命名简历.pdf')}
-                                  </p>
-                                </div>
-                              </div>
-                              {resumeCanDownload ? (
-                                <div className="mt-2 flex items-center gap-2">
-                                  <button
-                                    type="button"
-                                    onClick={() => void handlePreviewResume(message.conversationId, ext)}
-                                    disabled={resumeFileLoading}
-                                    className={`inline-flex rounded-lg px-2.5 py-1 text-xs font-bold disabled:opacity-60 ${self ? 'bg-white/90 text-primary' : 'bg-surface-low text-on-surface'}`}
-                                  >
-                                    {resumeFileLoading ? '处理中...' : '预览PDF'}
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => void handleDownloadResume(message.conversationId, ext)}
-                                    disabled={resumeFileLoading}
-                                    className={`inline-flex rounded-lg px-2.5 py-1 text-xs font-bold disabled:opacity-60 ${self ? 'bg-white text-primary' : 'bg-primary text-white'}`}
-                                  >
-                                    {resumeFileLoading ? '处理中...' : '下载PDF'}
-                                  </button>
-                                </div>
-                              ) : null}
-                            </div>
-                          ) : null}
-                          {message.messageType === 2 && ext ? (
-                            <div>
-                              {inlineImageUrls[message.id] ? (
-                                <button
-                                  type="button"
-                                  className="block overflow-hidden rounded-lg"
-                                  onClick={() => void handlePreviewImage(message.conversationId, message.id, ext)}
-                                >
-                                  <img
-                                    src={inlineImageUrls[message.id]}
-                                    alt={String(ext.fileName ?? '图片预览')}
-                                    className="max-h-60 h-auto w-full max-w-full rounded-lg object-contain bg-black/10"
-                                  />
-                                </button>
-                              ) : inlineImageErrors[message.id] ? (
-                                <div className="mt-2 space-y-1">
-                                  <p className="text-xs opacity-90">{inlineImageErrors[message.id]}</p>
-                                  <button
-                                    type="button"
-                                    onClick={() => void loadInlineImage(message.conversationId, message.id)}
-                                    className={`inline-flex rounded-lg px-2.5 py-1 text-xs font-bold ${self ? 'bg-white text-primary' : 'bg-primary text-white'}`}
-                                  >
-                                    重试加载图片
-                                  </button>
-                                </div>
-                              ) : (
-                                <p className="mt-2 text-xs opacity-80">图片加载中...</p>
-                              )}
-                            </div>
-                          ) : null}
-                          {message.messageType === 4 && ext ? (
-                            <div>
-                              <p className="font-bold">面试通知</p>
-                              <p>时间：{String(ext.interviewTime ?? '-')}</p>
-                              <p>地点：{String(ext.location ?? '-')}</p>
-                              <p>备注：{String(ext.remark ?? '')}</p>
-                            </div>
-                          ) : null}
-                          {[2, 3, 4].includes(message.messageType) ? null : <p className="whitespace-pre-wrap">{message.content || ''}</p>}
-                        </div>
-                        {self ? <Avatar name={senderName} imageUrl={currentAvatar} testId="chat-message-avatar" /> : null}
-                      </div>
-                    </div>
-                  );
-                })}
-                <div ref={messageEndRef} />
-              </div>
-
-              <footer data-testid="chat-detail-composer" className="shrink-0 border-t border-outline-variant px-4 py-3">
-                <div className="flex items-center gap-2 mb-2 relative">
-                  <button
-                    type="button"
-                    data-testid="chat-emoji-button"
-                    onClick={() => setShowEmojiPanel((prev) => !prev)}
-                    className="h-9 w-9 rounded-lg border border-outline-variant text-on-surface-variant hover:bg-surface-low"
-                    aria-label="表情"
-                  >
-                    😀
-                  </button>
-                  {showEmojiPanel ? <EmojiPanel onSelect={(emoji) => { setInput((prev) => `${prev}${emoji}`); setShowEmojiPanel(false); }} /> : null}
-
-                  <label className="h-9 w-9 rounded-lg border border-outline-variant text-on-surface-variant hover:bg-surface-low inline-flex items-center justify-center cursor-pointer" aria-label="相册">
-                    <Images className="h-5 w-5" />
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(event) => {
-                        const file = event.target.files?.[0] ?? null;
-                        void handleSendImage(file);
-                        event.currentTarget.value = '';
-                      }}
-                    />
-                  </label>
-
-                  {isUserRole ? (
-                    <button
-                      type="button"
-                      onClick={() => void handleSendResume()}
-                      disabled={!hasDefaultResume || resumeSending}
-                      className="h-9 px-3 rounded-lg border border-primary text-primary text-sm font-bold disabled:opacity-60"
-                    >
-                      {resumeSending ? '发送中...' : '发送简历'}
-                    </button>
-                  ) : (
-                    <InterviewInviteDialog
-                      sending={inviteSending}
-                      onError={(message) => setError(message)}
-                      onSubmit={handleSendInterview}
-                    />
-                  )}
-                </div>
-
-                <div className="flex gap-2">
-                  <input
-                    value={input}
-                    onChange={(event) => setInput(event.target.value)}
-                    placeholder="输入消息..."
-                    className="flex-1 h-10 rounded-xl border border-outline-variant px-3 text-sm bg-transparent"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => void handleSendText()}
-                    disabled={sending}
-                    className="h-10 px-4 rounded-xl bg-primary text-white text-sm font-bold disabled:opacity-60"
-                  >
-                    {sending ? '发送中...' : '发送'}
-                  </button>
-                </div>
-              </footer>
+              <ChatComposerDock
+                isUserRole={isUserRole}
+                showEmojiPanel={showEmojiPanel}
+                onToggleEmoji={() => setShowEmojiPanel((prev) => !prev)}
+                onSelectEmoji={(emoji) => {
+                  setInput((prev) => `${prev}${emoji}`);
+                  setShowEmojiPanel(false);
+                }}
+                onPickImage={(file) => {
+                  void handleSendImage(file);
+                }}
+                hasDefaultResume={hasDefaultResume}
+                resumeSending={resumeSending}
+                onSendResume={handleSendResume}
+                inviteSending={inviteSending}
+                onInviteError={(message) => setError(message)}
+                onSendInterview={handleSendInterview}
+                input={input}
+                onInputChange={setInput}
+                sending={sending}
+                onSendText={handleSendText}
+              />
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center text-sm text-on-surface-variant">请选择会话</div>

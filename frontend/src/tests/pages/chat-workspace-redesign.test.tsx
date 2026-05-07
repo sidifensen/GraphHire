@@ -1,4 +1,4 @@
-﻿import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import UserChatListPage from '@/app/(user)/chat/page';
 import UserChatDetailPage from '@/app/(user)/chat/[conversationId]/page';
 import EnterpriseChatListPage from '@/app/enterprise/chat/page';
@@ -383,6 +383,11 @@ describe('chat workspace redesign', () => {
     expect(separators).toHaveLength(2);
 
     expect(screen.getByRole('button', { name: '发送简历' })).toBeInTheDocument();
+    expect(screen.getByTestId('chat-workspace').className).toContain('chat-frosted-shell');
+    expect(screen.getByTestId('chat-desktop-layout').className).toContain('chat-frosted-layout');
+    expect(screen.getByTestId('chat-conversation-list-panel').className).toContain('chat-frosted-list-panel');
+    expect(screen.getByTestId('chat-conversation-detail-panel').className).toContain('chat-frosted-detail-panel');
+    expect(screen.getByTestId('chat-detail-composer').className).toContain('chat-frosted-composer');
     expect(screen.getAllByTestId('chat-message-avatar').length).toBeGreaterThan(1);
   });
 
