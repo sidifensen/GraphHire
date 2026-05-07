@@ -391,6 +391,23 @@ describe('chat workspace redesign', () => {
     expect(screen.getAllByTestId('chat-message-avatar').length).toBeGreaterThan(1);
   });
 
+  it('keeps sent bubble text readable and exposes dark-mode classes on chat surfaces', async () => {
+    render(<UserChatListPage />);
+
+    await waitFor(() => expect(listConversationsMock).toHaveBeenCalledTimes(1));
+    const sentBubble = await screen.findByTestId('chat-message-bubble-self');
+
+    expect(sentBubble.className).toContain('bg-primary');
+    expect(sentBubble.className).toContain('text-on-primary');
+    expect(sentBubble.className).not.toContain('text-white');
+
+    expect(screen.getByTestId('chat-workspace').className).toContain('dark:md:from-surface-container-lowest');
+    expect(screen.getByTestId('chat-conversation-list-panel').className).toContain('dark:bg-surface-container-low/80');
+    expect(screen.getByTestId('chat-conversation-detail-panel').className).toContain('dark:bg-surface-container-low/80');
+    expect(screen.getByTestId('chat-detail-header').className).toContain('dark:bg-white/5');
+    expect(screen.getByTestId('chat-detail-composer').className).toContain('dark:bg-white/5');
+  });
+
   it('opens emoji panel and inserts selected emoji into input', async () => {
     render(<UserChatListPage />);
 

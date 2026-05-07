@@ -60,6 +60,27 @@ vi.mock('@/lib/logout', () => ({
 import { TopNav } from '@/app/enterprise/_mock/components/TopNav';
 
 describe('Enterprise TopNav auth display', () => {
+  test('初始化时遵循已保存的 dark 主题，不应回退为 light', async () => {
+    enterpriseAuthStore.setState({
+      isAuthenticated: true,
+      user: {
+        id: 201,
+        username: 'hr@graphhire.com',
+        displayName: '测试企业',
+        type: 'COMPANY',
+      },
+    });
+    localStorage.setItem('theme', 'dark');
+    document.documentElement.classList.remove('dark');
+
+    render(<TopNav title="GraphHire 图谱智聘" userAvatar />);
+
+    await waitFor(() => {
+      expect(document.documentElement.classList.contains('dark')).toBe(true);
+      expect(localStorage.getItem('theme')).toBe('dark');
+    });
+  });
+
   test('登录后显示企业名称与头像', () => {
     enterpriseAuthStore.setState({
       isAuthenticated: true,

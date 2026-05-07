@@ -25,7 +25,7 @@ export function TopNav({ title, showBack, rightAction, userAvatar, onBack }: Top
   const [authState, setAuthState] = React.useState(() => enterpriseAuthStore.getState());
   const [showAccountMenu, setShowAccountMenu] = React.useState(false);
   const [menuAnchor, setMenuAnchor] = React.useState<'mobile' | 'desktop'>('desktop');
-  const [isDark, setIsDark] = React.useState(false);
+  const [isDark, setIsDark] = React.useState<boolean | null>(null);
   const [avatarError, setAvatarError] = React.useState(false);
   const desktopMenuRef = React.useRef<HTMLDivElement>(null);
   const mobileMenuRef = React.useRef<HTMLDivElement>(null);
@@ -36,14 +36,25 @@ export function TopNav({ title, showBack, rightAction, userAvatar, onBack }: Top
   const displayName = user?.displayName || user?.username || '企业账号';
 
   React.useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      setIsDark(true);
+      return;
+    }
+    if (savedTheme === 'light') {
+      setIsDark(false);
+      return;
+    }
     setIsDark(
-      document.documentElement.classList.contains('dark') ||
-        localStorage.getItem('theme') === 'dark' ||
-        (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)
+      document.documentElement.classList.contains('dark')
+      || window.matchMedia('(prefers-color-scheme: dark)').matches,
     );
   }, []);
 
   React.useEffect(() => {
+    if (isDark == null) {
+      return;
+    }
     if (isDark) {
       document.documentElement.classList.add('dark');
       localStorage.setItem('theme', 'dark');
@@ -163,7 +174,7 @@ export function TopNav({ title, showBack, rightAction, userAvatar, onBack }: Top
       </div>
 
       <div className="flex items-center justify-end min-w-[40px] gap-3 md:gap-4 md:w-auto">
-        <button onClick={() => setIsDark((prev) => !prev)} className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-surface-container" title="切换夜间模式">
+        <button onClick={() => setIsDark((prev) => !(prev ?? false))} className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-surface-container" title="切换夜间模式">
           <span className="material-symbols-outlined text-[20px]">{isDark ? 'light_mode' : 'dark_mode'}</span>
         </button>
 
