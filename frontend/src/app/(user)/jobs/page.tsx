@@ -200,6 +200,21 @@ function collectLeafNameSet(tree: PublicTreeNode[]) {
   return names;
 }
 
+function collectLeafNodes(nodes: PublicTreeNode[]) {
+  const leaves: PublicTreeNode[] = [];
+  const walk = (items: PublicTreeNode[]) => {
+    items.forEach((node) => {
+      if (!node.children || node.children.length === 0) {
+        leaves.push(node);
+        return;
+      }
+      walk(node.children);
+    });
+  };
+  walk(nodes);
+  return leaves;
+}
+
 function normalizeCityName(raw?: string | null) {
   if (!raw) return '';
   return raw
@@ -249,6 +264,8 @@ export default function JobList() {
   const [draftCategoryNames, setDraftCategoryNames] = useState<string[]>([]);
   const [draftIndustryNames, setDraftIndustryNames] = useState<string[]>([]);
   const [draftCityNames, setDraftCityNames] = useState<string[]>([]);
+  const [activeCategoryRootId, setActiveCategoryRootId] = useState<number | null>(null);
+  const [activeCategoryMidId, setActiveCategoryMidId] = useState<number | null>(null);
   const [activeIndustryRootId, setActiveIndustryRootId] = useState<number | null>(null);
   const [activeIndustryMidId, setActiveIndustryMidId] = useState<number | null>(null);
   const [provinceCities, setProvinceCities] = useState<ProvinceCityItem[]>(FALLBACK_PROVINCE_CITIES);
@@ -344,6 +361,8 @@ export default function JobList() {
 
   const openEmbeddedCategoryDropdown = () => {
     setDraftCategoryNames(currentCategoryNames);
+    setActiveCategoryRootId(positionTree[0]?.id ?? null);
+    setActiveCategoryMidId(positionTree[0]?.children?.[0]?.id ?? null);
     setOpenDropdown('category');
   };
 
@@ -394,6 +413,12 @@ export default function JobList() {
     );
   };
 
+  const toggleCategoryDraftName = (name: string) => {
+    setDraftCategoryNames((prev) =>
+      prev.includes(name) ? prev.filter((item) => item !== name) : [...prev, name],
+    );
+  };
+
   useEffect(() => {
     let active = true;
 
@@ -405,6 +430,8 @@ export default function JobList() {
       if (!active) return;
       setPositionTree(positionData);
       setIndustryTree(industryData);
+      setActiveCategoryRootId(positionData[0]?.id ?? null);
+      setActiveCategoryMidId(positionData[0]?.children?.[0]?.id ?? null);
       setActiveIndustryRootId(industryData[0]?.id ?? null);
       setActiveIndustryMidId(industryData[0]?.children?.[0]?.id ?? null);
       setTaxonomyReady(true);
@@ -546,6 +573,14 @@ export default function JobList() {
   const selectedCategoryFilters = selectedFilters.filter((item) => item.id.startsWith('category:'));
   const selectedCityFilters = selectedFilters.filter((item) => item.id.startsWith('city:'));
   const selectedIndustryFilters = selectedFilters.filter((item) => item.id.startsWith('industry:'));
+  const activeAdvancedIndustryLeaves = useMemo(() => {
+    const rootNode = industryTree.find((item) => item.id === activeIndustryRootId);
+    if (!rootNode) return [];
+    if (!rootNode.children || rootNode.children.length === 0) {
+      return [rootNode];
+    }
+    return collectLeafNodes(rootNode.children);
+  }, [industryTree, activeIndustryRootId]);
   const educationTriggerLabel = useMemo(() => {
     if (selectedEducationCode == null) return '学历';
     return EDUCATION_OPTIONS.find((opt) => opt.value === selectedEducationCode)?.label ?? '学历';
@@ -682,26 +717,75 @@ export default function JobList() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex-1 min-h-0 overflow-y-auto p-3">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {collectLeafNames(positionTree).map((name) => {
-                          const active = draftCategoryNames.includes(name);
+                    <div className="grid grid-cols-3 flex-1 min-h-0 bg-surface-lowest">
+                      <div data-testid="mobile-category-root-list" className="border-r overflow-y-auto hide-scrollbar p-2 min-h-0">
+                        {positionTree.map((root) => (
+                          <button
+                            key={root.id}
+                            onClick={() => {
+                              setActiveCategoryRootId(root.id);
+                              setActiveCategoryMidId(root.children?.[0]?.id ?? null);
+                            }}
+                            className={`flex h-9 w-full items-center rounded-lg border px-2 mb-1 text-xs transition-colors ${
+                              activeCategoryRootId === root.id
+                                ? 'border-primary/30 bg-primary/10 text-primary'
+                                : 'border-transparent text-on-surface hover:border-primary/20 hover:bg-primary/5'
+                            }`}
+                          >
+                            {root.name}
+                          </button>
+                        ))}
+                      </div>
+                      <div data-testid="mobile-category-mid-list" className="border-r overflow-y-auto hide-scrollbar p-2 min-h-0">
+                        {treeChildrenById(positionTree, activeCategoryRootId).map((mid) => {
+                          const isLeafMid = !mid.children || mid.children.length === 0;
+                          const active = draftCategoryNames.includes(mid.name);
                           return (
                             <button
-                              key={name}
-                              onClick={() =>
-                                setDraftCategoryNames((prev) => (active ? prev.filter((item) => item !== name) : [...prev, name]))
-                              }
-                              className={`inline-flex h-9 items-center rounded-full border px-3 text-xs transition-colors ${
-                                active
+                              key={mid.id}
+                              onClick={() => {
+                                setActiveCategoryMidId(mid.id);
+                                if (isLeafMid) {
+                                  toggleCategoryDraftName(mid.name);
+                                }
+                              }}
+                              className={`flex h-9 w-full items-center rounded-lg border px-2 mb-1 text-xs transition-colors ${
+                                activeCategoryMidId === mid.id || (isLeafMid && active)
                                   ? 'border-primary bg-primary/10 text-primary'
-                                  : 'border-surface-mid text-on-surface hover:border-primary/20 hover:bg-primary/5'
+                                  : 'border-transparent text-on-surface hover:border-primary/20 hover:bg-primary/5'
                               }`}
                             >
-                              {name}
+                              {mid.name}
                             </button>
                           );
                         })}
+                      </div>
+                      <div data-testid="mobile-category-leaf-list" className="overflow-y-auto hide-scrollbar p-2 min-h-0">
+                        {(() => {
+                          const activeMidNode = treeNodeById(positionTree, activeCategoryMidId);
+                          const leaves = treeChildrenById(positionTree, activeCategoryMidId);
+                          if (leaves.length === 0 && activeMidNode) {
+                            return null;
+                          }
+                          return leaves.map((leaf) => {
+                            const active = draftCategoryNames.includes(leaf.name);
+                            return (
+                              <button
+                                key={leaf.id}
+                                aria-pressed={active}
+                                onClick={() => toggleCategoryDraftName(leaf.name)}
+                                className={`flex h-9 w-full items-center justify-between rounded-lg border px-2 mb-1 text-xs transition-colors ${
+                                  active
+                                    ? 'border-primary bg-primary/10 text-primary'
+                                    : 'border-transparent text-on-surface hover:border-primary/20 hover:bg-primary/5'
+                                }`}
+                              >
+                                <span>{leaf.name}</span>
+                                {active && <CheckCircle size={12} className="text-primary" />}
+                              </button>
+                            );
+                          });
+                        })()}
                       </div>
                     </div>
                     <div className="px-3 py-2 border-t flex justify-end gap-2 bg-surface-lowest shrink-0">
@@ -858,44 +942,102 @@ export default function JobList() {
                 initial={{ y: -20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: -20, opacity: 0 }}
+                data-testid="mobile-advanced-filter-panel"
                 className="w-full bg-surface-lowest flex-1 flex flex-col max-h-[60vh] overflow-hidden rounded-b-2xl"
               >
                  <div className="flex flex-1 overflow-hidden">
-                    <div className="w-[100px] bg-surface-low overflow-y-auto">
+                    <div data-testid="mobile-advanced-category-menu" className="w-[100px] bg-surface-low overflow-y-auto">
                        {ADVANCED_FILTERS.map(category => (
                          <button
-                           key={category.id}
-                           onClick={() => setActiveAdvancedCategory(category.id)}
-                           className={`w-full text-left px-3 py-3.5 text-sm relative ${
-                             activeAdvancedCategory === category.id ? 'bg-surface-lowest text-primary font-bold' : 'text-on-surface-variant'
-                           }`}
+                            key={category.id}
+                            onClick={() => {
+                              setActiveAdvancedCategory(category.id);
+                              if (category.id === 'industry' && activeIndustryRootId == null) {
+                                setActiveIndustryRootId(industryTree[0]?.id ?? null);
+                              }
+                            }}
+                            className={`w-full text-left px-3 py-3.5 text-sm relative ${
+                              activeAdvancedCategory === category.id ? 'bg-surface-lowest text-primary font-bold' : 'text-on-surface-variant'
+                            }`}
                          >
                            {category.name}
                          </button>
                        ))}
                     </div>
-                    <div className="flex-1 bg-surface-lowest overflow-y-auto p-4">
-                       <h4 className="text-xs text-outline mb-3 font-bold">{ADVANCED_FILTERS.find(c => c.id === activeAdvancedCategory)?.name}</h4>
-                       <div className="grid grid-cols-2 gap-2 pb-4">
-                          {currentAdvancedOptions.map(opt => {
-                             const filterId = `${activeAdvancedCategory}:${opt}`;
-                             const isActive = opt === '不限'
-                               ? !selectedFilters.some(f => f.id.startsWith(`${activeAdvancedCategory}:`))
-                               : selectedFilters.some(f => f.id === filterId);
-                             
-                             return (
-                               <button
-                                 key={opt}
-                                 onClick={() => toggleFilter(activeAdvancedCategory, ADVANCED_FILTERS.find(c => c.id === activeAdvancedCategory)?.name || '', opt)}
-                                 className={`h-9 px-2 rounded-lg text-xs flex items-center justify-center transition-colors truncate ${
-                                   isActive ? 'bg-primary/10 text-primary border border-primary/30 font-bold' : 'bg-surface-low text-on-surface border border-transparent'
-                                 }`}
-                               >
-                                 <span className="truncate">{opt}</span>
-                               </button>
-                             );
-                          })}
-                       </div>
+                    <div className="flex-1 bg-surface-lowest overflow-hidden">
+                      {activeAdvancedCategory === 'industry' ? (
+                        <div data-testid="mobile-advanced-industry-panel" className="h-full grid grid-cols-[96px_minmax(0,1fr)]">
+                          <div
+                            data-testid="mobile-advanced-industry-root-column"
+                            className="border-r border-surface-mid overflow-y-auto p-2"
+                          >
+                            {industryTree.map((root) => (
+                              <button
+                                key={root.id}
+                                onClick={() => setActiveIndustryRootId(root.id)}
+                                className={`flex h-9 w-full items-center rounded-lg border px-2 mb-1 text-xs transition-colors ${
+                                  activeIndustryRootId === root.id
+                                    ? 'border-primary/30 bg-primary/10 text-primary'
+                                    : 'border-transparent text-on-surface hover:border-primary/20 hover:bg-primary/5'
+                                }`}
+                              >
+                                <span className="truncate">{root.name}</span>
+                              </button>
+                            ))}
+                          </div>
+                          <div
+                            data-testid="mobile-advanced-industry-leaf-column"
+                            className="overflow-y-auto p-2"
+                          >
+                            {activeAdvancedIndustryLeaves.map((leaf) => {
+                              const filterId = `industry:${leaf.name}`;
+                              const active = selectedFilters.some((item) => item.id === filterId);
+                              return (
+                                <button
+                                  key={leaf.id}
+                                  aria-pressed={active}
+                                  onClick={() => toggleFilter('industry', '公司行业', leaf.name)}
+                                  className={`flex h-9 w-full items-center justify-between rounded-lg border px-2 mb-1 text-xs transition-colors ${
+                                    active
+                                      ? 'border-primary bg-primary/10 text-primary'
+                                      : 'border-transparent text-on-surface hover:border-primary/20 hover:bg-primary/5'
+                                  }`}
+                                >
+                                  <span className="truncate pr-1">{leaf.name}</span>
+                                  {active && <CheckCircle size={12} className="text-primary shrink-0" />}
+                                </button>
+                              );
+                            })}
+                            {activeAdvancedIndustryLeaves.length === 0 && (
+                              <div className="px-2 py-6 text-xs text-on-surface-variant">暂无可选子行业</div>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="h-full overflow-y-auto p-4">
+                          <h4 className="text-xs text-outline mb-3 font-bold">{ADVANCED_FILTERS.find(c => c.id === activeAdvancedCategory)?.name}</h4>
+                          <div className="grid grid-cols-2 gap-2 pb-4">
+                            {currentAdvancedOptions.map(opt => {
+                              const filterId = `${activeAdvancedCategory}:${opt}`;
+                              const isActive = opt === '不限'
+                                ? !selectedFilters.some(f => f.id.startsWith(`${activeAdvancedCategory}:`))
+                                : selectedFilters.some(f => f.id === filterId);
+                              
+                              return (
+                                <button
+                                  key={opt}
+                                  onClick={() => toggleFilter(activeAdvancedCategory, ADVANCED_FILTERS.find(c => c.id === activeAdvancedCategory)?.name || '', opt)}
+                                  className={`h-9 px-2 rounded-lg text-xs flex items-center justify-center transition-colors truncate ${
+                                    isActive ? 'bg-primary/10 text-primary border border-primary/30 font-bold' : 'bg-surface-low text-on-surface border border-transparent'
+                                  }`}
+                                >
+                                  <span className="truncate">{opt}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
                  </div>
                  <div className="flex p-3 gap-3 border-t border-surface-mid bg-surface-lowest shrink-0 shadow-[0_-4px_10px_rgba(0,0,0,0.02)] z-10">
@@ -1166,9 +1308,9 @@ export default function JobList() {
 
       {showIndustryModal && (
         <div className="fixed inset-0 z-[80] bg-black/45 flex items-center justify-center p-4">
-          <div data-testid="industry-modal" className="w-full max-w-5xl rounded-2xl bg-white overflow-hidden">
-            <div className="px-6 py-4 border-b text-lg font-bold">选择公司行业</div>
-            <div className="px-6 py-3 border-b bg-primary/5 text-sm">
+          <div data-testid="industry-modal" className="w-full max-w-5xl rounded-2xl bg-surface-lowest text-on-surface overflow-hidden">
+            <div className="px-6 py-4 border-b border-surface-mid text-lg font-bold">选择公司行业</div>
+            <div className="px-6 py-3 border-b border-surface-mid bg-primary/5 text-sm">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-medium text-primary">已选（{draftIndustryNames.length}）：</span>
                 <div data-testid="industry-selected-tags" className="flex items-center gap-2 flex-wrap">
@@ -1180,7 +1322,7 @@ export default function JobList() {
                         key={name}
                         type="button"
                         onClick={() => setDraftIndustryNames((prev) => prev.filter((item) => item !== name))}
-                        className="inline-flex h-7 items-center gap-1 rounded-full border border-primary/30 bg-white px-3 text-xs text-primary hover:bg-primary/10"
+                        className="inline-flex h-7 items-center gap-1 rounded-full border border-primary/30 bg-surface-lowest px-3 text-xs text-primary hover:bg-primary/10"
                       >
                         <span>{name}</span>
                         <X size={12} />
@@ -1191,7 +1333,7 @@ export default function JobList() {
               </div>
             </div>
             <div className="grid grid-cols-3 h-[420px]">
-              <div className="border-r overflow-y-auto p-3">
+              <div className="border-r border-surface-mid overflow-y-auto filter-modal-scroll p-3">
                 {industryTree.map((root) => (
                   <button
                     key={root.id}
@@ -1209,7 +1351,7 @@ export default function JobList() {
                   </button>
                 ))}
               </div>
-              <div className="border-r overflow-y-auto p-3">
+              <div className="border-r border-surface-mid overflow-y-auto filter-modal-scroll p-3">
                 {treeChildrenById(industryTree, activeIndustryRootId).map((mid) => (
                   (() => {
                     const isLeafMid = !mid.children || mid.children.length === 0;
@@ -1235,7 +1377,7 @@ export default function JobList() {
                   })()
                 ))}
               </div>
-              <div className="overflow-y-auto p-3">
+              <div className="overflow-y-auto filter-modal-scroll p-3">
                 {(() => {
                   const activeMidNode = treeNodeById(industryTree, activeIndustryMidId);
                   const leaves = treeChildrenById(industryTree, activeIndustryMidId);
@@ -1263,7 +1405,7 @@ export default function JobList() {
                 })()}
               </div>
             </div>
-            <div className="px-6 py-3 border-t flex justify-end gap-2">
+            <div className="px-6 py-3 border-t border-surface-mid flex justify-end gap-2">
               <button onClick={() => setDraftIndustryNames([])} className="px-5 h-10 rounded-full border border-surface-mid text-on-surface">清空筛选</button>
               <button onClick={() => setShowIndustryModal(false)} className="px-5 h-10 rounded-full border border-surface-mid text-on-surface">取消</button>
               <button onClick={applyIndustryDraft} className="px-5 h-10 rounded-full bg-primary text-white hover:bg-primary-container transition-colors">确定</button>
@@ -1274,9 +1416,9 @@ export default function JobList() {
 
       {showLocationModal && (
         <div className="fixed inset-0 z-[80] bg-black/45 flex items-center justify-center p-4">
-          <div data-testid="location-modal" className="w-full max-w-4xl rounded-2xl bg-white overflow-hidden">
-            <div className="px-6 py-4 border-b text-lg font-bold">选择工作地点</div>
-            <div className="px-6 py-3 border-b bg-primary/5 text-sm">
+          <div data-testid="location-modal" className="w-full max-w-4xl rounded-2xl bg-surface-lowest text-on-surface overflow-hidden">
+            <div className="px-6 py-4 border-b border-surface-mid text-lg font-bold">选择工作地点</div>
+            <div className="px-6 py-3 border-b border-surface-mid bg-primary/5 text-sm">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-medium text-primary">已选（{draftCityNames.length}）：</span>
                 <div data-testid="city-selected-tags" className="flex items-center gap-2 flex-wrap">
@@ -1288,7 +1430,7 @@ export default function JobList() {
                         key={name}
                         type="button"
                         onClick={() => setDraftCityNames((prev) => prev.filter((item) => item !== name))}
-                        className="inline-flex h-7 items-center gap-1 rounded-full border border-primary/30 bg-white px-3 text-xs text-primary hover:bg-primary/10"
+                        className="inline-flex h-7 items-center gap-1 rounded-full border border-primary/30 bg-surface-lowest px-3 text-xs text-primary hover:bg-primary/10"
                       >
                         <span>{name}</span>
                         <X size={12} />
@@ -1299,7 +1441,7 @@ export default function JobList() {
               </div>
             </div>
             <div className="grid grid-cols-2 h-[380px]">
-              <div data-testid="location-province-list" className="border-r overflow-y-auto p-3">
+              <div data-testid="location-province-list" className="border-r border-surface-mid overflow-y-auto filter-modal-scroll p-3">
                 {provinceCities.map((item) => (
                   <button
                     key={item.province}
@@ -1314,7 +1456,7 @@ export default function JobList() {
                   </button>
                 ))}
               </div>
-              <div data-testid="location-city-list" className="overflow-y-auto p-3">
+              <div data-testid="location-city-list" className="overflow-y-auto filter-modal-scroll p-3">
                 {(provinceCities.find((item) => item.province === activeProvince)?.cities ?? []).map((city) => {
                   const active = draftCityNames.includes(city);
                   return (
@@ -1339,7 +1481,7 @@ export default function JobList() {
                 })}
               </div>
             </div>
-            <div className="px-6 py-3 border-t flex justify-end gap-2">
+            <div className="px-6 py-3 border-t border-surface-mid flex justify-end gap-2">
               <button onClick={() => setDraftCityNames([])} className="px-5 h-10 rounded-full border border-surface-mid text-on-surface">清空筛选</button>
               <button onClick={() => setShowLocationModal(false)} className="px-5 h-10 rounded-full border border-surface-mid text-on-surface">取消</button>
               <button onClick={applyLocationDraft} className="px-5 h-10 rounded-full bg-primary text-white hover:bg-primary-container transition-colors">确定</button>

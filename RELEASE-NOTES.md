@@ -1,6 +1,12 @@
 ﻿# Release Notes
 
 ## 2026-05-07
+- fix: 用户端职位列表移动端“职位类别”筛选改为三级联动三列布局（一级/二级/三级），交互与“公司行业”保持一致，修复原先平铺标签导致样式与操作不一致的问题
+- test: 更新 `user-jobs-page` 用例，新增对移动端职位类别三列结构（root/mid/leaf）的断言，确保回归不再退化为平铺模式
+- fix: 修复用户端职位详情页“智能匹配竞争力/智能匹配”按钮无响应问题，补充点击事件并统一跳转至 `/skill-graph?jobId={职位ID}`
+- test: 新增 `user-job-detail-page` 回归用例，校验点击“智能匹配竞争力”会触发正确路由跳转
+- fix: 修复用户端夜间模式筛选弹层可读性问题：职位分类/工作地点/公司行业弹层容器与已选标签从硬编码 `bg-white` 改为主题色 `bg-surface-lowest`，避免暗色主题下浅色文字叠加白底导致内容“看不清”
+- test: 新增职位页与公司页筛选弹层主题样式回归测试，约束弹层必须使用主题背景（禁止回退到 `bg-white`）；前端 `npm run build`、`npm run test:run` 全量通过
 - fix: 统一提交配置修正：后端 CORS/WebSocket allowed-origins 改为环境变量字符串写法；前端 CSP 在开发环境放开 http 图片源以兼容本地调试
 - feat: 企业端聊天“面试通知”重构为 shadcn 弹窗组件 `InterviewInviteDialog`，移除输入区内联面试表单；支持 `Dialog + Popover + Calendar + time` 组合时间选择并按 `yyyy-MM-ddTHH:mm:ss` 提交
 - feat: 新增前端通用 shadcn 基础组件 `button/input/label/dialog/popover/calendar`，供后续页面复用

@@ -244,7 +244,12 @@ describe('user jobs page filters', () => {
 
     const embeddedPanel = await screen.findByTestId('mobile-category-dropdown');
     expect(within(embeddedPanel).getByText('选择职位类别')).toBeInTheDocument();
-    expect(within(embeddedPanel).getByText('Java')).toBeInTheDocument();
+    const rootList = within(embeddedPanel).getByTestId('mobile-category-root-list');
+    const midList = within(embeddedPanel).getByTestId('mobile-category-mid-list');
+    const leafList = within(embeddedPanel).getByTestId('mobile-category-leaf-list');
+    expect(within(rootList).getByRole('button', { name: '技术' })).toBeInTheDocument();
+    expect(within(midList).getByRole('button', { name: '后端开发' })).toBeInTheDocument();
+    expect(within(leafList).getByRole('button', { name: 'Java' })).toBeInTheDocument();
   });
 
   it('opens embedded location panel inside mobile dropdown when clicking 工作地点', async () => {
@@ -257,6 +262,36 @@ describe('user jobs page filters', () => {
     expect(within(embeddedPanel).getByText('选择工作地点')).toBeInTheDocument();
     const provinceList = within(embeddedPanel).getByTestId('mobile-location-province-list');
     expect(within(provinceList).getByRole('button', { name: '北京市' })).toBeInTheDocument();
+  });
+
+  it('uses two-column industry picker in mobile advanced filter and selects only leaf industries', async () => {
+    render(<JobListPage />);
+    await waitFor(() => expect(hoisted.searchMock).toHaveBeenCalledTimes(1));
+
+    fireEvent.click(screen.getByRole('button', { name: /筛选/i }));
+    const advancedPanel = await screen.findByTestId('mobile-advanced-filter-panel');
+    const categoryMenu = within(advancedPanel).getByTestId('mobile-advanced-category-menu');
+    fireEvent.click(within(categoryMenu).getByRole('button', { name: '公司行业' }));
+
+    const panel = await screen.findByTestId('mobile-advanced-industry-panel');
+    const rootColumn = within(panel).getByTestId('mobile-advanced-industry-root-column');
+    const leafColumn = within(panel).getByTestId('mobile-advanced-industry-leaf-column');
+
+    fireEvent.click(within(rootColumn).getByRole('button', { name: '互联网' }));
+    expect(within(leafColumn).getByRole('button', { name: '电商' })).toBeInTheDocument();
+    expect(within(leafColumn).getByRole('button', { name: '内容社区' })).toBeInTheDocument();
+    expect(within(leafColumn).queryByRole('button', { name: '平台' })).not.toBeInTheDocument();
+
+    fireEvent.click(within(leafColumn).getByRole('button', { name: '电商' }));
+    fireEvent.click(screen.getByRole('button', { name: /确定/i }));
+
+    await waitFor(() => {
+      expect(hoisted.searchMock).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          industryLeafIds: [2111],
+        }),
+      );
+    });
   });
 
   it('shows featured category options from hot-priority list', async () => {
@@ -441,5 +476,39 @@ describe('user jobs page filters', () => {
     await waitFor(() => expect(hoisted.searchMock).toHaveBeenCalledTimes(1));
     expect(await screen.findByText('暂无匹配职位')).toBeInTheDocument();
     expect(screen.getByText('试试调整筛选条件或搜索关键词')).toBeInTheDocument();
+  });
+
+  it('uses theme background for desktop filter modals in dark mode compatibility', async () => {
+    render(<JobListPage />);
+    await waitFor(() => expect(hoisted.searchMock).toHaveBeenCalledTimes(1));
+
+    fireEvent.click(screen.getByRole('button', { name: /更多职类/i }));
+    const categoryModal = await screen.findByTestId('category-modal');
+    expect(categoryModal.className).toContain('bg-surface-lowest');
+    expect(categoryModal.className).not.toContain('bg-white');
+    expect(within(categoryModal).getByText('选择职能').className).toContain('border-surface-mid');
+    const categoryRootColumn = within(categoryModal).getByRole('button', { name: '技术' }).closest('div');
+    expect(categoryRootColumn?.className).toContain('border-surface-mid');
+    expect(categoryRootColumn?.className).toContain('filter-modal-scroll');
+    fireEvent.click(within(categoryModal).getByRole('button', { name: /^取消$/ }));
+
+    fireEvent.click(screen.getByRole('button', { name: /公司行业/i }));
+    const industryModal = await screen.findByTestId('industry-modal');
+    expect(industryModal.className).toContain('bg-surface-lowest');
+    expect(industryModal.className).not.toContain('bg-white');
+    expect(within(industryModal).getByText('选择公司行业').className).toContain('border-surface-mid');
+    const industryRootColumn = within(industryModal).getByRole('button', { name: '互联网' }).closest('div');
+    expect(industryRootColumn?.className).toContain('border-surface-mid');
+    expect(industryRootColumn?.className).toContain('filter-modal-scroll');
+    fireEvent.click(within(industryModal).getByRole('button', { name: /^取消$/ }));
+
+    fireEvent.click(screen.getByRole('button', { name: /更多地点/i }));
+    const locationModal = await screen.findByTestId('location-modal');
+    expect(locationModal.className).toContain('bg-surface-lowest');
+    expect(locationModal.className).not.toContain('bg-white');
+    expect(within(locationModal).getByText('选择工作地点').className).toContain('border-surface-mid');
+    const provinceColumn = within(locationModal).getByTestId('location-province-list');
+    expect(provinceColumn?.className).toContain('border-surface-mid');
+    expect(provinceColumn?.className).toContain('filter-modal-scroll');
   });
 });
