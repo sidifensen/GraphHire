@@ -60,9 +60,9 @@ export default function PositionTypePickerModal({
 
   return (
     <div className="fixed inset-0 z-[80] bg-black/45 flex items-center justify-center p-4">
-      <div data-testid={containerTestId} className="w-full max-w-5xl rounded-2xl bg-white overflow-hidden">
-        <div className="px-6 py-4 border-b text-lg font-bold">{title}</div>
-        <div className="px-6 py-3 border-b bg-primary/5 text-sm">
+      <div data-testid={containerTestId} className="w-full max-w-5xl rounded-2xl bg-surface-lowest text-on-surface overflow-hidden">
+        <div className="px-6 py-4 border-b border-surface-mid text-lg font-bold">{title}</div>
+        <div className="px-6 py-3 border-b border-surface-mid bg-primary/5 text-sm">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-medium text-primary">{selectedLabel}（{draftNames.length}）：</span>
             <div data-testid={selectedTagsTestId} className="flex items-center gap-2 flex-wrap">
@@ -74,7 +74,7 @@ export default function PositionTypePickerModal({
                     key={name}
                     type="button"
                     onClick={() => setDraftNames((prev) => prev.filter((item) => item !== name))}
-                    className="inline-flex h-7 items-center gap-1 rounded-full border border-primary/30 bg-white px-3 text-xs text-primary hover:bg-primary/10"
+                    className="inline-flex h-7 items-center gap-1 rounded-full border border-primary/30 bg-surface-lowest px-3 text-xs text-primary hover:bg-primary/10"
                   >
                     <span>{name}</span>
                     <X size={12} />
@@ -85,7 +85,7 @@ export default function PositionTypePickerModal({
           </div>
         </div>
         <div className="grid grid-cols-3 h-[420px]">
-          <div className="border-r overflow-y-auto p-3">
+          <div className="border-r border-surface-mid overflow-y-auto filter-modal-scroll p-3">
             {tree.map((root) => (
               <button
                 key={root.id}
@@ -103,7 +103,7 @@ export default function PositionTypePickerModal({
               </button>
             ))}
           </div>
-          <div className="border-r overflow-y-auto p-3">
+          <div className="border-r border-surface-mid overflow-y-auto filter-modal-scroll p-3">
             {treeChildrenById(tree, activeRootId).map((mid) => {
               const isLeafMid = !mid.children || mid.children.length === 0;
               const active = draftNames.includes(mid.name);
@@ -127,7 +127,7 @@ export default function PositionTypePickerModal({
               );
             })}
           </div>
-          <div className="overflow-y-auto p-3">
+          <div className="overflow-y-auto filter-modal-scroll p-3">
             {treeChildrenById(tree, activeMidId).map((leaf) => {
               const active = draftNames.includes(leaf.name);
               return (
@@ -148,7 +148,7 @@ export default function PositionTypePickerModal({
             })}
           </div>
         </div>
-        <div className="px-6 py-3 border-t flex justify-end gap-2">
+        <div className="px-6 py-3 border-t border-surface-mid flex justify-end gap-2">
           <button onClick={() => setDraftNames([])} className="px-5 h-10 rounded-full border border-surface-mid text-on-surface">
             {clearButtonText}
           </button>

@@ -37,9 +37,9 @@ export function IndustryFilterModal({
 
   return (
     <div className="fixed inset-0 z-[80] bg-black/45 flex items-center justify-center p-4">
-      <div data-testid="industry-modal" className="w-full max-w-5xl rounded-2xl bg-white overflow-hidden">
-        <div className="px-6 py-4 border-b text-lg font-bold">{title}</div>
-        <div className="px-6 py-3 border-b bg-primary/5 text-sm">
+      <div data-testid="industry-modal" className="w-full max-w-5xl rounded-2xl bg-surface-lowest text-on-surface overflow-hidden">
+        <div className="px-6 py-4 border-b border-surface-mid text-lg font-bold">{title}</div>
+        <div className="px-6 py-3 border-b border-surface-mid bg-primary/5 text-sm">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-medium text-primary">已选（{selectedNames.length}）：</span>
             <div data-testid="industry-selected-tags" className="flex items-center gap-2 flex-wrap">
@@ -51,7 +51,7 @@ export function IndustryFilterModal({
                     key={name}
                     type="button"
                     onClick={() => onRemoveSelected(name)}
-                    className="inline-flex h-7 items-center gap-1 rounded-full border border-primary/30 bg-white px-3 text-xs text-primary hover:bg-primary/10"
+                    className="inline-flex h-7 items-center gap-1 rounded-full border border-primary/30 bg-surface-lowest px-3 text-xs text-primary hover:bg-primary/10"
                   >
                     <span>{name}</span>
                     <X size={12} />
@@ -62,7 +62,7 @@ export function IndustryFilterModal({
           </div>
         </div>
         <div className="grid grid-cols-3 h-[420px]">
-          <div className="border-r overflow-y-auto p-3">
+          <div className="border-r border-surface-mid overflow-y-auto filter-modal-scroll p-3">
             {tree.map((root) => (
               <button
                 key={root.id}
@@ -77,7 +77,7 @@ export function IndustryFilterModal({
               </button>
             ))}
           </div>
-          <div className="border-r overflow-y-auto p-3">
+          <div className="border-r border-surface-mid overflow-y-auto filter-modal-scroll p-3">
             {treeChildrenById(tree, activeRootId).map((mid) => {
               const isLeafMid = !mid.children || mid.children.length === 0;
               const active = selectedNames.includes(mid.name);
@@ -96,7 +96,7 @@ export function IndustryFilterModal({
               );
             })}
           </div>
-          <div className="overflow-y-auto p-3">
+          <div className="overflow-y-auto filter-modal-scroll p-3">
             {(() => {
               const activeMidNode = treeNodeById(tree, activeMidId);
               const leaves = treeChildrenById(tree, activeMidId);
@@ -122,7 +122,7 @@ export function IndustryFilterModal({
             })()}
           </div>
         </div>
-        <div className="px-6 py-3 border-t flex justify-end gap-2">
+        <div className="px-6 py-3 border-t border-surface-mid flex justify-end gap-2">
           <button onClick={() => onClearSelected?.()} className="px-5 h-10 rounded-full border border-surface-mid text-on-surface">清空筛选</button>
           <button onClick={onClose} className="px-5 h-10 rounded-full border border-surface-mid text-on-surface">取消</button>
           <button onClick={onApply} className="px-5 h-10 rounded-full bg-primary text-white hover:bg-primary-container transition-colors">确定</button>

@@ -152,6 +152,30 @@ html body[data-scroll-locked] .right-scroll-bar-position {
   display: none;
 }
 
+.filter-modal-scroll {
+  scrollbar-color: var(--color-surface-highest) var(--color-surface-lowest);
+  scrollbar-width: thin;
+}
+
+.filter-modal-scroll::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.filter-modal-scroll::-webkit-scrollbar-track {
+  background: var(--color-surface-lowest);
+}
+
+.filter-modal-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-surface-highest);
+  border-radius: 9999px;
+  border: 2px solid var(--color-surface-lowest);
+}
+
+.filter-modal-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--color-outline);
+}
+
 .dark {
   --color-primary: #4789ff;
   --color-primary-container: #4789ff;

@@ -170,4 +170,28 @@ describe('user companies page real api filters', () => {
     expect(within(embeddedPanel).getByText('选择公司行业')).toBeInTheDocument();
     expect(within(embeddedPanel).getByRole('button', { name: '互联网' })).toBeInTheDocument();
   });
+
+  it('uses theme background for desktop company filter modals', async () => {
+    render(<CompanyListPage />);
+    await waitFor(() => expect(hoisted.companiesSearchMock).toHaveBeenCalledTimes(1));
+
+    fireEvent.click(screen.getByRole('button', { name: /更多行业/i }));
+    const industryModal = await screen.findByTestId('industry-modal');
+    expect(industryModal.className).toContain('bg-surface-lowest');
+    expect(industryModal.className).not.toContain('bg-white');
+    expect(within(industryModal).getByText('选择公司行业').className).toContain('border-surface-mid');
+    const industryRootColumn = within(industryModal).getByRole('button', { name: '互联网' }).closest('div');
+    expect(industryRootColumn?.className).toContain('border-surface-mid');
+    expect(industryRootColumn?.className).toContain('filter-modal-scroll');
+    fireEvent.click(within(industryModal).getByRole('button', { name: /^取消$/ }));
+
+    fireEvent.click(screen.getByRole('button', { name: /更多地点/i }));
+    const locationModal = await screen.findByTestId('location-modal');
+    expect(locationModal.className).toContain('bg-surface-lowest');
+    expect(locationModal.className).not.toContain('bg-white');
+    expect(within(locationModal).getByText('选择公司地点').className).toContain('border-surface-mid');
+    const provinceColumn = within(locationModal).getByTestId('location-province-list');
+    expect(provinceColumn.className).toContain('border-surface-mid');
+    expect(provinceColumn.className).toContain('filter-modal-scroll');
+  });
 });

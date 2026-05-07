@@ -32,9 +32,9 @@ export function LocationFilterModal({
 
   return (
     <div className="fixed inset-0 z-[80] bg-black/45 flex items-center justify-center p-4">
-      <div data-testid="location-modal" className="w-full max-w-4xl rounded-2xl bg-white overflow-hidden">
-        <div className="px-6 py-4 border-b text-lg font-bold">{title}</div>
-        <div className="px-6 py-3 border-b bg-primary/5 text-sm">
+      <div data-testid="location-modal" className="w-full max-w-4xl rounded-2xl bg-surface-lowest text-on-surface overflow-hidden">
+        <div className="px-6 py-4 border-b border-surface-mid text-lg font-bold">{title}</div>
+        <div className="px-6 py-3 border-b border-surface-mid bg-primary/5 text-sm">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-medium text-primary">已选（{selectedCities.length}）：</span>
             <div data-testid="city-selected-tags" className="flex items-center gap-2 flex-wrap">
@@ -46,7 +46,7 @@ export function LocationFilterModal({
                     key={name}
                     type="button"
                     onClick={() => onRemoveSelected(name)}
-                    className="inline-flex h-7 items-center gap-1 rounded-full border border-primary/30 bg-white px-3 text-xs text-primary hover:bg-primary/10"
+                    className="inline-flex h-7 items-center gap-1 rounded-full border border-primary/30 bg-surface-lowest px-3 text-xs text-primary hover:bg-primary/10"
                   >
                     <span>{name}</span>
                     <X size={12} />
@@ -57,7 +57,7 @@ export function LocationFilterModal({
           </div>
         </div>
         <div className="grid grid-cols-2 h-[380px]">
-          <div data-testid="location-province-list" className="border-r overflow-y-auto p-3">
+          <div data-testid="location-province-list" className="border-r border-surface-mid overflow-y-auto filter-modal-scroll p-3">
             {provinceCities.map((item) => (
               <button
                 key={item.province}
@@ -72,7 +72,7 @@ export function LocationFilterModal({
               </button>
             ))}
           </div>
-          <div data-testid="location-city-list" className="overflow-y-auto p-3">
+          <div data-testid="location-city-list" className="overflow-y-auto filter-modal-scroll p-3">
             {(provinceCities.find((item) => item.province === activeProvince)?.cities ?? []).map((city) => {
               const active = selectedCities.includes(city);
               return (
@@ -93,7 +93,7 @@ export function LocationFilterModal({
             })}
           </div>
         </div>
-        <div className="px-6 py-3 border-t flex justify-end gap-2">
+        <div className="px-6 py-3 border-t border-surface-mid flex justify-end gap-2">
           <button onClick={() => onClearSelected?.()} className="px-5 h-10 rounded-full border border-surface-mid text-on-surface">清空筛选</button>
           <button onClick={onClose} className="px-5 h-10 rounded-full border border-surface-mid text-on-surface">取消</button>
           <button onClick={onApply} className="px-5 h-10 rounded-full bg-primary text-white hover:bg-primary-container transition-colors">确定</button>
