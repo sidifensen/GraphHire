@@ -89,9 +89,9 @@ app: # 自定义业务配置
         - image/webp
   security:
     cors:
-      allowed-origins: [${CORS_ALLOWED_ORIGINS:http://localhost:8888}]
+      allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:8888}
     websocket:
-      allowed-origins: [${WS_ALLOWED_ORIGINS:http://localhost:8888}]
+      allowed-origins: ${WS_ALLOWED_ORIGINS:http://localhost:8888}
   logging: # 业务日志配置
     slow-api-threshold-ms: ${SLOW_API_THRESHOLD_MS:500} # 慢接口阈值（毫秒）
 

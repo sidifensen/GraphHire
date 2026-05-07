@@ -1,6 +1,7 @@
 ﻿# Release Notes
 
 ## 2026-05-07
+- fix: 统一提交配置修正：后端 CORS/WebSocket allowed-origins 改为环境变量字符串写法；前端 CSP 在开发环境放开 http 图片源以兼容本地调试
 
 - refactor: 行业技能画像模块整体迁移到职位类型技能画像命名空间（`industryskill` -> `positiontypeskill`），清理旧领域模型、仓储与测试文件
 - feat: 管理端技能画像初始化入口与服务调用统一切换到 `PositionTypeSkill` 语义，并补充对应新模块实现文件
@@ -407,3 +408,4 @@
 - refactor: 新增前端通用组件 `hot-search-dropdown`，统一处理 loading/empty/item 交互；`publicApi` 同步补充 jobs/companies 热搜读取方法
 - test: 新增并通过后端热门搜索集成测试（`PublicJobControllerIT`、`PublicCompanyControllerIT`）与前端 API/组件测试（`public.test.ts`、`hot-search-dropdown.test.tsx`）
 - test: 按前后端联合改动面完成全量验证：`mvn compile`、`mvn test`、`npm run build`、`npm run test:run` 全通过
+
