@@ -294,7 +294,7 @@ describe('user jobs page filters', () => {
     });
   });
 
-  it('hides advanced category menu when viewing industry panel in mobile filter', async () => {
+  it('keeps advanced category menu visible when viewing industry panel in mobile filter', async () => {
     render(<JobListPage />);
     await waitFor(() => expect(hoisted.searchMock).toHaveBeenCalledTimes(1));
 
@@ -306,7 +306,7 @@ describe('user jobs page filters', () => {
     const industryPanel = await screen.findByTestId('mobile-advanced-industry-panel');
     expect(within(industryPanel).getByTestId('mobile-advanced-industry-root-column')).toBeInTheDocument();
     expect(within(industryPanel).getByTestId('mobile-advanced-industry-leaf-column')).toBeInTheDocument();
-    expect(within(advancedPanel).queryByTestId('mobile-advanced-category-menu')).not.toBeInTheDocument();
+    expect(within(advancedPanel).getByTestId('mobile-advanced-category-menu')).toBeInTheDocument();
   });
 
   it('shows featured category options from hot-priority list', async () => {
