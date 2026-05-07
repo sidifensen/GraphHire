@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import type { UserType } from '@/lib/types';
 
 interface AuthState {
@@ -6,6 +7,8 @@ interface AuthState {
   refreshToken: string | null;
   user: { id: number; username: string; displayName?: string; email?: string; type: UserType; avatarUrl?: string | null } | null;
   isAuthenticated: boolean;
+  isHydrated: boolean;
+  setHydrated: (value: boolean) => void;
   setAuth: (tokens: { accessToken: string; refreshToken?: string }, user: { id: number; username: string; displayName?: string; email?: string; type: UserType; avatarUrl?: string | null }) => void;
   updateUser: (partial: Partial<{ id: number; username: string; displayName?: string; email?: string; type: UserType; avatarUrl?: string | null }>) => void;
   logout: () => void;
@@ -20,33 +23,55 @@ const STORAGE_KEYS: Record<AuthDomain, string> = {
 };
 
 function createAuthStore(storageKey: string) {
-  return create<AuthState>()((set) => ({
-    accessToken: null,
-    refreshToken: null,
-    user: null,
-    isAuthenticated: false,
-
-    setAuth: (tokens, user) =>
-      set({
-        accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken || null,
-        user,
-        isAuthenticated: true,
-      }),
-
-    updateUser: (partial) =>
-      set((state) => ({
-        user: state.user ? { ...state.user, ...partial } : state.user,
-      })),
-
-    logout: () =>
-      set({
+  const isServer = typeof window === 'undefined';
+  return create<AuthState>()(
+    persist(
+      (set) => ({
         accessToken: null,
         refreshToken: null,
         user: null,
         isAuthenticated: false,
+        isHydrated: isServer,
+        setHydrated: (value) => set({ isHydrated: value }),
+
+        setAuth: (tokens, user) =>
+          set({
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken || null,
+            user,
+            isAuthenticated: true,
+            isHydrated: true,
+          }),
+
+        updateUser: (partial) =>
+          set((state) => ({
+            user: state.user ? { ...state.user, ...partial } : state.user,
+          })),
+
+        logout: () =>
+          set({
+            accessToken: null,
+            refreshToken: null,
+            user: null,
+            isAuthenticated: false,
+            isHydrated: true,
+          }),
       }),
-  }));
+      {
+        name: storageKey,
+        storage: createJSONStorage(() => localStorage),
+        partialize: (state) => ({
+          accessToken: state.accessToken,
+          refreshToken: state.refreshToken,
+          user: state.user,
+          isAuthenticated: state.isAuthenticated,
+        }),
+        onRehydrateStorage: () => (state) => {
+          state?.setHydrated(true);
+        },
+      },
+    ),
+  );
 }
 
 export const userAuthStore = createAuthStore(STORAGE_KEYS.user);

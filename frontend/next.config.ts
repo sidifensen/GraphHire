@@ -2,9 +2,22 @@ import type { NextConfig } from 'next';
 import path from 'node:path';
 
 const isDev = process.env.NODE_ENV === 'development';
-const imgSrcDirective = isDev
-  ? "img-src 'self' data: blob: https: http:;"
-  : "img-src 'self' data: blob: https:;";
+const explicitApiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://127.0.0.1:7777';
+let apiOrigin = '';
+try {
+  apiOrigin = new URL(explicitApiBaseUrl).origin;
+} catch {
+  apiOrigin = '';
+}
+
+const imgSrcParts = ["'self'", 'data:', 'blob:', 'https:'];
+if (isDev) {
+  imgSrcParts.push('http:');
+}
+if (apiOrigin) {
+  imgSrcParts.push(apiOrigin);
+}
+const imgSrcDirective = `img-src ${Array.from(new Set(imgSrcParts)).join(' ')};`;
 
 const nextConfig: NextConfig = {
   images: {

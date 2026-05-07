@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -172,14 +172,14 @@ function Avatar({
         alt={`${name}头像`}
         data-testid={testId}
         onError={() => setBroken(true)}
-        className="h-9 w-9 rounded-full object-cover border border-outline/20 shrink-0"
+        className="h-9 w-9 rounded-full object-cover border border-outline-variant shrink-0"
       />
     );
   }
   return (
     <div
       data-testid={testId}
-      className="h-9 w-9 rounded-full shrink-0 border border-outline/20 bg-surface-low text-on-surface font-bold text-sm flex items-center justify-center"
+      className="h-9 w-9 rounded-full shrink-0 border border-outline-variant bg-surface-low text-on-surface font-bold text-sm flex items-center justify-center"
     >
       {initial}
     </div>
@@ -216,7 +216,7 @@ function EmojiPanel({
   return (
     <div
       data-testid="chat-emoji-panel"
-      className="absolute bottom-14 left-0 z-20 w-[430px] rounded-xl border border-outline/20 bg-surface-lowest p-3 shadow-lg"
+      className="absolute bottom-14 left-0 z-20 w-[430px] rounded-xl border border-outline-variant bg-surface-lowest p-3 shadow-lg"
     >
       <div className="mb-2 flex items-center gap-2 overflow-x-auto pb-1" data-testid="chat-emoji-category-tabs">
         {CHAT_EMOJI_CATEGORIES.map((category) => (
@@ -227,8 +227,8 @@ function EmojiPanel({
             onClick={() => setActiveCategoryId(category.id)}
             className={`shrink-0 rounded-full border px-2.5 py-1 text-xs font-bold ${
               activeCategory?.id === category.id
-                ? 'border-primary/40 bg-primary/10 text-primary'
-                : 'border-outline/20 text-on-surface-variant hover:bg-surface-low'
+                ? 'border-primary bg-primary/10 text-primary'
+                : 'border-outline-variant text-on-surface-variant hover:bg-surface-low'
             }`}
           >
             {category.label}
@@ -238,7 +238,7 @@ function EmojiPanel({
 
       <div
         data-testid="chat-emoji-scroll-region"
-        className="h-64 overflow-y-auto rounded-lg border border-outline/10 bg-surface-low p-2"
+        className="h-64 overflow-y-auto rounded-lg border border-outline-variant bg-surface-low p-2"
       >
         <div className="grid grid-cols-10 gap-2">
           {pageEmojis.map((emoji) => (
@@ -263,7 +263,7 @@ function EmojiPanel({
             aria-label="上一页表情"
             onClick={() => setPage((prev) => Math.max(1, prev - 1))}
             disabled={page <= 1}
-            className="rounded-md border border-outline/20 px-2 py-0.5 font-bold disabled:opacity-40"
+            className="rounded-md border border-outline-variant px-2 py-0.5 font-bold disabled:opacity-40"
           >
             上一页
           </button>
@@ -272,7 +272,7 @@ function EmojiPanel({
             aria-label="下一页表情"
             onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
             disabled={page >= totalPages}
-            className="rounded-md border border-outline/20 px-2 py-0.5 font-bold disabled:opacity-40"
+            className="rounded-md border border-outline-variant px-2 py-0.5 font-bold disabled:opacity-40"
           >
             下一页
           </button>
@@ -877,12 +877,12 @@ export default function ChatWorkspace({
     ? createPortal(
       <div data-testid="chat-resume-preview-modal" className="fixed inset-0 z-[9999] bg-black/70 p-2 md:p-6">
         <div className="mx-auto flex h-full w-full max-w-6xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
-          <div className="flex items-center justify-between border-b border-outline/20 bg-white px-4 py-3">
+          <div className="flex items-center justify-between border-b border-outline-variant bg-white px-4 py-3">
             <p className="truncate text-sm font-bold text-on-surface">{previewFileName || '简历预览'}</p>
             <button
               type="button"
               onClick={closePreview}
-              className="rounded-lg border border-outline/20 px-3 py-1 text-sm text-on-surface hover:bg-surface-low"
+              className="rounded-lg border border-outline-variant px-3 py-1 text-sm text-on-surface hover:bg-surface-low"
             >
               关闭预览
             </button>
@@ -901,32 +901,32 @@ export default function ChatWorkspace({
     : null;
 
   return (
-      <section data-testid="chat-workspace" className="mx-auto w-full max-w-6xl px-0 py-0 md:px-6 md:py-0">
+      <section data-testid="chat-workspace" className="mx-auto w-full max-w-6xl px-0 py-0 md:px-6 md:py-4">
         {previewModal}
       {title ? <h1 className="text-2xl font-black text-on-surface mb-4">{title}</h1> : null}
       {error ? <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">{error}</div> : null}
 
       <div
         data-testid="chat-desktop-layout"
-        className="grid grid-cols-1 md:grid-cols-[320px_minmax(0,1fr)] gap-4 md:h-[calc(100vh-64px)] min-h-[560px]"
+        className="grid grid-cols-1 md:grid-cols-[320px_minmax(0,1fr)] gap-4 md:h-[calc(100vh-96px)] min-h-[560px]"
       >
         {(mobileMode === 'list' || mobileMode === 'detail') ? (
           <aside
             data-testid="chat-conversation-list-panel"
-            className={`rounded-none md:rounded-2xl border border-outline/20 bg-surface-lowest overflow-hidden ${mobileMode === 'detail' ? 'hidden md:block' : ''}`}
+            className={`rounded-none md:rounded-2xl border border-outline-variant bg-surface-lowest overflow-hidden ${mobileMode === 'detail' ? 'hidden md:block' : ''}`}
           >
-            <div className="h-12 px-3 border-b border-outline/20 flex items-center">
+            <div className="h-12 px-3 border-b border-outline-variant flex items-center">
               <input
                 value={conversationKeyword}
                 onChange={(event) => setConversationKeyword(event.target.value)}
                 placeholder="搜索会话..."
-                className="h-9 w-full rounded-lg border border-outline/20 bg-surface-low px-3 text-sm text-on-surface outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/30"
+                className="h-9 w-full rounded-lg border border-outline-variant bg-surface-low px-3 text-sm text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary"
               />
             </div>
             <div className="h-full overflow-y-auto p-2 space-y-2">
               {loadingList ? <div className="px-3 py-4 text-sm text-on-surface-variant">会话加载中...</div> : null}
               {!loadingList && filteredList.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-outline/20 px-4 py-10 text-center text-sm text-on-surface-variant">暂无会话</div>
+                <div className="rounded-xl border border-dashed border-outline-variant px-4 py-10 text-center text-sm text-on-surface-variant">暂无会话</div>
               ) : null}
 
               {filteredList.map((item) => {
@@ -939,7 +939,7 @@ export default function ChatWorkspace({
                     key={item.conversationId}
                     type="button"
                     onClick={() => handleSelectConversation(item.conversationId)}
-                    className={`w-full text-left rounded-xl border px-3 py-3 transition-colors ${selected ? 'border-primary/40 bg-primary/5' : 'border-outline/20 bg-surface-lowest hover:border-primary/20'}`}
+                    className={`w-full text-left rounded-xl border px-3 py-3 transition-colors ${selected ? 'border-primary bg-surface-low' : 'border-outline-variant bg-surface-lowest hover:border-primary'}`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex items-start gap-2">
@@ -972,17 +972,17 @@ export default function ChatWorkspace({
 
         <div
           data-testid="chat-conversation-detail-panel"
-          className={`${mobileMode === 'list' ? 'hidden md:flex' : ''} ${mobileMode === 'detail' && !shouldShowDetail ? 'hidden md:flex' : mobileMode === 'detail' ? 'flex' : ''} min-h-0 flex-col rounded-none md:rounded-2xl border border-outline/20 bg-surface-lowest overflow-hidden ${mobileMode === 'detail' ? 'h-[100dvh] md:h-auto' : ''}`}
+          className={`${mobileMode === 'list' ? 'hidden md:flex' : ''} ${mobileMode === 'detail' && !shouldShowDetail ? 'hidden md:flex' : mobileMode === 'detail' ? 'flex' : ''} min-h-0 flex-col rounded-none md:rounded-2xl border border-outline-variant bg-surface-lowest overflow-hidden ${mobileMode === 'detail' ? 'h-[100dvh] md:h-auto' : ''}`}
         >
           {selectedConversation ? (
             <>
-              <header data-testid="chat-detail-header" className="shrink-0 border-b border-outline/20 px-4 py-3 bg-surface-low">
+              <header data-testid="chat-detail-header" className="shrink-0 border-b border-outline-variant px-4 py-3 bg-surface-low">
                 {mobileMode === 'detail' ? (
                   <div className="mb-2 md:hidden">
                     <Link
                       data-testid="chat-mobile-back-button"
                       href={conversationPathPrefix}
-                      className="inline-flex items-center gap-1 rounded-lg border border-outline/20 px-2.5 py-1 text-xs font-bold text-on-surface-variant hover:bg-surface-lowest"
+                      className="inline-flex items-center gap-1 rounded-lg border border-outline-variant px-2.5 py-1 text-xs font-bold text-on-surface-variant hover:bg-surface-lowest"
                     >
                       返回会话列表
                     </Link>
@@ -1021,9 +1021,9 @@ export default function ChatWorkspace({
                   </div>
                     );
                   })()}
-                  <Link href={jobHref} className="shrink-0 rounded-lg border border-primary/40 px-3 py-1.5 text-sm font-bold text-primary hover:bg-primary/5">查看职位</Link>
+                  <Link href={jobHref} className="shrink-0 rounded-lg border border-primary px-3 py-1.5 text-sm font-bold text-primary hover:bg-primary/5">查看职位</Link>
                 </div>
-                <div className="mt-2 rounded-xl bg-surface-lowest border border-outline/20 px-3 py-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+                <div className="mt-2 rounded-xl bg-surface-lowest border border-outline-variant px-3 py-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
                   <span className="font-semibold text-on-surface">{jobMeta?.jobTitle || selectedConversation.jobTitle || `岗位 #${selectedConversation.jobId}`}</span>
                   <span className="text-primary font-bold">{jobMeta?.salaryText || '薪资面议'}</span>
                   <span className="text-on-surface-variant">{jobMeta?.locationText || '地点待补充'}</span>
@@ -1055,7 +1055,7 @@ export default function ChatWorkspace({
                         {!self ? <Avatar name={senderName} imageUrl={peerAvatarUrl} testId="chat-message-avatar" /> : null}
                         <div className={`max-w-[78%] rounded-2xl px-3 py-2 text-sm ${self ? 'bg-primary text-white' : 'bg-surface-low text-on-surface'}`}>
                           {message.messageType === 3 && ext ? (
-                            <div className={`rounded-xl border px-3 py-2 ${self ? 'border-white/40 bg-white/10' : 'border-outline/20 bg-surface-lowest'}`}>
+                            <div className={`rounded-xl border px-3 py-2 ${self ? 'border-primary bg-white/10' : 'border-outline-variant bg-surface-lowest'}`}>
                               <div className="flex items-start gap-2">
                                 <span className="text-xl leading-none">📄</span>
                                 <div className="min-w-0">
@@ -1135,20 +1135,20 @@ export default function ChatWorkspace({
                 <div ref={messageEndRef} />
               </div>
 
-              <footer data-testid="chat-detail-composer" className="shrink-0 border-t border-outline/20 px-4 py-3">
+              <footer data-testid="chat-detail-composer" className="shrink-0 border-t border-outline-variant px-4 py-3">
                 <div className="flex items-center gap-2 mb-2 relative">
                   <button
                     type="button"
                     data-testid="chat-emoji-button"
                     onClick={() => setShowEmojiPanel((prev) => !prev)}
-                    className="h-9 w-9 rounded-lg border border-outline/20 text-on-surface-variant hover:bg-surface-low"
+                    className="h-9 w-9 rounded-lg border border-outline-variant text-on-surface-variant hover:bg-surface-low"
                     aria-label="表情"
                   >
                     😀
                   </button>
                   {showEmojiPanel ? <EmojiPanel onSelect={(emoji) => { setInput((prev) => `${prev}${emoji}`); setShowEmojiPanel(false); }} /> : null}
 
-                  <label className="h-9 w-9 rounded-lg border border-outline/20 text-on-surface-variant hover:bg-surface-low inline-flex items-center justify-center cursor-pointer" aria-label="相册">
+                  <label className="h-9 w-9 rounded-lg border border-outline-variant text-on-surface-variant hover:bg-surface-low inline-flex items-center justify-center cursor-pointer" aria-label="相册">
                     <Images className="h-5 w-5" />
                     <input
                       type="file"
@@ -1185,7 +1185,7 @@ export default function ChatWorkspace({
                     value={input}
                     onChange={(event) => setInput(event.target.value)}
                     placeholder="输入消息..."
-                    className="flex-1 h-10 rounded-xl border border-outline/20 px-3 text-sm bg-transparent"
+                    className="flex-1 h-10 rounded-xl border border-outline-variant px-3 text-sm bg-transparent"
                   />
                   <button
                     type="button"

@@ -24,6 +24,7 @@ vi.mock('@/components/admin/AdminShell', () => ({
 vi.mock('@/lib/stores/auth-store', () => {
   const state = {
     isAuthenticated: true,
+    isHydrated: true,
     logout: vi.fn(),
   };
   const listeners = new Set<(nextState: typeof state) => void>();

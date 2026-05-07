@@ -9,11 +9,15 @@ export default function AdminAuthGuard({ children }: { children: React.ReactNode
   const router = useRouter();
   const pathname = usePathname();
   const isAuthenticated = adminAuthStore((state) => state.isAuthenticated);
+  const isHydrated = adminAuthStore((state) => state.isHydrated);
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
     let active = true;
     const verify = async () => {
+      if (!adminAuthStore.getState().isHydrated) {
+        return;
+      }
       const currentAuth = adminAuthStore.getState().isAuthenticated;
       if (pathname === '/admin/login') {
         if (!currentAuth) {
@@ -68,9 +72,9 @@ export default function AdminAuthGuard({ children }: { children: React.ReactNode
       active = false;
       unsubscribe();
     };
-  }, [router, pathname, isAuthenticated]);
+  }, [router, pathname, isAuthenticated, isHydrated]);
 
-  if (checking) {
+  if (!isHydrated || checking) {
     return null;
   }
 

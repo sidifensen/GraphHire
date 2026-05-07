@@ -104,3 +104,11 @@ cd backend && mvn spring-boot:run
 ## 浏览器测试
 
 使用浏览器进行测试时，必须通过 `/web-access` skill，并使用 CDP 打开和操作浏览器；禁止绕过 CDP 直接声称已完成浏览器验证。
+
+## 夜间模式筛选弹层规范（职位/地点/公司行业）
+
+- 适用范围：用户端筛选弹层 `职位分类/职能`、`工作地点`、`公司行业`（含复用组件）。
+- 弹层容器与已选标签禁止硬编码白底：禁止 `bg-white`，统一使用主题背景（如 `bg-surface-lowest`）。
+- 弹层内部标题线、列分隔线、底部操作区分隔线禁止白线：统一使用主题分隔色（如 `border-surface-mid`）。
+- 弹层滚动区域必须使用暗色主题滚动条样式（`filter-modal-scroll`），避免夜间出现白色滚动条。
+- 相关样式改动需补充回归测试，至少覆盖：`category-modal`、`location-modal`、`industry-modal` 的背景与分隔线/滚动条类名。

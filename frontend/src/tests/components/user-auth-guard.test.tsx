@@ -15,12 +15,14 @@ vi.mock('next/navigation', () => ({
 
 type UserStoreState = {
   isAuthenticated: boolean;
+  isHydrated: boolean;
   logout: () => void;
 };
 
 const { userAuthStore } = vi.hoisted(() => {
   const state: UserStoreState = {
     isAuthenticated: false,
+    isHydrated: true,
     logout: vi.fn(),
   };
   const listeners = new Set<(nextState: UserStoreState) => void>();
@@ -66,6 +68,7 @@ describe('UserAuthGuard', () => {
     vi.clearAllMocks();
     userAuthStore.setState({
       isAuthenticated: false,
+      isHydrated: true,
       logout: vi.fn(),
     });
   });
@@ -87,6 +90,7 @@ describe('UserAuthGuard', () => {
   it('renders children when authenticated and context is PERSON', async () => {
     userAuthStore.setState({
       isAuthenticated: true,
+      isHydrated: true,
       logout: vi.fn(),
     });
     getContextMock.mockResolvedValue({ userType: 'PERSON' });

@@ -9,12 +9,16 @@ export default function EnterpriseAuthGuard({ children }: { children: React.Reac
   const router = useRouter();
   const pathname = usePathname();
   const isAuthenticated = enterpriseAuthStore((state) => state.isAuthenticated);
+  const isHydrated = enterpriseAuthStore((state) => state.isHydrated);
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
     let active = true;
 
     const verify = async () => {
+      if (!enterpriseAuthStore.getState().isHydrated) {
+        return;
+      }
       const currentAuth = enterpriseAuthStore.getState().isAuthenticated;
       if (!currentAuth) {
         router.replace('/login');
@@ -50,9 +54,9 @@ export default function EnterpriseAuthGuard({ children }: { children: React.Reac
       active = false;
       unsubscribe();
     };
-  }, [router, pathname, isAuthenticated]);
+  }, [router, pathname, isAuthenticated, isHydrated]);
 
-  if (checking || !isAuthenticated) {
+  if (!isHydrated || checking || !isAuthenticated) {
     return null;
   }
 

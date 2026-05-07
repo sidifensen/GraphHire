@@ -18,6 +18,7 @@ export default function UserAuthGuard({ children }: { children: React.ReactNode 
   const router = useRouter();
   const pathname = usePathname();
   const isAuthenticated = userAuthStore((state) => state.isAuthenticated);
+  const isHydrated = userAuthStore((state) => state.isHydrated);
   const protectedRoute = useMemo(() => requiresAuth(pathname), [pathname]);
   const [checking, setChecking] = useState(true);
 
@@ -34,6 +35,9 @@ export default function UserAuthGuard({ children }: { children: React.ReactNode 
     }
 
     const verify = async () => {
+      if (!userAuthStore.getState().isHydrated) {
+        return;
+      }
       const currentAuth = userAuthStore.getState().isAuthenticated;
       if (!currentAuth) {
         router.replace('/login');
@@ -73,13 +77,13 @@ export default function UserAuthGuard({ children }: { children: React.ReactNode 
       active = false;
       unsubscribe();
     };
-  }, [router, pathname, isAuthenticated, protectedRoute]);
+  }, [router, pathname, isAuthenticated, protectedRoute, isHydrated]);
 
   if (!protectedRoute) {
     return <>{children}</>;
   }
 
-  if (checking || !isAuthenticated) {
+  if (!isHydrated || checking || !isAuthenticated) {
     return null;
   }
 
