@@ -5,6 +5,7 @@
 - feat: 企业端聊天“面试通知”重构为 shadcn 弹窗组件 `InterviewInviteDialog`，移除输入区内联面试表单；支持 `Dialog + Popover + Calendar + time` 组合时间选择并按 `yyyy-MM-ddTHH:mm:ss` 提交
 - feat: 新增前端通用 shadcn 基础组件 `button/input/label/dialog/popover/calendar`，供后续页面复用
 - test: 更新并通过聊天页测试，覆盖面试通知弹窗打开、内联表单移除、时间选择与发送参数格式；前端 `npm run test:run`、`npm run build` 通过
+- fix: 修复面试通知弹窗视觉穿透问题，提升遮罩层级并将弹窗内容层改为不透明背景（白底/暗色兼容）
 
 - refactor: 行业技能画像模块整体迁移到职位类型技能画像命名空间（`industryskill` -> `positiontypeskill`），清理旧领域模型、仓储与测试文件
 - feat: 管理端技能画像初始化入口与服务调用统一切换到 `PositionTypeSkill` 语义，并补充对应新模块实现文件
@@ -411,4 +412,5 @@
 - refactor: 新增前端通用组件 `hot-search-dropdown`，统一处理 loading/empty/item 交互；`publicApi` 同步补充 jobs/companies 热搜读取方法
 - test: 新增并通过后端热门搜索集成测试（`PublicJobControllerIT`、`PublicCompanyControllerIT`）与前端 API/组件测试（`public.test.ts`、`hot-search-dropdown.test.tsx`）
 - test: 按前后端联合改动面完成全量验证：`mvn compile`、`mvn test`、`npm run build`、`npm run test:run` 全通过
+
 
