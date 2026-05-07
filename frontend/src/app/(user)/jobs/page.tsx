@@ -946,8 +946,26 @@ export default function JobList() {
                 className="w-full bg-surface-lowest flex-1 flex flex-col max-h-[60vh] overflow-hidden rounded-b-2xl"
               >
                  <div className="flex flex-1 overflow-hidden">
-                    {activeAdvancedCategory === 'industry' ? (
-                      <div className="flex-1 bg-surface-lowest overflow-hidden">
+                    <div data-testid="mobile-advanced-category-menu" className="w-[100px] bg-surface-low overflow-y-auto">
+                       {ADVANCED_FILTERS.map(category => (
+                         <button
+                            key={category.id}
+                            onClick={() => {
+                              setActiveAdvancedCategory(category.id);
+                              if (category.id === 'industry' && activeIndustryRootId == null) {
+                                setActiveIndustryRootId(industryTree[0]?.id ?? null);
+                              }
+                            }}
+                            className={`w-full text-left px-3 py-3.5 text-sm relative ${
+                              activeAdvancedCategory === category.id ? 'bg-surface-lowest text-primary font-bold' : 'text-on-surface-variant'
+                            }`}
+                         >
+                           {category.name}
+                         </button>
+                       ))}
+                    </div>
+                    <div className="flex-1 bg-surface-lowest overflow-hidden">
+                      {activeAdvancedCategory === 'industry' ? (
                         <div
                           data-testid="mobile-advanced-industry-panel"
                           className="h-full grid grid-cols-[minmax(132px,42%)_minmax(0,1fr)]"
@@ -998,54 +1016,32 @@ export default function JobList() {
                             )}
                           </div>
                         </div>
-                      </div>
-                    ) : (
-                      <>
-                        <div data-testid="mobile-advanced-category-menu" className="w-[100px] bg-surface-low overflow-y-auto">
-                          {ADVANCED_FILTERS.map(category => (
-                            <button
-                              key={category.id}
-                              onClick={() => {
-                                setActiveAdvancedCategory(category.id);
-                                if (category.id === 'industry' && activeIndustryRootId == null) {
-                                  setActiveIndustryRootId(industryTree[0]?.id ?? null);
-                                }
-                              }}
-                              className={`w-full text-left px-3 py-3.5 text-sm relative ${
-                                activeAdvancedCategory === category.id ? 'bg-surface-lowest text-primary font-bold' : 'text-on-surface-variant'
-                              }`}
-                            >
-                              {category.name}
-                            </button>
-                          ))}
-                        </div>
-                        <div className="flex-1 bg-surface-lowest overflow-hidden">
-                          <div className="h-full overflow-y-auto p-4">
-                            <h4 className="text-xs text-outline mb-3 font-bold">{ADVANCED_FILTERS.find(c => c.id === activeAdvancedCategory)?.name}</h4>
-                            <div className="grid grid-cols-2 gap-2 pb-4">
-                              {currentAdvancedOptions.map(opt => {
-                                const filterId = `${activeAdvancedCategory}:${opt}`;
-                                const isActive = opt === '不限'
-                                  ? !selectedFilters.some(f => f.id.startsWith(`${activeAdvancedCategory}:`))
-                                  : selectedFilters.some(f => f.id === filterId);
+                      ) : (
+                        <div className="h-full overflow-y-auto p-4">
+                          <h4 className="text-xs text-outline mb-3 font-bold">{ADVANCED_FILTERS.find(c => c.id === activeAdvancedCategory)?.name}</h4>
+                          <div className="grid grid-cols-2 gap-2 pb-4">
+                            {currentAdvancedOptions.map(opt => {
+                              const filterId = `${activeAdvancedCategory}:${opt}`;
+                              const isActive = opt === '不限'
+                                ? !selectedFilters.some(f => f.id.startsWith(`${activeAdvancedCategory}:`))
+                                : selectedFilters.some(f => f.id === filterId);
 
-                                return (
-                                  <button
-                                    key={opt}
-                                    onClick={() => toggleFilter(activeAdvancedCategory, ADVANCED_FILTERS.find(c => c.id === activeAdvancedCategory)?.name || '', opt)}
-                                    className={`h-9 px-2 rounded-lg text-xs flex items-center justify-center transition-colors truncate ${
-                                      isActive ? 'bg-primary/10 text-primary border border-primary/30 font-bold' : 'bg-surface-low text-on-surface border border-transparent'
-                                    }`}
-                                  >
-                                    <span className="truncate">{opt}</span>
-                                  </button>
-                                );
-                              })}
-                            </div>
+                              return (
+                                <button
+                                  key={opt}
+                                  onClick={() => toggleFilter(activeAdvancedCategory, ADVANCED_FILTERS.find(c => c.id === activeAdvancedCategory)?.name || '', opt)}
+                                  className={`h-9 px-2 rounded-lg text-xs flex items-center justify-center transition-colors truncate ${
+                                    isActive ? 'bg-primary/10 text-primary border border-primary/30 font-bold' : 'bg-surface-low text-on-surface border border-transparent'
+                                  }`}
+                                >
+                                  <span className="truncate">{opt}</span>
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
-                      </>
-                    )}
+                      )}
+                    </div>
                  </div>
                  <div className="flex p-3 gap-3 border-t border-surface-mid bg-surface-lowest shrink-0 shadow-[0_-4px_10px_rgba(0,0,0,0.02)] z-10">
                     <button 
