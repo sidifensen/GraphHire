@@ -14,6 +14,7 @@ import type { ChatConversationSummary, ChatMessage } from '@/lib/types/chat';
 import { getApiBaseUrl } from '@/lib/api/base-url';
 import { CHAT_EMOJI_CATEGORIES } from './emoji';
 import type { ChatJobMeta, ChatWorkspaceProps } from './ChatTypes';
+import { InterviewInviteDialog } from './InterviewInviteDialog';
 
 function parseExt(ext?: string | null): Record<string, unknown> | null {
   if (!ext) return null;
@@ -320,11 +321,6 @@ export default function ChatWorkspace({
   const [jobMeta, setJobMeta] = useState<ChatJobMeta | null>(null);
   const [peerAvatarUrl, setPeerAvatarUrl] = useState<string | null>(null);
   const [conversationOwnerAvatarMap, setConversationOwnerAvatarMap] = useState<Record<number, string | null>>({});
-
-  const [inviteTime, setInviteTime] = useState('');
-  const [inviteLocation, setInviteLocation] = useState('');
-  const [inviteRemark, setInviteRemark] = useState('');
-  const [showInviteEditor, setShowInviteEditor] = useState(false);
   const [lastReadRefreshKey, setLastReadRefreshKey] = useState(0);
 
   const messageEndRef = useRef<HTMLDivElement | null>(null);
@@ -671,28 +667,29 @@ export default function ChatWorkspace({
     }
   };
 
-  const handleSendInterview = async () => {
+  const handleSendInterview = async ({
+    interviewTime,
+    location,
+    remark,
+  }: {
+    interviewTime: string;
+    location: string;
+    remark: string;
+  }) => {
     if (isUserRole || !selectedConversationId || inviteSending) return;
-    if (!inviteTime.trim() || !inviteLocation.trim()) {
-      setError('请填写面试时间和面试地点');
-      return;
-    }
     setInviteSending(true);
     setError(null);
     try {
       await chatApi.sendInterviewInvite({
         conversationId: selectedConversationId,
-        interviewTime: inviteTime,
-        location: inviteLocation,
-        remark: inviteRemark,
+        interviewTime,
+        location,
+        remark,
       });
-      setInviteTime('');
-      setInviteLocation('');
-      setInviteRemark('');
-      setShowInviteEditor(false);
       await refreshMessages();
     } catch (err) {
       setError(err instanceof Error ? err.message : '发送面试通知失败');
+      throw err;
     } finally {
       setInviteSending(false);
     }
@@ -1175,31 +1172,13 @@ export default function ChatWorkspace({
                       {resumeSending ? '发送中...' : '发送简历'}
                     </button>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={() => setShowInviteEditor((prev) => !prev)}
-                      className="h-9 px-3 rounded-lg border border-primary text-primary text-sm font-bold"
-                    >
-                      {inviteSending ? '发送中...' : showInviteEditor ? '发送面试通知' : '面试通知'}
-                    </button>
+                    <InterviewInviteDialog
+                      sending={inviteSending}
+                      onError={(message) => setError(message)}
+                      onSubmit={handleSendInterview}
+                    />
                   )}
                 </div>
-
-                {!isUserRole && showInviteEditor ? (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                    <input value={inviteTime} onChange={(event) => setInviteTime(event.target.value)} placeholder="面试时间（必填） 2026-05-10T15:00:00" className="h-9 rounded-lg border border-outline/20 px-3 text-sm bg-transparent" />
-                    <input value={inviteLocation} onChange={(event) => setInviteLocation(event.target.value)} placeholder="面试地点" className="h-9 rounded-lg border border-outline/20 px-3 text-sm bg-transparent" />
-                    <input value={inviteRemark} onChange={(event) => setInviteRemark(event.target.value)} placeholder="面试备注" className="h-9 rounded-lg border border-outline/20 px-3 text-sm bg-transparent" />
-                    <button
-                      type="button"
-                      onClick={() => void handleSendInterview()}
-                      disabled={inviteSending}
-                      className="h-9 rounded-lg bg-primary text-white text-sm font-bold disabled:opacity-60 md:col-span-3"
-                    >
-                      {inviteSending ? '发送中...' : '确认发送面试通知'}
-                    </button>
-                  </div>
-                ) : null}
 
                 <div className="flex gap-2">
                   <input

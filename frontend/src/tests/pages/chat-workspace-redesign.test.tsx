@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+﻿import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import UserChatListPage from '@/app/(user)/chat/page';
 import UserChatDetailPage from '@/app/(user)/chat/[conversationId]/page';
 import EnterpriseChatListPage from '@/app/enterprise/chat/page';
@@ -455,7 +455,7 @@ describe('chat workspace redesign', () => {
     expect(screen.getByRole('button', { name: '面试通知' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '发送通知' })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '面试通知' }));
-    expect(screen.getByPlaceholderText(/面试时间/)).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: '发送面试通知' })).toBeInTheDocument();
   });
 
   it('does not trigger maximum update depth errors on enterprise chat page', async () => {
@@ -533,6 +533,33 @@ describe('chat workspace redesign', () => {
     expect(screen.queryByText('2')).not.toBeInTheDocument();
   });
 
+
+  it('submits interview invite from dialog with formatted datetime payload', async () => {
+    render(<EnterpriseChatListPage />);
+
+    await waitFor(() => expect(listConversationsMock).toHaveBeenCalledTimes(1));
+
+    const composer = screen.getByTestId('chat-detail-composer');
+    expect(within(composer).queryByRole('button', { name: '确认发送面试通知' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '面试通知' }));
+
+    const dialog = screen.getByRole('dialog', { name: '发送面试通知' });
+    fireEvent.change(within(dialog).getByPlaceholderText('面试地点'), { target: { value: '上海市浦东新区张江路 100 号' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: '面试时间（必填）' }));
+    fireEvent.change(screen.getByLabelText('日期'), { target: { value: '2026-05-10' } });
+    fireEvent.change(screen.getByLabelText('时间'), { target: { value: '15:30' } });
+
+    fireEvent.click(within(dialog).getByRole('button', { name: '确认发送面试通知' }));
+
+    await waitFor(() => {
+      expect(sendInterviewInviteMock).toHaveBeenCalledWith({
+        conversationId: 1,
+        interviewTime: '2026-05-10T15:30:00',
+        location: '上海市浦东新区张江路 100 号',
+        remark: '',
+      });
+    });
+  });
   it('renders resume card and supports in-page preview + authenticated download', async () => {
     listMessagesMock.mockResolvedValue([
       {
@@ -602,17 +629,17 @@ describe('chat workspace redesign', () => {
     expect(screen.queryByRole('button', { name: '发送通知' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '面试通知' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '面试通知' }));
-    expect(screen.getByRole('button', { name: '确认发送面试通知' })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: '发送面试通知' })).toBeInTheDocument();
 
     expect(screen.getByLabelText('相册')).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('chat-emoji-button'));
     const panel = await screen.findByTestId('chat-emoji-panel');
-    expect(within(panel).getByRole('button', { name: '🥳' })).toBeInTheDocument();
-    expect(within(panel).getByRole('button', { name: '🤝' })).toBeInTheDocument();
-    expect(within(panel).getByRole('button', { name: '常用' })).toBeInTheDocument();
-    expect(within(panel).getByRole('button', { name: '笑脸' })).toBeInTheDocument();
-    expect(within(panel).getByRole('button', { name: '下一页表情' })).toBeInTheDocument();
+    expect(within(panel).getByLabelText('😀')).toBeInTheDocument();
+    expect(within(panel).getByLabelText('😂')).toBeInTheDocument();
+    expect(within(panel).getByText('常用')).toBeInTheDocument();
+    expect(within(panel).getByText('笑脸')).toBeInTheDocument();
+    expect(within(panel).getByText('下一页')).toBeInTheDocument();
 
     createElementSpy.mockRestore();
     createObjectURLSpy.mockRestore();
@@ -647,4 +674,6 @@ describe('chat workspace redesign', () => {
     expect(screen.getByText('13800138001@phone.com')).toBeInTheDocument();
   });
 });
+
+
 

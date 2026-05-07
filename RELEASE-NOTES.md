@@ -2,6 +2,9 @@
 
 ## 2026-05-07
 - fix: 统一提交配置修正：后端 CORS/WebSocket allowed-origins 改为环境变量字符串写法；前端 CSP 在开发环境放开 http 图片源以兼容本地调试
+- feat: 企业端聊天“面试通知”重构为 shadcn 弹窗组件 `InterviewInviteDialog`，移除输入区内联面试表单；支持 `Dialog + Popover + Calendar + time` 组合时间选择并按 `yyyy-MM-ddTHH:mm:ss` 提交
+- feat: 新增前端通用 shadcn 基础组件 `button/input/label/dialog/popover/calendar`，供后续页面复用
+- test: 更新并通过聊天页测试，覆盖面试通知弹窗打开、内联表单移除、时间选择与发送参数格式；前端 `npm run test:run`、`npm run build` 通过
 
 - refactor: 行业技能画像模块整体迁移到职位类型技能画像命名空间（`industryskill` -> `positiontypeskill`），清理旧领域模型、仓储与测试文件
 - feat: 管理端技能画像初始化入口与服务调用统一切换到 `PositionTypeSkill` 语义，并补充对应新模块实现文件
