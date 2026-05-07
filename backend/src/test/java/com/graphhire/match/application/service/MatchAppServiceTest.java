@@ -1,6 +1,7 @@
 package com.graphhire.match.application.service;
 
 import com.graphhire.job.domain.model.Job;
+import com.graphhire.job.domain.repository.CompanyStaffRepository;
 import com.graphhire.job.domain.repository.JobRepository;
 import com.graphhire.job.domain.vo.JobStatus;
 import com.graphhire.match.domain.model.MatchRecord;
@@ -47,6 +48,8 @@ class MatchAppServiceTest {
     private NotificationAppService notificationAppService;
     @Mock
     private PersonInfoRepository personInfoRepository;
+    @Mock
+    private CompanyStaffRepository companyStaffRepository;
 
     @InjectMocks
     private MatchAppService matchAppService;
@@ -98,7 +101,7 @@ class MatchAppServiceTest {
         MatchRecord newFor203 = MatchRecord.create(resumeId, 203L, MatchScore.of(88, 81));
         newFor203.setMatchDirection(MatchRecord.DIRECTION_PERSON_APPLIES);
 
-        when(jobRepository.findAll()).thenReturn(List.of(publishedJob1, draftJob, publishedJob3));
+        when(jobRepository.findPublished()).thenReturn(List.of(publishedJob1, publishedJob3));
         when(matchRecordRepository.findByResumeId(resumeId)).thenReturn(List.of(oldFor201, staleFor999));
         when(matchDomainService.calculateMatch(resumeId, 201L)).thenReturn(newFor201);
         when(matchDomainService.calculateMatch(resumeId, 203L)).thenReturn(newFor203);
@@ -109,6 +112,7 @@ class MatchAppServiceTest {
         verify(matchDomainService).calculateMatch(resumeId, 201L);
         verify(matchDomainService).calculateMatch(resumeId, 203L);
         verify(matchDomainService, never()).calculateMatch(resumeId, 202L);
+        verify(jobRepository, never()).findAll();
 
         verify(matchRecordRepository, times(2)).save(any(MatchRecord.class));
         verify(matchRecordRepository).delete(staleFor999);
@@ -136,7 +140,7 @@ class MatchAppServiceTest {
         MatchRecord newFor301 = MatchRecord.create(resumeId, 301L, MatchScore.of(90, 80));
         newFor301.setMatchDirection(MatchRecord.DIRECTION_PERSON_APPLIES);
 
-        when(jobRepository.findAll()).thenReturn(List.of(publishedJob1, publishedJob2));
+        when(jobRepository.findPublished()).thenReturn(List.of(publishedJob1, publishedJob2));
         when(matchRecordRepository.findByResumeId(resumeId)).thenReturn(List.of(oldFor301, oldFor999));
         when(matchDomainService.calculateMatch(resumeId, 301L)).thenReturn(newFor301);
         when(matchDomainService.calculateMatch(resumeId, 302L))
@@ -168,7 +172,7 @@ class MatchAppServiceTest {
         MatchRecord newRecord = MatchRecord.create(resumeId, 401L, MatchScore.of(95, 90));
         newRecord.setMatchDirection(MatchRecord.DIRECTION_PERSON_APPLIES);
 
-        when(jobRepository.findAll()).thenReturn(List.of(publishedJob));
+        when(jobRepository.findPublished()).thenReturn(List.of(publishedJob));
         when(matchRecordRepository.findByResumeId(resumeId)).thenReturn(List.of(existing));
         when(matchDomainService.calculateMatch(resumeId, 401L))
             .thenThrow(new RuntimeException("boom-1"))

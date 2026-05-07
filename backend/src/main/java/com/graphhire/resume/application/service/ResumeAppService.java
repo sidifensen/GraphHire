@@ -158,8 +158,8 @@ public class ResumeAppService {
      * 步骤2：遍历转换为VO对象
      * 步骤3：组装分页结果并返回
      */
-    public PageResult<ResumeVO> getList(int page, int size) {
-        IPage<Resume> pageResult = resumeRepository.findPage(page, size);
+    public PageResult<ResumeVO> getList(Long userId, int page, int size) {
+        IPage<Resume> pageResult = resumeRepository.findPageByUserId(userId, page, size);
         List<ResumeVO> vos = pageResult.getRecords().stream()
             .map(this::toResumeVO)
             .toList();
@@ -184,7 +184,7 @@ public class ResumeAppService {
         if (resume.getStatus() != null) {
             vo.setParseStatus(resume.getStatus().ordinal());
         }
-        vo.setParseResult(resume.getParseResult());
+        vo.setParseResult(null);
         vo.setConfidence(resume.getConfidence());
         vo.setIsDefault(resume.getIsDefault());
         return vo;

@@ -81,6 +81,22 @@ public class ResumeRepositoryImpl implements ResumeRepository {
         return pageResult.convert(this::toDomain);
     }
 
+    @Override
+    public IPage<Resume> findPageByUserId(Long userId, int page, int size) {
+        Page<ResumePO> pageObj = new Page<>(page, size);
+        LambdaQueryWrapper<ResumePO> wrapper = new LambdaQueryWrapper<>();
+        if (userId == null || userId <= 0) {
+            wrapper.eq(ResumePO::getDeleted, 0);
+        } else {
+            wrapper.eq(ResumePO::getUserId, userId)
+                .eq(ResumePO::getDeleted, 0);
+        }
+        wrapper.orderByDesc(ResumePO::getCreateTime)
+            .orderByDesc(ResumePO::getId);
+        IPage<ResumePO> pageResult = resumeMapper.selectPage(pageObj, wrapper);
+        return pageResult.convert(this::toDomain);
+    }
+
     /**
      * 保存简历
      */
@@ -88,7 +104,6 @@ public class ResumeRepositoryImpl implements ResumeRepository {
     public Resume save(Resume resume) {
         ResumePO po = toPO(resume);
         if (resume.getId() == null) {
-            resumeMapper.syncResumeIdSequence();
             resumeMapper.insert(po);
             resume.setId(po.getId());
         } else {

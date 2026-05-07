@@ -64,9 +64,17 @@ public class SaTokenConfig implements WebMvcConfigurer {
     }
 
     private void ensureCurrentUserType(UserType expectedType) {
+        String userTypeText = StpUtil.getSession().getString("userType");
+        if (userTypeText != null && !userTypeText.isBlank()) {
+            UserType currentType = UserType.valueOf(userTypeText);
+            if (currentType != expectedType) {
+                throw new Exceptions.ForbiddenException("无权访问该资源");
+            }
+            return;
+        }
         Long userId = StpUtil.getLoginIdAsLong();
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new Exceptions.UnauthorizedException("登录用户不存在"));
+            .orElseThrow(() -> new Exceptions.UnauthorizedException("登录用户不存在"));
         if (user.getUserType() != expectedType) {
             throw new Exceptions.ForbiddenException("无权访问该资源");
         }

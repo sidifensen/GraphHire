@@ -119,7 +119,8 @@ public class ResumeController {
     @GetMapping("/list")
     public Result<PageResult<ResumeVO>> getList(@RequestParam(defaultValue = "1") int page,
                                                @RequestParam(defaultValue = "10") int size) {
-        PageResult<ResumeVO> result = resumeService.getList(page, size);
+        Long userId = StpUtil.getLoginIdAsLong();
+        PageResult<ResumeVO> result = resumeService.getList(userId, page, size);
         return Result.success(result);
     }
 

@@ -26,9 +26,6 @@ public class ChatHandshakeInterceptor implements HandshakeInterceptor {
         }
         String token = servletRequest.getServletRequest().getHeader("satoken");
         if (token == null || token.isBlank()) {
-            token = servletRequest.getServletRequest().getParameter("token");
-        }
-        if (token == null || token.isBlank()) {
             return false;
         }
         if (!authAppService.validateToken(token)) {

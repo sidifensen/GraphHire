@@ -1,5 +1,10 @@
 package com.graphhire.skill.interfaces.controller;
 
+import cn.dev33.satoken.stp.StpUtil;
+import com.graphhire.auth.domain.model.User;
+import com.graphhire.auth.domain.repository.UserRepository;
+import com.graphhire.auth.domain.vo.UserType;
+import com.graphhire.common.vo.Exceptions;
 import com.graphhire.common.vo.Result;
 import com.graphhire.skill.application.command.CreateSkillTagCmd;
 import com.graphhire.skill.application.service.SkillTagAppService;
@@ -18,10 +23,12 @@ import java.util.List;
 public class SkillTagController {
 
     private final SkillTagAppService appService;
+    private final UserRepository userRepository;
 
     @Autowired
-    public SkillTagController(SkillTagAppService appService) {
+    public SkillTagController(SkillTagAppService appService, UserRepository userRepository) {
         this.appService = appService;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -31,6 +38,7 @@ public class SkillTagController {
      */
     @PostMapping
     public Result<SkillTag> createSkillTag(@RequestBody CreateSkillTagCmd cmd) {
+        ensureAdmin();
         SkillTag created = appService.createSkillTag(cmd);
         return Result.success(created);
     }
@@ -43,6 +51,7 @@ public class SkillTagController {
      */
     @PutMapping("/{id}")
     public Result<SkillTag> updateSkillTag(@PathVariable Long id, @RequestBody CreateSkillTagCmd cmd) {
+        ensureAdmin();
         SkillTag updated = appService.updateSkillTag(id, cmd);
         return Result.success(updated);
     }
@@ -87,6 +96,7 @@ public class SkillTagController {
      */
     @PostMapping("/{id}/synonyms")
     public Result<Void> addSynonym(@PathVariable Long id, @RequestParam String synonym) {
+        ensureAdmin();
         appService.addSynonym(id, synonym);
         return Result.success();
     }
@@ -99,6 +109,7 @@ public class SkillTagController {
      */
     @DeleteMapping("/{id}/synonyms/{synonym}")
     public Result<Void> removeSynonym(@PathVariable Long id, @PathVariable String synonym) {
+        ensureAdmin();
         appService.removeSynonym(id, synonym);
         return Result.success();
     }
@@ -121,7 +132,17 @@ public class SkillTagController {
      */
     @DeleteMapping("/{id}")
     public Result<Void> deleteSkillTag(@PathVariable Long id) {
+        ensureAdmin();
         appService.deleteSkillTag(id);
         return Result.success();
+    }
+
+    private void ensureAdmin() {
+        Long userId = StpUtil.getLoginIdAsLong();
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new Exceptions.UnauthorizedException("登录用户不存在"));
+        if (user.getUserType() != UserType.ADMIN) {
+            throw new Exceptions.ForbiddenException("无权访问该资源");
+        }
     }
 }

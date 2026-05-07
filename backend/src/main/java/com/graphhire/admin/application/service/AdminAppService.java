@@ -730,7 +730,7 @@ public class AdminAppService {
     }
 
     public PageResult<?> getResumeList(int page, int size) {
-        return resumeAppService.getList(page, size);
+        return resumeAppService.getList(-1L, page, size);
     }
 
     public PageResult<Job> getJobList(int page, int size) {

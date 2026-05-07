@@ -15,6 +15,7 @@ public class UploadProperties {
 
     private final Resume resume = new Resume();
     private final Avatar avatar = new Avatar();
+    private final ChatImage chatImage = new ChatImage();
 
     public Resume getResume() {
         return resume;
@@ -22,6 +23,10 @@ public class UploadProperties {
 
     public Avatar getAvatar() {
         return avatar;
+    }
+
+    public ChatImage getChatImage() {
+        return chatImage;
     }
 
     public static class Resume {
@@ -66,6 +71,39 @@ public class UploadProperties {
 
         public void setMaxFileSize(DataSize maxFileSize) {
             this.maxFileSize = maxFileSize;
+        }
+    }
+
+    public static class ChatImage {
+        @DataSizeUnit(DataUnit.MEGABYTES)
+        private DataSize maxFileSize = DataSize.ofMegabytes(5);
+        private Set<String> allowedExtensions = new LinkedHashSet<>(Set.of("jpg", "jpeg", "png", "gif", "webp"));
+        private Set<String> allowedMimeTypes = new LinkedHashSet<>(
+            Set.of("image/jpeg", "image/png", "image/gif", "image/webp")
+        );
+
+        public DataSize getMaxFileSize() {
+            return maxFileSize;
+        }
+
+        public void setMaxFileSize(DataSize maxFileSize) {
+            this.maxFileSize = maxFileSize;
+        }
+
+        public Set<String> getAllowedExtensions() {
+            return allowedExtensions;
+        }
+
+        public void setAllowedExtensions(Set<String> allowedExtensions) {
+            this.allowedExtensions = allowedExtensions;
+        }
+
+        public Set<String> getAllowedMimeTypes() {
+            return allowedMimeTypes;
+        }
+
+        public void setAllowedMimeTypes(Set<String> allowedMimeTypes) {
+            this.allowedMimeTypes = allowedMimeTypes;
         }
     }
 }

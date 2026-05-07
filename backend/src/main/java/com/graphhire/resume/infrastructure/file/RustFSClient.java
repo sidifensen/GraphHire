@@ -59,6 +59,8 @@ public class RustFSClient {
     @Value("${rustfs.region:us-east-1}")
     private String region;
 
+    private volatile boolean bucketEnsured;
+
     /**
      * 上传文件到S3存储（直接S3 PUT，避免预签名URL的签名兼容性问题）
      */
@@ -88,12 +90,17 @@ public class RustFSClient {
      * 确保bucket存在，不存在则创建
      */
     private void ensureBucketExists() {
+        if (bucketEnsured) {
+            return;
+        }
         try {
             s3Client.headBucket(HeadBucketRequest.builder().bucket(bucketName).build());
+            bucketEnsured = true;
         } catch (NoSuchBucketException e) {
             log.info("桶'{}'不存在，正在创建...", bucketName);
             s3Client.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
             log.info("桶'{}'创建成功", bucketName);
+            bucketEnsured = true;
         } catch (Exception e) {
             log.error("确保桶存在失败: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to ensure bucket exists: " + e.getMessage(), e);

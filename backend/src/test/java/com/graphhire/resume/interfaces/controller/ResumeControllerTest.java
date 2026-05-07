@@ -375,46 +375,54 @@ class ResumeControllerTest {
         @Test
         @DisplayName("分页查询简历列表成功")
         void getList_Success() {
-            // Given
-            int page = 1;
-            int size = 10;
-            ResumeVO vo1 = createResumeVO(1L);
-            ResumeVO vo2 = createResumeVO(2L);
-            PageResult<ResumeVO> mockPageResult = new PageResult<>(
-                Arrays.asList(vo1, vo2), 2L, page, size
-            );
-            when(resumeAppService.getList(page, size)).thenReturn(mockPageResult);
+            try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+                // Given
+                Long userId = 1L;
+                int page = 1;
+                int size = 10;
+                stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(userId);
+                ResumeVO vo1 = createResumeVO(1L);
+                ResumeVO vo2 = createResumeVO(2L);
+                PageResult<ResumeVO> mockPageResult = new PageResult<>(
+                    Arrays.asList(vo1, vo2), 2L, page, size
+                );
+                when(resumeAppService.getList(userId, page, size)).thenReturn(mockPageResult);
 
-            // When
-            Result<PageResult<ResumeVO>> result = resumeController.getList(page, size);
+                // When
+                Result<PageResult<ResumeVO>> result = resumeController.getList(page, size);
 
-            // Then
-            assertNotNull(result);
-            assertEquals(200, result.getCode());
-            assertNotNull(result.getData());
-            assertEquals(2, result.getData().getRecords().size());
-            assertEquals(2L, result.getData().getTotal());
-            verify(resumeAppService).getList(page, size);
+                // Then
+                assertNotNull(result);
+                assertEquals(200, result.getCode());
+                assertNotNull(result.getData());
+                assertEquals(2, result.getData().getRecords().size());
+                assertEquals(2L, result.getData().getTotal());
+                verify(resumeAppService).getList(userId, page, size);
+            }
         }
 
         @Test
         @DisplayName("分页参数使用默认值")
         void getList_DefaultPagination() {
-            // Given
-            int defaultPage = 1;
-            int defaultSize = 10;
-            PageResult<ResumeVO> mockPageResult = new PageResult<>(
-                Arrays.asList(), 0L, defaultPage, defaultSize
-            );
-            when(resumeAppService.getList(defaultPage, defaultSize)).thenReturn(mockPageResult);
+            try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+                // Given
+                Long userId = 1L;
+                int defaultPage = 1;
+                int defaultSize = 10;
+                stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(userId);
+                PageResult<ResumeVO> mockPageResult = new PageResult<>(
+                    Arrays.asList(), 0L, defaultPage, defaultSize
+                );
+                when(resumeAppService.getList(userId, defaultPage, defaultSize)).thenReturn(mockPageResult);
 
-            // When
-            Result<PageResult<ResumeVO>> result = resumeController.getList(defaultPage, defaultSize);
+                // When
+                Result<PageResult<ResumeVO>> result = resumeController.getList(defaultPage, defaultSize);
 
-            // Then
-            assertNotNull(result);
-            assertEquals(200, result.getCode());
-            verify(resumeAppService).getList(defaultPage, defaultSize);
+                // Then
+                assertNotNull(result);
+                assertEquals(200, result.getCode());
+                verify(resumeAppService).getList(userId, defaultPage, defaultSize);
+            }
         }
     }
 

@@ -19,6 +19,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import java.util.List;
 
 @TestMethodOrder(MethodOrderer.DisplayName.class)
 class ResumeControllerIT extends BaseControllerIT {
@@ -134,10 +135,33 @@ class ResumeControllerIT extends BaseControllerIT {
     @Test
     @DisplayName("07 - 获取简历列表（分页）")
     void getList_Success() throws Exception {
+        jdbcTemplate.update(
+            "INSERT INTO resume (user_id, file_name, file_path, file_type, file_size, parse_status, parse_result, is_default, create_time, update_time, deleted) " +
+                "VALUES (?, 'mine.pdf', 's3://resumes/mine.pdf', 'pdf', 100, 2, '{\"a\":1}', 0, NOW(), NOW(), 0)",
+            personUserId
+        );
+        jdbcTemplate.update(
+            "INSERT INTO resume (user_id, file_name, file_path, file_type, file_size, parse_status, parse_result, is_default, create_time, update_time, deleted) " +
+                "VALUES (?, 'other.pdf', 's3://resumes/other.pdf', 'pdf', 100, 2, '{\"x\":2}', 0, NOW(), NOW(), 0)",
+            companyUserId
+        );
+
         mockMvc.perform(get("/resume/list")
                 .headers(personHeaders)
                 .param("page", "1")
                 .param("size", "10"))
-            .andExpect(jsonPath("$.code").value(200));
+            .andExpect(jsonPath("$.code").value(200))
+            .andExpect(result -> {
+                JsonNode root = objectMapper.readTree(result.getResponse().getContentAsString());
+                JsonNode records = root.path("data").path("records");
+                assertTrue(records.isArray(), "records should be array");
+                for (JsonNode record : records) {
+                    assertEquals(personUserId.longValue(), record.path("userId").asLong(), "should only return current user's resume");
+                    JsonNode parseResult = record.get("parseResult");
+                    if (parseResult != null && !parseResult.isNull()) {
+                        fail("parseResult should not be exposed in /resume/list");
+                    }
+                }
+            });
     }
 }

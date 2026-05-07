@@ -1,5 +1,10 @@
 package com.graphhire.match.interfaces.controller;
 
+import cn.dev33.satoken.stp.StpUtil;
+import com.graphhire.auth.domain.model.User;
+import com.graphhire.auth.domain.repository.UserRepository;
+import com.graphhire.auth.domain.vo.UserType;
+import com.graphhire.common.vo.Exceptions;
 import com.graphhire.common.vo.Result;
 import com.graphhire.match.application.command.TriggerMatchCmd;
 import com.graphhire.match.application.query.MatchDetailQuery;
@@ -21,6 +26,8 @@ public class MatchController {
 
     @Autowired
     private MatchAppService matchAppService;
+    @Autowired
+    private UserRepository userRepository;
 
     /**
      * 触发匹配
@@ -29,7 +36,9 @@ public class MatchController {
      */
     @PostMapping("/trigger")
     public Result<MatchRecord> triggerMatch(@RequestBody TriggerMatchCmd cmd) {
-        MatchRecord record = matchAppService.triggerMatch(cmd);
+        Long currentUserId = StpUtil.getLoginIdAsLong();
+        UserType userType = currentUserType(currentUserId);
+        MatchRecord record = matchAppService.triggerMatchForCurrentUser(currentUserId, userType, cmd);
         return Result.success(record);
     }
 
@@ -40,7 +49,9 @@ public class MatchController {
      */
     @PostMapping("/on-demand")
     public Result<MatchRecord> triggerOnDemandMatch(@RequestBody TriggerMatchCmd cmd) {
-        MatchRecord record = matchAppService.triggerMatch(cmd);
+        Long currentUserId = StpUtil.getLoginIdAsLong();
+        UserType userType = currentUserType(currentUserId);
+        MatchRecord record = matchAppService.triggerMatchForCurrentUser(currentUserId, userType, cmd);
         return Result.success(record);
     }
 
@@ -51,8 +62,9 @@ public class MatchController {
      */
     @GetMapping("/{matchId}/detail")
     public Result<MatchDetailResponse> getMatchDetail(@PathVariable Long matchId) {
-        MatchDetailQuery query = new MatchDetailQuery(matchId);
-        return Result.success(matchAppService.getMatchDetail(query));
+        Long currentUserId = StpUtil.getLoginIdAsLong();
+        UserType userType = currentUserType(currentUserId);
+        return Result.success(matchAppService.getMatchDetailForCurrentUser(currentUserId, userType, matchId));
     }
 
     /**
@@ -62,7 +74,9 @@ public class MatchController {
      */
     @GetMapping("/resume/{resumeId}/list")
     public Result<List<MatchDetailResponse>> getMatchListForResume(@PathVariable Long resumeId) {
-        return Result.success(matchAppService.getMatchListForResume(resumeId));
+        Long currentUserId = StpUtil.getLoginIdAsLong();
+        UserType userType = currentUserType(currentUserId);
+        return Result.success(matchAppService.getMatchListForResumeCurrentUser(currentUserId, userType, resumeId));
     }
 
     /**
@@ -72,6 +86,14 @@ public class MatchController {
      */
     @GetMapping("/job/{jobId}/list")
     public Result<List<MatchDetailResponse>> getMatchListForJob(@PathVariable Long jobId) {
-        return Result.success(matchAppService.getMatchListForJob(jobId));
+        Long currentUserId = StpUtil.getLoginIdAsLong();
+        UserType userType = currentUserType(currentUserId);
+        return Result.success(matchAppService.getMatchListForJobCurrentUser(currentUserId, userType, jobId));
+    }
+
+    private UserType currentUserType(Long userId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new Exceptions.UnauthorizedException("登录用户不存在"));
+        return user.getUserType();
     }
 }

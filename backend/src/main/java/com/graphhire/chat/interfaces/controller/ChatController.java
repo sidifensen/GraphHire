@@ -1,6 +1,8 @@
 package com.graphhire.chat.interfaces.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.io.file.FileNameUtil;
+import cn.hutool.core.util.StrUtil;
 import com.graphhire.chat.application.service.ChatAppService;
 import com.graphhire.chat.application.service.dto.ChatConversationSummaryDTO;
 import com.graphhire.chat.application.service.dto.ChatMarkReadRequest;
@@ -10,6 +12,7 @@ import com.graphhire.chat.application.service.dto.ChatSendResumeMessageRequest;
 import com.graphhire.chat.application.service.dto.ChatSendTextMessageRequest;
 import com.graphhire.chat.application.service.dto.ChatStartConversationRequest;
 import com.graphhire.common.vo.Result;
+import com.graphhire.config.UploadProperties;
 import com.graphhire.notification.application.service.NotificationAppService;
 import com.graphhire.resume.application.service.dto.ResumePreviewFile;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +33,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/chat")
@@ -40,6 +45,8 @@ public class ChatController {
     private ChatAppService chatAppService;
     @Autowired
     private NotificationAppService notificationAppService;
+    @Autowired
+    private UploadProperties uploadProperties;
 
     @GetMapping("/conversations")
     public Result<List<ChatConversationSummaryDTO>> listConversations() {
@@ -92,6 +99,7 @@ public class ChatController {
     @PostMapping(value = "/messages/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Result<Map<String, Long>> sendImageMessage(@RequestPart("file") MultipartFile file,
                                                       @RequestParam("conversationId") Long conversationId) throws Exception {
+        validateChatImage(file);
         Long currentUserId = StpUtil.getLoginIdAsLong();
         Long messageId = chatAppService.sendImageMessage(currentUserId, conversationId, file.getOriginalFilename(), file.getBytes());
         return Result.success(Map.of("messageId", messageId));
@@ -134,5 +142,26 @@ public class ChatController {
         return ResponseEntity.ok()
             .headers(headers)
             .body(file.getContent());
+    }
+
+    private void validateChatImage(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw com.graphhire.common.vo.Exceptions.BusinessException.of(400, "图片内容不能为空");
+        }
+        long maxFileSize = uploadProperties.getChatImage().getMaxFileSize().toBytes();
+        if (file.getSize() > maxFileSize) {
+            throw com.graphhire.common.vo.Exceptions.BusinessException.of(400,
+                "图片大小超过限制，最大支持 " + uploadProperties.getChatImage().getMaxFileSize().toMegabytes() + "MB");
+        }
+        String contentType = StrUtil.blankToDefault(file.getContentType(), "").toLowerCase(Locale.ROOT);
+        Set<String> allowedMimeTypes = uploadProperties.getChatImage().getAllowedMimeTypes();
+        if (StrUtil.isBlank(contentType) || !allowedMimeTypes.contains(contentType)) {
+            throw com.graphhire.common.vo.Exceptions.BusinessException.of(400, "图片类型不支持");
+        }
+        String ext = FileNameUtil.extName(StrUtil.blankToDefault(file.getOriginalFilename(), "")).toLowerCase(Locale.ROOT);
+        Set<String> allowedExtensions = uploadProperties.getChatImage().getAllowedExtensions();
+        if (StrUtil.isBlank(ext) || !allowedExtensions.contains(ext)) {
+            throw com.graphhire.common.vo.Exceptions.BusinessException.of(400, "图片扩展名不支持");
+        }
     }
 }

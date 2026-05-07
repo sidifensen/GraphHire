@@ -44,6 +44,14 @@ public class JobRepositoryImpl implements JobRepository {
     }
 
     @Override
+    public List<Job> findPublished() {
+        LambdaQueryWrapper<JobPO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(JobPO::getStatus, JobStatus.PUBLISHED.toCode())
+            .eq(JobPO::getDeleted, 0);
+        return jobMapper.selectList(wrapper).stream().map(this::toDomain).toList();
+    }
+
+    @Override
     public List<Job> searchPublishedJobs(String keyword, String city, Integer salaryMin, Integer salaryMax,
                                          String sortBy, int offset, int limit) {
         LambdaQueryWrapper<JobPO> wrapper = new LambdaQueryWrapper<>();

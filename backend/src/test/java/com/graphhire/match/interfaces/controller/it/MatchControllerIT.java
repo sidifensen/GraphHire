@@ -57,8 +57,17 @@ class MatchControllerIT extends BaseControllerIT {
     @Test
     @DisplayName("01 - 触发匹配")
     void triggerMatch_Success() throws Exception {
-        // 需要先有简历和职位，这里假设已存在
-        String json = "{\"resumeId\":1,\"jobId\":1}";
+        Long resumeId = jdbcTemplate.queryForObject(
+            "SELECT id FROM resume WHERE user_id = ? ORDER BY id DESC LIMIT 1",
+            Long.class,
+            personUserId
+        );
+        Long jobId = jdbcTemplate.queryForObject(
+            "SELECT id FROM job WHERE company_id = (SELECT company_id FROM company_staff WHERE user_id = ? LIMIT 1) ORDER BY id DESC LIMIT 1",
+            Long.class,
+            companyUserId
+        );
+        String json = String.format("{\"resumeId\":%d,\"jobId\":%d}", resumeId, jobId);
 
         MvcResult result = mockMvc.perform(post("/match/trigger")
                 .headers(companyHeaders)
@@ -76,21 +85,21 @@ class MatchControllerIT extends BaseControllerIT {
     @Test
     @DisplayName("02 - 获取匹配详情")
     void getMatchDetail_Success() throws Exception {
-        if (createdMatchId != null) {
-            mockMvc.perform(get("/match/{matchId}/detail", createdMatchId)
-                    .headers(companyHeaders))
-                .andExpect(jsonPath("$.code").value(200));
-        } else {
-            mockMvc.perform(get("/match/{matchId}/detail", 99999)
-                    .headers(companyHeaders))
-                .andExpect(jsonPath("$.code").value(200));
-        }
+        assertNotNull(createdMatchId);
+        mockMvc.perform(get("/match/{matchId}/detail", createdMatchId)
+                .headers(companyHeaders))
+            .andExpect(jsonPath("$.code").value(200));
     }
 
     @Test
     @DisplayName("03 - 获取简历的匹配列表")
     void getMatchListForResume_Success() throws Exception {
-        mockMvc.perform(get("/match/resume/{resumeId}/list", 1)
+        Long resumeId = jdbcTemplate.queryForObject(
+            "SELECT id FROM resume WHERE user_id = ? ORDER BY id DESC LIMIT 1",
+            Long.class,
+            personUserId
+        );
+        mockMvc.perform(get("/match/resume/{resumeId}/list", resumeId)
                 .headers(companyHeaders))
             .andExpect(jsonPath("$.code").value(200))
             .andExpect(jsonPath("$.data").isArray());
@@ -99,9 +108,18 @@ class MatchControllerIT extends BaseControllerIT {
     @Test
     @DisplayName("04 - 获取职位的匹配列表")
     void getMatchListForJob_Success() throws Exception {
-        mockMvc.perform(get("/match/job/{jobId}/list", 1)
+        Long jobId = jdbcTemplate.queryForObject(
+            "SELECT id FROM job WHERE company_id = (SELECT company_id FROM company_staff WHERE user_id = ? LIMIT 1) ORDER BY id DESC LIMIT 1",
+            Long.class,
+            companyUserId
+        );
+        mockMvc.perform(get("/match/job/{jobId}/list", jobId)
                 .headers(companyHeaders))
             .andExpect(jsonPath("$.code").value(200))
             .andExpect(jsonPath("$.data").isArray());
+
+        mockMvc.perform(get("/match/job/{jobId}/list", jobId)
+                .headers(personHeaders))
+            .andExpect(jsonPath("$.code").value(403));
     }
 }

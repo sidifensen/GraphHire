@@ -18,6 +18,8 @@ public interface ResumeRepository {
     List<Resume> findByParseStatus(ParseStatus parseStatus);
     /** 分页查询简历 */
     com.baomidou.mybatisplus.core.metadata.IPage<Resume> findPage(int page, int size);
+    /** 按用户分页查询简历 */
+    com.baomidou.mybatisplus.core.metadata.IPage<Resume> findPageByUserId(Long userId, int page, int size);
     /** 保存简历 */
     Resume save(Resume resume);
     /** 删除简历 */

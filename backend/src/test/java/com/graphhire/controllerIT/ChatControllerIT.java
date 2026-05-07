@@ -174,4 +174,51 @@ class ChatControllerIT extends BaseControllerIT {
                 }
             });
     }
+
+    @Test
+    @DisplayName("聊天图片上传应拒绝非图片类型")
+    void imageUploadShouldRejectInvalidMime() throws Exception {
+        String startBody = "{\"jobId\":1}";
+        mockMvc.perform(post("/chat/conversations/start")
+                .headers(personHeaders)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(startBody))
+            .andExpect(jsonPath("$.code").value(200));
+
+        MockMultipartFile invalid = new MockMultipartFile(
+            "file",
+            "bad.txt",
+            MediaType.TEXT_PLAIN_VALUE,
+            "not-image".getBytes(java.nio.charset.StandardCharsets.UTF_8)
+        );
+        mockMvc.perform(multipart("/chat/messages/image")
+                .file(invalid)
+                .param("conversationId", "3")
+                .header("satoken", personToken))
+            .andExpect(jsonPath("$.code").value(400));
+    }
+
+    @Test
+    @DisplayName("聊天图片上传应拒绝超大文件")
+    void imageUploadShouldRejectTooLargeFile() throws Exception {
+        String startBody = "{\"jobId\":1}";
+        mockMvc.perform(post("/chat/conversations/start")
+                .headers(personHeaders)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(startBody))
+            .andExpect(jsonPath("$.code").value(200));
+
+        byte[] largeBytes = new byte[6 * 1024 * 1024];
+        MockMultipartFile tooLarge = new MockMultipartFile(
+            "file",
+            "large.jpg",
+            MediaType.IMAGE_JPEG_VALUE,
+            largeBytes
+        );
+        mockMvc.perform(multipart("/chat/messages/image")
+                .file(tooLarge)
+                .param("conversationId", "3")
+                .header("satoken", personToken))
+            .andExpect(jsonPath("$.code").value(400));
+    }
 }

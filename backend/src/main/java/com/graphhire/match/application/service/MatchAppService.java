@@ -1,8 +1,11 @@
 package com.graphhire.match.application.service;
 
 import com.graphhire.job.domain.model.Job;
+import com.graphhire.job.domain.model.CompanyStaff;
 import com.graphhire.job.domain.repository.JobRepository;
+import com.graphhire.job.domain.repository.CompanyStaffRepository;
 import com.graphhire.job.domain.vo.JobStatus;
+import com.graphhire.auth.domain.vo.UserType;
 import com.graphhire.match.application.command.TriggerMatchCmd;
 import com.graphhire.match.application.query.MatchDetailQuery;
 import com.graphhire.match.domain.model.MatchRecord;
@@ -62,6 +65,8 @@ public class MatchAppService {
 
     @Autowired
     private PersonInfoRepository personInfoRepository;
+    @Autowired
+    private CompanyStaffRepository companyStaffRepository;
 
     /**
      * 触发匹配
@@ -83,6 +88,32 @@ public class MatchAppService {
         return matchRecordRepository.save(matchRecord);
     }
 
+    @Transactional
+    public MatchRecord triggerMatchForCurrentUser(Long currentUserId, UserType userType, TriggerMatchCmd cmd) {
+        if (cmd == null || cmd.getResumeId() == null || cmd.getJobId() == null) {
+            throw new com.graphhire.common.vo.Exceptions.ValidationException("简历ID和职位ID不能为空");
+        }
+        Resume resume = resumeRepository.findById(cmd.getResumeId())
+            .orElseThrow(() -> new RuntimeException("Resume not found"));
+        Job job = jobRepository.findById(cmd.getJobId())
+            .orElseThrow(() -> new RuntimeException("Job not found"));
+
+        if (userType == UserType.PERSON) {
+            if (!currentUserId.equals(resume.getUserId())) {
+                throw new com.graphhire.common.vo.Exceptions.ForbiddenException("无权触发该简历的匹配");
+            }
+        } else if (userType == UserType.COMPANY) {
+            CompanyStaff staff = companyStaffRepository.findByUserId(currentUserId)
+                .orElseThrow(() -> new com.graphhire.common.vo.Exceptions.ForbiddenException("非企业成员"));
+            if (!staff.getCompanyId().equals(job.getCompanyId())) {
+                throw new com.graphhire.common.vo.Exceptions.ForbiddenException("无权触发该职位的匹配");
+            }
+        } else if (userType != UserType.ADMIN) {
+            throw new com.graphhire.common.vo.Exceptions.ForbiddenException("无权执行匹配");
+        }
+        return triggerMatch(cmd);
+    }
+
     /**
      * 为简历触发与所有已发布职位的匹配
      * 【功能说明】当用户上传/更新简历时调用，为简历匹配所有已发布职位并创建type=2的职位推荐通知。
@@ -94,9 +125,7 @@ public class MatchAppService {
     @Transactional
     public void triggerMatchForResume(Long resumeId) {
         long totalStartNanos = System.nanoTime();
-        List<Job> publishedJobs = jobRepository.findAll().stream()
-            .filter(job -> job.getStatus() == JobStatus.PUBLISHED)
-            .toList();
+        List<Job> publishedJobs = jobRepository.findPublished();
         List<MatchRecord> existingRecords = matchRecordRepository.findByResumeId(resumeId).stream()
             .filter(record -> record.getMatchDirection() == null
                 || record.getMatchDirection().equals(MatchRecord.DIRECTION_PERSON_APPLIES))
@@ -270,6 +299,14 @@ public class MatchAppService {
         return new MatchDetailResponse(record, resume, job, resolvePersonInfo(resume));
     }
 
+    public MatchDetailResponse getMatchDetailForCurrentUser(Long currentUserId, UserType userType, Long matchId) {
+        MatchRecord record = matchRecordRepository.findById(matchId)
+            .orElseThrow(() -> new RuntimeException("Match record not found"));
+        ensureRecordAccessible(currentUserId, userType, record);
+        MatchDetailQuery query = new MatchDetailQuery(matchId);
+        return getMatchDetail(query);
+    }
+
     /**
      * 获取简历的匹配列表
      * 【功能说明】查询指定简历的所有匹配记录，返回包含职位信息的匹配详情列表。
@@ -289,6 +326,30 @@ public class MatchAppService {
                 return new MatchDetailResponse(r, resume, job, resolvePersonInfo(resume));
             })
             .toList();
+    }
+
+    public List<MatchDetailResponse> getMatchListForResumeCurrentUser(Long currentUserId, UserType userType, Long resumeId) {
+        Resume resume = resumeRepository.findById(resumeId)
+            .orElseThrow(() -> new RuntimeException("Resume not found"));
+        if (userType == UserType.PERSON) {
+            if (!currentUserId.equals(resume.getUserId())) {
+                throw new com.graphhire.common.vo.Exceptions.ForbiddenException("无权查看该简历匹配");
+            }
+        } else if (userType == UserType.COMPANY) {
+            CompanyStaff staff = companyStaffRepository.findByUserId(currentUserId)
+                .orElseThrow(() -> new com.graphhire.common.vo.Exceptions.ForbiddenException("非企业成员"));
+            List<MatchRecord> records = matchRecordRepository.findByResumeId(resumeId);
+            for (MatchRecord record : records) {
+                Job job = jobRepository.findById(record.getJobId()).orElse(null);
+                if (job != null && job.getCompanyId().equals(staff.getCompanyId())) {
+                    return getMatchListForResume(resumeId);
+                }
+            }
+            throw new com.graphhire.common.vo.Exceptions.ForbiddenException("无权查看该简历匹配");
+        } else if (userType != UserType.ADMIN) {
+            throw new com.graphhire.common.vo.Exceptions.ForbiddenException("无权查看匹配列表");
+        }
+        return getMatchListForResume(resumeId);
     }
 
     /**
@@ -311,6 +372,55 @@ public class MatchAppService {
             })
             .sorted(recommendationScoreDescComparator())
             .toList();
+    }
+
+    public List<MatchDetailResponse> getMatchListForJobCurrentUser(Long currentUserId, UserType userType, Long jobId) {
+        Job job = jobRepository.findById(jobId)
+            .orElseThrow(() -> new RuntimeException("Job not found"));
+        if (userType == UserType.COMPANY) {
+            CompanyStaff staff = companyStaffRepository.findByUserId(currentUserId)
+                .orElseThrow(() -> new com.graphhire.common.vo.Exceptions.ForbiddenException("非企业成员"));
+            if (!staff.getCompanyId().equals(job.getCompanyId())) {
+                throw new com.graphhire.common.vo.Exceptions.ForbiddenException("无权查看该职位匹配");
+            }
+        } else if (userType == UserType.PERSON) {
+            List<MatchRecord> records = matchRecordRepository.findByJobId(jobId);
+            for (MatchRecord record : records) {
+                Resume resume = resumeRepository.findById(record.getResumeId()).orElse(null);
+                if (resume != null && currentUserId.equals(resume.getUserId())) {
+                    return getMatchListForJob(jobId);
+                }
+            }
+            throw new com.graphhire.common.vo.Exceptions.ForbiddenException("无权查看该职位匹配");
+        } else if (userType != UserType.ADMIN) {
+            throw new com.graphhire.common.vo.Exceptions.ForbiddenException("无权查看匹配列表");
+        }
+        return getMatchListForJob(jobId);
+    }
+
+    private void ensureRecordAccessible(Long currentUserId, UserType userType, MatchRecord record) {
+        if (userType == UserType.ADMIN) {
+            return;
+        }
+        Resume resume = resumeRepository.findById(record.getResumeId())
+            .orElseThrow(() -> new RuntimeException("Resume not found"));
+        Job job = jobRepository.findById(record.getJobId())
+            .orElseThrow(() -> new RuntimeException("Job not found"));
+        if (userType == UserType.PERSON) {
+            if (!currentUserId.equals(resume.getUserId())) {
+                throw new com.graphhire.common.vo.Exceptions.ForbiddenException("无权查看该匹配记录");
+            }
+            return;
+        }
+        if (userType == UserType.COMPANY) {
+            CompanyStaff staff = companyStaffRepository.findByUserId(currentUserId)
+                .orElseThrow(() -> new com.graphhire.common.vo.Exceptions.ForbiddenException("非企业成员"));
+            if (!staff.getCompanyId().equals(job.getCompanyId())) {
+                throw new com.graphhire.common.vo.Exceptions.ForbiddenException("无权查看该匹配记录");
+            }
+            return;
+        }
+        throw new com.graphhire.common.vo.Exceptions.ForbiddenException("无权查看该匹配记录");
     }
 
     /**

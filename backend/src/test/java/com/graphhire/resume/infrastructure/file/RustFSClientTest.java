@@ -16,6 +16,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -41,5 +42,18 @@ class RustFSClientTest {
 
         assertEquals("avatar/1987654321098767360.png", requestCaptor.getValue().key());
         assertTrue(filePath.endsWith("/avatar/1987654321098767360.png"));
+    }
+
+    @Test
+    @DisplayName("upload 多次调用应复用桶存在检查缓存")
+    void upload_ShouldHeadBucketOnlyOnceWhenCached() {
+        ReflectionTestUtils.setField(rustFSClient, "bucketName", "resumes");
+        when(s3Client.headBucket(any(HeadBucketRequest.class))).thenReturn(HeadBucketResponse.builder().build());
+
+        rustFSClient.upload("a".getBytes(), "chat/image/a.png");
+        rustFSClient.upload("b".getBytes(), "chat/image/b.png");
+
+        verify(s3Client, times(1)).headBucket(any(HeadBucketRequest.class));
+        verify(s3Client, times(2)).putObject(any(PutObjectRequest.class), any(software.amazon.awssdk.core.sync.RequestBody.class));
     }
 }
