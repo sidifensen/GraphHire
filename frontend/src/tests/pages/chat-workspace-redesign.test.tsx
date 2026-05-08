@@ -431,6 +431,9 @@ describe('chat workspace redesign', () => {
     const panel = await screen.findByTestId('chat-emoji-panel');
     const categoryTabs = within(panel).getByTestId('chat-emoji-category-tabs');
     const scrollRegion = within(panel).getByTestId('chat-emoji-scroll-region');
+    expect(panel.className).toContain('bg-surface-container-lowest');
+    expect(panel.className).not.toContain('bg-surface-container-lowest/95');
+    expect(panel.className).not.toContain('backdrop-blur');
     expect(categoryTabs.className).toContain('chat-scrollbar');
     expect(categoryTabs.className).toContain('overflow-x-auto');
     expect(scrollRegion.className).toContain('h-64');

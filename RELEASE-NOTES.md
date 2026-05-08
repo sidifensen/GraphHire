@@ -1,6 +1,8 @@
 # Release Notes
 
 ## 2026-05-08
+- fix: 修复聊天表情弹窗背景发透问题，弹窗容器改为不透明 `bg-surface-container-lowest`，移除半透明背景与毛玻璃效果，避免夜间消息内容透出影响可读性
+- test: 补充 `chat-workspace-redesign` 断言，约束表情弹窗不得使用 `bg-surface-container-lowest/95` 与 `backdrop-blur*`
 - fix: 修复聊天表情弹窗在夜间模式下滚动条未适配问题，分类横向滚动区统一接入 `chat-scrollbar` 主题滚动条样式
 - test: 补充 `chat-workspace-redesign` 回归断言，约束表情分类滚动区与表情网格滚动区必须使用 `chat-scrollbar`
 - fix: 修复沟通页 PDF 预览在 CSP 限制下仍无法打开的问题，聊天预览弹窗改为 `iframe` 渲染并移除 `sandbox`，确保 `blob:` 预览可正常加载
