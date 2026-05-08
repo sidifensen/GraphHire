@@ -485,3 +485,9 @@ pm run build）
 
 
 
+
+- feat: 引入 Redisson 分布式并发闸门（RPermitExpirableSemaphore）到简历异步上传与解析 MQ 消费链路，分别限制 `resume-upload-async` 与 `resume-parse` 并发执行，缓解高并发时对象存储/OCR/AI/DB 资源争抢
+- feat: 新增 `RedissonConfig`，复用 `spring.data.redis` 配置生成 `RedissonClient`，避免双配置漂移并支持多实例共享并发额度
+- feat: 新增并发配置项 `app.concurrent.resume-upload.*` 与 `app.concurrent.resume-parse.*`（semaphore 名称、permits、acquire wait、lease）
+- fix: 修复消费者早抛异常路径 permit 释放缺失问题，确保任务不存在/初始化失败等边界场景也会释放并发许可，防止额度泄露
+- test: 新增消费者并发闸门单测覆盖（获取失败快速失败、成功/失败路径释放 permit、业务逻辑隔离验证），并通过 `mvn compile` 与定向 `mvn test`

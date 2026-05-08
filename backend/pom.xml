@@ -105,6 +105,13 @@
             <version>2.3.1</version>
         </dependency>
 
+        <!-- Redisson：分布式并发闸门（RPermitExpirableSemaphore） -->
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson</artifactId>
+            <version>3.40.0</version>
+        </dependency>
+
         <!-- Apache Tika -->
         <dependency>
             <groupId>org.apache.tika</groupId>

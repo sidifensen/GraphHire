@@ -148,6 +148,17 @@ app: # 自定义业务配置
     resume-upload:
       consume-thread-number: 8
       consume-thread-max: 32
+  concurrent:
+    resume-upload:
+      semaphore-name: resume:upload:permits
+      max-permits: 8
+      acquire-wait-seconds: 0
+      lease-seconds: 180
+    resume-parse:
+      semaphore-name: resume:parse:permits
+      max-permits: 16
+      acquire-wait-seconds: 0
+      lease-seconds: 600
 
 # =========================
 # 中间件与业务集成

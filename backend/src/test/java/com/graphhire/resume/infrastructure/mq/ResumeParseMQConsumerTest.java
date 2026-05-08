@@ -13,6 +13,8 @@ import com.graphhire.resume.domain.repository.ResumeRepository;
 import com.graphhire.resume.domain.vo.ParseStatus;
 import com.graphhire.resume.infrastructure.ai.DocumentParser;
 import com.graphhire.skill.infrastructure.graph.SkillGraphClient;
+import org.redisson.api.RPermitExpirableSemaphore;
+import org.redisson.api.RedissonClient;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -21,12 +23,14 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -61,9 +65,23 @@ class ResumeParseMQConsumerTest {
     private SkillGraphClient skillGraphClient;
     @Mock
     private ResumeParseLockService resumeParseLockService;
+    @Mock
+    private RedissonClient redissonClient;
+    @Mock
+    private RPermitExpirableSemaphore semaphore;
 
     @InjectMocks
     private ResumeParseMQConsumer consumer;
+
+    private void mockPermitAcquired(String permitId) throws InterruptedException {
+        ReflectionTestUtils.setField(consumer, "semaphoreName", "resume:parse:permits");
+        ReflectionTestUtils.setField(consumer, "semaphoreMaxPermits", 16);
+        ReflectionTestUtils.setField(consumer, "acquireWaitSeconds", 0L);
+        ReflectionTestUtils.setField(consumer, "leaseSeconds", 600L);
+        when(redissonClient.getPermitExpirableSemaphore("resume:parse:permits")).thenReturn(semaphore);
+        when(semaphore.trySetPermits(16)).thenReturn(true);
+        when(semaphore.tryAcquire(0L, 600L, TimeUnit.SECONDS)).thenReturn(permitId);
+    }
 
     @Nested
     @DisplayName("简历解析MQ消费测试")
@@ -71,7 +89,8 @@ class ResumeParseMQConsumerTest {
 
         @Test
         @DisplayName("成功解析简历并创建通知")
-        void consumeResumeParse_Success() {
+        void consumeResumeParse_Success() throws InterruptedException {
+            mockPermitAcquired("permit-1");
             Long resumeId = 1L;
             Long parseTaskId = 1L;
 
@@ -153,11 +172,13 @@ class ResumeParseMQConsumerTest {
             verify(rocketMQTemplate).convertAndSend(eq("resume-match-trigger"), eq(String.valueOf(resumeId)));
             verify(matchAppService, never()).triggerMatchForResume(anyLong());
             verify(resumeParseLockService).forceUnlock(resumeId);
+            verify(semaphore).release("permit-1");
         }
 
         @Test
         @DisplayName("成功解析非默认简历时不触发全职位匹配")
-        void consumeResumeParse_Success_NonDefault_ShouldNotTriggerMatch() {
+        void consumeResumeParse_Success_NonDefault_ShouldNotTriggerMatch() throws InterruptedException {
+            mockPermitAcquired("permit-2");
             Long resumeId = 2L;
             Long parseTaskId = 2L;
 
@@ -187,11 +208,13 @@ class ResumeParseMQConsumerTest {
             verify(matchAppService, never()).triggerMatchForResume(anyLong());
             verify(rocketMQTemplate, never()).convertAndSend(eq("resume-match-trigger"), anyString());
             verify(resumeParseLockService).forceUnlock(resumeId);
+            verify(semaphore).release("permit-2");
         }
 
         @Test
         @DisplayName("解析失败时更新状态并保存错误信息")
-        void consumeResumeParse_Failure() {
+        void consumeResumeParse_Failure() throws InterruptedException {
+            mockPermitAcquired("permit-3");
             Long resumeId = 1L;
             Long parseTaskId = 1L;
 
@@ -232,11 +255,13 @@ class ResumeParseMQConsumerTest {
 
             verify(notificationRepository, never()).save(any(Notification.class));
             verify(resumeParseLockService).forceUnlock(resumeId);
+            verify(semaphore).release("permit-3");
         }
 
         @Test
         @DisplayName("解析任务不存在时抛出异常")
-        void consumeResumeParse_TaskNotFound() {
+        void consumeResumeParse_TaskNotFound() throws InterruptedException {
+            mockPermitAcquired("permit-4");
             Long resumeId = 1L;
             Long parseTaskId = 999L;
 
@@ -246,11 +271,13 @@ class ResumeParseMQConsumerTest {
                 () -> consumer.onMessage(resumeId + "," + parseTaskId + ",true"));
             assertTrue(exception.getMessage().contains("Parse task not found"));
             verifyNoInteractions(resumeParseLockService);
+            verify(semaphore).release("permit-4");
         }
 
         @Test
         @DisplayName("简历不存在时抛出异常")
-        void consumeResumeParse_ResumeNotFound() {
+        void consumeResumeParse_ResumeNotFound() throws InterruptedException {
+            mockPermitAcquired("permit-5");
             Long resumeId = 999L;
             Long parseTaskId = 1L;
 
@@ -266,11 +293,13 @@ class ResumeParseMQConsumerTest {
                 () -> consumer.onMessage(resumeId + "," + parseTaskId + ",true"));
             assertTrue(exception.getMessage().contains("Resume not found"));
             verifyNoInteractions(resumeParseLockService);
+            verify(semaphore).release("permit-5");
         }
 
         @Test
         @DisplayName("DeepSeek解析返回null时使用空JSON")
-        void consumeResumeParse_NullParseResult() {
+        void consumeResumeParse_NullParseResult() throws InterruptedException {
+            mockPermitAcquired("permit-6");
             Long resumeId = 1L;
             Long parseTaskId = 1L;
 
@@ -306,11 +335,13 @@ class ResumeParseMQConsumerTest {
             assertEquals(ParseStatus.SUCCESS, savedResume.getStatus());
             assertEquals("{}", savedResume.getParseResult());
             verify(resumeParseLockService).forceUnlock(resumeId);
+            verify(semaphore).release("permit-6");
         }
 
         @Test
         @DisplayName("文档提取文本为空时标记为失败，不创建通知也不发送事件")
-        void consumeResumeParse_BlankText_Fails() {
+        void consumeResumeParse_BlankText_Fails() throws InterruptedException {
+            mockPermitAcquired("permit-7");
             Long resumeId = 1L;
             Long parseTaskId = 1L;
 
@@ -351,11 +382,13 @@ class ResumeParseMQConsumerTest {
             verify(rocketMQTemplate, never()).convertAndSend(eq(RESUME_PARSED_TOPIC), anyString());
             verify(matchAppService, never()).triggerMatchForResume(anyLong());
             verify(resumeParseLockService).forceUnlock(resumeId);
+            verify(semaphore).release("permit-7");
         }
 
         @Test
         @DisplayName("默认简历在关闭全量匹配刷新时不触发全职位匹配")
-        void consumeResumeParse_DefaultButRefreshDisabled_ShouldNotTriggerMatch() {
+        void consumeResumeParse_DefaultButRefreshDisabled_ShouldNotTriggerMatch() throws InterruptedException {
+            mockPermitAcquired("permit-8");
             Long resumeId = 9L;
             Long parseTaskId = 19L;
 
@@ -386,6 +419,26 @@ class ResumeParseMQConsumerTest {
             verify(rocketMQTemplate).convertAndSend(eq(RESUME_PARSED_TOPIC), eq(String.valueOf(resumeId)));
             verify(rocketMQTemplate, never()).convertAndSend(eq("resume-match-trigger"), anyString());
             verify(resumeParseLockService).forceUnlock(resumeId);
+            verify(semaphore).release("permit-8");
+        }
+
+        @Test
+        @DisplayName("未获取到解析并发许可时应快速失败且不执行业务逻辑")
+        void consumeResumeParse_ShouldFailFastWhenPermitUnavailable() throws InterruptedException {
+            ReflectionTestUtils.setField(consumer, "semaphoreName", "resume:parse:permits");
+            ReflectionTestUtils.setField(consumer, "semaphoreMaxPermits", 16);
+            ReflectionTestUtils.setField(consumer, "acquireWaitSeconds", 0L);
+            ReflectionTestUtils.setField(consumer, "leaseSeconds", 600L);
+            when(redissonClient.getPermitExpirableSemaphore("resume:parse:permits")).thenReturn(semaphore);
+            when(semaphore.trySetPermits(16)).thenReturn(true);
+            when(semaphore.tryAcquire(0L, 600L, TimeUnit.SECONDS)).thenReturn(null);
+
+            RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> consumer.onMessage("1,1,true"));
+            assertTrue(exception.getMessage().contains("并发许可"));
+            verifyNoInteractions(parseTaskRepository, resumeRepository, documentParser, deepSeekClient,
+                notificationRepository, rocketMQTemplate, matchAppService, skillGraphClient, resumeParseLockService);
+            verify(semaphore, never()).release(anyString());
         }
     }
 
