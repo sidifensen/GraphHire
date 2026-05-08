@@ -32,7 +32,26 @@ export function ChatPreviewModal({ previewUrl, previewFileName, previewKind, onC
             <img title="图片预览" src={previewUrl} alt={previewFileName || '图片预览'} className="max-h-full max-w-full object-contain" />
           </div>
         ) : (
-          <iframe title="简历预览" src={previewUrl} sandbox="allow-downloads" className="h-full w-full flex-1 bg-white dark:bg-surface-container-lowest" />
+          <div className="h-full w-full flex-1 bg-white dark:bg-surface-container-lowest">
+            <object
+              data-testid="chat-pdf-preview-object"
+              data={previewUrl}
+              type="application/pdf"
+              className="h-full w-full"
+              aria-label="简历预览"
+            >
+              <div className="flex h-full w-full flex-col items-center justify-center gap-3 px-6 text-center text-sm text-on-surface-variant">
+                <p>当前浏览器无法直接预览此 PDF。</p>
+                <a
+                  href={previewUrl}
+                  download={previewFileName || 'resume.pdf'}
+                  className="inline-flex rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-on-primary"
+                >
+                  下载PDF文件
+                </a>
+              </div>
+            </object>
+          </div>
         )}
       </div>
     </div>,

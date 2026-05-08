@@ -1,6 +1,9 @@
 # Release Notes
 
 ## 2026-05-08
+- fix: 修复沟通页 PDF 预览被浏览器拦截问题，聊天预览弹窗从 `iframe sandbox` 改为 `object[type=application/pdf]` 内嵌渲染，避免出现“该内容被屏蔽”空白页
+- feat: 聊天 PDF 预览新增降级回退入口：当浏览器不支持内嵌预览时，弹窗内可直接点击“下载PDF文件”
+- test: 更新 `chat-workspace-redesign` 断言覆盖新 PDF 预览结构（`object` + 下载回退链接），并通过前端 `npm run test:run`（418 通过）与 `npm run build`
 - fix: 修复移动端聊天列表页中部蓝线：将聊天布局最小高度从全端 `min-h-[560px]` 调整为仅桌面端 `md:min-h-[560px]`，避免移动端列表容器被强制撑高后显示边框线
 - fix: 去掉聊天页两处多余分隔线：左侧会话搜索区底线与底部操作栏顶部分隔线，消除夜间模式下残留白线
 - fix: 修复聊天页夜间模式白底可读性问题：会话搜索框、表情/相册按钮、消息输入框、对方消息气泡统一改为 `surface` 主题 token，去除关键区域 `bg-white` 硬编码

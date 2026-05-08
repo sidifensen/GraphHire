@@ -662,8 +662,10 @@ describe('chat workspace redesign', () => {
 
     await waitFor(() => expect(downloadResumeMock).toHaveBeenCalledWith(1, 501));
     expect(screen.getByTestId('chat-resume-preview-modal')).toBeInTheDocument();
-    expect(screen.getByTitle('简历预览')).toHaveAttribute('src', 'blob:test-url');
-    expect(screen.getByTitle('简历预览')).toHaveAttribute('sandbox', 'allow-downloads');
+    const pdfObject = screen.getByTestId('chat-pdf-preview-object');
+    expect(pdfObject).toHaveAttribute('data', 'blob:test-url');
+    expect(pdfObject).toHaveAttribute('type', 'application/pdf');
+    expect(screen.getByRole('link', { name: '下载PDF文件' })).toHaveAttribute('href', 'blob:test-url');
 
     fireEvent.click(screen.getByRole('button', { name: '关闭预览' }));
     expect(screen.queryByTestId('chat-resume-preview-modal')).not.toBeInTheDocument();
