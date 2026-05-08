@@ -38,7 +38,7 @@ export function ChatComposerDock({
   onSendText,
 }: ChatComposerDockProps) {
   return (
-    <footer data-testid="chat-detail-composer" className="chat-frosted-composer shrink-0 border-t border-outline-variant/60 px-4 py-3 bg-surface-container-low/70 backdrop-blur-xl">
+    <footer data-testid="chat-detail-composer" className="chat-frosted-composer shrink-0 px-4 py-3 bg-surface-container-low/70 backdrop-blur-xl">
       <div className="mb-2 relative flex items-center gap-2 rounded-2xl bg-surface-container p-2 ring-1 ring-outline-variant/55 shadow-[0_10px_22px_rgba(15,23,42,0.08)] dark:shadow-[0_10px_22px_rgba(0,0,0,0.22)]">
         <button
           type="button"

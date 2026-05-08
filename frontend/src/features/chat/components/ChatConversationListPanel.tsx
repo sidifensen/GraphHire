@@ -35,7 +35,7 @@ export function ChatConversationListPanel({
       data-testid="chat-conversation-list-panel"
       className={`chat-frosted-list-panel rounded-none md:rounded-3xl bg-surface-container-low/80 backdrop-blur-xl ring-1 ring-outline-variant/55 shadow-[0_18px_45px_rgba(15,23,42,0.10)] overflow-hidden dark:shadow-[0_18px_45px_rgba(0,0,0,0.35)] ${mobileMode === 'detail' ? 'hidden md:block' : ''}`}
     >
-      <div className="h-12 px-3 border-b border-outline-variant/60 flex items-center bg-surface-container/70">
+      <div className="h-12 px-3 flex items-center bg-surface-container/70">
         <input
           value={conversationKeyword}
           onChange={(event) => onKeywordChange(event.target.value)}
