@@ -750,7 +750,7 @@ export default function ChatWorkspace({
 
       <div
         data-testid="chat-desktop-layout"
-        className="chat-frosted-layout grid grid-cols-1 md:grid-cols-[320px_minmax(0,1fr)] gap-4 md:h-[calc(100vh-96px)] min-h-[560px]"
+        className="chat-frosted-layout grid grid-cols-1 md:grid-cols-[320px_minmax(0,1fr)] gap-4 md:h-[calc(100vh-96px)] md:min-h-[560px]"
       >
         {(mobileMode === 'list' || mobileMode === 'detail') ? (
           <ChatConversationListPanel
