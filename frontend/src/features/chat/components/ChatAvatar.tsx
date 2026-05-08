@@ -26,7 +26,7 @@ export function ChatAvatar({ name, imageUrl, testId, className }: ChatAvatarProp
         data-testid={testId}
         onError={() => setBroken(true)}
         className={cn(
-          'h-9 w-9 shrink-0 rounded-full object-cover shadow-[0_4px_12px_rgba(15,23,42,0.18)] ring-1 ring-white/70',
+          'h-9 w-9 shrink-0 rounded-full object-cover shadow-[0_4px_12px_rgba(15,23,42,0.18)] ring-1 ring-surface-container-highest dark:ring-outline-variant/70',
           className,
         )}
       />
@@ -37,7 +37,7 @@ export function ChatAvatar({ name, imageUrl, testId, className }: ChatAvatarProp
     <div
       data-testid={testId}
       className={cn(
-        'h-9 w-9 shrink-0 rounded-full bg-white/80 text-on-surface font-bold text-sm flex items-center justify-center shadow-[0_4px_12px_rgba(15,23,42,0.12)] ring-1 ring-white/75',
+        'flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-container-high text-sm font-bold text-on-surface shadow-[0_4px_12px_rgba(15,23,42,0.12)] ring-1 ring-surface-container-highest dark:bg-surface-container-high dark:ring-outline-variant/70',
         className,
       )}
     >

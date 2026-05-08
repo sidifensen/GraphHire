@@ -77,7 +77,7 @@ export function ChatMessageStream({
                 className={`max-w-[78%] rounded-2xl px-3 py-2 text-sm shadow-[0_8px_24px_rgba(15,23,42,0.08)] ${self ? 'bg-primary text-on-primary ring-1 ring-primary/10 dark:shadow-[0_8px_24px_rgba(0,0,0,0.28)]' : 'bg-surface-container text-on-surface ring-1 ring-outline-variant/55'}`}
               >
                 {message.messageType === 3 && ext ? (
-                  <div className={`rounded-xl px-3 py-2 ${self ? 'bg-white/12 ring-1 ring-white/20 dark:bg-white/10 dark:ring-white/10' : 'bg-surface-container-high ring-1 ring-outline-variant/55'}`}>
+                  <div className={`rounded-xl px-3 py-2 ${self ? 'bg-primary/20 ring-1 ring-primary/25 dark:bg-primary/25 dark:ring-primary/30' : 'bg-surface-container-high ring-1 ring-outline-variant/55'}`}>
                     <div className="flex items-start gap-2">
                       <span className="text-xl leading-none">📄</span>
                       <div className="min-w-0">
@@ -93,7 +93,7 @@ export function ChatMessageStream({
                           type="button"
                           onClick={() => void onPreviewResume(message.conversationId, ext)}
                           disabled={resumeFileLoading}
-                          className={`inline-flex rounded-lg px-2.5 py-1 text-xs font-bold disabled:opacity-60 ${self ? 'bg-white/90 text-primary dark:bg-white/85' : 'bg-surface-low text-on-surface dark:bg-surface-container-low dark:text-on-surface'}`}
+                          className={`inline-flex rounded-lg px-2.5 py-1 text-xs font-bold disabled:opacity-60 ${self ? 'bg-surface-container-lowest text-primary dark:bg-surface-container-high dark:text-on-surface' : 'bg-surface-low text-on-surface dark:bg-surface-container-low dark:text-on-surface'}`}
                         >
                           {resumeFileLoading ? '处理中...' : '预览PDF'}
                         </button>
@@ -101,7 +101,7 @@ export function ChatMessageStream({
                           type="button"
                           onClick={() => void onDownloadResume(message.conversationId, ext)}
                           disabled={resumeFileLoading}
-                          className={`inline-flex rounded-lg px-2.5 py-1 text-xs font-bold disabled:opacity-60 ${self ? 'bg-white text-primary dark:bg-white/90' : 'bg-primary text-on-primary'}`}
+                          className={`inline-flex rounded-lg px-2.5 py-1 text-xs font-bold disabled:opacity-60 ${self ? 'bg-surface-container-lowest text-primary dark:bg-surface-container-high dark:text-on-surface' : 'bg-primary text-on-primary'}`}
                         >
                           {resumeFileLoading ? '处理中...' : '下载PDF'}
                         </button>
@@ -129,7 +129,7 @@ export function ChatMessageStream({
                         <button
                           type="button"
                           onClick={() => void onLoadInlineImage(message.conversationId, message.id)}
-                          className={`inline-flex rounded-lg px-2.5 py-1 text-xs font-bold ${self ? 'bg-white text-primary dark:bg-white/90' : 'bg-primary text-on-primary'}`}
+                          className={`inline-flex rounded-lg px-2.5 py-1 text-xs font-bold ${self ? 'bg-surface-container-lowest text-primary dark:bg-surface-container-high dark:text-on-surface' : 'bg-primary text-on-primary'}`}
                         >
                           重试加载图片
                         </button>

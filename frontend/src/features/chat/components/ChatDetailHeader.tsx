@@ -36,15 +36,16 @@ export function ChatDetailHeader({
     : (selectedConversation.candidateUserId ? buildPersonAvatarUrl(selectedConversation.candidateUserId) : null);
 
   return (
-    <header data-testid="chat-detail-header" className="shrink-0 border-b border-white/75 px-4 py-3 bg-white/60 backdrop-blur-xl dark:border-white/10 dark:bg-white/5">
+    <header data-testid="chat-detail-header" className="shrink-0 border-b border-surface-container-highest px-4 py-3 bg-surface-container-low/80 backdrop-blur-xl dark:border-outline-variant/70 dark:bg-surface-container-low/75">
       {mobileMode === 'detail' ? (
         <div className="mb-2 md:hidden">
           <Link
             data-testid="chat-mobile-back-button"
             href={conversationPathPrefix}
-            className="inline-flex items-center gap-1 rounded-lg bg-white/85 px-2.5 py-1 text-xs font-bold text-on-surface-variant hover:bg-white dark:bg-surface-container-high/60 dark:text-on-surface dark:hover:bg-surface-container-high/80"
+            className="inline-flex items-center gap-1.5 rounded-full border border-primary/35 bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary shadow-sm transition-colors hover:bg-primary/15 dark:border-primary/55 dark:bg-primary/20 dark:text-on-surface dark:hover:bg-primary/30"
           >
-            返回会话列表
+            <span aria-hidden="true" className="text-sm leading-none">←</span>
+            <span>返回会话列表</span>
           </Link>
         </div>
       ) : null}
@@ -73,9 +74,11 @@ export function ChatDetailHeader({
             )}
           </div>
         </div>
-        <Link href={jobHref} className="shrink-0 rounded-xl bg-white/92 px-3 py-1.5 text-sm font-bold text-primary shadow-sm ring-1 ring-primary/20 hover:bg-white dark:bg-surface-container-high/70 dark:text-on-surface dark:ring-white/10 dark:hover:bg-surface-container-high/85">查看职位</Link>
+        <Link href={jobHref} className="shrink-0 rounded-xl bg-surface-container px-3 py-1.5 text-sm font-bold text-primary shadow-sm ring-1 ring-primary/20 transition-colors hover:bg-surface-container-high dark:bg-surface-container-high/70 dark:text-on-surface dark:ring-outline-variant/55 dark:hover:bg-surface-container-high">
+          查看职位
+        </Link>
       </div>
-      <div className="mt-2 rounded-2xl bg-white/68 px-3 py-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm ring-1 ring-white/80 dark:bg-surface-container-high/55 dark:ring-white/10">
+      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-2xl bg-surface-container-high/70 px-3 py-2 text-sm ring-1 ring-surface-container-highest dark:bg-surface-container-high/55 dark:ring-outline-variant/55">
         <span className="font-semibold text-on-surface">{jobMeta?.jobTitle || selectedConversation.jobTitle || `岗位 #${selectedConversation.jobId}`}</span>
         <span className="text-primary font-bold">{jobMeta?.salaryText || '薪资面议'}</span>
         <span className="text-on-surface-variant">{jobMeta?.locationText || '地点待补充'}</span>

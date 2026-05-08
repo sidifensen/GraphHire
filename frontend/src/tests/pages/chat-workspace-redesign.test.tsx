@@ -402,10 +402,13 @@ describe('chat workspace redesign', () => {
     expect(sentBubble.className).not.toContain('text-white');
 
     expect(screen.getByTestId('chat-workspace').className).toContain('dark:md:from-surface-container-lowest');
+    expect(screen.getByTestId('chat-workspace').className).toContain('md:ring-outline-variant/55');
     expect(screen.getByTestId('chat-conversation-list-panel').className).toContain('bg-surface-container-low/80');
     expect(screen.getByTestId('chat-conversation-list-panel').className).not.toContain('bg-white');
     expect(screen.getByTestId('chat-conversation-detail-panel').className).toContain('dark:bg-surface-container-low/80');
-    expect(screen.getByTestId('chat-detail-header').className).toContain('dark:bg-white/5');
+    expect(screen.getByTestId('chat-conversation-detail-panel').className).toContain('ring-outline-variant/55');
+    expect(screen.getByTestId('chat-detail-header').className).toContain('bg-surface-container-low/80');
+    expect(screen.getByTestId('chat-detail-header').className).toContain('dark:bg-surface-container-low/75');
     expect(screen.getByTestId('chat-detail-composer').className).toContain('bg-surface-container-low/70');
     expect(screen.getByTestId('chat-detail-composer').className).not.toContain('bg-white');
   });

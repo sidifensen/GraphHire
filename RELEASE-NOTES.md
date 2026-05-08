@@ -1,6 +1,9 @@
 # Release Notes
 
 ## 2026-05-08
+- refactor: 聊天主链路夜间主题 token 统一：工作台外壳/详情容器/详情头/消息头像/消息卡片内按钮/预览弹层全部去除 `white/*` 叠色，改为 `surface` 与 `outline` 语义 token
+- fix: 修复聊天夜间模式下多处“发白边框与白雾底”问题（详情头、头像 ring、预览弹层头尾分隔、PDF 区域容器），降低高亮白边与透白感
+- test: 更新 `chat-workspace-redesign` 断言以匹配新 token（`ring-outline-variant`、`bg-surface-container-low` 等），并通过聊天页定向测试
 - fix: 修复聊天表情弹窗夜间模式边框偏白问题，外层边框与内层 ring 改为显式主题 token（`border-surface-container-highest + dark:border-outline-variant`），避免透明度叠加导致发白
 - test: 更新 `chat-workspace-redesign` 断言，约束表情弹窗边框不再使用 `border-outline-variant/60`，并校验内层 ring 的暗色 token
 - fix: 修复聊天表情弹窗背景发透问题，弹窗容器改为不透明 `bg-surface-container-lowest`，移除半透明背景与毛玻璃效果，避免夜间消息内容透出影响可读性

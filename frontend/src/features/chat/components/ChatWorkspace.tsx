@@ -738,7 +738,7 @@ export default function ChatWorkspace({
   };
 
   return (
-    <section data-testid="chat-workspace" className="chat-frosted-shell mx-auto w-full max-w-6xl px-0 py-0 md:px-6 md:py-4 md:rounded-[28px] md:bg-gradient-to-br md:from-[#f2f7ff] md:to-[#e9eefb] md:shadow-[0_24px_70px_rgba(15,23,42,0.12)] md:ring-1 md:ring-white/70 dark:md:from-surface-container-lowest dark:md:to-surface-container-low dark:md:shadow-[0_24px_70px_rgba(0,0,0,0.38)] dark:md:ring-white/10">
+    <section data-testid="chat-workspace" className="chat-frosted-shell mx-auto w-full max-w-6xl px-0 py-0 md:px-6 md:py-4 md:rounded-[28px] md:bg-gradient-to-br md:from-surface-container-lowest md:to-surface-container-low md:shadow-[0_24px_70px_rgba(15,23,42,0.12)] md:ring-1 md:ring-outline-variant/55 dark:md:from-surface-container-lowest dark:md:to-surface-container-low dark:md:shadow-[0_24px_70px_rgba(0,0,0,0.38)] dark:md:ring-outline-variant/70">
       <ChatPreviewModal
         previewUrl={previewUrl}
         previewFileName={previewFileName}
@@ -771,7 +771,7 @@ export default function ChatWorkspace({
 
         <div
           data-testid="chat-conversation-detail-panel"
-          className={`chat-frosted-detail-panel ${mobileMode === 'list' ? 'hidden md:flex' : ''} ${mobileMode === 'detail' && !shouldShowDetail ? 'hidden md:flex' : mobileMode === 'detail' ? 'flex' : ''} min-h-0 flex-col rounded-none md:rounded-3xl bg-white/72 backdrop-blur-xl ring-1 ring-white/70 shadow-[0_18px_45px_rgba(15,23,42,0.10)] overflow-hidden dark:bg-surface-container-low/80 dark:ring-white/10 dark:shadow-[0_18px_45px_rgba(0,0,0,0.35)] ${mobileMode === 'detail' ? 'h-[100dvh] md:h-auto' : ''}`}
+          className={`chat-frosted-detail-panel ${mobileMode === 'list' ? 'hidden md:flex' : ''} ${mobileMode === 'detail' && !shouldShowDetail ? 'hidden md:flex' : mobileMode === 'detail' ? 'flex' : ''} min-h-0 flex-col rounded-none md:rounded-3xl bg-surface-container-low/85 backdrop-blur-xl ring-1 ring-outline-variant/55 shadow-[0_18px_45px_rgba(15,23,42,0.10)] overflow-hidden dark:bg-surface-container-low/80 dark:ring-outline-variant/70 dark:shadow-[0_18px_45px_rgba(0,0,0,0.35)] ${mobileMode === 'detail' ? 'h-[100dvh] md:h-auto' : ''}`}
         >
           {selectedConversation ? (
             <>
