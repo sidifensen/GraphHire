@@ -105,21 +105,18 @@ class ParseTaskRepositoryImplTest {
     class FindPageTests {
 
         @Test
-        @DisplayName("分页插件失效返回全量时仍应按页切片")
-        void findPage_ShouldSliceRecords_WhenMapperReturnsAllRecords() {
+        @DisplayName("分页查询直接透传 mapper 分页结果")
+        void findPage_ShouldUseMapperPagedRecords() {
             ParseTaskPO task1 = createTaskPO(1L, 1, 1001L, 0);
-            ParseTaskPO task2 = createTaskPO(2L, 1, 1002L, 1);
-            ParseTaskPO task3 = createTaskPO(3L, 1, 1003L, 2);
-
             IPage<ParseTaskPO> mapperPage = new Page<>(2, 1, 3);
-            mapperPage.setRecords(List.of(task1, task2, task3));
+            mapperPage.setRecords(List.of(task1));
             when(parseTaskMapper.selectPage(any(), any())).thenReturn(mapperPage);
 
             IPage<ParseTask> result = parseTaskRepository.findPage("RESUME_PARSE", null, 2, 1);
 
             assertEquals(3, result.getTotal());
             assertEquals(1, result.getRecords().size());
-            assertEquals(2L, result.getRecords().get(0).getId());
+            assertEquals(1L, result.getRecords().get(0).getId());
         }
     }
 

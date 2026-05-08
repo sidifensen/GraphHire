@@ -1,6 +1,7 @@
 package com.graphhire.job.infrastructure.persistence.po;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -80,7 +81,8 @@ public class JobPO {
     private LocalDateTime updateTime;
     /** 逻辑删除标记 */
     @TableField("deleted")
-    private Boolean deleted;
+    @TableLogic
+    private Integer deleted;
 
     public Long getId() {
         return id;
@@ -250,11 +252,11 @@ public class JobPO {
         this.updateTime = updateTime;
     }
 
-    public Boolean getDeleted() {
+    public Integer getDeleted() {
         return deleted;
     }
 
-    public void setDeleted(Boolean deleted) {
+    public void setDeleted(Integer deleted) {
         this.deleted = deleted;
     }
 }

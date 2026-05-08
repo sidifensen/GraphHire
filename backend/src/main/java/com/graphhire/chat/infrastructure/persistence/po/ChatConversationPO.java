@@ -1,12 +1,17 @@
 package com.graphhire.chat.infrastructure.persistence.po;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.time.LocalDateTime;
 
+/**
+ * 会话持久化对象。
+ * 说明：对应 chat_conversation 表，承载岗位沟通主会话及读消息游标。
+ */
 @TableName("chat_conversation")
 public class ChatConversationPO {
     @TableId(type = IdType.AUTO)
@@ -30,6 +35,8 @@ public class ChatConversationPO {
     private LocalDateTime createTime;
     @TableField("update_time")
     private LocalDateTime updateTime;
+    /** 逻辑删除标记，由 MyBatis-Plus 自动追加查询条件。 */
+    @TableLogic
     private Integer deleted;
 
     public Long getId() {

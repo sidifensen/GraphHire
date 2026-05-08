@@ -20,6 +20,7 @@ import com.graphhire.job.domain.model.Company;
 import com.graphhire.job.domain.model.CompanyStaff;
 import com.graphhire.job.domain.repository.CompanyRepository;
 import com.graphhire.job.domain.repository.CompanyStaffRepository;
+import org.springframework.beans.factory.annotation.Qualifier;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -28,6 +29,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.mail.MailException;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ForkJoinPool;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -72,6 +75,10 @@ public class AuthAppService {
 
     @Autowired
     private CompanyStaffRepository companyStaffRepository;
+
+    @Autowired(required = false)
+    @Qualifier("authMailExecutor")
+    private Executor authMailExecutor;
 
     private static final int MAX_LOGIN_ATTEMPTS = 20;
     private static final int MAX_VERIFY_CODE_SEND_PER_HOUR = 10;
@@ -331,7 +338,7 @@ public class AuthAppService {
                 rollbackVerifyCodeThrottle(username, type);
                 log.warn("发送验证码失败: to={}, type={}, reason={}", maskEmail(username), type, e.getMessage());
             }
-        });
+        }, authMailExecutor != null ? authMailExecutor : ForkJoinPool.commonPool());
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.graphhire.resume.infrastructure.persistence.po;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -56,6 +57,7 @@ public class ResumePO {
     private LocalDateTime updateTime;
     /** 逻辑删除标记 */
     @TableField("deleted")
+    @TableLogic
     private Integer deleted;
 
     public Long getId() { return id; }

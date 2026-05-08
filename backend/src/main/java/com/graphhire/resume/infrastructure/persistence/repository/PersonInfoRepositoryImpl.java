@@ -9,6 +9,7 @@ import com.graphhire.resume.infrastructure.persistence.po.PersonInfoPO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -34,6 +35,20 @@ public class PersonInfoRepositoryImpl implements PersonInfoRepository {
         wrapper.eq(PersonInfoPO::getUserId, userId);
         PersonInfoPO po = personInfoMapper.selectOne(wrapper);
         return Optional.ofNullable(po).map(this::toDomain);
+    }
+
+    /**
+     * 根据用户ID集合批量查询人员信息。
+     * 说明：用于匹配列表组装时预加载，避免循环内按userId重复查询。
+     */
+    @Override
+    public List<PersonInfo> findByUserIds(List<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return List.of();
+        }
+        LambdaQueryWrapper<PersonInfoPO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(PersonInfoPO::getUserId, userIds);
+        return personInfoMapper.selectList(wrapper).stream().map(this::toDomain).toList();
     }
 
     @Override

@@ -6,7 +6,6 @@ import com.graphhire.auth.domain.repository.UserRepository;
 import com.graphhire.auth.domain.vo.AuthStatus;
 import com.graphhire.auth.domain.vo.EncryptedPassword;
 import com.graphhire.auth.domain.vo.UserType;
-import com.graphhire.chat.domain.model.ChatConversation;
 import com.graphhire.chat.domain.repository.ChatConversationRepository;
 import com.graphhire.job.application.service.CompanyAppService;
 import com.graphhire.job.application.service.JobAppService;
@@ -997,13 +996,10 @@ class CompanyControllerTest {
                 job.setTitle("测试职位");
                 job.setStatus(JobStatus.PUBLISHED);
 
-                ChatConversation conversation = new ChatConversation();
-                conversation.setId(1L);
-                conversation.setJobId(101L);
-
                 when(jobAppService.getJobsByCompany(companyId)).thenReturn(List.of(job));
-                when(chatConversationRepository.findByRecruiterUserId(userId)).thenReturn(List.of(conversation));
-                when(matchRecordRepository.findByJobId(job.getId())).thenReturn(List.of());
+                when(chatConversationRepository.countByRecruiterAndJobIds(userId, List.of(101L)))
+                    .thenReturn(Map.of(101L, 1L));
+                when(matchRecordRepository.countByJobIds(List.of(101L))).thenReturn(Map.of());
 
                 var result = companyController.listJobs(null, null);
                 assertEquals(200, result.getCode());

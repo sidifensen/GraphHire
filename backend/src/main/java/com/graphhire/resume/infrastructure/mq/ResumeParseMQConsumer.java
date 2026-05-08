@@ -30,6 +30,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+/**
+ * 简历解析消费者。
+ * 说明：消费解析任务并负责全链路状态推进、失败回滚与后续事件发布。
+ */
 @Component
 @ConditionalOnProperty(name = "rocketmq.enabled", havingValue = "true", matchIfMissing = false)
 @RocketMQMessageListener(topic = "resume-parse", consumerGroup = "resume-parse-consumer")
@@ -77,6 +81,7 @@ public class ResumeParseMQConsumer implements RocketMQListener<String>, RocketMQ
         String[] parts = message.split(",");
         Long resumeId = Long.parseLong(parts[0]);
         Long parseTaskId = Long.parseLong(parts[1]);
+        // 默认开启 refreshAllMatches，兼容老消息格式（未携带第三段）。
         boolean refreshAllMatches = parts.length <= 2 || Boolean.parseBoolean(parts[2]);
         log.info("开始处理简历解析任务: resumeId={}, parseTaskId={}", resumeId, parseTaskId);
 
@@ -162,6 +167,7 @@ public class ResumeParseMQConsumer implements RocketMQListener<String>, RocketMQ
             log.error("简历解析任务失败: resumeId={}, parseTaskId={}, totalCostMs={}, reason={}",
                 resumeId, parseTaskId, elapsedMs(totalStartNanos), e.getMessage());
         } finally {
+            // 无论成功失败都要释放锁，避免异常路径导致后续无法重新解析。
             resumeParseLockService.forceUnlock(resumeId);
         }
     }

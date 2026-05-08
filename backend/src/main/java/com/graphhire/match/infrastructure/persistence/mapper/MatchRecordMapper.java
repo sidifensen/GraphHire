@@ -6,9 +6,12 @@ import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface MatchRecordMapper extends BaseMapper<MatchRecordPO> {
@@ -43,4 +46,21 @@ public interface MatchRecordMapper extends BaseMapper<MatchRecordPO> {
 
     @Delete("DELETE FROM match_record WHERE job_id = #{jobId}")
     int deleteByJobId(@Param("jobId") Long jobId);
+
+    /**
+     * 按职位集合聚合匹配数量。
+     * 说明：企业端列表需要按岗位展示匹配数，批量聚合可避免逐岗位查询。
+     */
+    @Select("""
+        <script>
+        SELECT job_id AS jobId, COUNT(1) AS matchCount
+        FROM match_record
+        WHERE job_id IN
+        <foreach collection="jobIds" item="jobId" open="(" separator="," close=")">
+            #{jobId}
+        </foreach>
+        GROUP BY job_id
+        </script>
+        """)
+    List<Map<String, Object>> countByJobIds(@Param("jobIds") List<Long> jobIds);
 }

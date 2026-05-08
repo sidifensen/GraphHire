@@ -211,9 +211,9 @@ class MatchAppServiceTest {
         job.setTitle("后端工程师");
 
         when(matchRecordRepository.findByJobId(jobId)).thenReturn(List.of(record));
-        when(jobRepository.findById(jobId)).thenReturn(Optional.of(job));
-        when(resumeRepository.findById(101L)).thenReturn(Optional.of(resume));
-        when(personInfoRepository.findByUserId(1001L)).thenReturn(Optional.of(personInfo));
+        when(jobRepository.findByIds(List.of(jobId))).thenReturn(List.of(job));
+        when(resumeRepository.findByIds(List.of(101L))).thenReturn(List.of(resume));
+        when(personInfoRepository.findByUserIds(List.of(1001L))).thenReturn(List.of(personInfo));
 
         List<MatchDetailResponse> responses = matchAppService.getMatchListForJob(jobId);
 
@@ -242,8 +242,8 @@ class MatchAppServiceTest {
         job.setTitle("前端工程师");
 
         when(matchRecordRepository.findByJobId(jobId)).thenReturn(List.of(record));
-        when(jobRepository.findById(jobId)).thenReturn(Optional.of(job));
-        when(resumeRepository.findById(102L)).thenReturn(Optional.of(resume));
+        when(jobRepository.findByIds(List.of(jobId))).thenReturn(List.of(job));
+        when(resumeRepository.findByIds(List.of(102L))).thenReturn(List.of(resume));
 
         List<MatchDetailResponse> responses = matchAppService.getMatchListForJob(jobId);
 

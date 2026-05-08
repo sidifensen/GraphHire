@@ -1,6 +1,11 @@
 # Release Notes
 
 ## 2026-05-08
+- refactor: 后端匹配与看板链路性能优化，新增岗位/简历/个人信息批量查询，`MatchAppService` 与 `CompanyController` 主要列表接口由循环查库改为批量预加载，降低 N+1 查询开销
+- refactor: 异步线程池统一托管，新增 `AsyncExecutorConfig`（`resumeMatchExecutor`、`authMailExecutor`），匹配任务与验证码发送改为受控线程池执行，减少临时线程池与公共线程池争用风险
+- refactor: MyBatis-Plus 显式注册分页拦截器并移除仓储手工分页兜底逻辑（`AdminRepositoryImpl`、`ParseTaskRepositoryImpl`），统一分页语义并降低内存切片风险
+- fix: 对齐 `match_record` 数据库基线，新增迁移脚本并同步 `schema.sql/init.sql` 到 `requirement_score` 字段模型，清理旧分数字段与 `viewed` 相关残留，避免环境结构漂移
+- test: 更新 `MatchAppServiceTest`、`CompanyControllerTest`、`ParseTaskRepositoryImplTest`、`AdminRepositoryImplUnitTest` 等用例以覆盖批量查询与分页改造，后端 `mvn compile`、`mvn test` 全量通过（378 通过）
 - feat: 上传链路新增统一 Redis Lua 令牌桶限流，覆盖 `/resume/my/upload`、`/resume/my/upload-async`、`/person/avatar`、`/company/avatar`、`/chat/messages/image`，超限统一返回 `429`
 - feat: 简历解析新增幂等互斥锁（`lock:resume:parse:{resumeId}`）与 `parse_task` 运行中查询语义，拦截重复触发解析
 - refactor: 简历解析与匹配触发解耦；`ResumeParseMQConsumer` 仅发布 `resume-match-trigger`，新增 `ResumeMatchTriggerMQConsumer` 独立处理全职位匹配

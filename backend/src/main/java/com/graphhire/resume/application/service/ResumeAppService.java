@@ -42,6 +42,10 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * 简历应用服务。
+ * 说明：负责简历上传、解析触发、默认简历切换与异步上传任务编排。
+ */
 @Service
 public class ResumeAppService {
     private static final Logger log = LoggerFactory.getLogger(ResumeAppService.class);
@@ -138,6 +142,7 @@ public class ResumeAppService {
         if (mqProducer == null) {
             throw Exceptions.BusinessException.of(503, "异步上传服务暂不可用");
         }
+        // 与同步上传保持一致的入口校验，避免绕过扩展名/MIME/大小限制。
         validateUploadCmd(cmd);
         UploadTask task = new UploadTask();
         task.setUserId(cmd.getUserId());
@@ -154,6 +159,7 @@ public class ResumeAppService {
         message.setFileName(cmd.getFileName());
         message.setContentType(cmd.getContentType());
         message.setFileSize(cmd.getFileSize());
+        // 消息体携带Base64文件内容，消费者侧无需再访问HTTP请求上下文。
         message.setFileBase64(Base64.encode(cmd.getFile().getBytes()));
         message.setRefreshAllMatches(refreshAllMatches);
         mqProducer.sendResumeUploadAsyncMessage(message);
@@ -420,6 +426,7 @@ public class ResumeAppService {
         if (!resume.getUserId().equals(userId)) {
             throw new RuntimeException("无权解析此简历");
         }
+        // 双重保护：先查锁，再查运行中任务，避免重复投递和重复解析。
         if (resumeParseLockService.isLocked(resumeId) || parseTaskRepository.existsRunningByResumeId(resumeId)) {
             throw Exceptions.BusinessException.of(409, "该简历正在解析，请勿重复触发");
         }
@@ -439,6 +446,7 @@ public class ResumeAppService {
             parseTaskRepository.save(task);
             mqProducer.sendResumeParseMessage(resumeId, task.getId(), refreshAllMatches);
         } else {
+            // 未启用MQ时立即释放锁，避免进入“解析不会发生但锁长期占用”的状态。
             resumeParseLockService.forceUnlock(resumeId);
         }
     }

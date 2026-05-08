@@ -85,17 +85,9 @@ public class ParseTaskRepositoryImpl implements ParseTaskRepository {
 
         IPage<ParseTaskPO> poPage = parseTaskMapper.selectPage(pageParam, wrapper);
         List<ParseTaskPO> records = poPage.getRecords() == null ? List.of() : poPage.getRecords();
-        long total = poPage.getTotal();
 
-        // 某些环境分页插件未生效时，selectPage 可能返回全量记录，这里兜底按 page/pageSize 切片。
-        if (records.size() > safePageSize) {
-            total = records.size();
-            int start = (safePage - 1) * safePageSize;
-            int end = Math.min(start + safePageSize, records.size());
-            records = start < records.size() ? records.subList(start, end) : List.of();
-        }
-
-        Page<ParseTask> domainPage = new Page<>(safePage, safePageSize, total);
+        // 分页结果依赖 MyBatis-Plus 分页拦截器，统一在基础配置中注册。
+        Page<ParseTask> domainPage = new Page<>(safePage, safePageSize, poPage.getTotal());
         domainPage.setRecords(records.stream().map(this::toDomain).toList());
         return domainPage;
     }

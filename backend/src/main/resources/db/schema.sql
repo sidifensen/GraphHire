@@ -365,18 +365,12 @@ CREATE TABLE match_record
     match_direction SMALLINT      NOT NULL DEFAULT 1,
     match_score     DECIMAL(5, 2) NOT NULL,
     skill_score     DECIMAL(5, 2) NOT NULL,
-    exp_score       DECIMAL(5, 2) NOT NULL,
-    city_score      DECIMAL(5, 2) NOT NULL,
-    edu_score       DECIMAL(5, 2) NOT NULL,
-    salary_score    DECIMAL(5, 2) NOT NULL,
-    match_detail    JSONB,
-    viewed          SMALLINT      NOT NULL DEFAULT 0,
+    requirement_score DECIMAL(5, 2) NOT NULL,
     create_time     TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     update_time     TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT uk_match_resume_job UNIQUE (resume_id, job_id, match_direction),
-    CONSTRAINT chk_match_direction CHECK (match_direction IN (1, 2)),
-    CONSTRAINT chk_viewed CHECK (viewed IN (0, 1))
+    CONSTRAINT chk_match_direction CHECK (match_direction IN (1, 2))
 );
 
 COMMENT ON TABLE match_record IS '匹配记录表：存储人岗匹配的计算结果';
@@ -386,12 +380,7 @@ COMMENT ON COLUMN match_record.job_id IS '职位ID';
 COMMENT ON COLUMN match_record.match_direction IS '匹配方向：1-个人申请职位 2-企业推荐候选人';
 COMMENT ON COLUMN match_record.match_score IS '综合匹配分（0-100）';
 COMMENT ON COLUMN match_record.skill_score IS '技能匹配得分（0-100）';
-COMMENT ON COLUMN match_record.exp_score IS '经验匹配得分（0-100）';
-COMMENT ON COLUMN match_record.city_score IS '城市匹配得分（0-100）';
-COMMENT ON COLUMN match_record.edu_score IS '学历匹配得分（0-100）';
-COMMENT ON COLUMN match_record.salary_score IS '薪资匹配得分（0-100）';
-COMMENT ON COLUMN match_record.match_detail IS '详细匹配分析JSON（AI生成）';
-COMMENT ON COLUMN match_record.viewed IS '是否已查看：0-未查看 1-已查看';
+COMMENT ON COLUMN match_record.requirement_score IS '岗位要求匹配得分（含城市/薪资/学历等综合维度，0-100）';
 COMMENT ON COLUMN match_record.create_time IS '匹配时间';
 COMMENT ON COLUMN match_record.update_time IS '更新时间';
 
@@ -399,7 +388,6 @@ CREATE UNIQUE INDEX idx_match_resume_job ON match_record (resume_id, job_id, mat
 CREATE INDEX idx_match_resume_id ON match_record (resume_id);
 CREATE INDEX idx_match_job_id ON match_record (job_id);
 CREATE INDEX idx_match_score ON match_record (match_score DESC);
-CREATE INDEX idx_match_viewed ON match_record (viewed) WHERE viewed = 0;
 CREATE INDEX idx_match_create_time ON match_record (create_time DESC);
 CREATE INDEX idx_match_direction ON match_record (match_direction);
 

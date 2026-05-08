@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface ChatConversationMapper extends BaseMapper<ChatConversationPO> {
@@ -86,4 +87,24 @@ public interface ChatConversationMapper extends BaseMapper<ChatConversationPO> {
     long countUnread(@Param("conversationId") Long conversationId,
                      @Param("currentUserId") Long currentUserId,
                      @Param("lastReadId") Long lastReadId);
+
+    /**
+     * 按招聘者和岗位集合聚合会话数量。
+     * 说明：用于企业看板与岗位列表批量统计，避免逐岗位查询。
+     */
+    @Select("""
+        <script>
+        SELECT job_id AS jobId, COUNT(1) AS conversationCount
+        FROM chat_conversation
+        WHERE recruiter_user_id = #{recruiterUserId}
+          AND deleted = 0
+          AND job_id IN
+          <foreach collection="jobIds" item="jobId" open="(" separator="," close=")">
+            #{jobId}
+          </foreach>
+        GROUP BY job_id
+        </script>
+        """)
+    List<Map<String, Object>> countByRecruiterAndJobIds(@Param("recruiterUserId") Long recruiterUserId,
+                                                        @Param("jobIds") List<Long> jobIds);
 }

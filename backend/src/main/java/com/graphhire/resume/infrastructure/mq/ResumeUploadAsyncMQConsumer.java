@@ -25,6 +25,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Locale;
 
+/**
+ * 异步上传消费者。
+ * 说明：消费“resume-upload-async”消息，串联文件入库、简历创建、解析任务入队。
+ */
 @Component
 @ConditionalOnProperty(name = "rocketmq.enabled", havingValue = "true", matchIfMissing = false)
 @RocketMQMessageListener(topic = "resume-upload-async", consumerGroup = "resume-upload-async-consumer")
@@ -62,6 +66,7 @@ public class ResumeUploadAsyncMQConsumer implements RocketMQListener<String>, Ro
         }
 
         try {
+            // 状态推进：进入上传中。
             task.markUploading();
             uploadTaskRepository.save(task);
 
@@ -75,6 +80,7 @@ public class ResumeUploadAsyncMQConsumer implements RocketMQListener<String>, Ro
                 throw new RuntimeException("上传文件内容为空");
             }
             String filePath = rustFSClient.upload(fileBytes, fileName);
+            // 状态推进：对象存储上传完成。
             task.markUploaded();
             uploadTaskRepository.save(task);
 
@@ -96,6 +102,7 @@ public class ResumeUploadAsyncMQConsumer implements RocketMQListener<String>, Ro
             resumeMQProducer.sendResumeParseMessage(savedResume.getId(), parseTask.getId(), payload.isRefreshAllMatches());
 
             task.setResumeId(savedResume.getId());
+            // 状态推进：解析任务已排队，后续由解析消费者继续推进。
             task.markParsePending();
             uploadTaskRepository.save(task);
         } catch (Exception ex) {
@@ -103,6 +110,7 @@ public class ResumeUploadAsyncMQConsumer implements RocketMQListener<String>, Ro
             if (task == null) {
                 return;
             }
+            // 失败兜底：任务可观测状态显式落为 FAILED，便于前端轮询展示。
             task.markFailed(ex.getMessage());
             uploadTaskRepository.save(task);
         }

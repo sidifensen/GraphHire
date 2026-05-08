@@ -14,6 +14,12 @@ public interface ResumeRepository {
     Optional<Resume> findById(Long id);
     /** 根据用户ID查询简历列表 */
     List<Resume> findByUserId(Long userId);
+
+    /**
+     * 根据简历ID集合批量查询简历。
+     * 说明：用于匹配列表聚合，减少逐条查询引发的数据库往返。
+     */
+    List<Resume> findByIds(List<Long> ids);
     /** 根据解析状态查询简历列表 */
     List<Resume> findByParseStatus(ParseStatus parseStatus);
     /** 分页查询简历 */

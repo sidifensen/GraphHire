@@ -20,6 +20,7 @@ import com.graphhire.resume.domain.model.Resume;
 import com.graphhire.resume.domain.repository.PersonInfoRepository;
 import com.graphhire.resume.domain.repository.ResumeRepository;
 import com.graphhire.resume.domain.vo.ParseStatus;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,10 +37,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class MatchAppService {
@@ -67,6 +69,10 @@ public class MatchAppService {
     private PersonInfoRepository personInfoRepository;
     @Autowired
     private CompanyStaffRepository companyStaffRepository;
+
+    @Autowired(required = false)
+    @Qualifier("resumeMatchExecutor")
+    private Executor resumeMatchExecutor;
 
     /**
      * 触发匹配
@@ -122,7 +128,6 @@ public class MatchAppService {
      * 步骤2：获取所有已发布的职位列表
      * 步骤3：遍历职位，为用户创建职位推荐通知（MatchRecord由Application模块处理）
      */
-    @Transactional
     public void triggerMatchForResume(Long resumeId) {
         long totalStartNanos = System.nanoTime();
         List<Job> publishedJobs = jobRepository.findPublished();
@@ -151,22 +156,18 @@ public class MatchAppService {
         AtomicInteger skippedCount = new AtomicInteger();
         long matchLoopStartNanos = System.nanoTime();
 
-        ExecutorService executor = Executors.newFixedThreadPool(RESUME_MATCH_CONCURRENCY);
-        try {
-            List<CompletableFuture<Void>> futures = targetJobIds.stream()
-                .map(jobId -> CompletableFuture.runAsync(() -> {
-                    boolean success = calculateAndSaveWithRetry(resumeId, jobId, existingByJobId);
-                    if (success) {
-                        successCount.incrementAndGet();
-                    } else {
-                        skippedCount.incrementAndGet();
-                    }
-                }, executor))
-                .toList();
-            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-        } finally {
-            shutdownExecutor(executor);
-        }
+        Executor executor = resolveResumeMatchExecutor();
+        List<CompletableFuture<Void>> futures = targetJobIds.stream()
+            .map(jobId -> CompletableFuture.runAsync(() -> {
+                boolean success = calculateAndSaveWithRetry(resumeId, jobId, existingByJobId);
+                if (success) {
+                    successCount.incrementAndGet();
+                } else {
+                    skippedCount.incrementAndGet();
+                }
+            }, executor))
+            .toList();
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
         long matchLoopCostMs = elapsedMs(matchLoopStartNanos);
 
@@ -191,7 +192,6 @@ public class MatchAppService {
      * 步骤2：获取所有解析状态为成功的简历列表
      * 步骤3：遍历简历，为企业创建候选人推荐通知（MatchRecord由Application模块处理）
      */
-    @Transactional
     public void triggerMatchForJob(Long jobId) {
         long totalStartNanos = System.nanoTime();
         log.info("企业一键匹配开始：jobId={}", jobId);
@@ -254,16 +254,12 @@ public class MatchAppService {
         return false;
     }
 
-    private void shutdownExecutor(ExecutorService executor) {
-        executor.shutdown();
-        try {
-            if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
-                executor.shutdownNow();
-            }
-        } catch (InterruptedException ex) {
-            executor.shutdownNow();
-            Thread.currentThread().interrupt();
-        }
+    /**
+     * 为匹配任务选择执行器。
+     * 说明：优先使用统一托管线程池，缺失时回退到公共线程池保证服务可用。
+     */
+    private Executor resolveResumeMatchExecutor() {
+        return resumeMatchExecutor != null ? resumeMatchExecutor : ForkJoinPool.commonPool();
     }
 
     @Transactional
@@ -318,13 +314,12 @@ public class MatchAppService {
     public List<MatchDetailResponse> getMatchListForResume(Long resumeId) {
         // 步骤1：根据简历ID查询所有匹配记录
         List<MatchRecord> records = matchRecordRepository.findByResumeId(resumeId);
-        // 步骤2~3：遍历匹配记录，查询对应的职位信息并组装响应列表
+        // 步骤2~3：批量预加载关联实体，避免循环内按ID逐条查询
+        Map<Long, Resume> resumeById = preloadResumesById(records);
+        Map<Long, Job> jobById = preloadJobsById(records);
+        Map<Long, PersonInfo> personInfoByUserId = preloadPersonInfosByResume(resumeById.values());
         return records.stream()
-            .map(r -> {
-                Job job = jobRepository.findById(r.getJobId()).orElse(null);
-                Resume resume = resumeRepository.findById(r.getResumeId()).orElse(null);
-                return new MatchDetailResponse(r, resume, job, resolvePersonInfo(resume));
-            })
+            .map(record -> buildMatchDetailResponse(record, resumeById, jobById, personInfoByUserId))
             .toList();
     }
 
@@ -339,11 +334,12 @@ public class MatchAppService {
             CompanyStaff staff = companyStaffRepository.findByUserId(currentUserId)
                 .orElseThrow(() -> new com.graphhire.common.vo.Exceptions.ForbiddenException("非企业成员"));
             List<MatchRecord> records = matchRecordRepository.findByResumeId(resumeId);
-            for (MatchRecord record : records) {
-                Job job = jobRepository.findById(record.getJobId()).orElse(null);
-                if (job != null && job.getCompanyId().equals(staff.getCompanyId())) {
-                    return getMatchListForResume(resumeId);
-                }
+            Map<Long, Job> jobById = preloadJobsById(records);
+            boolean accessible = records.stream()
+                .map(record -> jobById.get(record.getJobId()))
+                .anyMatch(job -> job != null && job.getCompanyId().equals(staff.getCompanyId()));
+            if (accessible) {
+                return getMatchListForResume(resumeId);
             }
             throw new com.graphhire.common.vo.Exceptions.ForbiddenException("无权查看该简历匹配");
         } else if (userType != UserType.ADMIN) {
@@ -363,13 +359,12 @@ public class MatchAppService {
     public List<MatchDetailResponse> getMatchListForJob(Long jobId) {
         // 步骤1：根据职位ID查询所有匹配记录
         List<MatchRecord> records = matchRecordRepository.findByJobId(jobId);
-        // 步骤2~3：遍历匹配记录，查询对应的简历信息并组装响应列表
+        // 步骤2~3：批量预加载关联实体，避免循环内按ID逐条查询
+        Map<Long, Resume> resumeById = preloadResumesById(records);
+        Map<Long, Job> jobById = preloadJobsById(records);
+        Map<Long, PersonInfo> personInfoByUserId = preloadPersonInfosByResume(resumeById.values());
         return records.stream()
-            .map(r -> {
-                Job job = jobRepository.findById(r.getJobId()).orElse(null);
-                Resume resume = resumeRepository.findById(r.getResumeId()).orElse(null);
-                return new MatchDetailResponse(r, resume, job, resolvePersonInfo(resume));
-            })
+            .map(record -> buildMatchDetailResponse(record, resumeById, jobById, personInfoByUserId))
             .sorted(recommendationScoreDescComparator())
             .toList();
     }
@@ -385,11 +380,12 @@ public class MatchAppService {
             }
         } else if (userType == UserType.PERSON) {
             List<MatchRecord> records = matchRecordRepository.findByJobId(jobId);
-            for (MatchRecord record : records) {
-                Resume resume = resumeRepository.findById(record.getResumeId()).orElse(null);
-                if (resume != null && currentUserId.equals(resume.getUserId())) {
-                    return getMatchListForJob(jobId);
-                }
+            Map<Long, Resume> resumeById = preloadResumesById(records);
+            boolean accessible = records.stream()
+                .map(record -> resumeById.get(record.getResumeId()))
+                .anyMatch(resume -> resume != null && currentUserId.equals(resume.getUserId()));
+            if (accessible) {
+                return getMatchListForJob(jobId);
             }
             throw new com.graphhire.common.vo.Exceptions.ForbiddenException("无权查看该职位匹配");
         } else if (userType != UserType.ADMIN) {
@@ -441,15 +437,25 @@ public class MatchAppService {
             return new ArrayList<>();
         }
 
-        // 步骤3~5：遍历用户的每个简历，查询其所有匹配记录并组装推荐职位列表
+        // 步骤3：拉平所有匹配记录并批量预加载岗位，避免嵌套循环查库。
+        Map<Long, Resume> resumeById = resumes.stream()
+            .filter(resume -> resume.getId() != null)
+            .collect(Collectors.toMap(Resume::getId, Function.identity(), (left, right) -> left));
+        List<MatchRecord> allRecords = resumes.stream()
+            .map(Resume::getId)
+            .filter(id -> id != null)
+            .flatMap(resumeId -> matchRecordRepository.findByResumeId(resumeId).stream())
+            .toList();
+        Map<Long, Job> jobById = preloadJobsById(allRecords);
+        Map<Long, PersonInfo> personInfoByUserId = preloadPersonInfosByResume(resumes);
+
+        // 步骤4~5：按预加载结果组装推荐职位列表。
         List<MatchDetailResponse> recommendations = new ArrayList<>();
-        for (Resume resume : resumes) {
-            List<MatchRecord> records = matchRecordRepository.findByResumeId(resume.getId());
-            for (MatchRecord record : records) {
-                Job job = jobRepository.findById(record.getJobId()).orElse(null);
-                if (job != null) {
-                    recommendations.add(new MatchDetailResponse(record, resume, job, resolvePersonInfo(resume)));
-                }
+        for (MatchRecord record : allRecords) {
+            Resume resume = resumeById.get(record.getResumeId());
+            Job job = jobById.get(record.getJobId());
+            if (resume != null && job != null) {
+                recommendations.add(new MatchDetailResponse(record, resume, job, resolvePersonInfoFromMap(personInfoByUserId, resume)));
             }
         }
         return recommendations;
@@ -477,15 +483,25 @@ public class MatchAppService {
             return new ArrayList<>();
         }
 
-        // 步骤4~6：遍历企业的每个已发布职位，查询其所有匹配记录并组装推荐简历列表
+        // 步骤4：拉平所有匹配记录，后续批量预加载简历与个人信息。
+        List<MatchRecord> allRecords = companyJobs.stream()
+            .map(Job::getId)
+            .filter(id -> id != null)
+            .flatMap(jobId -> matchRecordRepository.findByJobId(jobId).stream())
+            .toList();
+        Map<Long, Job> jobById = companyJobs.stream()
+            .filter(job -> job.getId() != null)
+            .collect(Collectors.toMap(Job::getId, Function.identity(), (left, right) -> left));
+        Map<Long, Resume> resumeById = preloadResumesById(allRecords);
+        Map<Long, PersonInfo> personInfoByUserId = preloadPersonInfosByResume(resumeById.values());
+
+        // 步骤5~6：组装推荐简历列表并按分数排序。
         List<MatchDetailResponse> recommendations = new ArrayList<>();
-        for (Job job : companyJobs) {
-            List<MatchRecord> records = matchRecordRepository.findByJobId(job.getId());
-            for (MatchRecord record : records) {
-                Resume resume = resumeRepository.findById(record.getResumeId()).orElse(null);
-                if (resume != null) {
-                    recommendations.add(new MatchDetailResponse(record, resume, job, resolvePersonInfo(resume)));
-                }
+        for (MatchRecord record : allRecords) {
+            Job job = jobById.get(record.getJobId());
+            Resume resume = resumeById.get(record.getResumeId());
+            if (job != null && resume != null) {
+                recommendations.add(new MatchDetailResponse(record, resume, job, resolvePersonInfoFromMap(personInfoByUserId, resume)));
             }
         }
         return recommendations.stream()
@@ -509,6 +525,90 @@ public class MatchAppService {
             return null;
         }
         return personInfoRepository.findByUserId(resume.getUserId()).orElse(null);
+    }
+
+    /**
+     * 构建匹配详情响应。
+     * 说明：统一使用预加载映射组装，避免散落在各调用方重复写映射逻辑。
+     */
+    private MatchDetailResponse buildMatchDetailResponse(
+        MatchRecord record,
+        Map<Long, Resume> resumeById,
+        Map<Long, Job> jobById,
+        Map<Long, PersonInfo> personInfoByUserId
+    ) {
+        Resume resume = resumeById.get(record.getResumeId());
+        Job job = jobById.get(record.getJobId());
+        PersonInfo personInfo = resolvePersonInfoFromMap(personInfoByUserId, resume);
+        return new MatchDetailResponse(record, resume, job, personInfo);
+    }
+
+    /**
+     * 从预加载映射安全读取个人信息。
+     * 说明：当简历 userId 为空时，避免在不可变空 Map 上执行 get(null) 触发 NPE。
+     */
+    private PersonInfo resolvePersonInfoFromMap(Map<Long, PersonInfo> personInfoByUserId, Resume resume) {
+        if (resume == null || resume.getUserId() == null || personInfoByUserId == null || personInfoByUserId.isEmpty()) {
+            return null;
+        }
+        return personInfoByUserId.get(resume.getUserId());
+    }
+
+    /**
+     * 按匹配记录批量预加载简历。
+     */
+    private Map<Long, Resume> preloadResumesById(List<MatchRecord> records) {
+        if (records == null || records.isEmpty()) {
+            return Map.of();
+        }
+        Set<Long> resumeIds = records.stream()
+            .map(MatchRecord::getResumeId)
+            .filter(id -> id != null)
+            .collect(Collectors.toSet());
+        if (resumeIds.isEmpty()) {
+            return Map.of();
+        }
+        return resumeRepository.findByIds(List.copyOf(resumeIds)).stream()
+            .filter(resume -> resume != null && resume.getId() != null)
+            .collect(Collectors.toMap(Resume::getId, Function.identity(), (left, right) -> left));
+    }
+
+    /**
+     * 按匹配记录批量预加载职位。
+     */
+    private Map<Long, Job> preloadJobsById(List<MatchRecord> records) {
+        if (records == null || records.isEmpty()) {
+            return Map.of();
+        }
+        Set<Long> jobIds = records.stream()
+            .map(MatchRecord::getJobId)
+            .filter(id -> id != null)
+            .collect(Collectors.toSet());
+        if (jobIds.isEmpty()) {
+            return Map.of();
+        }
+        return jobRepository.findByIds(List.copyOf(jobIds)).stream()
+            .filter(job -> job != null && job.getId() != null)
+            .collect(Collectors.toMap(Job::getId, Function.identity(), (left, right) -> left));
+    }
+
+    /**
+     * 按简历集合批量预加载个人信息。
+     */
+    private Map<Long, PersonInfo> preloadPersonInfosByResume(java.util.Collection<Resume> resumes) {
+        if (resumes == null || resumes.isEmpty()) {
+            return Map.of();
+        }
+        Set<Long> userIds = resumes.stream()
+            .map(Resume::getUserId)
+            .filter(id -> id != null)
+            .collect(Collectors.toSet());
+        if (userIds.isEmpty()) {
+            return Map.of();
+        }
+        return personInfoRepository.findByUserIds(List.copyOf(userIds)).stream()
+            .filter(personInfo -> personInfo != null && personInfo.getUserId() != null)
+            .collect(Collectors.toMap(PersonInfo::getUserId, Function.identity(), (left, right) -> left));
     }
 
     /**

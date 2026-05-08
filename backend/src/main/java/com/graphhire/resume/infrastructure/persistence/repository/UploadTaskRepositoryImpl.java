@@ -10,6 +10,10 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+/**
+ * 上传任务仓储实现。
+ * 说明：负责 UploadTask 领域模型与 UploadTaskPO 之间的状态映射。
+ */
 @Repository
 public class UploadTaskRepositoryImpl implements UploadTaskRepository {
 
@@ -34,6 +38,10 @@ public class UploadTaskRepositoryImpl implements UploadTaskRepository {
         return Optional.ofNullable(po).map(this::toDomain);
     }
 
+    /**
+     * 领域对象转PO。
+     * 说明：TaskStatus 以 ordinal 持久化，需与枚举顺序保持一致。
+     */
     private UploadTaskPO toPO(UploadTask domain) {
         UploadTaskPO po = new UploadTaskPO();
         BeanUtil.copyProperties(domain, po, "status", "refreshAllMatches", "createdAt", "updatedAt", "finishedAt");
@@ -45,6 +53,10 @@ public class UploadTaskRepositoryImpl implements UploadTaskRepository {
         return po;
     }
 
+    /**
+     * PO转领域对象。
+     * 说明：状态越界时降级为 PENDING，防止脏数据导致反序列化异常。
+     */
     private UploadTask toDomain(UploadTaskPO po) {
         UploadTask domain = new UploadTask();
         BeanUtil.copyProperties(po, domain, "status", "refreshAllMatches", "createTime", "updateTime", "finishTime");

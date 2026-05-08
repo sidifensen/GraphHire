@@ -18,6 +18,12 @@ public interface JobRepository {
     /** 根据企业ID查询该企业下所有职位 */
     List<Job> findByCompanyId(Long companyId);
 
+    /**
+     * 根据职位ID集合批量查询职位。
+     * 说明：用于列表聚合场景，避免循环内按ID逐条查询导致N+1问题。
+     */
+    List<Job> findByIds(List<Long> ids);
+
     /** 根据状态查询职位列表 */
     List<Job> findByStatus(JobStatus status);
     /** 查询已发布职位列表 */

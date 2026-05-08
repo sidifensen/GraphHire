@@ -162,20 +162,10 @@ public class AdminRepositoryImpl implements AdminRepository {
         IPage<AdminPO> adminPage = adminMapper.selectPage(pageParam, queryWrapper);
 
         List<AdminPO> records = adminPage.getRecords() == null ? new ArrayList<>() : adminPage.getRecords();
-        long total = adminPage.getTotal();
 
-        // 某些环境分页插件未生效时，selectPage 可能返回全量记录，这里做兜底切片保证每页条数稳定。
-        if (records.size() > size) {
-            total = records.size();
-            int safePage = Math.max(page, 1);
-            int safeSize = Math.max(size, 1);
-            int start = (safePage - 1) * safeSize;
-            int end = Math.min(start + safeSize, records.size());
-            records = start < records.size() ? records.subList(start, end) : List.of();
-        }
-
+        // 分页逻辑由 MyBatis-Plus 拦截器保证，此处直接进行领域对象映射。
         // 将AdminPO分页转换为User分页
-        Page<User> userPage = new Page<>(page, size, total);
+        Page<User> userPage = new Page<>(page, size, adminPage.getTotal());
         userPage.setRecords(records.stream().map(this::toUser).toList());
         return userPage;
     }

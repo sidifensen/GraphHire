@@ -10,6 +10,8 @@ import com.graphhire.resume.infrastructure.persistence.po.ResumePO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -35,6 +37,8 @@ import java.util.Optional;
 @Repository
 public class ResumeRepositoryImpl implements ResumeRepository {
 
+    private static final Logger log = LoggerFactory.getLogger(ResumeRepositoryImpl.class);
+
     @Autowired
     private ResumeMapper resumeMapper;
 
@@ -54,6 +58,21 @@ public class ResumeRepositoryImpl implements ResumeRepository {
     public List<Resume> findByUserId(Long userId) {
         LambdaQueryWrapper<ResumePO> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ResumePO::getUserId, userId);
+        List<ResumePO> pos = resumeMapper.selectList(wrapper);
+        return pos.stream().map(this::toDomain).toList();
+    }
+
+    /**
+     * 根据简历ID集合批量查询简历。
+     * 说明：匹配详情聚合场景下使用批量查询替代循环逐条查询，降低数据库往返次数。
+     */
+    @Override
+    public List<Resume> findByIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        LambdaQueryWrapper<ResumePO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(ResumePO::getId, ids);
         List<ResumePO> pos = resumeMapper.selectList(wrapper);
         return pos.stream().map(this::toDomain).toList();
     }
@@ -153,10 +172,13 @@ public class ResumeRepositoryImpl implements ResumeRepository {
     @SuppressWarnings("unchecked")
     private ResumePO toPO(Resume resume) {
         ResumePO po = new ResumePO();
-        cn.hutool.log.StaticLog.info(
-                "DEBUG toPO: resume.parseResult=\n{}",
-                prettyJsonForLog(resume.getParseResult())
-        );
+        // 高并发路径仅在DEBUG下打印摘要，避免每次保存都做大对象pretty序列化。
+        if (log.isDebugEnabled()) {
+            log.debug(
+                "DEBUG toPO: resume.parseResult={}",
+                summarizeJsonForLog(resume.getParseResult())
+            );
+        }
         // 排除 parseResult 和 isDefault，避免类型转换问题
         BeanUtil.copyProperties(resume, po, "parseResult", "isDefault");
         if (resume.getStatus() != null) {
@@ -171,15 +193,19 @@ public class ResumeRepositoryImpl implements ResumeRepository {
         return po;
     }
 
-    private String prettyJsonForLog(String jsonText) {
+    /**
+     * 生成日志摘要，控制长度并避免大量pretty格式化带来的CPU开销。
+     */
+    private String summarizeJsonForLog(String jsonText) {
         if (jsonText == null || jsonText.isBlank()) {
             return jsonText;
         }
         try {
-            return JSONUtil.toJsonPrettyStr(JSONUtil.parse(jsonText));
+            String compact = JSONUtil.toJsonStr(JSONUtil.parse(jsonText));
+            return compact.length() <= 400 ? compact : compact.substring(0, 400) + "...";
         } catch (Exception ignored) {
-            // 非法 JSON 时回退原文，避免日志打印中断
-            return jsonText;
+            // 非法JSON仅做长度截断回退，确保日志路径稳定。
+            return jsonText.length() <= 400 ? jsonText : jsonText.substring(0, 400) + "...";
         }
     }
 }

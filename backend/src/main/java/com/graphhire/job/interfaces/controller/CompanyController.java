@@ -57,6 +57,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/company")
@@ -219,22 +221,30 @@ public class CompanyController {
         List<Job> activeJobs = jobs.stream()
                 .filter(job -> job.getStatus() == JobStatus.PUBLISHED)
                 .toList();
+        Map<Long, Long> conversationCountByJobId = resolveConversationCountByJobId(jobs);
+        Map<Long, Long> matchCountByJobId = resolveMatchCountByJobId(jobs);
         long pendingConversationCount = jobs.stream()
-            .filter(job -> job.getOwnerUserId() != null)
-            .mapToLong(job -> chatConversationRepository.findByRecruiterUserId(job.getOwnerUserId())
-                .stream().filter(item -> job.getId().equals(item.getJobId())).count())
+            .map(Job::getId)
+            .filter(id -> id != null)
+            .mapToLong(id -> conversationCountByJobId.getOrDefault(id, 0L))
             .sum();
 
         CompanyDashboardResponse response = new CompanyDashboardResponse();
         response.setPendingConversationCount(pendingConversationCount);
         response.setNewMatchCandidateCount(activeJobs.stream()
-                .mapToLong(job -> matchRecordRepository.findByJobId(job.getId()).size())
-                .sum());
+            .map(Job::getId)
+            .filter(id -> id != null)
+            .mapToLong(id -> matchCountByJobId.getOrDefault(id, 0L))
+            .sum());
         response.setActiveJobCount(activeJobs.size());
         response.setRecentJobs(jobs.stream()
                 .sorted(Comparator.comparing(Job::getId, Comparator.nullsLast(Long::compareTo)).reversed())
                 .limit(5)
-                .map(this::toDashboardJobItem)
+                .map(job -> toDashboardJobItem(
+                    job,
+                    conversationCountByJobId.getOrDefault(job.getId(), 0L),
+                    matchCountByJobId.getOrDefault(job.getId(), 0L)
+                ))
                 .toList());
         return Result.success(response);
     }
@@ -271,7 +281,15 @@ public class CompanyController {
                 .filter(job -> job.getOwnerUserId() == null || userIdOwnsJob(job, currentUserId))
                 .sorted(Comparator.comparing(Job::getId, Comparator.nullsLast(Long::compareTo)).reversed())
                 .toList();
-        return Result.success(jobs.stream().map(this::toJobListItem).toList());
+        Map<Long, Long> conversationCountByJobId = resolveConversationCountByJobId(jobs);
+        Map<Long, Long> matchCountByJobId = resolveMatchCountByJobId(jobs);
+        return Result.success(jobs.stream()
+            .map(job -> toJobListItem(
+                job,
+                conversationCountByJobId.getOrDefault(job.getId(), 0L),
+                matchCountByJobId.getOrDefault(job.getId(), 0L)
+            ))
+            .toList());
     }
 
     @GetMapping("/job/{id}")
@@ -681,23 +699,27 @@ public class CompanyController {
         }
     }
 
-    private CompanyDashboardJobItemResponse toDashboardJobItem(Job job) {
-        long applyCount = job.getOwnerUserId() == null ? 0L : chatConversationRepository.findByRecruiterUserId(job.getOwnerUserId())
-            .stream().filter(item -> job.getId().equals(item.getJobId())).count();
+    /**
+     * 构建看板岗位卡片。
+     * 说明：统计值由外层批量查询后注入，避免在方法内再次触发仓储查询。
+     */
+    private CompanyDashboardJobItemResponse toDashboardJobItem(Job job, long applyCount, long matchCount) {
         CompanyDashboardJobItemResponse item = new CompanyDashboardJobItemResponse();
         item.setId(job.getId());
         item.setTitle(job.getTitle());
         item.setDepartment(job.getDepartment());
         item.setApplyCount(applyCount);
-        item.setMatchCount(matchRecordRepository.findByJobId(job.getId()).size());
+        item.setMatchCount(matchCount);
         item.setStatus(job.getStatus().name());
         item.setPublishedAt(job.getPublishedAt() != null ? job.getPublishedAt() : job.getCreateTime());
         return item;
     }
 
-    private CompanyJobListItemResponse toJobListItem(Job job) {
-        long applyCount = job.getOwnerUserId() == null ? 0L : chatConversationRepository.findByRecruiterUserId(job.getOwnerUserId())
-            .stream().filter(item -> job.getId().equals(item.getJobId())).count();
+    /**
+     * 构建岗位列表项。
+     * 说明：applyCount/matchCount 由批量聚合结果注入，避免循环内N+1查询。
+     */
+    private CompanyJobListItemResponse toJobListItem(Job job, long applyCount, long matchCount) {
         CompanyJobListItemResponse item = new CompanyJobListItemResponse();
         item.setId(job.getId());
         item.setTitle(job.getTitle());
@@ -711,10 +733,50 @@ public class CompanyController {
         item.setParseStatus(null);
         item.setViewCount(0L);
         item.setApplyCount(applyCount);
-        item.setMatchCount(matchRecordRepository.findByJobId(job.getId()).size());
+        item.setMatchCount(matchCount);
         item.setCreatedAt(job.getCreateTime());
         item.setPublishedAt(job.getPublishedAt());
         return item;
+    }
+
+    /**
+     * 批量计算岗位会话数。
+     * 说明：按owner分组聚合，避免每个岗位都拉取一遍会话列表。
+     */
+    private Map<Long, Long> resolveConversationCountByJobId(List<Job> jobs) {
+        if (jobs == null || jobs.isEmpty()) {
+            return Map.of();
+        }
+        Map<Long, Long> counts = new HashMap<>();
+        Map<Long, List<Long>> ownerJobIds = jobs.stream()
+            .filter(job -> job != null && job.getId() != null && job.getOwnerUserId() != null)
+            .collect(Collectors.groupingBy(
+                Job::getOwnerUserId,
+                Collectors.mapping(Job::getId, Collectors.toList())
+            ));
+        ownerJobIds.forEach((ownerUserId, jobIds) -> {
+            Map<Long, Long> ownerCounts = chatConversationRepository.countByRecruiterAndJobIds(ownerUserId, jobIds);
+            counts.putAll(ownerCounts);
+        });
+        return counts;
+    }
+
+    /**
+     * 批量计算岗位匹配数。
+     * 说明：一次SQL完成按job分组统计，避免逐岗位调用findByJobId。
+     */
+    private Map<Long, Long> resolveMatchCountByJobId(List<Job> jobs) {
+        if (jobs == null || jobs.isEmpty()) {
+            return Map.of();
+        }
+        Set<Long> jobIds = jobs.stream()
+            .map(Job::getId)
+            .filter(id -> id != null)
+            .collect(Collectors.toSet());
+        if (jobIds.isEmpty()) {
+            return Map.of();
+        }
+        return matchRecordRepository.countByJobIds(List.copyOf(jobIds));
     }
 
     private CompanyStaffListItemResponse toStaffListItem(CompanyStaff staff) {

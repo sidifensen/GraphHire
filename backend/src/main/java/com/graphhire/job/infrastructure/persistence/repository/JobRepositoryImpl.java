@@ -36,6 +36,20 @@ public class JobRepositoryImpl implements JobRepository {
         return jobMapper.selectList(wrapper).stream().map(this::toDomain).toList();
     }
 
+    /**
+     * 按职位ID集合批量查询职位。
+     * 说明：聚合接口组装阶段需要一次性预加载，避免逐条selectById造成N+1。
+     */
+    @Override
+    public List<Job> findByIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        LambdaQueryWrapper<JobPO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(JobPO::getId, ids);
+        return jobMapper.selectList(wrapper).stream().map(this::toDomain).toList();
+    }
+
     @Override
     public List<Job> findByStatus(JobStatus status) {
         LambdaQueryWrapper<JobPO> wrapper = new LambdaQueryWrapper<>();

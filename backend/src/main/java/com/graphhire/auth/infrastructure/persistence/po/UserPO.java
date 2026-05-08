@@ -1,10 +1,15 @@
 package com.graphhire.auth.infrastructure.persistence.po;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
 
+/**
+ * 用户持久化对象。
+ * 说明：对应 sys_user 表，供认证与权限模块做基础用户读写。
+ */
 @TableName("sys_user")
 public class UserPO {
     @TableId(type = IdType.AUTO)
@@ -16,6 +21,8 @@ public class UserPO {
     private LocalDateTime lastLoginTime;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
+    /** 逻辑删除标记，由 MyBatis-Plus 自动处理查询过滤。 */
+    @TableLogic
     private Integer deleted;
 
     public Long getId() {

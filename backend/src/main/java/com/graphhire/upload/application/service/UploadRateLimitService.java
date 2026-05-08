@@ -10,6 +10,10 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * 上传限流服务。
+ * 说明：基于 Redis Lua 脚本实现原子令牌桶，保证并发下扣减和回填的一致性。
+ */
 @Service
 public class UploadRateLimitService {
 
@@ -18,6 +22,7 @@ public class UploadRateLimitService {
     static {
         TOKEN_BUCKET_SCRIPT = new DefaultRedisScript<>();
         TOKEN_BUCKET_SCRIPT.setResultType(Long.class);
+        // 单脚本内完成“回填令牌 + 扣减令牌”，避免并发下出现超发。
         TOKEN_BUCKET_SCRIPT.setScriptText("""
             local tokens_key = KEYS[1]
             local ts_key = KEYS[2]
@@ -78,6 +83,9 @@ public class UploadRateLimitService {
     @Autowired
     private UploadRateLimitProperties properties;
 
+    /**
+     * 限流失败时直接抛业务异常，供控制器统一返回429。
+     */
     public void checkOrThrow(String scene, Long userId) {
         boolean allowed = tryAcquire(scene, userId);
         if (!allowed) {
@@ -85,6 +93,10 @@ public class UploadRateLimitService {
         }
     }
 
+    /**
+     * 依次执行用户级限流和全局限流。
+     * 说明：先检查用户级可减少全局桶无效扣减。
+     */
     public boolean tryAcquire(String scene, Long userId) {
         if (!properties.isEnabled()) {
             return true;
@@ -116,6 +128,10 @@ public class UploadRateLimitService {
         return evalTokenBucket(baseKey, rule);
     }
 
+    /**
+     * 执行令牌桶脚本。
+     * 说明：无效规则直接放行，避免配置错误导致全站上传不可用。
+     */
     protected boolean evalTokenBucket(String baseKey, UploadRateLimitProperties.BucketRule rule) {
         if (rule.getCapacity() <= 0 || rule.getRefillTokens() <= 0 || rule.getRefillSeconds() <= 0) {
             return true;
@@ -124,6 +140,7 @@ public class UploadRateLimitService {
         String tsKey = baseKey + ":ts";
         long nowMs = System.currentTimeMillis();
         long refillMs = rule.getRefillSeconds() * 1000;
+        // ttl 使用两个补充周期，兼顾空闲键回收与短期热键复用。
         long ttlSeconds = Math.max(rule.getRefillSeconds() * 2, 2);
 
         Long result = stringRedisTemplate.execute(

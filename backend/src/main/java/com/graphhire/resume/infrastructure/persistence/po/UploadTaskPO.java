@@ -1,12 +1,17 @@
 package com.graphhire.resume.infrastructure.persistence.po;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.time.LocalDateTime;
 
+/**
+ * 上传任务持久化对象。
+ * 说明：对应 upload_task 表，记录异步上传链路的可观测状态。
+ */
 @TableName("upload_task")
 public class UploadTaskPO {
 
@@ -45,6 +50,11 @@ public class UploadTaskPO {
 
     @TableField("finish_time")
     private LocalDateTime finishTime;
+
+    /** 逻辑删除标记，由 MyBatis-Plus 自动追加过滤条件。 */
+    @TableField("deleted")
+    @TableLogic
+    private Integer deleted;
 
     public Long getId() {
         return id;
@@ -140,5 +150,13 @@ public class UploadTaskPO {
 
     public void setFinishTime(LocalDateTime finishTime) {
         this.finishTime = finishTime;
+    }
+
+    public Integer getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Integer deleted) {
+        this.deleted = deleted;
     }
 }

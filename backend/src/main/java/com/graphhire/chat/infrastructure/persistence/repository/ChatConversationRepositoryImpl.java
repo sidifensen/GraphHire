@@ -10,7 +10,9 @@ import com.graphhire.chat.infrastructure.persistence.po.ChatConversationViewPO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -42,6 +44,30 @@ public class ChatConversationRepositoryImpl implements ChatConversationRepositor
             .eq(ChatConversationPO::getDeleted, 0)
             .orderByDesc(ChatConversationPO::getUpdateTime);
         return mapper.selectList(wrapper).stream().map(this::toDomain).toList();
+    }
+
+    /**
+     * 按招聘者和岗位集合批量统计会话数。
+     * 说明：将岗位维度统计下沉到SQL层，避免业务层循环过滤造成额外开销。
+     */
+    @Override
+    public Map<Long, Long> countByRecruiterAndJobIds(Long recruiterUserId, List<Long> jobIds) {
+        if (recruiterUserId == null || jobIds == null || jobIds.isEmpty()) {
+            return Map.of();
+        }
+        List<Map<String, Object>> rows = mapper.countByRecruiterAndJobIds(recruiterUserId, jobIds);
+        Map<Long, Long> result = new HashMap<>();
+        for (Map<String, Object> row : rows) {
+            if (row == null) {
+                continue;
+            }
+            Object jobIdObj = row.get("jobId");
+            Object countObj = row.get("conversationCount");
+            if (jobIdObj instanceof Number jobIdNumber && countObj instanceof Number countNumber) {
+                result.put(jobIdNumber.longValue(), countNumber.longValue());
+            }
+        }
+        return result;
     }
 
     @Override

@@ -78,9 +78,10 @@ INSERT INTO resume (id, user_id, file_name, file_path, file_type, file_size, par
 ON CONFLICT (id) DO NOTHING;
 
 -- IT测试用职位
-INSERT INTO job (id, company_id, title, file_path, parse_status, parse_result, city, salary_min, salary_max, salary_unit, experience, education, job_type, status, create_time, update_time, deleted) VALUES
-(100, 100, 'IT测试后端开发工程师', '/files/job/job_it_test.txt', 2,
- '{"skills":["Java","Spring Boot","MySQL","Redis","Docker"],"requirements":["本科及以上学历","具备1-3年Java后端开发经验","熟悉Spring Boot与常用中间件"],"responsibilities":["负责核心业务系统开发","优化系统性能","指导初级工程师"]}',
+INSERT INTO job (id, company_id, owner_user_id, title, description, skills, city, salary_min, salary_max, salary_unit, experience, education, job_type, status, create_time, update_time, deleted) VALUES
+(100, 100, 101, 'IT测试后端开发工程师',
+ '负责核心业务系统开发，优化系统性能与稳定性，指导初级工程师',
+ ARRAY['Java','Spring Boot','MySQL','Redis','Docker']::text[],
  '北京', 25000, 40000, '月', '1-3年', '本科', 1, 1, '2026-04-16 00:00:00', '2026-04-16 00:00:00', 0)
 ON CONFLICT (id) DO NOTHING;
 
@@ -294,32 +295,22 @@ UPDATE job SET owner_user_id = 3 WHERE company_id = 2 AND owner_user_id IS NULL;
 -- =============================================
 -- 10. 匹配记录（部分人岗匹配结果）
 -- =============================================
-INSERT INTO match_record (resume_id, job_id, match_direction, match_score, skill_score, exp_score, city_score, edu_score, salary_score, match_detail, viewed, create_time, update_time)
+INSERT INTO match_record (resume_id, job_id, match_direction, match_score, skill_score, requirement_score, create_time, update_time)
 VALUES
 -- 张三 -> Java后端岗位
-(1, 1, 1, 92.50, 95.00, 90.00, 100.00, 85.00, 88.00,
- '{"summary":"匹配度较高，技能与职位要求高度吻合，具备3年相关经验","strengths":["Spring Boot实战经验丰富","熟悉微服务架构","有Redis缓存优化经验"],"weaknesses":["缺少Kubernetes生产环境经验"],"suggestion":"建议补充容器化部署经验，可从K8s学习开始"]',
- 1, '2026-04-15 16:00:00', '2026-04-15 16:00:00'),
+(1, 1, 1, 92.50, 95.00, 88.00, '2026-04-15 16:00:00', '2026-04-15 16:00:00'),
 
 -- 李四 -> Python数据岗位
-(2, 2, 1, 88.30, 92.00, 80.00, 100.00, 95.00, 82.00,
- '{"summary":"技能匹配度高，学历背景优秀，具备实时数据处理能力","strengths":["Spark大数据处理经验","熟悉Kafka消息队列","硕士学历背景强"],"weaknesses":["Hadoop生态经验偏少","Flink使用经验不足"],"suggestion":"可加强大数据平台相关学习"]',
- 0, '2026-04-15 16:30:00', '2026-04-15 16:30:00'),
+(2, 2, 1, 88.30, 92.00, 82.00, '2026-04-15 16:30:00', '2026-04-15 16:30:00'),
 
 -- 王五 -> 前端岗位
-(3, 3, 1, 95.80, 98.00, 95.00, 100.00, 85.00, 100.00,
- '{"summary":"高度匹配，5年前端经验+技术Leader背景","strengths":["React/Vue双框架精通","有前端架构设计经验","薪资预期与岗位预算匹配"],"weaknesses":["无明显弱点"],"suggestion":"可直接进入面试环节"]',
- 1, '2026-04-15 17:00:00', '2026-04-15 17:00:00'),
+(3, 3, 1, 95.80, 98.00, 100.00, '2026-04-15 17:00:00', '2026-04-15 17:00:00'),
 
 -- 孙七 -> AI算法岗位
-(5, 4, 1, 91.20, 96.00, 90.00, 100.00, 85.00, 90.00,
- '{"summary":"技能高度匹配，AI领域实战经验深厚","strengths":["LLM应用开发经验","LangChain框架使用","PyTorch/TensorFlow双框架"],"weaknesses":["学历为本科，职位要求硕士","薪资预期偏高"],"suggestion":"如能接受薪资调整，强烈推荐面试"]',
- 0, '2026-04-15 17:30:00', '2026-04-15 17:30:00'),
+(5, 4, 1, 91.20, 96.00, 90.00, '2026-04-15 17:30:00', '2026-04-15 17:30:00'),
 
 -- 赵六 -> DevOps岗位
-(4, 5, 1, 85.60, 90.00, 75.00, 100.00, 70.00, 100.00,
- '{"summary":"基础技能匹配，有一定运维经验","strengths":["Docker/Kubernetes熟练","Linux系统管理经验","Jenkins CI/CD经验"],"weaknesses":["学历为大专，职位要求本科","AWS云服务经验不足"],"suggestion":"可作为备选候选人考虑"]',
- 0, '2026-04-15 18:00:00', '2026-04-15 18:00:00')
+(4, 5, 1, 85.60, 90.00, 100.00, '2026-04-15 18:00:00', '2026-04-15 18:00:00')
 ON CONFLICT DO NOTHING;
 
 -- =============================================

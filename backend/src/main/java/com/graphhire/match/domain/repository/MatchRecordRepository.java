@@ -3,6 +3,7 @@ package com.graphhire.match.domain.repository;
 import com.graphhire.match.domain.model.MatchRecord;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -16,6 +17,12 @@ public interface MatchRecordRepository {
     List<MatchRecord> findByResumeId(Long resumeId);
     /** 查询指定职位的所有匹配记录 */
     List<MatchRecord> findByJobId(Long jobId);
+
+    /**
+     * 根据职位ID集合批量统计匹配数。
+     * 说明：用于企业看板/职位列表聚合统计，避免逐岗位单查。
+     */
+    Map<Long, Long> countByJobIds(List<Long> jobIds);
     /** 查询指定简历和职位的匹配记录（可能有多个匹配方向） */
     List<MatchRecord> findByResumeIdAndJobId(Long resumeId, Long jobId);
     /** 保存匹配记录（新增或更新） */

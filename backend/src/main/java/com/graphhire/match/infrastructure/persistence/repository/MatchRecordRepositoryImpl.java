@@ -10,7 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -37,6 +39,30 @@ public class MatchRecordRepositoryImpl implements MatchRecordRepository {
         LambdaQueryWrapper<MatchRecordPO> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(MatchRecordPO::getJobId, jobId);
         return matchRecordMapper.selectList(wrapper).stream().map(this::toDomain).toList();
+    }
+
+    /**
+     * 按职位ID集合批量统计匹配记录数。
+     * 说明：提供企业看板聚合统计能力，避免逐岗位调用findByJobId。
+     */
+    @Override
+    public Map<Long, Long> countByJobIds(List<Long> jobIds) {
+        if (jobIds == null || jobIds.isEmpty()) {
+            return Map.of();
+        }
+        List<Map<String, Object>> rows = matchRecordMapper.countByJobIds(jobIds);
+        Map<Long, Long> result = new HashMap<>();
+        for (Map<String, Object> row : rows) {
+            if (row == null) {
+                continue;
+            }
+            Object jobIdObj = row.get("jobId");
+            Object countObj = row.get("matchCount");
+            if (jobIdObj instanceof Number jobIdNumber && countObj instanceof Number countNumber) {
+                result.put(jobIdNumber.longValue(), countNumber.longValue());
+            }
+        }
+        return result;
     }
 
     @Override
