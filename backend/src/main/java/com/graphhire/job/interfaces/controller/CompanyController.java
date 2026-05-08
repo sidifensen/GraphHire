@@ -44,6 +44,7 @@ import com.graphhire.match.interfaces.dto.response.MatchDetailResponse;
 import com.graphhire.resume.infrastructure.file.RustFSClient;
 import com.graphhire.industry.application.service.IndustryAppService;
 import com.graphhire.industry.domain.model.Industry;
+import com.graphhire.upload.application.service.UploadRateLimitService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -100,6 +101,8 @@ public class CompanyController {
 
     @Autowired
     private IndustryAppService industryAppService;
+    @Autowired
+    private UploadRateLimitService uploadRateLimitService;
 
     @GetMapping("/info")
     public Result<CompanyProfileResponse> getCompanyInfo() {
@@ -151,6 +154,8 @@ public class CompanyController {
 
     @PostMapping("/avatar")
     public Result<String> uploadAvatar(@RequestParam("file") MultipartFile file) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        uploadRateLimitService.checkOrThrow(UploadRateLimitService.SCENE_COMPANY_AVATAR, userId);
         long maxFileSize = uploadProperties.getAvatar().getMaxFileSize().toBytes();
         if (file.getSize() > maxFileSize) {
             throw new RuntimeException(UploadErrorMessages.avatarTooLarge(uploadProperties.getAvatar().getMaxFileSize().toMegabytes()));

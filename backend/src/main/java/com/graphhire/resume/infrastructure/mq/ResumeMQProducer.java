@@ -2,6 +2,7 @@ package com.graphhire.resume.infrastructure.mq;
 
 import com.graphhire.resume.domain.model.Resume;
 import com.graphhire.resume.domain.event.ResumeUploadedEvent;
+import cn.hutool.json.JSONUtil;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -14,6 +15,7 @@ public class ResumeMQProducer {
     private static final String TOPIC_RESUME_UPLOADED = "resume-uploaded";
     private static final String TOPIC_RESUME_PARSE = "resume-parse";
     private static final String TOPIC_RESUME_DEFAULT_CHANGED = "resume-default-changed";
+    private static final String TOPIC_RESUME_UPLOAD_ASYNC = "resume-upload-async";
 
     @Autowired
     private RocketMQTemplate rocketMQTemplate;
@@ -31,6 +33,10 @@ public class ResumeMQProducer {
 
     public void sendResumeDefaultChangedMessage(Long resumeId) {
         rocketMQTemplate.convertAndSend(TOPIC_RESUME_DEFAULT_CHANGED, String.valueOf(resumeId));
+    }
+
+    public void sendResumeUploadAsyncMessage(ResumeUploadAsyncMessage message) {
+        rocketMQTemplate.convertAndSend(TOPIC_RESUME_UPLOAD_ASYNC, JSONUtil.toJsonStr(message));
     }
 
     public static class ResumeParseMessage {
@@ -61,6 +67,72 @@ public class ResumeMQProducer {
 
         public void setParseTaskId(Long parseTaskId) {
             this.parseTaskId = parseTaskId;
+        }
+
+        public boolean isRefreshAllMatches() {
+            return refreshAllMatches;
+        }
+
+        public void setRefreshAllMatches(boolean refreshAllMatches) {
+            this.refreshAllMatches = refreshAllMatches;
+        }
+    }
+
+    public static class ResumeUploadAsyncMessage {
+        private Long taskId;
+        private Long userId;
+        private String fileName;
+        private String contentType;
+        private long fileSize;
+        private String fileBase64;
+        private boolean refreshAllMatches;
+
+        public Long getTaskId() {
+            return taskId;
+        }
+
+        public void setTaskId(Long taskId) {
+            this.taskId = taskId;
+        }
+
+        public Long getUserId() {
+            return userId;
+        }
+
+        public void setUserId(Long userId) {
+            this.userId = userId;
+        }
+
+        public String getFileName() {
+            return fileName;
+        }
+
+        public void setFileName(String fileName) {
+            this.fileName = fileName;
+        }
+
+        public String getContentType() {
+            return contentType;
+        }
+
+        public void setContentType(String contentType) {
+            this.contentType = contentType;
+        }
+
+        public long getFileSize() {
+            return fileSize;
+        }
+
+        public void setFileSize(long fileSize) {
+            this.fileSize = fileSize;
+        }
+
+        public String getFileBase64() {
+            return fileBase64;
+        }
+
+        public void setFileBase64(String fileBase64) {
+            this.fileBase64 = fileBase64;
         }
 
         public boolean isRefreshAllMatches() {

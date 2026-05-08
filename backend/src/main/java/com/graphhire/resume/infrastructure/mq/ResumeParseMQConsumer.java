@@ -10,17 +10,20 @@ import com.graphhire.resume.domain.model.Resume;
 import com.graphhire.resume.domain.repository.ParseTaskRepository;
 import com.graphhire.resume.domain.repository.ResumeRepository;
 import com.graphhire.resume.domain.vo.ParseStatus;
+import com.graphhire.resume.application.service.ResumeParseLockService;
 import com.graphhire.resume.infrastructure.ai.DocumentParser;
 import com.graphhire.skill.infrastructure.graph.SkillGraphClient;
-import com.graphhire.match.application.service.MatchAppService;
 import com.graphhire.match.infrastructure.ai.DeepSeekClient;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
+import org.apache.rocketmq.spring.core.RocketMQPushConsumerLifecycleListener;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
+import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -30,11 +33,12 @@ import java.util.Map;
 @Component
 @ConditionalOnProperty(name = "rocketmq.enabled", havingValue = "true", matchIfMissing = false)
 @RocketMQMessageListener(topic = "resume-parse", consumerGroup = "resume-parse-consumer")
-public class ResumeParseMQConsumer implements RocketMQListener<String> {
+public class ResumeParseMQConsumer implements RocketMQListener<String>, RocketMQPushConsumerLifecycleListener {
 
     private static final Logger log = LoggerFactory.getLogger(ResumeParseMQConsumer.class);
 
     private static final String TOPIC_RESUME_PARSED = "resume-parsed";
+    private static final String TOPIC_RESUME_MATCH_TRIGGER = "resume-match-trigger";
     private static final int MAX_PARSE_RESULT_LOG_LENGTH = 5000;
 
     @Autowired
@@ -56,9 +60,15 @@ public class ResumeParseMQConsumer implements RocketMQListener<String> {
     private RocketMQTemplate rocketMQTemplate;
 
     @Autowired
-    private MatchAppService matchAppService;
-    @Autowired
     private SkillGraphClient skillGraphClient;
+    @Autowired
+    private ResumeParseLockService resumeParseLockService;
+
+    @Value("${app.mq.resume-parse.consume-thread-number:20}")
+    private int consumeThreadNumber;
+
+    @Value("${app.mq.resume-parse.consume-thread-max:64}")
+    private int consumeThreadMax;
 
     @Override
     public void onMessage(String message) {
@@ -129,12 +139,7 @@ public class ResumeParseMQConsumer implements RocketMQListener<String> {
             notificationRepository.save(notification);
 
             if (Boolean.TRUE.equals(resume.getIsDefault()) && refreshAllMatches) {
-                try {
-                    matchAppService.triggerMatchForResume(resumeId);
-                } catch (Exception matchException) {
-                    log.error("默认简历解析成功后触发全职位匹配失败: resumeId={}, reason={}",
-                        resumeId, matchException.getMessage(), matchException);
-                }
+                rocketMQTemplate.convertAndSend(TOPIC_RESUME_MATCH_TRIGGER, String.valueOf(resumeId));
             }
 
             // 步骤8：发布简历解析完成事件（仅传resumeId），触发技能图谱构建
@@ -156,7 +161,15 @@ public class ResumeParseMQConsumer implements RocketMQListener<String> {
             parseTaskRepository.save(task);
             log.error("简历解析任务失败: resumeId={}, parseTaskId={}, totalCostMs={}, reason={}",
                 resumeId, parseTaskId, elapsedMs(totalStartNanos), e.getMessage());
+        } finally {
+            resumeParseLockService.forceUnlock(resumeId);
         }
+    }
+
+    @Override
+    public void prepareStart(DefaultMQPushConsumer consumer) {
+        consumer.setConsumeThreadMin(consumeThreadNumber);
+        consumer.setConsumeThreadMax(consumeThreadMax);
     }
 
     private static long elapsedMs(long startNanos) {

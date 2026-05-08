@@ -5,6 +5,7 @@ import com.graphhire.match.infrastructure.ai.DeepSeekClient;
 import com.graphhire.notification.domain.model.Notification;
 import com.graphhire.notification.domain.repository.NotificationRepository;
 import com.graphhire.notification.domain.vo.NotificationType;
+import com.graphhire.resume.application.service.ResumeParseLockService;
 import com.graphhire.resume.domain.model.ParseTask;
 import com.graphhire.resume.domain.model.Resume;
 import com.graphhire.resume.domain.repository.ParseTaskRepository;
@@ -58,6 +59,8 @@ class ResumeParseMQConsumerTest {
     private MatchAppService matchAppService;
     @Mock
     private SkillGraphClient skillGraphClient;
+    @Mock
+    private ResumeParseLockService resumeParseLockService;
 
     @InjectMocks
     private ResumeParseMQConsumer consumer;
@@ -147,7 +150,9 @@ class ResumeParseMQConsumerTest {
             assertEquals(resumeId, notification.getReferenceId());
 
             verify(skillGraphClient).clearPersonPositionTypeClassification(100L);
-            verify(matchAppService).triggerMatchForResume(resumeId);
+            verify(rocketMQTemplate).convertAndSend(eq("resume-match-trigger"), eq(String.valueOf(resumeId)));
+            verify(matchAppService, never()).triggerMatchForResume(anyLong());
+            verify(resumeParseLockService).forceUnlock(resumeId);
         }
 
         @Test
@@ -180,6 +185,8 @@ class ResumeParseMQConsumerTest {
             consumer.onMessage(resumeId + "," + parseTaskId + ",true");
 
             verify(matchAppService, never()).triggerMatchForResume(anyLong());
+            verify(rocketMQTemplate, never()).convertAndSend(eq("resume-match-trigger"), anyString());
+            verify(resumeParseLockService).forceUnlock(resumeId);
         }
 
         @Test
@@ -224,6 +231,7 @@ class ResumeParseMQConsumerTest {
             assertNotNull(savedTask.getCompletedAt());
 
             verify(notificationRepository, never()).save(any(Notification.class));
+            verify(resumeParseLockService).forceUnlock(resumeId);
         }
 
         @Test
@@ -237,6 +245,7 @@ class ResumeParseMQConsumerTest {
             RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> consumer.onMessage(resumeId + "," + parseTaskId + ",true"));
             assertTrue(exception.getMessage().contains("Parse task not found"));
+            verifyNoInteractions(resumeParseLockService);
         }
 
         @Test
@@ -256,6 +265,7 @@ class ResumeParseMQConsumerTest {
             RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> consumer.onMessage(resumeId + "," + parseTaskId + ",true"));
             assertTrue(exception.getMessage().contains("Resume not found"));
+            verifyNoInteractions(resumeParseLockService);
         }
 
         @Test
@@ -295,6 +305,7 @@ class ResumeParseMQConsumerTest {
             Resume savedResume = resumeCaptor.getAllValues().get(1);
             assertEquals(ParseStatus.SUCCESS, savedResume.getStatus());
             assertEquals("{}", savedResume.getParseResult());
+            verify(resumeParseLockService).forceUnlock(resumeId);
         }
 
         @Test
@@ -339,6 +350,7 @@ class ResumeParseMQConsumerTest {
             verify(notificationRepository, never()).save(any(Notification.class));
             verify(rocketMQTemplate, never()).convertAndSend(eq(RESUME_PARSED_TOPIC), anyString());
             verify(matchAppService, never()).triggerMatchForResume(anyLong());
+            verify(resumeParseLockService).forceUnlock(resumeId);
         }
 
         @Test
@@ -372,6 +384,8 @@ class ResumeParseMQConsumerTest {
 
             verify(matchAppService, never()).triggerMatchForResume(anyLong());
             verify(rocketMQTemplate).convertAndSend(eq(RESUME_PARSED_TOPIC), eq(String.valueOf(resumeId)));
+            verify(rocketMQTemplate, never()).convertAndSend(eq("resume-match-trigger"), anyString());
+            verify(resumeParseLockService).forceUnlock(resumeId);
         }
     }
 

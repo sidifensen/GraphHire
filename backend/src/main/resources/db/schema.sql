@@ -436,7 +436,49 @@ COMMENT ON COLUMN parse_task.update_time IS '更新时间';
 CREATE INDEX idx_parse_task_status ON parse_task (status);
 CREATE INDEX idx_parse_task_type ON parse_task (task_type);
 CREATE INDEX idx_parse_task_source ON parse_task (task_type, source_id);
+CREATE INDEX idx_parse_task_resume_running ON parse_task (task_type, source_id, status, id DESC);
 CREATE INDEX idx_parse_task_create_time ON parse_task (create_time);
+
+-- =============================================
+-- 11.1 上传任务表 upload_task
+-- =============================================
+CREATE TABLE upload_task
+(
+    id                  BIGSERIAL PRIMARY KEY,
+    user_id             BIGINT       NOT NULL,
+    file_name           VARCHAR(255) NOT NULL,
+    file_type           VARCHAR(128),
+    file_size           BIGINT       NOT NULL DEFAULT 0,
+    status              SMALLINT     NOT NULL DEFAULT 0,
+    error_msg           TEXT,
+    resume_id           BIGINT,
+    refresh_all_matches SMALLINT     NOT NULL DEFAULT 1,
+    create_time         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    finish_time         TIMESTAMP,
+    deleted             SMALLINT     NOT NULL DEFAULT 0,
+    CONSTRAINT chk_upload_task_status CHECK (status IN (0, 1, 2, 3, 4, 5)),
+    CONSTRAINT chk_upload_task_refresh CHECK (refresh_all_matches IN (0, 1))
+);
+
+COMMENT ON TABLE upload_task IS '上传任务表：管理异步简历上传任务状态';
+COMMENT ON COLUMN upload_task.id IS '主键ID';
+COMMENT ON COLUMN upload_task.user_id IS '用户ID';
+COMMENT ON COLUMN upload_task.file_name IS '上传文件名';
+COMMENT ON COLUMN upload_task.file_type IS '文件MIME类型';
+COMMENT ON COLUMN upload_task.file_size IS '文件大小（字节）';
+COMMENT ON COLUMN upload_task.status IS '任务状态：0-待处理 1-上传中 2-上传成功 3-解析排队中 4-完成 5-失败';
+COMMENT ON COLUMN upload_task.error_msg IS '失败错误信息';
+COMMENT ON COLUMN upload_task.resume_id IS '关联简历ID';
+COMMENT ON COLUMN upload_task.refresh_all_matches IS '是否刷新全量匹配：0-否 1-是';
+COMMENT ON COLUMN upload_task.create_time IS '创建时间';
+COMMENT ON COLUMN upload_task.update_time IS '更新时间';
+COMMENT ON COLUMN upload_task.finish_time IS '完成时间';
+COMMENT ON COLUMN upload_task.deleted IS '软删除标记：0-未删除 1-已删除';
+
+CREATE INDEX idx_upload_task_user_id ON upload_task (user_id, id DESC);
+CREATE INDEX idx_upload_task_status ON upload_task (status, id DESC);
+CREATE INDEX idx_upload_task_resume_id ON upload_task (resume_id);
 
 -- =============================================
 -- 12. 消息通知表 notification

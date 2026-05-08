@@ -29,6 +29,30 @@ public class RustFSConfig {
     @Value("${rustfs.region:us-east-1}")
     private String region;
 
+    @Value("${rustfs.http.socket-timeout-ms:5000}")
+    private int socketTimeoutMs;
+
+    @Value("${rustfs.http.connection-timeout-ms:5000}")
+    private int connectionTimeoutMs;
+
+    @Value("${rustfs.http.api-call-timeout-ms:5000}")
+    private int apiCallTimeoutMs;
+
+    @Value("${rustfs.http.api-call-attempt-timeout-ms:5000}")
+    private int apiCallAttemptTimeoutMs;
+
+    @Value("${rustfs.http.max-connections:128}")
+    private int maxConnections;
+
+    @Value("${rustfs.http.connection-acquire-timeout-ms:3000}")
+    private int connectionAcquireTimeoutMs;
+
+    @Value("${rustfs.http.connection-time-to-live-ms:600000}")
+    private int connectionTimeToLiveMs;
+
+    @Value("${rustfs.http.expect-continue-enabled:true}")
+    private boolean expectContinueEnabled;
+
     @Bean
     public S3Client s3Client() {
         String ak = (accessKey == null || accessKey.isBlank()) ? "rustfsadmin" : accessKey;
@@ -41,11 +65,15 @@ public class RustFSConfig {
                 AwsBasicCredentials.create(ak, sk)))
             .forcePathStyle(true)
             .httpClientBuilder(ApacheHttpClient.builder()
-                .socketTimeout(Duration.ofSeconds(5))
-                .connectionTimeout(Duration.ofSeconds(5)))
+                .socketTimeout(Duration.ofMillis(socketTimeoutMs))
+                .connectionTimeout(Duration.ofMillis(connectionTimeoutMs))
+                .maxConnections(maxConnections)
+                .connectionAcquisitionTimeout(Duration.ofMillis(connectionAcquireTimeoutMs))
+                .connectionTimeToLive(Duration.ofMillis(connectionTimeToLiveMs))
+                .expectContinueEnabled(expectContinueEnabled))
             .overrideConfiguration(ClientOverrideConfiguration.builder()
-                .apiCallTimeout(Duration.ofSeconds(5))
-                .apiCallAttemptTimeout(Duration.ofSeconds(5))
+                .apiCallTimeout(Duration.ofMillis(apiCallTimeoutMs))
+                .apiCallAttemptTimeout(Duration.ofMillis(apiCallAttemptTimeoutMs))
                 .build())
             .build();
     }

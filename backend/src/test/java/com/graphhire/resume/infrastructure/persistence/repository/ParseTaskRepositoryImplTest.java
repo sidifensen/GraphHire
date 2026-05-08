@@ -67,6 +67,40 @@ class ParseTaskRepositoryImplTest {
     }
 
     @Nested
+    @DisplayName("运行中任务查询测试")
+    class RunningTaskTests {
+
+        @Test
+        @DisplayName("findRunningByResumeId 应返回运行中的简历解析任务")
+        void findRunningByResumeId_ShouldReturnRunningTask() {
+            ParseTaskPO running = createTaskPO(501L, 1, 2001L, ParseTask.TaskStatus.RUNNING.ordinal());
+            when(parseTaskMapper.selectOne(any())).thenReturn(running);
+
+            Optional<ParseTask> result = parseTaskRepository.findRunningByResumeId(2001L);
+
+            assertTrue(result.isPresent());
+            assertEquals(501L, result.get().getId());
+            assertEquals(ParseTask.TaskStatus.RUNNING, result.get().getStatus());
+        }
+
+        @Test
+        @DisplayName("existsRunningByResumeId 命中时应返回true")
+        void existsRunningByResumeId_ShouldReturnTrue() {
+            when(parseTaskMapper.selectCount(any())).thenReturn(1L);
+
+            assertTrue(parseTaskRepository.existsRunningByResumeId(2001L));
+        }
+
+        @Test
+        @DisplayName("existsRunningByResumeId 未命中时应返回false")
+        void existsRunningByResumeId_ShouldReturnFalse() {
+            when(parseTaskMapper.selectCount(any())).thenReturn(0L);
+
+            assertFalse(parseTaskRepository.existsRunningByResumeId(2001L));
+        }
+    }
+
+    @Nested
     @DisplayName("findPage 测试")
     class FindPageTests {
 

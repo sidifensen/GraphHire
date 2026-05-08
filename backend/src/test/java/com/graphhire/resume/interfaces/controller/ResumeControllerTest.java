@@ -7,8 +7,11 @@ import com.graphhire.resume.application.command.UploadResumeCmd;
 import com.graphhire.resume.application.service.ResumeAppService;
 import com.graphhire.resume.application.service.dto.ResumePreviewFile;
 import com.graphhire.resume.domain.model.Resume;
+import com.graphhire.resume.domain.model.UploadTask;
 import com.graphhire.resume.domain.vo.ParseStatus;
+import com.graphhire.resume.interfaces.dto.UploadTaskResponse;
 import com.graphhire.resume.interfaces.dto.ResumeVO;
+import com.graphhire.upload.application.service.UploadRateLimitService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -39,6 +42,8 @@ class ResumeControllerTest {
 
     @Mock
     private ResumeAppService resumeAppService;
+    @Mock
+    private UploadRateLimitService uploadRateLimitService;
 
     @InjectMocks
     private ResumeController resumeController;
@@ -96,6 +101,7 @@ class ResumeControllerTest {
                 assertEquals(200, result.getCode());
                 assertNotNull(result.getData());
                 assertEquals(1L, result.getData().getId());
+                verify(uploadRateLimitService).checkOrThrow(UploadRateLimitService.SCENE_RESUME_UPLOAD, userId);
                 verify(resumeAppService).uploadResume(any(UploadResumeCmd.class), eq(true));
             }
         }
@@ -114,6 +120,48 @@ class ResumeControllerTest {
 
                 // When & Then
                 assertThrows(RuntimeException.class, () -> resumeController.uploadResume(file, true));
+            }
+        }
+
+        @Test
+        @DisplayName("成功创建异步上传任务")
+        void uploadResumeAsync_Success() throws Exception {
+            try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+                Long userId = 1L;
+                stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(userId);
+                MockMultipartFile file = new MockMultipartFile(
+                    "file", "resume.pdf", "application/pdf", "content".getBytes()
+                );
+                UploadTask uploadTask = new UploadTask();
+                uploadTask.setId(77L);
+                uploadTask.setStatus(UploadTask.TaskStatus.PENDING);
+                when(resumeAppService.createAsyncUploadTask(any(UploadResumeCmd.class), eq(true))).thenReturn(uploadTask);
+
+                Result<UploadTaskResponse> result = resumeController.uploadResumeAsync(file, true);
+
+                assertEquals(200, result.getCode());
+                assertNotNull(result.getData());
+                assertEquals(77L, result.getData().taskId());
+            }
+        }
+
+        @Test
+        @DisplayName("成功查询异步上传任务状态")
+        void getUploadTask_Success() {
+            try (MockedStatic<StpUtil> stpUtilMock = mockStatic(StpUtil.class)) {
+                Long userId = 1L;
+                stpUtilMock.when(StpUtil::getLoginIdAsLong).thenReturn(userId);
+                UploadTask uploadTask = new UploadTask();
+                uploadTask.setId(88L);
+                uploadTask.setStatus(UploadTask.TaskStatus.SUCCESS);
+                uploadTask.setResumeId(123L);
+                when(resumeAppService.getUploadTask(88L, userId)).thenReturn(uploadTask);
+
+                Result<UploadTaskResponse> result = resumeController.getUploadTask(88L);
+
+                assertEquals(200, result.getCode());
+                assertEquals("SUCCESS", result.getData().status());
+                assertEquals(123L, result.getData().resumeId());
             }
         }
     }

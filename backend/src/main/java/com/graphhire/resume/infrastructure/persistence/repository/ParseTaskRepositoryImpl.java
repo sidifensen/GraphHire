@@ -44,6 +44,28 @@ public class ParseTaskRepositoryImpl implements ParseTaskRepository {
     }
 
     @Override
+    public Optional<ParseTask> findRunningByResumeId(Long resumeId) {
+        LambdaQueryWrapper<ParseTaskPO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ParseTaskPO::getSourceId, resumeId)
+            .eq(ParseTaskPO::getTaskType, 1)
+            .eq(ParseTaskPO::getStatus, ParseTask.TaskStatus.RUNNING.ordinal())
+            .orderByDesc(ParseTaskPO::getId)
+            .last("LIMIT 1");
+        ParseTaskPO po = parseTaskMapper.selectOne(wrapper);
+        return Optional.ofNullable(po).map(this::toDomain);
+    }
+
+    @Override
+    public boolean existsRunningByResumeId(Long resumeId) {
+        LambdaQueryWrapper<ParseTaskPO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ParseTaskPO::getSourceId, resumeId)
+            .eq(ParseTaskPO::getTaskType, 1)
+            .eq(ParseTaskPO::getStatus, ParseTask.TaskStatus.RUNNING.ordinal())
+            .last("LIMIT 1");
+        return parseTaskMapper.selectCount(wrapper) > 0;
+    }
+
+    @Override
     public List<ParseTask> findAll() {
         return parseTaskMapper.selectList(null).stream()
                 .map(this::toDomain)

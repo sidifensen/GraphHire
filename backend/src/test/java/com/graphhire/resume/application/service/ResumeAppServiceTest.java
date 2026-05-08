@@ -7,10 +7,13 @@ import com.graphhire.resume.application.service.dto.ResumePreviewFile;
 import com.graphhire.resume.domain.model.ParseTask;
 import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.model.Resume;
+import com.graphhire.resume.domain.model.UploadTask;
 import com.graphhire.resume.domain.repository.ParseTaskRepository;
 import com.graphhire.resume.domain.repository.PersonInfoRepository;
 import com.graphhire.resume.domain.repository.ResumeRepository;
+import com.graphhire.resume.domain.repository.UploadTaskRepository;
 import com.graphhire.resume.domain.vo.ParseStatus;
+import com.graphhire.resume.application.service.ResumeParseLockService;
 import com.graphhire.resume.infrastructure.file.RustFSClient;
 import com.graphhire.resume.infrastructure.mq.ResumeMQProducer;
 import com.graphhire.match.application.service.MatchAppService;
@@ -68,6 +71,10 @@ class ResumeAppServiceTest {
     private SkillGraphClient skillGraphClient;
     @Mock
     private UploadProperties uploadProperties;
+    @Mock
+    private ResumeParseLockService resumeParseLockService;
+    @Mock
+    private UploadTaskRepository uploadTaskRepository;
 
     private ResumeAppService resumeAppService;
 
@@ -83,6 +90,8 @@ class ResumeAppServiceTest {
         setField(resumeAppService, "matchAppService", matchAppService);
         setField(resumeAppService, "uploadProperties", uploadProperties);
         setField(resumeAppService, "skillGraphClient", skillGraphClient);
+        setField(resumeAppService, "resumeParseLockService", resumeParseLockService);
+        setField(resumeAppService, "uploadTaskRepository", uploadTaskRepository);
 
         UploadProperties.Resume resumeUpload = new UploadProperties.Resume();
         resumeUpload.setMaxFileSize(DataSize.ofMegabytes(10));
@@ -353,6 +362,9 @@ class ResumeAppServiceTest {
     void triggerResumeParse_shouldSendParseMessageWithRefreshAllMatchesTrue() {
         Resume resume = buildResume(51L, 10L, "sync.pdf", "s3://sync.pdf", "pdf");
         when(resumeRepository.findById(51L)).thenReturn(Optional.of(resume));
+        when(resumeParseLockService.isLocked(51L)).thenReturn(false);
+        when(parseTaskRepository.existsRunningByResumeId(51L)).thenReturn(false);
+        when(resumeParseLockService.tryLock(51L)).thenReturn("token-51");
         when(parseTaskRepository.save(any(ParseTask.class))).thenAnswer(invocation -> {
             ParseTask task = invocation.getArgument(0);
             if (task.getId() == null) {
@@ -371,6 +383,9 @@ class ResumeAppServiceTest {
     void triggerResumeParse_shouldSendParseMessageWithRefreshAllMatchesFalse() {
         Resume resume = buildResume(52L, 10L, "sync.pdf", "s3://sync.pdf", "pdf");
         when(resumeRepository.findById(52L)).thenReturn(Optional.of(resume));
+        when(resumeParseLockService.isLocked(52L)).thenReturn(false);
+        when(parseTaskRepository.existsRunningByResumeId(52L)).thenReturn(false);
+        when(resumeParseLockService.tryLock(52L)).thenReturn("token-52");
         when(parseTaskRepository.save(any(ParseTask.class))).thenAnswer(invocation -> {
             ParseTask task = invocation.getArgument(0);
             if (task.getId() == null) {
@@ -382,6 +397,58 @@ class ResumeAppServiceTest {
         resumeAppService.triggerResumeParse(52L, 10L, false);
 
         verify(mqProducer).sendResumeParseMessage(52L, 89L, false);
+    }
+
+    @Test
+    @DisplayName("triggerResumeParse 简历解析锁已占用时应拦截")
+    void triggerResumeParse_shouldRejectWhenLocked() {
+        Resume resume = buildResume(53L, 10L, "sync.pdf", "s3://sync.pdf", "pdf");
+        when(resumeRepository.findById(53L)).thenReturn(Optional.of(resume));
+        when(resumeParseLockService.isLocked(53L)).thenReturn(true);
+
+        Exceptions.BusinessException ex = assertThrows(
+            Exceptions.BusinessException.class,
+            () -> resumeAppService.triggerResumeParse(53L, 10L, true)
+        );
+        assertEquals(409, ex.getCode());
+    }
+
+    @Test
+    @DisplayName("createAsyncUploadTask 应创建任务并发送异步消息")
+    void createAsyncUploadTask_shouldCreateTaskAndSendMessage() throws Exception {
+        byte[] content = "resume-bytes".getBytes();
+        UploadResumeCmd cmd = new UploadResumeCmd(new MockMultipartFile("file", "ok.pdf", "application/pdf", content));
+        cmd.setUserId(22L);
+
+        when(uploadTaskRepository.save(any(UploadTask.class))).thenAnswer(invocation -> {
+            UploadTask task = invocation.getArgument(0);
+            if (task.getId() == null) {
+                task.setId(901L);
+            }
+            return task;
+        });
+
+        UploadTask task = resumeAppService.createAsyncUploadTask(cmd, false);
+
+        assertEquals(901L, task.getId());
+        verify(uploadTaskRepository).save(any(UploadTask.class));
+        verify(mqProducer).sendResumeUploadAsyncMessage(any(ResumeMQProducer.ResumeUploadAsyncMessage.class));
+    }
+
+    @Test
+    @DisplayName("getUploadTask 非本人查询应拒绝")
+    void getUploadTask_shouldRejectWhenNotOwner() {
+        UploadTask task = new UploadTask();
+        task.setId(1001L);
+        task.setUserId(66L);
+        task.setStatus(UploadTask.TaskStatus.PENDING);
+        when(uploadTaskRepository.findById(1001L)).thenReturn(Optional.of(task));
+
+        Exceptions.BusinessException ex = assertThrows(
+            Exceptions.BusinessException.class,
+            () -> resumeAppService.getUploadTask(1001L, 77L)
+        );
+        assertEquals(403, ex.getCode());
     }
 
     @Test

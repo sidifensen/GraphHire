@@ -87,6 +87,50 @@ app: # 自定义业务配置
         - image/png
         - image/gif
         - image/webp
+    rate-limit:
+      enabled: true
+      key-prefix: upload:rate-limit
+      scenes:
+        resume:
+          enabled: true
+          user:
+            capacity: 20
+            refill-tokens: 20
+            refill-seconds: 60
+          global:
+            capacity: 400
+            refill-tokens: 400
+            refill-seconds: 60
+        person-avatar:
+          enabled: true
+          user:
+            capacity: 10
+            refill-tokens: 10
+            refill-seconds: 60
+          global:
+            capacity: 200
+            refill-tokens: 200
+            refill-seconds: 60
+        company-avatar:
+          enabled: true
+          user:
+            capacity: 10
+            refill-tokens: 10
+            refill-seconds: 60
+          global:
+            capacity: 200
+            refill-tokens: 200
+            refill-seconds: 60
+        chat-image:
+          enabled: true
+          user:
+            capacity: 20
+            refill-tokens: 20
+            refill-seconds: 60
+          global:
+            capacity: 2000
+            refill-tokens: 2000
+            refill-seconds: 60
   security:
     cors:
       allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:8888}
@@ -94,6 +138,16 @@ app: # 自定义业务配置
       allowed-origins: ${WS_ALLOWED_ORIGINS:http://localhost:8888}
   logging: # 业务日志配置
     slow-api-threshold-ms: ${SLOW_API_THRESHOLD_MS:500} # 慢接口阈值（毫秒）
+  mq:
+    resume-parse:
+      consume-thread-number: 20
+      consume-thread-max: 64
+    resume-match:
+      consume-thread-number: 8
+      consume-thread-max: 32
+    resume-upload:
+      consume-thread-number: 8
+      consume-thread-max: 32
 
 # =========================
 # 中间件与业务集成
@@ -155,6 +209,15 @@ rustfs: # RustFS 对象存储配置
   access-key: ${RUSTFS_ACCESS_KEY:} # 访问密钥 Access Key
   secret-key: ${RUSTFS_SECRET_KEY:} # 访问密钥 Secret Key
   bucket: ${RUSTFS_BUCKET:resumes} # 默认存储桶
+  http:
+    socket-timeout-ms: ${RUSTFS_SOCKET_TIMEOUT_MS:5000}
+    connection-timeout-ms: ${RUSTFS_CONNECTION_TIMEOUT_MS:5000}
+    api-call-timeout-ms: ${RUSTFS_API_CALL_TIMEOUT_MS:5000}
+    api-call-attempt-timeout-ms: ${RUSTFS_API_CALL_ATTEMPT_TIMEOUT_MS:5000}
+    max-connections: ${RUSTFS_HTTP_MAX_CONNECTIONS:128}
+    connection-acquire-timeout-ms: ${RUSTFS_CONNECTION_ACQUIRE_TIMEOUT_MS:3000}
+    connection-time-to-live-ms: ${RUSTFS_CONNECTION_TTL_MS:600000}
+    expect-continue-enabled: ${RUSTFS_EXPECT_CONTINUE_ENABLED:true}
 
 memgraph: # Memgraph 图数据库配置
   enabled: ${MEMGRAPH_ENABLED:true} # 是否启用 Memgraph

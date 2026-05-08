@@ -1,6 +1,13 @@
 # Release Notes
 
 ## 2026-05-08
+- feat: 上传链路新增统一 Redis Lua 令牌桶限流，覆盖 `/resume/my/upload`、`/resume/my/upload-async`、`/person/avatar`、`/company/avatar`、`/chat/messages/image`，超限统一返回 `429`
+- feat: 简历解析新增幂等互斥锁（`lock:resume:parse:{resumeId}`）与 `parse_task` 运行中查询语义，拦截重复触发解析
+- refactor: 简历解析与匹配触发解耦；`ResumeParseMQConsumer` 仅发布 `resume-match-trigger`，新增 `ResumeMatchTriggerMQConsumer` 独立处理全职位匹配
+- feat: 新增异步简历上传能力：`POST /resume/my/upload-async` 创建任务、`GET /resume/upload-task/{taskId}` 查询状态，新增 `resume-upload-async` 消费者处理上传+建档+触发解析
+- feat: 新增 `upload_task` 表（migration + schema 同步）并补充 `parse_task` 运行中复合索引，完善异步任务状态落库
+- refactor: RustFS S3 客户端支持连接池与超时参数配置化（`max-connections`、`connection-acquire-timeout`、`connection-time-to-live`、`expect-continue-enabled` 等）
+- test: 新增并更新限流、解析锁、MQ 解耦、异步上传任务、schema 与配置相关测试；后端 `mvn compile`、`mvn test` 通过
 - refactor: 聊天主链路夜间主题 token 统一：工作台外壳/详情容器/详情头/消息头像/消息卡片内按钮/预览弹层全部去除 `white/*` 叠色，改为 `surface` 与 `outline` 语义 token
 - fix: 修复聊天夜间模式下多处“发白边框与白雾底”问题（详情头、头像 ring、预览弹层头尾分隔、PDF 区域容器），降低高亮白边与透白感
 - test: 更新 `chat-workspace-redesign` 断言以匹配新 token（`ring-outline-variant`、`bg-surface-container-low` 等），并通过聊天页定向测试

@@ -28,6 +28,7 @@ import com.graphhire.match.interfaces.dto.response.MatchDetailResponse;
 import com.graphhire.config.UploadProperties;
 import com.graphhire.resume.infrastructure.file.RustFSClient;
 import com.graphhire.skill.infrastructure.graph.SkillGraphClient;
+import com.graphhire.upload.application.service.UploadRateLimitService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -97,6 +98,8 @@ class CompanyControllerTest {
     private StringRedisTemplate stringRedisTemplate;
     @Mock
     private UploadProperties uploadProperties;
+    @Mock
+    private UploadRateLimitService uploadRateLimitService;
 
     @Mock
     private ValueOperations<String, String> valueOperations;
@@ -460,6 +463,7 @@ class CompanyControllerTest {
 
                 assertEquals(200, result.getCode());
                 assertEquals("http://localhost:9000/resumes/avatar/1987654321098767360.png", result.getData());
+                verify(uploadRateLimitService).checkOrThrow(UploadRateLimitService.SCENE_COMPANY_AVATAR, userId);
                 verify(rustFSClient).upload(any(byte[].class), matches("avatar/\\d+\\.png"));
                 verify(companyAppService).updateCompanyAvatarPath(eq(companyId), matches("avatar/\\d+\\.png"));
             }

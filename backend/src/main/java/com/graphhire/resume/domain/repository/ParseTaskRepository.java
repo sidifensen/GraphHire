@@ -8,6 +8,8 @@ import java.util.Optional;
 public interface ParseTaskRepository {
     Optional<ParseTask> findById(Long id);
     Optional<ParseTask> findByResumeId(Long resumeId);
+    Optional<ParseTask> findRunningByResumeId(Long resumeId);
+    boolean existsRunningByResumeId(Long resumeId);
     List<ParseTask> findAll();
     IPage<ParseTask> findPage(String type, String status, int page, int pageSize);
     long countByStatus(ParseTask.TaskStatus status);

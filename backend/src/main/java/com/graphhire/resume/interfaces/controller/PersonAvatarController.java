@@ -8,6 +8,7 @@ import com.graphhire.config.UploadProperties;
 import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.repository.PersonInfoRepository;
 import com.graphhire.resume.infrastructure.file.RustFSClient;
+import com.graphhire.upload.application.service.UploadRateLimitService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -35,10 +36,13 @@ public class PersonAvatarController {
     private RustFSClient rustFSClient;
     @Autowired
     private UploadProperties uploadProperties;
+    @Autowired
+    private UploadRateLimitService uploadRateLimitService;
 
     @PostMapping("/avatar")
     public Result<String> uploadAvatar(@RequestParam("file") MultipartFile file) {
         Long userId = StpUtil.getLoginIdAsLong();
+        uploadRateLimitService.checkOrThrow(UploadRateLimitService.SCENE_PERSON_AVATAR, userId);
 
         long maxFileSize = uploadProperties.getAvatar().getMaxFileSize().toBytes();
         if (file.getSize() > maxFileSize) {

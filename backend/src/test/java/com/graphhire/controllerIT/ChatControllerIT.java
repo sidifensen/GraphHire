@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -35,6 +36,8 @@ class ChatControllerIT extends BaseControllerIT {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     @BeforeAll
     static void beforeAll(@Autowired MockMvc mockMvc,
@@ -220,5 +223,43 @@ class ChatControllerIT extends BaseControllerIT {
                 .param("conversationId", "3")
                 .header("satoken", personToken))
             .andExpect(jsonPath("$.code").value(400));
+    }
+
+    @Test
+    @DisplayName("聊天图片上传命中限流时返回429")
+    void imageUploadShouldReturn429WhenRateLimited() throws Exception {
+        String startBody = "{\"jobId\":1}";
+        mockMvc.perform(post("/chat/conversations/start")
+                .headers(personHeaders)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(startBody))
+            .andExpect(jsonPath("$.code").value(200));
+
+        // 清理当前用户聊天图片限流key，避免受其他测试污染
+        stringRedisTemplate.delete("upload:rate-limit:chat-image:user:" + personUserId + ":tokens");
+        stringRedisTemplate.delete("upload:rate-limit:chat-image:user:" + personUserId + ":ts");
+        stringRedisTemplate.delete("upload:rate-limit:chat-image:global:tokens");
+        stringRedisTemplate.delete("upload:rate-limit:chat-image:global:ts");
+
+        byte[] imageBytes = "img".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        for (int i = 0; i < 22; i++) {
+            MockMultipartFile image = new MockMultipartFile(
+                "file",
+                "avatar.jpg",
+                MediaType.IMAGE_JPEG_VALUE,
+                imageBytes
+            );
+            var result = mockMvc.perform(multipart("/chat/messages/image")
+                    .file(image)
+                    .param("conversationId", "3")
+                    .header("satoken", personToken))
+                .andReturn();
+            if (i == 21) {
+                String content = result.getResponse().getContentAsString();
+                if (!content.contains("\"code\":429")) {
+                    throw new AssertionError("第22次上传应返回429，实际: " + content);
+                }
+            }
+        }
     }
 }

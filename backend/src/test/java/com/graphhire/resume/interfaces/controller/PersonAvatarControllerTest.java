@@ -5,6 +5,7 @@ import com.graphhire.config.UploadProperties;
 import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.repository.PersonInfoRepository;
 import com.graphhire.resume.infrastructure.file.RustFSClient;
+import com.graphhire.upload.application.service.UploadRateLimitService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,6 +37,8 @@ class PersonAvatarControllerTest {
     private RustFSClient rustFSClient;
     @Mock
     private UploadProperties uploadProperties;
+    @Mock
+    private UploadRateLimitService uploadRateLimitService;
 
     @InjectMocks
     private PersonAvatarController personAvatarController;
@@ -62,6 +65,7 @@ class PersonAvatarControllerTest {
 
             assertNotNull(result.getData());
             assertEquals("/person/avatar/public/101", result.getData());
+            verify(uploadRateLimitService).checkOrThrow(UploadRateLimitService.SCENE_PERSON_AVATAR, 101L);
             verify(rustFSClient).upload(any(), any());
             ArgumentCaptor<PersonInfo> captor = ArgumentCaptor.forClass(PersonInfo.class);
             verify(personInfoRepository).save(captor.capture());

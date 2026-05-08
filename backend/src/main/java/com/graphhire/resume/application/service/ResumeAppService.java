@@ -14,13 +14,16 @@ import com.graphhire.resume.application.service.dto.ResumePreviewFile;
 import com.graphhire.resume.domain.model.ParseTask;
 import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.model.Resume;
+import com.graphhire.resume.domain.model.UploadTask;
 import com.graphhire.resume.domain.repository.ParseTaskRepository;
 import com.graphhire.resume.domain.repository.PersonInfoRepository;
 import com.graphhire.resume.domain.repository.ResumeRepository;
+import com.graphhire.resume.domain.repository.UploadTaskRepository;
 import com.graphhire.resume.domain.vo.ParseStatus;
 import com.graphhire.resume.interfaces.dto.ParseProgressResponse;
 import com.graphhire.match.application.service.MatchAppService;
 import com.graphhire.config.UploadProperties;
+import cn.hutool.core.codec.Base64;
 
 import java.io.IOException;
 import com.graphhire.resume.interfaces.dto.ResumeVO;
@@ -67,6 +70,10 @@ public class ResumeAppService {
     private UploadProperties uploadProperties;
     @Autowired
     private SkillGraphClient skillGraphClient;
+    @Autowired
+    private ResumeParseLockService resumeParseLockService;
+    @Autowired
+    private UploadTaskRepository uploadTaskRepository;
 
     @Transactional
     public Resume uploadResume(UploadResumeCmd cmd, boolean refreshAllMatches) throws IOException {
@@ -124,6 +131,42 @@ public class ResumeAppService {
         }
 
         return saved;
+    }
+
+    @Transactional
+    public UploadTask createAsyncUploadTask(UploadResumeCmd cmd, boolean refreshAllMatches) throws IOException {
+        if (mqProducer == null) {
+            throw Exceptions.BusinessException.of(503, "异步上传服务暂不可用");
+        }
+        validateUploadCmd(cmd);
+        UploadTask task = new UploadTask();
+        task.setUserId(cmd.getUserId());
+        task.setFileName(cmd.getFileName());
+        task.setFileType(cmd.getContentType());
+        task.setFileSize(cmd.getFileSize());
+        task.setStatus(UploadTask.TaskStatus.PENDING);
+        task.setRefreshAllMatches(refreshAllMatches);
+        uploadTaskRepository.save(task);
+
+        ResumeMQProducer.ResumeUploadAsyncMessage message = new ResumeMQProducer.ResumeUploadAsyncMessage();
+        message.setTaskId(task.getId());
+        message.setUserId(cmd.getUserId());
+        message.setFileName(cmd.getFileName());
+        message.setContentType(cmd.getContentType());
+        message.setFileSize(cmd.getFileSize());
+        message.setFileBase64(Base64.encode(cmd.getFile().getBytes()));
+        message.setRefreshAllMatches(refreshAllMatches);
+        mqProducer.sendResumeUploadAsyncMessage(message);
+        return task;
+    }
+
+    public UploadTask getUploadTask(Long taskId, Long userId) {
+        UploadTask task = uploadTaskRepository.findById(taskId)
+            .orElseThrow(() -> Exceptions.BusinessException.of(404, "上传任务不存在"));
+        if (!task.getUserId().equals(userId)) {
+            throw Exceptions.BusinessException.of(403, "无权查看该上传任务");
+        }
+        return task;
     }
 
     /**
@@ -377,6 +420,13 @@ public class ResumeAppService {
         if (!resume.getUserId().equals(userId)) {
             throw new RuntimeException("无权解析此简历");
         }
+        if (resumeParseLockService.isLocked(resumeId) || parseTaskRepository.existsRunningByResumeId(resumeId)) {
+            throw Exceptions.BusinessException.of(409, "该简历正在解析，请勿重复触发");
+        }
+        String lockToken = resumeParseLockService.tryLock(resumeId);
+        if (lockToken == null) {
+            throw Exceptions.BusinessException.of(409, "该简历正在解析，请勿重复触发");
+        }
         // 标记为解析中
         resume.markParsing();
         resumeRepository.save(resume);
@@ -388,6 +438,26 @@ public class ResumeAppService {
             task.setStatus(ParseTask.TaskStatus.PENDING);
             parseTaskRepository.save(task);
             mqProducer.sendResumeParseMessage(resumeId, task.getId(), refreshAllMatches);
+        } else {
+            resumeParseLockService.forceUnlock(resumeId);
+        }
+    }
+
+    private void validateUploadCmd(UploadResumeCmd cmd) {
+        String fileName = cmd.getFileName();
+        String fileExt = StrUtil.blankToDefault(FileUtil.extName(fileName), "").toLowerCase(Locale.ROOT);
+        Set<String> allowedExt = uploadProperties.getResume().getAllowedExtensions();
+        if (!allowedExt.contains(fileExt)) {
+            throw Exceptions.BusinessException.of(400, UploadErrorMessages.resumeInvalidExtension(allowedExt));
+        }
+        long maxBytes = uploadProperties.getResume().getMaxFileSize().toBytes();
+        if (cmd.getFileSize() > maxBytes) {
+            throw Exceptions.BusinessException.of(400, UploadErrorMessages.resumeTooLarge(uploadProperties.getResume().getMaxFileSize().toMegabytes()));
+        }
+        String contentType = StrUtil.blankToDefault(cmd.getContentType(), "").toLowerCase(Locale.ROOT);
+        Set<String> allowedMimeTypes = uploadProperties.getResume().getAllowedMimeTypes();
+        if (StrUtil.isBlank(contentType) || !allowedMimeTypes.contains(contentType)) {
+            throw Exceptions.BusinessException.of(400, UploadErrorMessages.RESUME_INVALID_MIME);
         }
     }
 

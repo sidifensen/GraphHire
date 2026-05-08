@@ -7,8 +7,11 @@ import com.graphhire.resume.application.command.UploadResumeCmd;
 import com.graphhire.resume.application.service.ResumeAppService;
 import com.graphhire.resume.application.service.dto.ResumePreviewFile;
 import com.graphhire.resume.domain.model.Resume;
+import com.graphhire.resume.domain.model.UploadTask;
 import com.graphhire.resume.interfaces.dto.ParseProgressResponse;
 import com.graphhire.resume.interfaces.dto.ResumeVO;
+import com.graphhire.resume.interfaces.dto.UploadTaskResponse;
+import com.graphhire.upload.application.service.UploadRateLimitService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.CacheControl;
 import org.springframework.http.ContentDisposition;
@@ -32,6 +35,8 @@ public class ResumeController {
 
     @Autowired
     private ResumeAppService resumeService;
+    @Autowired
+    private UploadRateLimitService uploadRateLimitService;
 
     /**
      * 上传简历（当前用户）
@@ -42,10 +47,29 @@ public class ResumeController {
     public Result<Resume> uploadResume(@RequestParam("file") MultipartFile file,
                                        @RequestParam(defaultValue = "true") boolean refreshAllMatches) throws IOException {
         Long userId = StpUtil.getLoginIdAsLong();
+        uploadRateLimitService.checkOrThrow(UploadRateLimitService.SCENE_RESUME_UPLOAD, userId);
         UploadResumeCmd cmd = new UploadResumeCmd(file);
         cmd.setUserId(userId);
         Resume resume = resumeService.uploadResume(cmd, refreshAllMatches);
         return Result.success(resume);
+    }
+
+    @PostMapping("/my/upload-async")
+    public Result<UploadTaskResponse> uploadResumeAsync(@RequestParam("file") MultipartFile file,
+                                                         @RequestParam(defaultValue = "true") boolean refreshAllMatches) throws IOException {
+        Long userId = StpUtil.getLoginIdAsLong();
+        uploadRateLimitService.checkOrThrow(UploadRateLimitService.SCENE_RESUME_UPLOAD, userId);
+        UploadResumeCmd cmd = new UploadResumeCmd(file);
+        cmd.setUserId(userId);
+        UploadTask uploadTask = resumeService.createAsyncUploadTask(cmd, refreshAllMatches);
+        return Result.success(UploadTaskResponse.from(uploadTask));
+    }
+
+    @GetMapping("/upload-task/{taskId}")
+    public Result<UploadTaskResponse> getUploadTask(@PathVariable Long taskId) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        UploadTask task = resumeService.getUploadTask(taskId, userId);
+        return Result.success(UploadTaskResponse.from(task));
     }
 
     /**

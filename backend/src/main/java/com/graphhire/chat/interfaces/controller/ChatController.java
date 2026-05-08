@@ -15,6 +15,7 @@ import com.graphhire.common.vo.Result;
 import com.graphhire.config.UploadProperties;
 import com.graphhire.notification.application.service.NotificationAppService;
 import com.graphhire.resume.application.service.dto.ResumePreviewFile;
+import com.graphhire.upload.application.service.UploadRateLimitService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.CacheControl;
 import org.springframework.http.ContentDisposition;
@@ -47,6 +48,8 @@ public class ChatController {
     private NotificationAppService notificationAppService;
     @Autowired
     private UploadProperties uploadProperties;
+    @Autowired
+    private UploadRateLimitService uploadRateLimitService;
 
     @GetMapping("/conversations")
     public Result<List<ChatConversationSummaryDTO>> listConversations() {
@@ -99,8 +102,9 @@ public class ChatController {
     @PostMapping(value = "/messages/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Result<Map<String, Long>> sendImageMessage(@RequestPart("file") MultipartFile file,
                                                       @RequestParam("conversationId") Long conversationId) throws Exception {
-        validateChatImage(file);
         Long currentUserId = StpUtil.getLoginIdAsLong();
+        uploadRateLimitService.checkOrThrow(UploadRateLimitService.SCENE_CHAT_IMAGE, currentUserId);
+        validateChatImage(file);
         Long messageId = chatAppService.sendImageMessage(currentUserId, conversationId, file.getOriginalFilename(), file.getBytes());
         return Result.success(Map.of("messageId", messageId));
     }
