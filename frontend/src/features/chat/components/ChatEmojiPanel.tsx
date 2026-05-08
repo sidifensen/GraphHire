@@ -34,7 +34,7 @@ export function ChatEmojiPanel({ onSelect }: ChatEmojiPanelProps) {
   return (
     <div
       data-testid="chat-emoji-panel"
-      className="absolute bottom-14 left-0 z-20 w-[430px] rounded-2xl border border-white/60 bg-white/92 p-3 shadow-[0_20px_50px_rgba(15,23,42,0.20)] backdrop-blur-xl dark:border-white/10 dark:bg-surface-container-low/90 dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)]"
+      className="absolute bottom-14 left-0 z-20 w-[430px] rounded-2xl border border-outline-variant/60 bg-surface-container-lowest/95 p-3 shadow-[0_20px_50px_rgba(15,23,42,0.20)] backdrop-blur-xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)]"
     >
       <div className="mb-2 flex items-center gap-2 overflow-x-auto pb-1" data-testid="chat-emoji-category-tabs">
         {CHAT_EMOJI_CATEGORIES.map((category) => (
@@ -47,7 +47,7 @@ export function ChatEmojiPanel({ onSelect }: ChatEmojiPanelProps) {
               'shrink-0 rounded-full px-2.5 py-1 text-xs font-bold transition-colors',
               activeCategory?.id === category.id
                 ? 'bg-primary/15 text-primary ring-1 ring-primary/25 dark:bg-primary/20 dark:text-on-primary'
-                : 'bg-white/70 text-on-surface-variant hover:bg-surface-low dark:bg-surface-container-high/60 dark:text-on-surface-variant dark:hover:bg-surface-container-high/80',
+                : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high dark:text-on-surface-variant',
             )}
           >
             {category.label}
@@ -57,7 +57,7 @@ export function ChatEmojiPanel({ onSelect }: ChatEmojiPanelProps) {
 
       <div
         data-testid="chat-emoji-scroll-region"
-        className="h-64 overflow-y-auto rounded-xl bg-surface-low/70 p-2 ring-1 ring-white/70 dark:bg-surface-container-high/40 dark:ring-white/10"
+        className="chat-scrollbar h-64 overflow-y-auto rounded-xl bg-surface-container p-2 ring-1 ring-outline-variant/55"
       >
         <div className="grid grid-cols-10 gap-2">
           {pageEmojis.map((emoji) => (
@@ -65,7 +65,7 @@ export function ChatEmojiPanel({ onSelect }: ChatEmojiPanelProps) {
               key={emoji}
               type="button"
               onClick={() => onSelect(emoji)}
-              className="h-7 w-7 rounded-lg hover:bg-white text-base leading-none dark:text-on-surface dark:hover:bg-white/10"
+              className="h-7 w-7 rounded-lg hover:bg-surface-container-high text-base leading-none dark:text-on-surface"
               aria-label={emoji}
             >
               {emoji}
@@ -82,7 +82,7 @@ export function ChatEmojiPanel({ onSelect }: ChatEmojiPanelProps) {
           aria-label="上一页表情"
           onClick={() => setPage((prev) => Math.max(1, prev - 1))}
           disabled={page <= 1}
-          className="rounded-md bg-white/80 px-2 py-0.5 font-bold disabled:opacity-40 dark:bg-surface-container-high/70 dark:text-on-surface"
+          className="rounded-md bg-surface-container px-2 py-0.5 font-bold disabled:opacity-40 dark:text-on-surface"
         >
           上一页
         </button>
@@ -91,7 +91,7 @@ export function ChatEmojiPanel({ onSelect }: ChatEmojiPanelProps) {
           aria-label="下一页表情"
           onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
           disabled={page >= totalPages}
-          className="rounded-md bg-white/80 px-2 py-0.5 font-bold disabled:opacity-40 dark:bg-surface-container-high/70 dark:text-on-surface"
+          className="rounded-md bg-surface-container px-2 py-0.5 font-bold disabled:opacity-40 dark:text-on-surface"
         >
           下一页
         </button>

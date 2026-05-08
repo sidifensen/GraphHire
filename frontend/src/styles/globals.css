@@ -176,6 +176,30 @@ html body[data-scroll-locked] .right-scroll-bar-position {
   background: var(--color-outline);
 }
 
+.chat-scrollbar {
+  scrollbar-color: var(--color-surface-container-highest) var(--color-surface-container-low);
+  scrollbar-width: thin;
+}
+
+.chat-scrollbar::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.chat-scrollbar::-webkit-scrollbar-track {
+  background: var(--color-surface-container-low);
+}
+
+.chat-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-surface-container-highest);
+  border-radius: 9999px;
+  border: 2px solid var(--color-surface-container-low);
+}
+
+.chat-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-outline);
+}
+
 .dark {
   --color-primary: #4789ff;
   --color-primary-container: #4789ff;

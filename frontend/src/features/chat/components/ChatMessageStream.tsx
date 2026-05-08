@@ -49,7 +49,7 @@ export function ChatMessageStream({
   messageEndRef,
 }: ChatMessageStreamProps) {
   return (
-    <div data-testid="chat-message-scroll-container" className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-3 bg-gradient-to-b from-white/25 to-white/8 dark:from-white/5 dark:to-transparent">
+    <div data-testid="chat-message-scroll-container" className="chat-scrollbar flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-3 bg-gradient-to-b from-surface-container/55 to-surface-container-low/25 dark:from-surface-container/45 dark:to-transparent">
       {loadingMessages ? <div className="text-sm text-on-surface-variant">消息加载中...</div> : null}
       {!loadingMessages && messages.length === 0 ? <div className="text-sm text-on-surface-variant">暂无消息</div> : null}
 
@@ -67,17 +67,17 @@ export function ChatMessageStream({
           <div key={message.id}>
             {showDateTag ? (
               <div data-testid="chat-date-separator" className="flex justify-center my-2">
-                <span className="rounded-full bg-white/78 px-3 py-1 text-[11px] text-on-surface-variant ring-1 ring-white/85 dark:bg-surface-container-high/70 dark:text-on-surface-variant dark:ring-white/10">{formatDateTag(message.createTime)}</span>
+                <span className="rounded-full bg-surface-container px-3 py-1 text-[11px] text-on-surface-variant ring-1 ring-outline-variant/55">{formatDateTag(message.createTime)}</span>
               </div>
             ) : null}
             <div className={`flex items-end gap-2 ${self ? 'justify-end' : 'justify-start'}`}>
               {!self ? <ChatAvatar name={senderName} imageUrl={peerAvatarUrl} testId="chat-message-avatar" /> : null}
               <div
                 data-testid={self ? 'chat-message-bubble-self' : 'chat-message-bubble-peer'}
-                className={`max-w-[78%] rounded-2xl px-3 py-2 text-sm shadow-[0_8px_24px_rgba(15,23,42,0.08)] ${self ? 'bg-primary text-on-primary ring-1 ring-primary/10 dark:shadow-[0_8px_24px_rgba(0,0,0,0.28)]' : 'bg-white/85 text-on-surface ring-1 ring-white/80 dark:bg-surface-container-high/65 dark:ring-white/10'}`}
+                className={`max-w-[78%] rounded-2xl px-3 py-2 text-sm shadow-[0_8px_24px_rgba(15,23,42,0.08)] ${self ? 'bg-primary text-on-primary ring-1 ring-primary/10 dark:shadow-[0_8px_24px_rgba(0,0,0,0.28)]' : 'bg-surface-container text-on-surface ring-1 ring-outline-variant/55'}`}
               >
                 {message.messageType === 3 && ext ? (
-                  <div className={`rounded-xl px-3 py-2 ${self ? 'bg-white/12 ring-1 ring-white/20 dark:bg-white/10 dark:ring-white/10' : 'bg-white/88 ring-1 ring-white/90 dark:bg-surface-container-highest/70 dark:ring-white/10'}`}>
+                  <div className={`rounded-xl px-3 py-2 ${self ? 'bg-white/12 ring-1 ring-white/20 dark:bg-white/10 dark:ring-white/10' : 'bg-surface-container-high ring-1 ring-outline-variant/55'}`}>
                     <div className="flex items-start gap-2">
                       <span className="text-xl leading-none">📄</span>
                       <div className="min-w-0">

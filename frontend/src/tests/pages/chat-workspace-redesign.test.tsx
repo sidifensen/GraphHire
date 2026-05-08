@@ -391,7 +391,7 @@ describe('chat workspace redesign', () => {
     expect(screen.getAllByTestId('chat-message-avatar').length).toBeGreaterThan(1);
   });
 
-  it('keeps sent bubble text readable and exposes dark-mode classes on chat surfaces', async () => {
+  it('keeps sent bubble text readable and exposes theme token classes on chat surfaces', async () => {
     render(<UserChatListPage />);
 
     await waitFor(() => expect(listConversationsMock).toHaveBeenCalledTimes(1));
@@ -402,10 +402,12 @@ describe('chat workspace redesign', () => {
     expect(sentBubble.className).not.toContain('text-white');
 
     expect(screen.getByTestId('chat-workspace').className).toContain('dark:md:from-surface-container-lowest');
-    expect(screen.getByTestId('chat-conversation-list-panel').className).toContain('dark:bg-surface-container-low/80');
+    expect(screen.getByTestId('chat-conversation-list-panel').className).toContain('bg-surface-container-low/80');
+    expect(screen.getByTestId('chat-conversation-list-panel').className).not.toContain('bg-white');
     expect(screen.getByTestId('chat-conversation-detail-panel').className).toContain('dark:bg-surface-container-low/80');
     expect(screen.getByTestId('chat-detail-header').className).toContain('dark:bg-white/5');
-    expect(screen.getByTestId('chat-detail-composer').className).toContain('dark:bg-white/5');
+    expect(screen.getByTestId('chat-detail-composer').className).toContain('bg-surface-container-low/70');
+    expect(screen.getByTestId('chat-detail-composer').className).not.toContain('bg-white');
   });
 
   it('opens emoji panel and inserts selected emoji into input', async () => {
@@ -437,6 +439,38 @@ describe('chat workspace redesign', () => {
     fireEvent.click(within(panel).getByRole('button', { name: '下一页表情' }));
     expect(within(panel).getByText('笑脸 · 第2/2页')).toBeInTheDocument();
     expect(within(panel).getByRole('button', { name: '上一页表情' })).toBeInTheDocument();
+  });
+
+  it('uses theme tokens for dark-mode critical chat elements without hardcoded white backgrounds', async () => {
+    render(<UserChatListPage />);
+
+    await waitFor(() => expect(listConversationsMock).toHaveBeenCalledTimes(1));
+
+    const searchInput = screen.getByPlaceholderText('搜索会话...');
+    const emojiButton = screen.getByTestId('chat-emoji-button');
+    const albumButton = screen.getByLabelText('相册');
+    const textInput = screen.getByPlaceholderText('输入消息...');
+    const messageList = screen.getByTestId('chat-message-scroll-container');
+    const peerBubbles = await screen.findAllByTestId('chat-message-bubble-peer');
+
+    expect(searchInput.className).toContain('bg-surface-container');
+    expect(searchInput.className).not.toContain('bg-white');
+
+    expect(emojiButton.className).toContain('bg-surface-container');
+    expect(emojiButton.className).not.toContain('bg-white');
+
+    expect(albumButton.className).toContain('bg-surface-container');
+    expect(albumButton.className).not.toContain('bg-white');
+
+    expect(textInput.className).toContain('bg-surface-container');
+    expect(textInput.className).not.toContain('bg-white');
+
+    expect(messageList.className).toContain('chat-scrollbar');
+    expect(peerBubbles.length).toBeGreaterThan(0);
+    peerBubbles.forEach((peerBubble) => {
+      expect(peerBubble.className).toContain('bg-surface-container');
+      expect(peerBubble.className).not.toContain('bg-white');
+    });
   });
 
   it('renders enterprise workspace without resume button and keeps interview action', async () => {
