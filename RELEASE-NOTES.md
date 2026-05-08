@@ -1,6 +1,8 @@
 # Release Notes
 
 ## 2026-05-08
+- fix: 修复聊天表情弹窗在夜间模式下滚动条未适配问题，分类横向滚动区统一接入 `chat-scrollbar` 主题滚动条样式
+- test: 补充 `chat-workspace-redesign` 回归断言，约束表情分类滚动区与表情网格滚动区必须使用 `chat-scrollbar`
 - fix: 修复沟通页 PDF 预览在 CSP 限制下仍无法打开的问题，聊天预览弹窗改为 `iframe` 渲染并移除 `sandbox`，确保 `blob:` 预览可正常加载
 - fix: 前端 CSP 新增 `frame-src 'self' blob:`，与聊天 PDF 预览策略对齐，同时保持 `object-src 'none'` 安全约束不变
 - test: 更新 `chat-workspace-redesign` 中 PDF 预览断言（`iframe` + 下载链接），并通过前端定向测试、全量测试与构建验证

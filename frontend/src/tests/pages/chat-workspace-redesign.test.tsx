@@ -429,9 +429,13 @@ describe('chat workspace redesign', () => {
     fireEvent.click(await screen.findByTestId('chat-emoji-button'));
 
     const panel = await screen.findByTestId('chat-emoji-panel');
+    const categoryTabs = within(panel).getByTestId('chat-emoji-category-tabs');
     const scrollRegion = within(panel).getByTestId('chat-emoji-scroll-region');
+    expect(categoryTabs.className).toContain('chat-scrollbar');
+    expect(categoryTabs.className).toContain('overflow-x-auto');
     expect(scrollRegion.className).toContain('h-64');
     expect(scrollRegion.className).toContain('overflow-y-auto');
+    expect(scrollRegion.className).toContain('chat-scrollbar');
 
     fireEvent.click(within(panel).getByRole('button', { name: '笑脸' }));
     expect(within(panel).getByText('笑脸 · 第1/2页')).toBeInTheDocument();

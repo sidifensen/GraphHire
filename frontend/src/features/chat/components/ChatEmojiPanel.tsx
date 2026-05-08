@@ -36,7 +36,7 @@ export function ChatEmojiPanel({ onSelect }: ChatEmojiPanelProps) {
       data-testid="chat-emoji-panel"
       className="absolute bottom-14 left-0 z-20 w-[430px] rounded-2xl border border-outline-variant/60 bg-surface-container-lowest/95 p-3 shadow-[0_20px_50px_rgba(15,23,42,0.20)] backdrop-blur-xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)]"
     >
-      <div className="mb-2 flex items-center gap-2 overflow-x-auto pb-1" data-testid="chat-emoji-category-tabs">
+      <div className="chat-scrollbar mb-2 flex items-center gap-2 overflow-x-auto pb-1" data-testid="chat-emoji-category-tabs">
         {CHAT_EMOJI_CATEGORIES.map((category) => (
           <button
             key={category.id}
