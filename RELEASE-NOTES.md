@@ -1,6 +1,8 @@
 # Release Notes
 
 ## 2026-05-08
+- fix: 修复聊天表情弹窗夜间模式边框偏白问题，外层边框与内层 ring 改为显式主题 token（`border-surface-container-highest + dark:border-outline-variant`），避免透明度叠加导致发白
+- test: 更新 `chat-workspace-redesign` 断言，约束表情弹窗边框不再使用 `border-outline-variant/60`，并校验内层 ring 的暗色 token
 - fix: 修复聊天表情弹窗背景发透问题，弹窗容器改为不透明 `bg-surface-container-lowest`，移除半透明背景与毛玻璃效果，避免夜间消息内容透出影响可读性
 - test: 补充 `chat-workspace-redesign` 断言，约束表情弹窗不得使用 `bg-surface-container-lowest/95` 与 `backdrop-blur*`
 - fix: 修复聊天表情弹窗在夜间模式下滚动条未适配问题，分类横向滚动区统一接入 `chat-scrollbar` 主题滚动条样式

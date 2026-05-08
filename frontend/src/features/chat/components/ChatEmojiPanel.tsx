@@ -34,7 +34,7 @@ export function ChatEmojiPanel({ onSelect }: ChatEmojiPanelProps) {
   return (
     <div
       data-testid="chat-emoji-panel"
-      className="absolute bottom-14 left-0 z-20 w-[430px] rounded-2xl border border-outline-variant/60 bg-surface-container-lowest p-3 shadow-[0_20px_50px_rgba(15,23,42,0.20)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)]"
+      className="absolute bottom-14 left-0 z-20 w-[430px] rounded-2xl border border-surface-container-highest bg-surface-container-lowest p-3 shadow-[0_20px_50px_rgba(15,23,42,0.20)] dark:border-outline-variant dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)]"
     >
       <div className="chat-scrollbar mb-2 flex items-center gap-2 overflow-x-auto pb-1" data-testid="chat-emoji-category-tabs">
         {CHAT_EMOJI_CATEGORIES.map((category) => (
@@ -57,7 +57,7 @@ export function ChatEmojiPanel({ onSelect }: ChatEmojiPanelProps) {
 
       <div
         data-testid="chat-emoji-scroll-region"
-        className="chat-scrollbar h-64 overflow-y-auto rounded-xl bg-surface-container p-2 ring-1 ring-outline-variant/55"
+        className="chat-scrollbar h-64 overflow-y-auto rounded-xl bg-surface-container p-2 ring-1 ring-surface-container-highest dark:ring-outline-variant"
       >
         <div className="grid grid-cols-10 gap-2">
           {pageEmojis.map((emoji) => (

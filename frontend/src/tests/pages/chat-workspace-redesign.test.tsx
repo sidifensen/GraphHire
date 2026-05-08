@@ -432,6 +432,9 @@ describe('chat workspace redesign', () => {
     const categoryTabs = within(panel).getByTestId('chat-emoji-category-tabs');
     const scrollRegion = within(panel).getByTestId('chat-emoji-scroll-region');
     expect(panel.className).toContain('bg-surface-container-lowest');
+    expect(panel.className).toContain('border-surface-container-highest');
+    expect(panel.className).toContain('dark:border-outline-variant');
+    expect(panel.className).not.toContain('border-outline-variant/60');
     expect(panel.className).not.toContain('bg-surface-container-lowest/95');
     expect(panel.className).not.toContain('backdrop-blur');
     expect(categoryTabs.className).toContain('chat-scrollbar');
@@ -439,6 +442,8 @@ describe('chat workspace redesign', () => {
     expect(scrollRegion.className).toContain('h-64');
     expect(scrollRegion.className).toContain('overflow-y-auto');
     expect(scrollRegion.className).toContain('chat-scrollbar');
+    expect(scrollRegion.className).toContain('ring-surface-container-highest');
+    expect(scrollRegion.className).toContain('dark:ring-outline-variant');
 
     fireEvent.click(within(panel).getByRole('button', { name: '笑脸' }));
     expect(within(panel).getByText('笑脸 · 第1/2页')).toBeInTheDocument();
