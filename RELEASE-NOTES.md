@@ -1,6 +1,9 @@
 # Release Notes
 
 ## 2026-05-08
+- fix: 修复沟通页 PDF 预览在 CSP 限制下仍无法打开的问题，聊天预览弹窗改为 `iframe` 渲染并移除 `sandbox`，确保 `blob:` 预览可正常加载
+- fix: 前端 CSP 新增 `frame-src 'self' blob:`，与聊天 PDF 预览策略对齐，同时保持 `object-src 'none'` 安全约束不变
+- test: 更新 `chat-workspace-redesign` 中 PDF 预览断言（`iframe` + 下载链接），并通过前端定向测试、全量测试与构建验证
 - fix: 修复沟通页 PDF 预览被浏览器拦截问题，聊天预览弹窗从 `iframe sandbox` 改为 `object[type=application/pdf]` 内嵌渲染，避免出现“该内容被屏蔽”空白页
 - feat: 聊天 PDF 预览新增降级回退入口：当浏览器不支持内嵌预览时，弹窗内可直接点击“下载PDF文件”
 - test: 更新 `chat-workspace-redesign` 断言覆盖新 PDF 预览结构（`object` + 下载回退链接），并通过前端 `npm run test:run`（418 通过）与 `npm run build`
