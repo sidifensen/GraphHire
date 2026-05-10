@@ -1,29 +1,93 @@
 'use client';
 
-import { mockJobs } from "@/app/enterprise/_mock/lib/mockData";
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import Link from 'next/link';
+import { useEffect, useMemo, useState } from 'react';
+import { companyApi } from '@/lib/api/company';
+import type { EnterpriseDashboard, EnterpriseDashboardJobItem } from '@/lib/types/enterprise';
+
+const EMPTY_DASHBOARD: EnterpriseDashboard = {
+  pendingConversationCount: 0,
+  newMatchCandidateCount: 0,
+  activeJobCount: 0,
+  recentJobs: [],
+};
+
+function toSafeCount(value?: number | null): number {
+  if (value == null || Number.isNaN(value)) {
+    return 0;
+  }
+  return Math.max(0, Math.floor(value));
+}
+
+function getJobStatusText(status?: string | null): string {
+  if (status === 'PUBLISHED') return '招聘中';
+  if (status === 'CLOSED') return '已关闭';
+  if (status === 'DRAFT') return '草稿';
+  return status || '草稿';
+}
+
+function buildJobSubline(job: EnterpriseDashboardJobItem): string {
+  const department = job.department?.trim();
+  return department && department.length > 0 ? department : '部门待定';
+}
 
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [dashboard, setDashboard] = useState<EnterpriseDashboard>(EMPTY_DASHBOARD);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 600);
-    return () => clearTimeout(timer);
+    let cancelled = false;
+
+    const loadDashboard = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const response = await companyApi.getDashboard();
+        if (!cancelled) {
+          setDashboard(response ?? EMPTY_DASHBOARD);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          // 业务意图：接口失败时不打断工作台导航，使用安全空态兜底。
+          setDashboard(EMPTY_DASHBOARD);
+          setError(err instanceof Error ? err.message : '工作台数据加载失败');
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadDashboard();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
+  const metricPendingConversation = toSafeCount(dashboard.pendingConversationCount);
+  const metricNewMatches = toSafeCount(dashboard.newMatchCandidateCount);
+  const metricActiveJobs = toSafeCount(dashboard.activeJobCount);
+
+  // 关键约束：工作台首屏只展示少量岗位，避免移动端首屏信息过载。
+  const recentJobs = useMemo(() => (dashboard.recentJobs ?? []).slice(0, 4), [dashboard.recentJobs]);
 
   return (
     <>
       <main className="w-full max-w-7xl mx-auto px-container-margin md:px-8 py-stack-gap-md md:py-8 flex flex-col gap-8 overflow-y-auto pb-32 md:pb-8">
-        
-        {/* Desktop Greeting (Hidden on mobile) */}
+        {error ? (
+          <div className="rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-sm text-error">
+            {error || '工作台数据加载失败'}
+          </div>
+        ) : null}
+
         <div className="hidden md:block">
           <h1 className="text-3xl font-bold tracking-tight text-on-surface mb-2">欢迎回来，HR</h1>
           <p className="text-on-surface-variant font-body-md">这是您今天的招聘数据概览。</p>
         </div>
 
-        {/* Core Metrics Bento Grid */}
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-stack-gap-sm md:gap-6">
           <div className="bg-gradient-to-br from-primary-fixed to-surface-container-lowest p-inline-padding-md rounded-xl border border-surface-variant shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-md col-span-2 flex justify-between items-center transition-all active:scale-[0.98]">
             <div>
@@ -31,7 +95,7 @@ export default function Dashboard() {
               {loading ? (
                 <div className="h-8 w-16 bg-surface-variant animate-pulse rounded"></div>
               ) : (
-                <p className="font-headline-lg text-[32px] font-bold text-on-primary-fixed">24</p>
+                <p className="font-headline-lg text-[32px] font-bold text-on-primary-fixed">{metricPendingConversation}</p>
               )}
             </div>
             <div className="w-12 h-12 rounded-full bg-primary-fixed-dim/50 flex items-center justify-center text-primary shadow-sm">
@@ -43,11 +107,11 @@ export default function Dashboard() {
               <span className="material-symbols-outlined text-secondary text-[20px]">person_search</span>
               <p className="font-label-md text-label-md text-on-surface-variant">新匹配候选人</p>
             </div>
-             {loading ? (
-                <div className="h-7 w-12 bg-surface-variant animate-pulse rounded"></div>
-              ) : (
-                <p className="font-headline-md text-2xl font-bold text-on-surface">156</p>
-              )}
+            {loading ? (
+              <div className="h-7 w-12 bg-surface-variant animate-pulse rounded"></div>
+            ) : (
+              <p className="font-headline-md text-2xl font-bold text-on-surface">{metricNewMatches}</p>
+            )}
           </div>
           <div className="bg-surface-container-lowest p-inline-padding-sm md:p-inline-padding-md rounded-xl border border-surface-variant shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-md transition-all active:scale-[0.98] flex flex-col justify-center">
             <div className="flex items-center gap-2 mb-2">
@@ -55,18 +119,15 @@ export default function Dashboard() {
               <p className="font-label-md text-label-md text-on-surface-variant">在招职位</p>
             </div>
             {loading ? (
-                <div className="h-7 w-8 bg-surface-variant animate-pulse rounded"></div>
-              ) : (
-                <p className="font-headline-md text-2xl font-bold text-on-surface">12</p>
+              <div className="h-7 w-8 bg-surface-variant animate-pulse rounded"></div>
+            ) : (
+              <p className="font-headline-md text-2xl font-bold text-on-surface">{metricActiveJobs}</p>
             )}
           </div>
         </section>
 
-        {/* Main Content Layout for Desktop */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
           <div className="xl:col-span-2 flex flex-col gap-8">
-            
-            {/* Quick Access */}
             <section>
               <h2 className="font-headline-sm text-headline-sm text-on-surface mb-stack-gap-md transition-all">快捷操作</h2>
               <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-stack-gap-sm md:gap-4">
@@ -108,8 +169,7 @@ export default function Dashboard() {
                 </Link>
               </div>
             </section>
-    
-            {/* Recent Jobs List */}
+
             <section className="md:mt-2">
               <div className="flex justify-between items-center mb-stack-gap-md transition-all">
                 <h2 className="font-headline-sm text-headline-sm text-on-surface">近期热招</h2>
@@ -119,35 +179,40 @@ export default function Dashboard() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2 gap-stack-gap-sm md:gap-6">
                 {loading ? (
-                  // Skeletons
-                  Array(4).fill(0).map((_, i) => (
-                    <div key={i} className="bg-surface-container-lowest p-inline-padding-md rounded-xl border border-surface-variant shadow-sm h-[130px] animate-pulse"></div>
-                  ))
+                  Array(4)
+                    .fill(0)
+                    .map((_, i) => (
+                      <div key={i} className="bg-surface-container-lowest p-inline-padding-md rounded-xl border border-surface-variant shadow-sm h-[130px] animate-pulse"></div>
+                    ))
+                ) : recentJobs.length === 0 ? (
+                  <div className="col-span-full rounded-xl border border-surface-variant bg-surface-container-low px-4 py-8 text-center text-on-surface-variant">
+                    暂无近期岗位
+                  </div>
                 ) : (
-                  mockJobs.slice(0, 4).map((job) => (
+                  recentJobs.map((job) => (
                     <Link href={`/enterprise/jobs/${job.id}`} key={job.id} className="bg-surface-container-lowest p-inline-padding-md rounded-xl border border-surface-variant shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-md active:scale-[0.98] transition-all block">
                       <div className="flex justify-between items-start mb-3">
                         <div>
                           <h3 className="font-body-lg text-lg text-on-surface font-semibold mb-1 truncate max-w-[150px] sm:max-w-[180px]">{job.title}</h3>
-                          <p className="font-label-md text-[13px] text-on-surface-variant truncate">{job.location} · {job.type} · {job.department}</p>
+                          <p className="font-label-md text-[13px] text-on-surface-variant truncate">{buildJobSubline(job)}</p>
                         </div>
-                        {job.status === '招聘中' ? (
-                           <span className="px-2 py-1 rounded-md bg-primary/10 text-primary font-label-sm text-[12px] shrink-0 font-semibold">{job.status}</span>
+                        {job.status === 'PUBLISHED' ? (
+                          <span className="px-2 py-1 rounded-md bg-primary/10 text-primary font-label-sm text-[12px] shrink-0 font-semibold">{getJobStatusText(job.status)}</span>
                         ) : (
-                           <span className="px-2 py-1 rounded-md bg-surface-variant text-on-surface-variant font-label-sm text-[12px] shrink-0 font-semibold">{job.status}</span>
+                          <span className="px-2 py-1 rounded-md bg-surface-variant text-on-surface-variant font-label-sm text-[12px] shrink-0 font-semibold">{getJobStatusText(job.status)}</span>
                         )}
                       </div>
                       <div className="flex justify-between items-center mt-4 pt-3 border-t border-surface-variant">
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-1.5">
                             <span className="material-symbols-outlined text-[18px] text-secondary">group</span>
-                            <span className="font-label-md text-[13px] text-secondary font-medium">{job.candidates} 候选人</span>
+                            <span className="font-label-md text-[13px] text-secondary font-medium">{toSafeCount(job.matchCount)} 候选人</span>
                           </div>
                         </div>
-                        {job.newApplications > 0 && (
+                        {toSafeCount(job.applyCount) > 0 && (
                           <div className="flex items-center gap-1.5 bg-error/10 px-2 py-0.5 rounded text-error shrink-0">
                             <span className="material-symbols-outlined text-[14px]">mail</span>
-                            <span className="font-label-md text-[13px] font-semibold">{job.newApplications} 新会话</span>
+                            <span className="font-label-md text-[13px] font-semibold">{toSafeCount(job.applyCount)} 新会话</span>
                           </div>
                         )}
                       </div>
@@ -158,7 +223,6 @@ export default function Dashboard() {
             </section>
           </div>
 
-          {/* Right Sidebar (Desktop) */}
           <div className="flex flex-col gap-8">
             <section className="bg-surface-container-lowest rounded-xl border border-surface-variant shadow-[0_2px_8px_rgba(0,0,0,0.04)] p-inline-padding-md">
               <div className="flex justify-between items-center mb-4">
@@ -169,7 +233,9 @@ export default function Dashboard() {
               </div>
               <div className="flex flex-col gap-4">
                 {loading ? (
-                    Array(3).fill(0).map((_, i) => (
+                  Array(3)
+                    .fill(0)
+                    .map((_, i) => (
                       <div key={i} className="flex gap-3 animate-pulse">
                         <div className="w-12 h-12 rounded bg-surface-variant shrink-0"></div>
                         <div className="flex-1 bg-surface-variant rounded h-12"></div>
