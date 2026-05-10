@@ -8,7 +8,7 @@ spring: # Spring Boot 核心配置
   application: # 应用基础信息
     name: graphhire-backend # 应用名称（用于日志/注册中心标识）
   config: # 外部配置导入
-    import: optional:file:.env,optional:file:backend/.env # 按顺序加载环境变量文件（存在则加载）
+    import: optional:file:.env[.properties],optional:file:backend/.env[.properties] # 按顺序加载无扩展名 .env（按 properties 语法解析，存在则加载）
   autoconfigure: # 自动装配控制
     exclude: [] # 排除自动装配类（为空表示不排除）
 
