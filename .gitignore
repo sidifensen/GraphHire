@@ -139,3 +139,4 @@ jacoco/
 /.tmp-chrome-profile/
 /.spectrai-logs/
 /.npm-cache/
+/docs/

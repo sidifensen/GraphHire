@@ -89,7 +89,12 @@ export function InterviewInviteDialog({ sending, onSubmit, onError }: InterviewI
           {sending ? '发送中...' : '面试通知'}
         </Button>
       </DialogTrigger>
-      <DialogContent aria-label="发送面试通知" aria-describedby="interview-dialog-desc">
+      {/* 企业端主题未定义 surface-lowest/surface-highest，使用 container token 保证弹窗实底且跨主题一致。 */}
+      <DialogContent
+        aria-label="发送面试通知"
+        aria-describedby="interview-dialog-desc"
+        className="bg-surface-container-lowest dark:bg-surface-container-highest"
+      >
         <DialogHeader>
           <DialogTitle>发送面试通知</DialogTitle>
           <DialogDescription id="interview-dialog-desc">请填写候选人面试信息，发送后会在会话中生成通知消息。</DialogDescription>
@@ -104,19 +109,20 @@ export function InterviewInviteDialog({ sending, onSubmit, onError }: InterviewI
                   id="interview-date"
                   type="button"
                   variant="outline"
-                  className="w-full justify-start border-outline/30 text-left font-medium text-on-surface"
+                  className="w-full justify-start border-outline/30 bg-surface-container-lowest text-left font-medium text-on-surface hover:bg-surface-container-low dark:bg-surface-container-high dark:hover:bg-surface-container-highest"
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {previewText || '请选择面试日期与时间'}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-3" align="start">
+              <PopoverContent className="w-auto bg-surface-container-lowest p-3 dark:bg-surface-container-highest" align="start">
                 <div className="space-y-3">
                   <div className="space-y-1">
                     <Label htmlFor="interview-date-native">日期</Label>
                     <Input
                       id="interview-date-native"
                       type="date"
+                      className="bg-surface-container-lowest dark:bg-surface-container-high"
                       value={dateValue ? formatDateValue(dateValue) : ''}
                       onChange={(event) => {
                         const value = event.target.value;
@@ -136,6 +142,7 @@ export function InterviewInviteDialog({ sending, onSubmit, onError }: InterviewI
                     <Input
                       id="interview-time-native"
                       type="time"
+                      className="bg-surface-container-lowest dark:bg-surface-container-high"
                       value={timeValue}
                       onChange={(event) => setTimeValue(event.target.value)}
                     />
@@ -150,6 +157,7 @@ export function InterviewInviteDialog({ sending, onSubmit, onError }: InterviewI
             <Input
               id="interview-location"
               placeholder="面试地点"
+              className="bg-surface-container-lowest dark:bg-surface-container-high"
               value={location}
               onChange={(event) => setLocation(event.target.value)}
             />
@@ -160,6 +168,7 @@ export function InterviewInviteDialog({ sending, onSubmit, onError }: InterviewI
             <Input
               id="interview-remark"
               placeholder="面试备注"
+              className="bg-surface-container-lowest dark:bg-surface-container-high"
               value={remark}
               onChange={(event) => setRemark(event.target.value)}
             />

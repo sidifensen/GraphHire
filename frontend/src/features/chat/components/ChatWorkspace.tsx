@@ -737,8 +737,9 @@ export default function ChatWorkspace({
     }
   };
 
+  // 桌面端去除聊天工作区外层包裹框，保留内部列表/详情面板视觉层级。
   return (
-    <section data-testid="chat-workspace" className="chat-frosted-shell mx-auto w-full max-w-6xl px-0 py-0 md:px-6 md:py-4 md:rounded-[28px] md:bg-gradient-to-br md:from-surface-container-lowest md:to-surface-container-low md:shadow-[0_24px_70px_rgba(15,23,42,0.12)] md:ring-1 md:ring-outline-variant/55 dark:md:from-surface-container-lowest dark:md:to-surface-container-low dark:md:shadow-[0_24px_70px_rgba(0,0,0,0.38)] dark:md:ring-outline-variant/70">
+    <section data-testid="chat-workspace" className="chat-frosted-shell mx-auto w-full max-w-6xl px-0 py-0 md:px-6 md:py-4">
       <ChatPreviewModal
         previewUrl={previewUrl}
         previewFileName={previewFileName}

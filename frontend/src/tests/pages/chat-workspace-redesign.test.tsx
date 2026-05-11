@@ -340,8 +340,8 @@ describe('chat workspace redesign', () => {
 
     const imageThumb = await screen.findByRole('img', { name: 'avatar.jpg' });
     expect(imageThumb.className).toContain('w-full');
-    expect(imageThumb.className).toContain('max-w-full');
     expect(imageThumb.className).toContain('max-h-60');
+    expect(imageThumb.className).toContain('object-cover');
   });
 
   it('keeps mobile detail header and composer fixed while only message list scrolls', async () => {
@@ -401,8 +401,8 @@ describe('chat workspace redesign', () => {
     expect(sentBubble.className).toContain('text-on-primary');
     expect(sentBubble.className).not.toContain('text-white');
 
-    expect(screen.getByTestId('chat-workspace').className).toContain('dark:md:from-surface-container-lowest');
-    expect(screen.getByTestId('chat-workspace').className).toContain('md:ring-outline-variant/55');
+    expect(screen.getByTestId('chat-workspace').className).not.toContain('md:bg-gradient-to-br');
+    expect(screen.getByTestId('chat-workspace').className).not.toContain('md:ring-1');
     expect(screen.getByTestId('chat-conversation-list-panel').className).toContain('bg-surface-container-low/80');
     expect(screen.getByTestId('chat-conversation-list-panel').className).not.toContain('bg-white');
     expect(screen.getByTestId('chat-conversation-detail-panel').className).toContain('dark:bg-surface-container-low/80');

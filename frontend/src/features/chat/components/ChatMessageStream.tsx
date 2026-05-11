@@ -62,6 +62,9 @@ export function ChatMessageStream({
         const senderName = self ? currentUserName : getUserDisplay(role, selectedConversation);
 
         const resumeCanDownload = message.messageType === 3 ? canDownloadResume(ext) : false;
+        const isResumeMessage = message.messageType === 3 && !!ext;
+        const isImageMessage = message.messageType === 2 && !!ext;
+        const useFlatMessageContainer = isResumeMessage || isImageMessage;
 
         return (
           <div key={message.id}>
@@ -72,9 +75,10 @@ export function ChatMessageStream({
             ) : null}
             <div className={`flex items-end gap-2 ${self ? 'justify-end' : 'justify-start'}`}>
               {!self ? <ChatAvatar name={senderName} imageUrl={peerAvatarUrl} testId="chat-message-avatar" /> : null}
+              {/* 简历消息不再套外层气泡框，避免出现双层边框。 */}
               <div
                 data-testid={self ? 'chat-message-bubble-self' : 'chat-message-bubble-peer'}
-                className={`max-w-[78%] rounded-2xl px-3 py-2 text-sm shadow-[0_8px_24px_rgba(15,23,42,0.08)] ${self ? 'bg-primary text-on-primary ring-1 ring-primary/10 dark:shadow-[0_8px_24px_rgba(0,0,0,0.28)]' : 'bg-surface-container text-on-surface ring-1 ring-outline-variant/55'}`}
+                className={`max-w-[78%] text-sm ${useFlatMessageContainer ? '' : `rounded-2xl px-3 py-2 shadow-[0_8px_24px_rgba(15,23,42,0.08)] ${self ? 'bg-primary text-on-primary ring-1 ring-primary/10 dark:shadow-[0_8px_24px_rgba(0,0,0,0.28)]' : 'bg-surface-container text-on-surface ring-1 ring-outline-variant/55'}`}`}
               >
                 {message.messageType === 3 && ext ? (
                   <div className={`rounded-xl px-3 py-2 ${self ? 'bg-primary/20 ring-1 ring-primary/25 dark:bg-primary/25 dark:ring-primary/30' : 'bg-surface-container-high ring-1 ring-outline-variant/55'}`}>
@@ -114,13 +118,13 @@ export function ChatMessageStream({
                     {inlineImageUrls[message.id] ? (
                       <button
                         type="button"
-                        className="block overflow-hidden rounded-lg"
+                        className={`block w-[13rem] max-w-[52vw] overflow-hidden rounded-xl md:w-[14rem] ${self ? 'ring-1 ring-primary/25' : 'ring-1 ring-outline-variant/55'}`}
                         onClick={() => void onPreviewImage(message.conversationId, message.id, ext)}
                       >
                         <img
                           src={inlineImageUrls[message.id]}
                           alt={String(ext.fileName ?? '图片预览')}
-                          className="max-h-60 h-auto w-full max-w-full rounded-lg object-contain bg-black/10"
+                          className="block h-auto max-h-60 w-full object-cover"
                         />
                       </button>
                     ) : inlineImageErrors[message.id] ? (

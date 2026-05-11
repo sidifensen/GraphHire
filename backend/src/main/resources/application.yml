@@ -68,97 +68,97 @@ spring: # Spring Boot 核心配置
           ssl: # SSL 配置
             enable: true # 启用 SSL
 
-app: # 自定义业务配置
+app: # 自定义业务配置（上传、安全、限流、并发等业务参数入口）
   upload: # 上传相关配置
     avatar: # 头像上传配置
-      max-file-size: 2MB # 头像单文件大小上限
+      max-file-size: 2MB # 头像单文件大小上限（超限会被后端拒绝）
     resume: # 简历上传配置
-      max-file-size: 10MB # 简历单文件大小上限
-      allowed-extensions: [pdf, doc, docx] # 允许的文件扩展名
-      allowed-mime-types: # 允许的 MIME 类型列表
+      max-file-size: 10MB # 简历单文件大小上限（与 multipart 上限联动）
+      allowed-extensions: [pdf, doc, docx] # 简历允许的文件扩展名（用于基础格式校验）
+      allowed-mime-types: # 简历允许的 MIME 类型列表（防止仅改后缀绕过校验）
         - application/pdf # PDF 文档类型
         - application/msword # DOC 文档类型
         - application/vnd.openxmlformats-officedocument.wordprocessingml.document # DOCX 文档类型
-    chat-image:
-      max-file-size: 5MB
-      allowed-extensions: [jpg, jpeg, png, gif, webp]
-      allowed-mime-types:
-        - image/jpeg
-        - image/png
-        - image/gif
-        - image/webp
-    rate-limit:
-      enabled: true
-      key-prefix: upload:rate-limit
-      scenes:
-        resume:
-          enabled: true
-          user:
-            capacity: 20
-            refill-tokens: 20
-            refill-seconds: 60
-          global:
-            capacity: 400
-            refill-tokens: 400
-            refill-seconds: 60
-        person-avatar:
-          enabled: true
-          user:
-            capacity: 10
-            refill-tokens: 10
-            refill-seconds: 60
-          global:
-            capacity: 200
-            refill-tokens: 200
-            refill-seconds: 60
-        company-avatar:
-          enabled: true
-          user:
-            capacity: 10
-            refill-tokens: 10
-            refill-seconds: 60
-          global:
-            capacity: 200
-            refill-tokens: 200
-            refill-seconds: 60
-        chat-image:
-          enabled: true
-          user:
-            capacity: 20
-            refill-tokens: 20
-            refill-seconds: 60
-          global:
-            capacity: 2000
-            refill-tokens: 2000
-            refill-seconds: 60
-  security:
-    cors:
-      allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:8888}
-    websocket:
-      allowed-origins: ${WS_ALLOWED_ORIGINS:http://localhost:8888}
+    chat-image: # 聊天图片上传配置
+      max-file-size: 5MB # 聊天图片单文件大小上限
+      allowed-extensions: [jpg, jpeg, png, gif, webp] # 聊天图片允许的文件扩展名
+      allowed-mime-types: # 聊天图片允许的 MIME 类型列表
+        - image/jpeg # JPEG 图片类型
+        - image/png # PNG 图片类型
+        - image/gif # GIF 图片类型
+        - image/webp # WEBP 图片类型
+    rate-limit: # 上传限流配置（令牌桶），用于防刷和保护存储/解析资源
+      enabled: true # 是否启用上传限流总开关
+      key-prefix: upload:rate-limit # Redis 限流键前缀（用于隔离不同业务限流命名空间）
+      scenes: # 按上传场景拆分限流策略
+        resume: # 简历上传限流策略
+          enabled: true # 是否启用简历上传限流
+          user: # 单用户维度限流
+            capacity: 20 # 令牌桶容量（最大可突发请求数）
+            refill-tokens: 20 # 每次补充的令牌数
+            refill-seconds: 60 # 补充周期（秒）
+          global: # 全局维度限流（所有用户共享）
+            capacity: 400 # 全局令牌桶容量
+            refill-tokens: 400 # 全局每次补充令牌数
+            refill-seconds: 60 # 全局令牌补充周期（秒）
+        person-avatar: # 个人头像上传限流策略
+          enabled: true # 是否启用个人头像上传限流
+          user: # 单用户维度限流
+            capacity: 10 # 令牌桶容量（控制头像频繁更新）
+            refill-tokens: 10 # 每次补充的令牌数
+            refill-seconds: 60 # 补充周期（秒）
+          global: # 全局维度限流
+            capacity: 200 # 全局令牌桶容量
+            refill-tokens: 200 # 全局每次补充令牌数
+            refill-seconds: 60 # 全局令牌补充周期（秒）
+        company-avatar: # 企业头像上传限流策略
+          enabled: true # 是否启用企业头像上传限流
+          user: # 单用户维度限流
+            capacity: 10 # 令牌桶容量（控制头像频繁更新）
+            refill-tokens: 10 # 每次补充的令牌数
+            refill-seconds: 60 # 补充周期（秒）
+          global: # 全局维度限流
+            capacity: 200 # 全局令牌桶容量
+            refill-tokens: 200 # 全局每次补充令牌数
+            refill-seconds: 60 # 全局令牌补充周期（秒）
+        chat-image: # 聊天图片上传限流策略
+          enabled: true # 是否启用聊天图片上传限流
+          user: # 单用户维度限流
+            capacity: 20 # 令牌桶容量（支持短时连续发送图片）
+            refill-tokens: 20 # 每次补充的令牌数
+            refill-seconds: 60 # 补充周期（秒）
+          global: # 全局维度限流
+            capacity: 2000 # 全局令牌桶容量（高并发聊天场景）
+            refill-tokens: 2000 # 全局每次补充令牌数
+            refill-seconds: 60 # 全局令牌补充周期（秒）
+  security: # 安全相关业务配置
+    cors: # HTTP 跨域配置
+      allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:8888} # 允许跨域来源（逗号分隔，默认前端本地地址）
+    websocket: # WebSocket 跨域配置
+      allowed-origins: ${WS_ALLOWED_ORIGINS:http://localhost:8888} # 允许 WebSocket 握手来源（逗号分隔）
   logging: # 业务日志配置
     slow-api-threshold-ms: ${SLOW_API_THRESHOLD_MS:500} # 慢接口阈值（毫秒）
-  mq:
-    resume-parse:
-      consume-thread-number: 20
-      consume-thread-max: 64
-    resume-match:
-      consume-thread-number: 8
-      consume-thread-max: 32
-    resume-upload:
-      consume-thread-number: 8
-      consume-thread-max: 32
-  concurrent:
-    resume-upload:
-      semaphore-name: resume:upload:permits
-      max-permits: 8
-      acquire-wait-seconds: 0
-      lease-seconds: 180
-    resume-parse:
-      semaphore-name: resume:parse:permits
-      max-permits: 16
-      acquire-wait-seconds: 0
-      lease-seconds: 600
+  mq: # 消息消费线程配置（按业务队列拆分）
+    resume-parse: # 简历解析消费配置
+      consume-thread-number: 20 # 消费核心线程数（常驻工作线程）
+      consume-thread-max: 64 # 消费最大线程数（高峰期扩容上限）
+    resume-match: # 简历匹配消费配置
+      consume-thread-number: 8 # 消费核心线程数
+      consume-thread-max: 32 # 消费最大线程数
+    resume-upload: # 简历上传后处理消费配置
+      consume-thread-number: 8 # 消费核心线程数
+      consume-thread-max: 32 # 消费最大线程数
+  concurrent: # 分布式并发控制配置（基于信号量）
+    resume-upload: # 简历上传并发控制
+      semaphore-name: resume:upload:permits # 分布式信号量名称（Redis Key）
+      max-permits: 8 # 最大并发许可数
+      acquire-wait-seconds: 0 # 获取许可最大等待时间（秒，0 表示不等待快速失败）
+      lease-seconds: 180 # 许可租约时长（秒，防止异常未释放导致死锁）
+    resume-parse: # 简历解析并发控制
+      semaphore-name: resume:parse:permits # 分布式信号量名称（Redis Key）
+      max-permits: 16 # 最大并发许可数
+      acquire-wait-seconds: 0 # 获取许可最大等待时间（秒，0 表示不等待快速失败）
+      lease-seconds: 600 # 许可租约时长（秒，覆盖解析任务较长耗时）
 
 # =========================
 # 中间件与业务集成
