@@ -5,9 +5,11 @@ import com.graphhire.auth.domain.repository.UserRepository;
 import com.graphhire.auth.domain.vo.UserType;
 import com.graphhire.chat.domain.model.ChatConversation;
 import com.graphhire.chat.domain.model.ChatMessage;
+import com.graphhire.chat.application.service.dto.ChatConversationSummaryDTO;
 import com.graphhire.chat.domain.repository.ChatConversationRepository;
 import com.graphhire.chat.domain.repository.ChatMessageRepository;
 import com.graphhire.chat.infrastructure.mq.ChatMQProducer;
+import com.graphhire.chat.infrastructure.persistence.po.ChatConversationViewPO;
 import com.graphhire.chat.infrastructure.persistence.repository.ChatConversationRepositoryImpl;
 import com.graphhire.job.domain.model.CompanyStaff;
 import com.graphhire.job.domain.model.Job;
@@ -22,10 +24,12 @@ import com.graphhire.resume.infrastructure.file.RustFSClient;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.dao.DuplicateKeyException;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -84,6 +88,61 @@ class ChatAppServiceTest {
         Long conversationId = chatAppService.startConversationAsPerson(44L, 11L);
 
         assertEquals(99L, conversationId);
+    }
+
+    @Test
+    @DisplayName("求职者并发创建同一会话时应回退到已存在会话")
+    void startConversationAsPerson_shouldReturnExistingConversationOnDuplicateInsert() {
+        Job job = new Job();
+        job.setId(11L);
+        job.setCompanyId(22L);
+        job.setOwnerUserId(33L);
+
+        ChatConversation existing = new ChatConversation();
+        existing.setId(199L);
+        existing.setJobId(11L);
+        existing.setCandidateUserId(44L);
+
+        when(jobRepository.findById(11L)).thenReturn(Optional.of(job));
+        when(conversationRepository.findByJobIdAndCandidateUserId(11L, 44L))
+            .thenReturn(Optional.empty())
+            .thenReturn(Optional.of(existing));
+        when(conversationRepository.save(any(ChatConversation.class))).thenThrow(new DuplicateKeyException("duplicate"));
+
+        Long conversationId = chatAppService.startConversationAsPerson(44L, 11L);
+
+        assertEquals(199L, conversationId);
+    }
+
+    @Test
+    @DisplayName("会话列表应直接使用聚合后的未读数")
+    void listConversations_shouldUseAggregatedUnreadCount() {
+        User companyUser = new User();
+        companyUser.setId(10L);
+        companyUser.setUserType(UserType.COMPANY);
+        when(userRepository.findById(10L)).thenReturn(Optional.of(companyUser));
+
+        ChatConversationViewPO view = new ChatConversationViewPO();
+        view.setConversationId(88L);
+        view.setJobId(11L);
+        view.setJobTitle("后端工程师");
+        view.setCompanyId(22L);
+        view.setCompanyName("GraphHire");
+        view.setRecruiterUserId(10L);
+        view.setCandidateUserId(20L);
+        view.setCandidateName("候选人");
+        view.setCandidateEmail("cand@example.com");
+        view.setLastMessageId(501L);
+        view.setLastMessageContent("hello");
+        view.setLastMessageTime(LocalDateTime.of(2026, 5, 11, 10, 0));
+        view.setUnreadCount(7L);
+        when(conversationViewRepository.listViewByRecruiterUserId(10L)).thenReturn(List.of(view));
+
+        List<ChatConversationSummaryDTO> result = chatAppService.listConversations(10L);
+
+        assertEquals(1, result.size());
+        assertEquals(7L, result.get(0).unreadCount());
+        verify(conversationViewRepository, never()).countUnread(any(), any(), any());
     }
 
     @Test

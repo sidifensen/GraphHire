@@ -9,6 +9,7 @@ import com.graphhire.match.domain.repository.MatchRecordRepository;
 import com.graphhire.match.domain.service.MatchDomainService;
 import com.graphhire.match.domain.vo.MatchScore;
 import com.graphhire.match.interfaces.dto.response.MatchDetailResponse;
+import com.graphhire.match.infrastructure.mq.MatchMQProducer;
 import com.graphhire.notification.application.service.NotificationAppService;
 import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.model.Resume;
@@ -28,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -50,6 +52,8 @@ class MatchAppServiceTest {
     private PersonInfoRepository personInfoRepository;
     @Mock
     private CompanyStaffRepository companyStaffRepository;
+    @Mock
+    private MatchMQProducer matchMQProducer;
 
     @InjectMocks
     private MatchAppService matchAppService;
@@ -57,133 +61,57 @@ class MatchAppServiceTest {
     @Test
     void triggerMatchForJob_shouldRebuildRecordsForAllParsedResumes() {
         Long jobId = 10L;
-        Resume r1 = new Resume();
-        r1.setId(101L);
-        Resume r2 = new Resume();
-        r2.setId(102L);
-
-        when(resumeRepository.findByParseStatus(ParseStatus.SUCCESS)).thenReturn(List.of(r1, r2));
-        when(matchDomainService.calculateMatch(101L, jobId)).thenReturn(new MatchRecord());
-        when(matchDomainService.calculateMatch(102L, jobId)).thenReturn(new MatchRecord());
 
         matchAppService.triggerMatchForJob(jobId);
 
-        verify(matchRecordRepository).deleteByJobId(jobId);
-        verify(resumeRepository).findByParseStatus(ParseStatus.SUCCESS);
-        verify(matchDomainService).calculateMatch(101L, jobId);
-        verify(matchDomainService).calculateMatch(102L, jobId);
-        verify(matchRecordRepository, times(2)).save(any(MatchRecord.class));
+        verify(matchMQProducer).sendJobMatchPlan(jobId);
+        verifyNoInteractions(matchRecordRepository, resumeRepository, matchDomainService);
     }
 
     @Test
-    void triggerMatchForResume_shouldUpdateExistingAndDeleteOnlyStaleRecords() {
+    void triggerMatchForResume_shouldDispatchPlanInsteadOfExecutingInline() {
         Long resumeId = 20L;
-
-        Job publishedJob1 = new Job();
-        publishedJob1.setId(201L);
-        publishedJob1.setStatus(JobStatus.PUBLISHED);
-        Job draftJob = new Job();
-        draftJob.setId(202L);
-        draftJob.setStatus(JobStatus.DRAFT);
-        Job publishedJob3 = new Job();
-        publishedJob3.setId(203L);
-        publishedJob3.setStatus(JobStatus.PUBLISHED);
-
-        MatchRecord oldFor201 = MatchRecord.create(resumeId, 201L, MatchScore.of(30, 20));
-        oldFor201.setId(901L);
-        oldFor201.setMatchDirection(MatchRecord.DIRECTION_PERSON_APPLIES);
-        MatchRecord staleFor999 = MatchRecord.create(resumeId, 999L, MatchScore.of(20, 10));
-        staleFor999.setId(902L);
-        staleFor999.setMatchDirection(MatchRecord.DIRECTION_PERSON_APPLIES);
-
-        MatchRecord newFor201 = MatchRecord.create(resumeId, 201L, MatchScore.of(91, 83));
-        newFor201.setMatchDirection(MatchRecord.DIRECTION_PERSON_APPLIES);
-        MatchRecord newFor203 = MatchRecord.create(resumeId, 203L, MatchScore.of(88, 81));
-        newFor203.setMatchDirection(MatchRecord.DIRECTION_PERSON_APPLIES);
-
-        when(jobRepository.findPublished()).thenReturn(List.of(publishedJob1, publishedJob3));
-        when(matchRecordRepository.findByResumeId(resumeId)).thenReturn(List.of(oldFor201, staleFor999));
-        when(matchDomainService.calculateMatch(resumeId, 201L)).thenReturn(newFor201);
-        when(matchDomainService.calculateMatch(resumeId, 203L)).thenReturn(newFor203);
 
         matchAppService.triggerMatchForResume(resumeId);
 
-        verify(matchRecordRepository, never()).deleteByResumeId(resumeId);
-        verify(matchDomainService).calculateMatch(resumeId, 201L);
-        verify(matchDomainService).calculateMatch(resumeId, 203L);
-        verify(matchDomainService, never()).calculateMatch(resumeId, 202L);
-        verify(jobRepository, never()).findAll();
-
-        verify(matchRecordRepository, times(2)).save(any(MatchRecord.class));
-        verify(matchRecordRepository).delete(staleFor999);
-        verify(matchRecordRepository, never()).delete(oldFor201);
+        verify(matchMQProducer).sendResumeMatchPlan(resumeId);
+        verifyNoInteractions(matchRecordRepository, jobRepository, matchDomainService);
     }
 
     @Test
-    void triggerMatchForResume_shouldRetryThreeTimesThenSkipFailedJob() {
+    void executeResumeMatchBatch_shouldRetryThreeTimesThenSkipFailedJob() {
         Long resumeId = 21L;
-
-        Job publishedJob1 = new Job();
-        publishedJob1.setId(301L);
-        publishedJob1.setStatus(JobStatus.PUBLISHED);
-        Job publishedJob2 = new Job();
-        publishedJob2.setId(302L);
-        publishedJob2.setStatus(JobStatus.PUBLISHED);
-
-        MatchRecord oldFor301 = MatchRecord.create(resumeId, 301L, MatchScore.of(50, 40));
-        oldFor301.setId(1001L);
-        oldFor301.setMatchDirection(MatchRecord.DIRECTION_PERSON_APPLIES);
-        MatchRecord oldFor999 = MatchRecord.create(resumeId, 999L, MatchScore.of(50, 40));
-        oldFor999.setId(1002L);
-        oldFor999.setMatchDirection(MatchRecord.DIRECTION_PERSON_APPLIES);
-
         MatchRecord newFor301 = MatchRecord.create(resumeId, 301L, MatchScore.of(90, 80));
         newFor301.setMatchDirection(MatchRecord.DIRECTION_PERSON_APPLIES);
 
-        when(jobRepository.findPublished()).thenReturn(List.of(publishedJob1, publishedJob2));
-        when(matchRecordRepository.findByResumeId(resumeId)).thenReturn(List.of(oldFor301, oldFor999));
         when(matchDomainService.calculateMatch(resumeId, 301L)).thenReturn(newFor301);
         when(matchDomainService.calculateMatch(resumeId, 302L))
             .thenThrow(new RuntimeException("boom-1"))
             .thenThrow(new RuntimeException("boom-2"))
             .thenThrow(new RuntimeException("boom-3"));
 
-        assertDoesNotThrow(() -> matchAppService.triggerMatchForResume(resumeId));
+        assertDoesNotThrow(() -> matchAppService.executeResumeMatchBatch(resumeId, List.of(301L, 302L)));
 
         verify(matchDomainService).calculateMatch(resumeId, 301L);
         verify(matchDomainService, times(3)).calculateMatch(resumeId, 302L);
         verify(matchRecordRepository, times(1)).save(any(MatchRecord.class));
-        verify(matchRecordRepository).delete(oldFor999);
-        verify(matchRecordRepository, never()).delete(oldFor301);
     }
 
     @Test
-    void triggerMatchForResume_shouldRetryAndSucceedOnThirdAttempt() {
+    void executeResumeMatchBatch_shouldRetryAndSucceedOnThirdAttempt() {
         Long resumeId = 22L;
-
-        Job publishedJob = new Job();
-        publishedJob.setId(401L);
-        publishedJob.setStatus(JobStatus.PUBLISHED);
-
-        MatchRecord existing = MatchRecord.create(resumeId, 401L, MatchScore.of(60, 50));
-        existing.setId(2001L);
-        existing.setMatchDirection(MatchRecord.DIRECTION_PERSON_APPLIES);
-
         MatchRecord newRecord = MatchRecord.create(resumeId, 401L, MatchScore.of(95, 90));
         newRecord.setMatchDirection(MatchRecord.DIRECTION_PERSON_APPLIES);
 
-        when(jobRepository.findPublished()).thenReturn(List.of(publishedJob));
-        when(matchRecordRepository.findByResumeId(resumeId)).thenReturn(List.of(existing));
         when(matchDomainService.calculateMatch(resumeId, 401L))
             .thenThrow(new RuntimeException("boom-1"))
             .thenThrow(new RuntimeException("boom-2"))
             .thenReturn(newRecord);
 
-        assertDoesNotThrow(() -> matchAppService.triggerMatchForResume(resumeId));
+        assertDoesNotThrow(() -> matchAppService.executeResumeMatchBatch(resumeId, List.of(401L)));
 
         verify(matchDomainService, times(3)).calculateMatch(resumeId, 401L);
         verify(matchRecordRepository, times(1)).save(any(MatchRecord.class));
-        verify(matchRecordRepository, never()).delete(existing);
     }
 
     @Test

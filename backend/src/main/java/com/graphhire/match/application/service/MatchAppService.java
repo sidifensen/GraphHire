@@ -11,6 +11,7 @@ import com.graphhire.match.application.query.MatchDetailQuery;
 import com.graphhire.match.domain.model.MatchRecord;
 import com.graphhire.match.domain.repository.MatchRecordRepository;
 import com.graphhire.match.domain.service.MatchDomainService;
+import com.graphhire.match.infrastructure.mq.MatchMQProducer;
 import com.graphhire.match.interfaces.dto.response.MatchDetailResponse;
 import com.graphhire.notification.application.service.NotificationAppService;
 import com.graphhire.notification.domain.model.Notification;
@@ -69,6 +70,8 @@ public class MatchAppService {
     private PersonInfoRepository personInfoRepository;
     @Autowired
     private CompanyStaffRepository companyStaffRepository;
+    @Autowired(required = false)
+    private MatchMQProducer matchMQProducer;
 
     @Autowired(required = false)
     @Qualifier("resumeMatchExecutor")
@@ -129,6 +132,26 @@ public class MatchAppService {
      * 步骤3：遍历职位，为用户创建职位推荐通知（MatchRecord由Application模块处理）
      */
     public void triggerMatchForResume(Long resumeId) {
+        if (matchMQProducer != null) {
+            matchMQProducer.sendResumeMatchPlan(resumeId);
+            return;
+        }
+        executeResumeMatchPlan(resumeId);
+    }
+
+    public void scheduleMatchPlanForJob(Long jobId) {
+        triggerMatchForJob(jobId);
+    }
+
+    public void triggerMatchForJob(Long jobId) {
+        if (matchMQProducer != null) {
+            matchMQProducer.sendJobMatchPlan(jobId);
+            return;
+        }
+        executeJobMatchPlan(jobId);
+    }
+
+    public void executeResumeMatchPlan(Long resumeId) {
         long totalStartNanos = System.nanoTime();
         List<Job> publishedJobs = jobRepository.findPublished();
         List<MatchRecord> existingRecords = matchRecordRepository.findByResumeId(resumeId).stream()
@@ -155,19 +178,18 @@ public class MatchAppService {
         AtomicInteger successCount = new AtomicInteger();
         AtomicInteger skippedCount = new AtomicInteger();
         long matchLoopStartNanos = System.nanoTime();
-
-        Executor executor = resolveResumeMatchExecutor();
-        List<CompletableFuture<Void>> futures = targetJobIds.stream()
-            .map(jobId -> CompletableFuture.runAsync(() -> {
-                boolean success = calculateAndSaveWithRetry(resumeId, jobId, existingByJobId);
-                if (success) {
-                    successCount.incrementAndGet();
-                } else {
-                    skippedCount.incrementAndGet();
-                }
-            }, executor))
-            .toList();
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        int batchSize = 100;
+        for (int start = 0; start < targetJobIds.size(); start += batchSize) {
+            int end = Math.min(start + batchSize, targetJobIds.size());
+            List<Long> batchJobIds = targetJobIds.subList(start, end);
+            if (matchMQProducer != null) {
+                matchMQProducer.sendResumeMatchBatch(resumeId, batchJobIds);
+            } else {
+                MatchBatchSummary summary = executeResumeMatchBatch(resumeId, batchJobIds);
+                successCount.addAndGet(summary.successCount());
+                skippedCount.addAndGet(summary.skippedCount());
+            }
+        }
 
         long matchLoopCostMs = elapsedMs(matchLoopStartNanos);
 
@@ -192,7 +214,7 @@ public class MatchAppService {
      * 步骤2：获取所有解析状态为成功的简历列表
      * 步骤3：遍历简历，为企业创建候选人推荐通知（MatchRecord由Application模块处理）
      */
-    public void triggerMatchForJob(Long jobId) {
+    public void executeJobMatchPlan(Long jobId) {
         long totalStartNanos = System.nanoTime();
         log.info("企业一键匹配开始：jobId={}", jobId);
 
@@ -204,13 +226,19 @@ public class MatchAppService {
         List<Resume> parsedResumes = resumeRepository.findByParseStatus(ParseStatus.SUCCESS);
         long queryResumeCostMs = elapsedMs(queryResumeStartNanos);
 
-        int totalResumes = parsedResumes.size();
+        List<Long> resumeIds = parsedResumes.stream().map(Resume::getId).filter(id -> id != null).toList();
+        int totalResumes = resumeIds.size();
         int successCount = 0;
         long matchLoopStartNanos = System.nanoTime();
-        for (Resume resume : parsedResumes) {
-            MatchRecord record = matchDomainService.calculateMatch(resume.getId(), jobId);
-            matchRecordRepository.save(record);
-            successCount++;
+        int batchSize = 100;
+        for (int start = 0; start < resumeIds.size(); start += batchSize) {
+            int end = Math.min(start + batchSize, resumeIds.size());
+            List<Long> batchResumeIds = resumeIds.subList(start, end);
+            if (matchMQProducer != null) {
+                matchMQProducer.sendJobMatchBatch(jobId, batchResumeIds);
+            } else {
+                successCount += executeJobMatchBatch(jobId, batchResumeIds);
+            }
         }
         long matchLoopCostMs = elapsedMs(matchLoopStartNanos);
 
@@ -222,6 +250,36 @@ public class MatchAppService {
 
     private static long elapsedMs(long startNanos) {
         return (System.nanoTime() - startNanos) / 1_000_000;
+    }
+
+    public MatchBatchSummary executeResumeMatchBatch(Long resumeId, List<Long> jobIds) {
+        if (jobIds == null || jobIds.isEmpty()) {
+            return new MatchBatchSummary(0, 0);
+        }
+        int successCount = 0;
+        int skippedCount = 0;
+        for (Long jobId : jobIds) {
+            boolean success = calculateAndSaveWithRetry(resumeId, jobId, Map.of());
+            if (success) {
+                successCount++;
+            } else {
+                skippedCount++;
+            }
+        }
+        return new MatchBatchSummary(successCount, skippedCount);
+    }
+
+    public int executeJobMatchBatch(Long jobId, List<Long> resumeIds) {
+        if (resumeIds == null || resumeIds.isEmpty()) {
+            return 0;
+        }
+        int successCount = 0;
+        for (Long resumeId : resumeIds) {
+            MatchRecord record = matchDomainService.calculateMatch(resumeId, jobId);
+            matchRecordRepository.save(record);
+            successCount++;
+        }
+        return successCount;
     }
 
     private boolean calculateAndSaveWithRetry(Long resumeId, Long jobId, Map<Long, MatchRecord> existingByJobId) {
@@ -260,6 +318,9 @@ public class MatchAppService {
      */
     private Executor resolveResumeMatchExecutor() {
         return resumeMatchExecutor != null ? resumeMatchExecutor : ForkJoinPool.commonPool();
+    }
+
+    public record MatchBatchSummary(int successCount, int skippedCount) {
     }
 
     @Transactional

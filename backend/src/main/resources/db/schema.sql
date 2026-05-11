@@ -437,6 +437,8 @@ CREATE TABLE upload_task
     file_name           VARCHAR(255) NOT NULL,
     file_type           VARCHAR(128),
     file_size           BIGINT       NOT NULL DEFAULT 0,
+    storage_key         VARCHAR(500),
+    detected_mime_type  VARCHAR(128),
     status              SMALLINT     NOT NULL DEFAULT 0,
     error_msg           TEXT,
     resume_id           BIGINT,
@@ -455,6 +457,8 @@ COMMENT ON COLUMN upload_task.user_id IS '用户ID';
 COMMENT ON COLUMN upload_task.file_name IS '上传文件名';
 COMMENT ON COLUMN upload_task.file_type IS '文件MIME类型';
 COMMENT ON COLUMN upload_task.file_size IS '文件大小（字节）';
+COMMENT ON COLUMN upload_task.storage_key IS '异步上传暂存对象路径';
+COMMENT ON COLUMN upload_task.detected_mime_type IS '服务端检测出的真实 MIME 类型';
 COMMENT ON COLUMN upload_task.status IS '任务状态：0-待处理 1-上传中 2-上传成功 3-解析排队中 4-完成 5-失败';
 COMMENT ON COLUMN upload_task.error_msg IS '失败错误信息';
 COMMENT ON COLUMN upload_task.resume_id IS '关联简历ID';

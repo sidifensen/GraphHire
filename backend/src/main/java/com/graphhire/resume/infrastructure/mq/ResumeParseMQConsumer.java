@@ -146,7 +146,6 @@ public class ResumeParseMQConsumer implements RocketMQListener<String>, RocketMQ
             try {
                 // 步骤3：提取文档文本。
                 long extractStartNanos = System.nanoTime();
-                log.info("开始提取文档文本, filePath={}", resume.getFilePath());
                 // 步骤3：从RustFS读取文件并用Tika提取文本
                 String text = documentParser.extractText(resume.getFilePath());
                 log.info("文档文本提取完成, textLength={}, costMs={}",
@@ -168,7 +167,6 @@ public class ResumeParseMQConsumer implements RocketMQListener<String>, RocketMQ
                 // 步骤5：用解析结果更新resume
                 long persistStartNanos = System.nanoTime();
                 resume.setParseResult(parseResult != null ? JSON.toJSONString(parseResult) : "{}");
-                logParseResult(resumeId, parseResult);
                 resume.setStatus(ParseStatus.SUCCESS);
                 resume.setConfidence(BigDecimal.valueOf(0.85));
                 resumeRepository.save(resume);
@@ -245,29 +243,4 @@ public class ResumeParseMQConsumer implements RocketMQListener<String>, RocketMQ
         return (System.nanoTime() - startNanos) / 1_000_000;
     }
 
-    /**
-     * 记录解析结果日志，超长结果自动截断。
-     * 说明：避免单条日志过大影响日志吞吐与检索体验。
-     *
-     * @param resumeId 简历ID。
-     * @param parseResult 结构化解析结果。
-     */
-    private void logParseResult(Long resumeId, Map<String, Object> parseResult) {
-        if (parseResult == null) {
-            log.info("简历解析结构化结果: resumeId={}, parseResult={}", resumeId, "{}");
-            return;
-        }
-        String json = JSON.toJSONString(parseResult);
-        if (json.length() <= MAX_PARSE_RESULT_LOG_LENGTH) {
-            log.info("简历解析结构化结果: resumeId={}, parseResult={}", resumeId, json);
-            return;
-        }
-        String truncated = json.substring(0, MAX_PARSE_RESULT_LOG_LENGTH);
-        log.info(
-            "简历解析结构化结果(已截断): resumeId={}, parseResultPrefix={}, totalLength={}",
-            resumeId,
-            truncated,
-            json.length()
-        );
-    }
 }

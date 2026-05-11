@@ -32,7 +32,7 @@ public class ResumeMatchTriggerMQConsumer implements RocketMQListener<String>, R
     public void onMessage(String message) {
         // 消息体仅携带 resumeId，保持触发事件最小化。
         Long resumeId = Long.parseLong(message.trim());
-        matchAppService.triggerMatchForResume(resumeId);
+        matchAppService.executeResumeMatchPlan(resumeId);
     }
 
     @Override

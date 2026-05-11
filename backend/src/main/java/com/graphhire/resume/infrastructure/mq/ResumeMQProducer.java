@@ -84,6 +84,8 @@ public class ResumeMQProducer {
         private String fileName;
         private String contentType;
         private long fileSize;
+        private String storageKey;
+        private String detectedMimeType;
         private String fileBase64;
         private boolean refreshAllMatches;
 
@@ -125,6 +127,22 @@ public class ResumeMQProducer {
 
         public void setFileSize(long fileSize) {
             this.fileSize = fileSize;
+        }
+
+        public String getStorageKey() {
+            return storageKey;
+        }
+
+        public void setStorageKey(String storageKey) {
+            this.storageKey = storageKey;
+        }
+
+        public String getDetectedMimeType() {
+            return detectedMimeType;
+        }
+
+        public void setDetectedMimeType(String detectedMimeType) {
+            this.detectedMimeType = detectedMimeType;
         }
 
         public String getFileBase64() {

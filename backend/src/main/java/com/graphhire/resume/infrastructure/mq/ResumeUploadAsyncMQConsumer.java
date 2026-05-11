@@ -2,7 +2,6 @@ package com.graphhire.resume.infrastructure.mq;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.core.codec.Base64;
 import cn.hutool.json.JSONUtil;
 import com.graphhire.resume.domain.model.ParseTask;
 import com.graphhire.resume.domain.model.Resume;
@@ -74,7 +73,7 @@ public class ResumeUploadAsyncMQConsumer implements RocketMQListener<String>, Ro
      * 消费异步上传消息并推进上传任务状态机。
      * 说明：方法先通过分布式并发闸门限流，再执行“上传文件 -> 创建简历 -> 创建解析任务”的核心链路。
      *
-     * @param message MQ 消息体，JSON 格式，包含 taskId/userId/fileBase64 等字段。
+     * @param message MQ 消息体，JSON 格式，包含 taskId/userId/storageKey 等字段。
      */
     @Override
     @Transactional
@@ -114,19 +113,15 @@ public class ResumeUploadAsyncMQConsumer implements RocketMQListener<String>, Ro
                 task.markUploading(); // 任务进入上传阶段。
                 uploadTaskRepository.save(task); // 持久化状态，便于前端轮询观察。
 
-                // 步骤4.2：准备文件名与文件字节。
+                // 步骤4.2：准备文件名与已上传对象信息。
                 String fileName = payload.getFileName(); // 原始文件名。
                 if (StrUtil.isBlank(fileName)) {
                     fileName = "resume_" + payload.getTaskId() + ".pdf"; // 兜底文件名，避免空名写入对象存储失败。
                 }
-
-                byte[] fileBytes = Base64.decode(payload.getFileBase64()); // 从 Base64 消息体恢复二进制文件。
-                if (fileBytes == null || fileBytes.length == 0) {
-                    throw new RuntimeException("上传文件内容为空"); // 输入边界保护，避免空文件继续流转。
+                String filePath = StrUtil.blankToDefault(payload.getStorageKey(), task.getStorageKey());
+                if (StrUtil.isBlank(filePath)) {
+                    throw new RuntimeException("上传文件对象路径为空");
                 }
-
-                // 步骤4.3：上传对象存储并推进“上传完成”。
-                String filePath = rustFSClient.upload(fileBytes, fileName); // 上传到 RustFS，并返回对象路径。
                 task.markUploaded(); // 状态推进到“已上传”。
                 uploadTaskRepository.save(task); // 保存上传完成状态。
 

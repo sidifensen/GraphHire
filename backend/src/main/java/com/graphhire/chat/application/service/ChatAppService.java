@@ -28,6 +28,7 @@ import com.graphhire.resume.application.service.dto.ResumePreviewFile;
 import com.graphhire.notification.application.service.NotificationAppService;
 import com.graphhire.notification.domain.vo.NotificationType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -87,8 +88,14 @@ public class ChatAppService {
         conversation.setCandidateUserId(currentUserId);
         conversation.setStatus(ChatConversation.STATUS_ACTIVE);
         conversation.setDeleted(0);
-        conversationRepository.save(conversation);
-        return conversation.getId();
+        try {
+            conversationRepository.save(conversation);
+            return conversation.getId();
+        } catch (DuplicateKeyException ex) {
+            return conversationRepository.findByJobIdAndCandidateUserId(jobId, currentUserId)
+                .map(ChatConversation::getId)
+                .orElseThrow(() -> ex);
+        }
     }
 
     public List<ChatConversationSummaryDTO> listConversations(Long currentUserId) {
@@ -97,11 +104,6 @@ public class ChatAppService {
             ? conversationViewRepository.listViewByRecruiterUserId(currentUserId)
             : conversationViewRepository.listViewByCandidateUserId(currentUserId);
         return conversations.stream().map(conversation -> {
-            long unreadCount = conversationViewRepository.countUnread(
-                conversation.getConversationId(),
-                currentUserId,
-                userType == UserType.COMPANY ? conversation.getRecruiterLastReadMsgId() : conversation.getCandidateLastReadMsgId()
-            );
             return new ChatConversationSummaryDTO(
                 conversation.getConversationId(),
                 conversation.getJobId(),
@@ -119,7 +121,7 @@ public class ChatAppService {
                 conversation.getLastMessageId(),
                 conversation.getLastMessageContent(),
                 conversation.getLastMessageTime(),
-                unreadCount
+                conversation.getUnreadCount() == null ? 0L : conversation.getUnreadCount()
             );
         }).toList();
     }

@@ -401,7 +401,7 @@ public class CompanyController {
         }
 
         try {
-            matchAppService.triggerMatchForJob(jobId);
+            matchAppService.scheduleMatchPlanForJob(jobId);
         } finally {
             stringRedisTemplate.delete(lockKey);
         }

@@ -62,8 +62,9 @@ class ResumeUploadAsyncMQConsumerTest {
         task.setUserId(10L);
         task.setStatus(UploadTask.TaskStatus.PENDING);
         task.setRefreshAllMatches(true);
+        task.setStorageKey("s3://resumes/resume/staging/1/resume.pdf");
+        task.setDetectedMimeType("application/pdf");
         when(uploadTaskRepository.findById(1L)).thenReturn(Optional.of(task));
-        when(rustFSClient.upload(any(byte[].class), anyString())).thenReturn("s3://resumes/ok.pdf");
         when(resumeRepository.findByUserId(10L)).thenReturn(java.util.List.of());
         when(resumeRepository.save(any(Resume.class))).thenAnswer(invocation -> {
             Resume resume = invocation.getArgument(0);
@@ -78,11 +79,11 @@ class ResumeUploadAsyncMQConsumerTest {
         when(uploadTaskRepository.save(any(UploadTask.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         String payload = """
-            {"taskId":1,"userId":10,"fileName":"resume.pdf","contentType":"application/pdf","fileSize":123,"fileBase64":"aGVsbG8=","refreshAllMatches":true}
+            {"taskId":1,"userId":10,"fileName":"resume.pdf","detectedMimeType":"application/pdf","storageKey":"s3://resumes/resume/staging/1/resume.pdf","fileSize":123,"refreshAllMatches":true}
             """;
         consumer.onMessage(payload);
 
-        verify(rustFSClient).upload(any(byte[].class), eq("resume.pdf"));
+        verifyNoInteractions(rustFSClient);
         verify(parseTaskRepository).save(any(ParseTask.class));
         verify(resumeMQProducer).sendResumeParseMessage(99L, 199L, true);
         verify(semaphore).release("permit-1");
@@ -109,12 +110,14 @@ class ResumeUploadAsyncMQConsumerTest {
         task.setId(2L);
         task.setUserId(11L);
         task.setStatus(UploadTask.TaskStatus.PENDING);
+        task.setStorageKey("s3://resumes/resume/staging/2/resume.pdf");
+        task.setDetectedMimeType("application/pdf");
         when(uploadTaskRepository.findById(2L)).thenReturn(Optional.of(task));
-        when(rustFSClient.upload(any(byte[].class), anyString())).thenThrow(new RuntimeException("mock upload error"));
+        when(resumeRepository.findByUserId(11L)).thenThrow(new RuntimeException("mock save error"));
         when(uploadTaskRepository.save(any(UploadTask.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         String payload = """
-            {"taskId":2,"userId":11,"fileName":"resume.pdf","contentType":"application/pdf","fileSize":123,"fileBase64":"aGVsbG8=","refreshAllMatches":false}
+            {"taskId":2,"userId":11,"fileName":"resume.pdf","detectedMimeType":"application/pdf","storageKey":"s3://resumes/resume/staging/2/resume.pdf","fileSize":123,"refreshAllMatches":false}
             """;
         consumer.onMessage(payload);
 
@@ -139,7 +142,7 @@ class ResumeUploadAsyncMQConsumerTest {
         when(uploadTaskRepository.findById(3L)).thenReturn(Optional.empty());
 
         String payload = """
-            {"taskId":3,"userId":11,"fileName":"resume.pdf","contentType":"application/pdf","fileSize":123,"fileBase64":"aGVsbG8=","refreshAllMatches":false}
+            {"taskId":3,"userId":11,"fileName":"resume.pdf","detectedMimeType":"application/pdf","storageKey":"s3://resumes/resume/staging/3/resume.pdf","fileSize":123,"refreshAllMatches":false}
             """;
         RuntimeException ex = org.junit.jupiter.api.Assertions.assertThrows(RuntimeException.class, () -> consumer.onMessage(payload));
         org.junit.jupiter.api.Assertions.assertTrue(ex.getMessage().contains("Upload task not found"));
@@ -158,7 +161,7 @@ class ResumeUploadAsyncMQConsumerTest {
         when(semaphore.tryAcquire(0L, 180L, TimeUnit.SECONDS)).thenReturn(null);
 
         String payload = """
-            {"taskId":4,"userId":11,"fileName":"resume.pdf","contentType":"application/pdf","fileSize":123,"fileBase64":"aGVsbG8=","refreshAllMatches":false}
+            {"taskId":4,"userId":11,"fileName":"resume.pdf","detectedMimeType":"application/pdf","storageKey":"s3://resumes/resume/staging/4/resume.pdf","fileSize":123,"refreshAllMatches":false}
             """;
         RuntimeException ex = org.junit.jupiter.api.Assertions.assertThrows(RuntimeException.class, () -> consumer.onMessage(payload));
         org.junit.jupiter.api.Assertions.assertTrue(ex.getMessage().contains("并发许可"));

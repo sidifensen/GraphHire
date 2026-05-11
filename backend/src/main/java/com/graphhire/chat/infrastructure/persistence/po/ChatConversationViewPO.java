@@ -21,6 +21,7 @@ public class ChatConversationViewPO {
     private LocalDateTime lastMessageTime;
     private Long recruiterLastReadMsgId;
     private Long candidateLastReadMsgId;
+    private Long unreadCount;
 
     public Long getConversationId() {
         return conversationId;
@@ -164,5 +165,13 @@ public class ChatConversationViewPO {
 
     public void setCandidateLastReadMsgId(Long candidateLastReadMsgId) {
         this.candidateLastReadMsgId = candidateLastReadMsgId;
+    }
+
+    public Long getUnreadCount() {
+        return unreadCount;
+    }
+
+    public void setUnreadCount(Long unreadCount) {
+        this.unreadCount = unreadCount;
     }
 }

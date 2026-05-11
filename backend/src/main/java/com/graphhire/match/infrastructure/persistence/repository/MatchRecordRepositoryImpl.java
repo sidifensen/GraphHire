@@ -75,18 +75,18 @@ public class MatchRecordRepositoryImpl implements MatchRecordRepository {
     @Override
     public MatchRecord save(MatchRecord matchRecord) {
         MatchRecordPO po = toPO(matchRecord);
-        if (matchRecord.getId() == null) {
-            matchRecordMapper.insertScores(
-                po.getResumeId(),
-                po.getJobId(),
+        if (matchRecord.getId() != null) {
+            matchRecordMapper.updateScores(
+                po.getId(),
                 po.getMatchDirection(),
                 po.getOverallScore(),
                 po.getSkillScore(),
                 po.getRequirementScore()
             );
         } else {
-            matchRecordMapper.updateScores(
-                po.getId(),
+            matchRecordMapper.upsertScores(
+                po.getResumeId(),
+                po.getJobId(),
                 po.getMatchDirection(),
                 po.getOverallScore(),
                 po.getSkillScore(),

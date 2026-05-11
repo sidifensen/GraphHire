@@ -24,6 +24,7 @@ import com.graphhire.resume.interfaces.dto.ParseProgressResponse;
 import com.graphhire.match.application.service.MatchAppService;
 import com.graphhire.config.UploadProperties;
 import cn.hutool.core.codec.Base64;
+import org.apache.tika.Tika;
 
 import java.io.IOException;
 import com.graphhire.resume.interfaces.dto.ResumeVO;
@@ -49,6 +50,7 @@ import java.util.Set;
 @Service
 public class ResumeAppService {
     private static final Logger log = LoggerFactory.getLogger(ResumeAppService.class);
+    private Tika tika = new Tika();
 
     @Autowired
     private ResumeRepository resumeRepository;
@@ -143,14 +145,23 @@ public class ResumeAppService {
             throw Exceptions.BusinessException.of(503, "异步上传服务暂不可用");
         }
         // 与同步上传保持一致的入口校验，避免绕过扩展名/MIME/大小限制。
-        validateUploadCmd(cmd);
+        String detectedMimeType = validateUploadCmd(cmd);
         UploadTask task = new UploadTask();
         task.setUserId(cmd.getUserId());
         task.setFileName(cmd.getFileName());
         task.setFileType(cmd.getContentType());
         task.setFileSize(cmd.getFileSize());
+        task.setDetectedMimeType(detectedMimeType);
         task.setStatus(UploadTask.TaskStatus.PENDING);
         task.setRefreshAllMatches(refreshAllMatches);
+        uploadTaskRepository.save(task);
+
+        String safeName = sanitizeStorageFileName(cmd.getFileName());
+        String stagingKey = "resume/staging/" + task.getId() + "/" + safeName;
+        try (var inputStream = cmd.getInputStream()) {
+            rustFSClient.upload(inputStream, cmd.getFileSize(), stagingKey);
+        }
+        task.setStorageKey("s3://resumes/" + stagingKey);
         uploadTaskRepository.save(task);
 
         ResumeMQProducer.ResumeUploadAsyncMessage message = new ResumeMQProducer.ResumeUploadAsyncMessage();
@@ -159,8 +170,8 @@ public class ResumeAppService {
         message.setFileName(cmd.getFileName());
         message.setContentType(cmd.getContentType());
         message.setFileSize(cmd.getFileSize());
-        // 消息体携带Base64文件内容，消费者侧无需再访问HTTP请求上下文。
-        message.setFileBase64(Base64.encode(cmd.getFile().getBytes()));
+        message.setStorageKey(task.getStorageKey());
+        message.setDetectedMimeType(detectedMimeType);
         message.setRefreshAllMatches(refreshAllMatches);
         mqProducer.sendResumeUploadAsyncMessage(message);
         return task;
@@ -451,7 +462,7 @@ public class ResumeAppService {
         }
     }
 
-    private void validateUploadCmd(UploadResumeCmd cmd) {
+    private String validateUploadCmd(UploadResumeCmd cmd) throws IOException {
         String fileName = cmd.getFileName();
         String fileExt = StrUtil.blankToDefault(FileUtil.extName(fileName), "").toLowerCase(Locale.ROOT);
         Set<String> allowedExt = uploadProperties.getResume().getAllowedExtensions();
@@ -467,6 +478,18 @@ public class ResumeAppService {
         if (StrUtil.isBlank(contentType) || !allowedMimeTypes.contains(contentType)) {
             throw Exceptions.BusinessException.of(400, UploadErrorMessages.RESUME_INVALID_MIME);
         }
+        byte[] bytes = cmd.getFile().getBytes();
+        String detectedMimeType = StrUtil.blankToDefault(tika.detect(bytes, fileName), "").toLowerCase(Locale.ROOT);
+        if (StrUtil.isBlank(detectedMimeType) || !allowedMimeTypes.contains(detectedMimeType)) {
+            throw Exceptions.BusinessException.of(400, UploadErrorMessages.RESUME_INVALID_MIME);
+        }
+        return detectedMimeType;
+    }
+
+    private String sanitizeStorageFileName(String fileName) {
+        String safeName = StrUtil.blankToDefault(fileName, "resume.pdf");
+        safeName = safeName.replaceAll("[\\\\/:*?\"<>|\\s]+", "_");
+        return safeName;
     }
 
     /**

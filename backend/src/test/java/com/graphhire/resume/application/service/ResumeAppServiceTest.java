@@ -28,6 +28,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.util.unit.DataSize;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.List;
@@ -36,6 +37,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.argThat;
@@ -76,6 +78,9 @@ class ResumeAppServiceTest {
     @Mock
     private UploadTaskRepository uploadTaskRepository;
 
+    @Mock
+    private org.apache.tika.Tika tika;
+
     private ResumeAppService resumeAppService;
 
     @BeforeEach
@@ -92,6 +97,7 @@ class ResumeAppServiceTest {
         setField(resumeAppService, "skillGraphClient", skillGraphClient);
         setField(resumeAppService, "resumeParseLockService", resumeParseLockService);
         setField(resumeAppService, "uploadTaskRepository", uploadTaskRepository);
+        setField(resumeAppService, "tika", tika);
 
         UploadProperties.Resume resumeUpload = new UploadProperties.Resume();
         resumeUpload.setMaxFileSize(DataSize.ofMegabytes(10));
@@ -419,6 +425,9 @@ class ResumeAppServiceTest {
         byte[] content = "resume-bytes".getBytes();
         UploadResumeCmd cmd = new UploadResumeCmd(new MockMultipartFile("file", "ok.pdf", "application/pdf", content));
         cmd.setUserId(22L);
+        when(tika.detect(content, "ok.pdf")).thenReturn("application/pdf");
+        when(rustFSClient.upload(any(InputStream.class), eq((long) content.length), any(String.class)))
+            .thenReturn("s3://resumes/resume/staging/901/ok.pdf");
 
         when(uploadTaskRepository.save(any(UploadTask.class))).thenAnswer(invocation -> {
             UploadTask task = invocation.getArgument(0);
@@ -431,8 +440,32 @@ class ResumeAppServiceTest {
         UploadTask task = resumeAppService.createAsyncUploadTask(cmd, false);
 
         assertEquals(901L, task.getId());
-        verify(uploadTaskRepository).save(any(UploadTask.class));
-        verify(mqProducer).sendResumeUploadAsyncMessage(any(ResumeMQProducer.ResumeUploadAsyncMessage.class));
+        verify(uploadTaskRepository, org.mockito.Mockito.times(2)).save(any(UploadTask.class));
+        verify(rustFSClient).upload(any(InputStream.class), eq((long) content.length), any(String.class));
+        verify(mqProducer).sendResumeUploadAsyncMessage(argThat(message ->
+            message.getTaskId().equals(901L)
+                && "s3://resumes/resume/staging/901/ok.pdf".equals(message.getStorageKey())
+                && "application/pdf".equals(message.getDetectedMimeType())
+                && message.getFileBase64() == null
+        ));
+    }
+
+    @Test
+    @DisplayName("createAsyncUploadTask 检测到真实 MIME 非法时应拒绝")
+    void createAsyncUploadTask_shouldRejectWhenDetectedMimeTypeNotAllowed() throws Exception {
+        byte[] content = "plain-text".getBytes();
+        UploadResumeCmd cmd = new UploadResumeCmd(new MockMultipartFile("file", "fake.pdf", "application/pdf", content));
+        cmd.setUserId(23L);
+        when(tika.detect(content, "fake.pdf")).thenReturn("text/plain");
+
+        Exceptions.BusinessException ex = assertThrows(
+            Exceptions.BusinessException.class,
+            () -> resumeAppService.createAsyncUploadTask(cmd, true)
+        );
+
+        assertEquals(400, ex.getCode());
+        assertTrue(ex.getMessage().contains("简历文件类型不合法"));
+        verifyNoInteractions(uploadTaskRepository, rustFSClient, mqProducer);
     }
 
     @Test

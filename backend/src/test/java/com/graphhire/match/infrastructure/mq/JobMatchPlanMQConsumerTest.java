@@ -1,4 +1,4 @@
-package com.graphhire.resume.infrastructure.mq;
+package com.graphhire.match.infrastructure.mq;
 
 import com.graphhire.match.application.service.MatchAppService;
 import org.junit.jupiter.api.DisplayName;
@@ -11,18 +11,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class ResumeMatchTriggerMQConsumerTest {
+class JobMatchPlanMQConsumerTest {
 
     @Mock
     private MatchAppService matchAppService;
 
     @InjectMocks
-    private ResumeMatchTriggerMQConsumer consumer;
+    private JobMatchPlanMQConsumer consumer;
 
     @Test
-    @DisplayName("消费匹配触发消息后应执行简历匹配计划")
-    void onMessage_shouldTriggerMatch() {
-        consumer.onMessage("123");
-        verify(matchAppService).executeResumeMatchPlan(123L);
+    @DisplayName("消费岗位匹配计划消息后应执行分页拆批")
+    void onMessage_shouldExecuteJobPlan() {
+        consumer.onMessage("456");
+        verify(matchAppService).executeJobMatchPlan(456L);
     }
 }

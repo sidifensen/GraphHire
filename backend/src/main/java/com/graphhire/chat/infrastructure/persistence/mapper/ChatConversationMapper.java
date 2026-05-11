@@ -30,7 +30,15 @@ public interface ChatConversationMapper extends BaseMapper<ChatConversationPO> {
                m.content AS lastMessageContent,
                m.create_time AS lastMessageTime,
                c.recruiter_last_read_msg_id AS recruiterLastReadMsgId,
-               c.candidate_last_read_msg_id AS candidateLastReadMsgId
+               c.candidate_last_read_msg_id AS candidateLastReadMsgId,
+               (
+                   SELECT COUNT(1)
+                   FROM chat_message unread
+                   WHERE unread.conversation_id = c.id
+                     AND unread.receiver_user_id = #{recruiterUserId}
+                     AND unread.deleted = 0
+                     AND unread.id > COALESCE(c.recruiter_last_read_msg_id, 0)
+               ) AS unreadCount
         FROM chat_conversation c
         LEFT JOIN job j ON j.id = c.job_id
         LEFT JOIN company cp ON cp.id = c.company_id
@@ -62,7 +70,15 @@ public interface ChatConversationMapper extends BaseMapper<ChatConversationPO> {
                m.content AS lastMessageContent,
                m.create_time AS lastMessageTime,
                c.recruiter_last_read_msg_id AS recruiterLastReadMsgId,
-               c.candidate_last_read_msg_id AS candidateLastReadMsgId
+               c.candidate_last_read_msg_id AS candidateLastReadMsgId,
+               (
+                   SELECT COUNT(1)
+                   FROM chat_message unread
+                   WHERE unread.conversation_id = c.id
+                     AND unread.receiver_user_id = #{candidateUserId}
+                     AND unread.deleted = 0
+                     AND unread.id > COALESCE(c.candidate_last_read_msg_id, 0)
+               ) AS unreadCount
         FROM chat_conversation c
         LEFT JOIN job j ON j.id = c.job_id
         LEFT JOIN company cp ON cp.id = c.company_id

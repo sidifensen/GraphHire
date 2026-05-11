@@ -30,6 +30,12 @@ public class UploadTaskPO {
     @TableField("file_size")
     private Long fileSize;
 
+    @TableField("storage_key")
+    private String storageKey;
+
+    @TableField("detected_mime_type")
+    private String detectedMimeType;
+
     @TableField("status")
     private Integer status;
 
@@ -102,6 +108,22 @@ public class UploadTaskPO {
 
     public void setStatus(Integer status) {
         this.status = status;
+    }
+
+    public String getStorageKey() {
+        return storageKey;
+    }
+
+    public void setStorageKey(String storageKey) {
+        this.storageKey = storageKey;
+    }
+
+    public String getDetectedMimeType() {
+        return detectedMimeType;
+    }
+
+    public void setDetectedMimeType(String detectedMimeType) {
+        this.detectedMimeType = detectedMimeType;
     }
 
     public String getErrorMessage() {

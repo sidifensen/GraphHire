@@ -58,13 +58,14 @@ class MatchRecordRepositoryImplTest {
     @DisplayName("save insert should write overall+skill+requirement")
     void saveInsert_ShouldWriteCompactScores() {
         MatchRecord record = MatchRecord.create(10L, 20L, MatchScore.of(90.0, 80.0));
+        record.setMatchDirection(1);
 
         repository.save(record);
 
-        verify(matchRecordMapper).insertScores(
+        verify(matchRecordMapper).upsertScores(
             eq(10L),
             eq(20L),
-            any(),
+            eq(1),
             any(BigDecimal.class),
             eq(BigDecimal.valueOf(90.0)),
             eq(BigDecimal.valueOf(80.0))

@@ -26,6 +26,8 @@ public class UploadTask {
     private String fileName;
     private String fileType;
     private Long fileSize;
+    private String storageKey;
+    private String detectedMimeType;
     private TaskStatus status;
     private String errorMessage;
     private Long resumeId;
@@ -101,6 +103,22 @@ public class UploadTask {
 
     public void setFileSize(Long fileSize) {
         this.fileSize = fileSize;
+    }
+
+    public String getStorageKey() {
+        return storageKey;
+    }
+
+    public void setStorageKey(String storageKey) {
+        this.storageKey = storageKey;
+    }
+
+    public String getDetectedMimeType() {
+        return detectedMimeType;
+    }
+
+    public void setDetectedMimeType(String detectedMimeType) {
+        this.detectedMimeType = detectedMimeType;
     }
 
     public TaskStatus getStatus() {

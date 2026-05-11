@@ -1033,7 +1033,7 @@ class CompanyControllerTest {
 
                 assertNotNull(result);
                 assertEquals(200, result.getCode());
-                verify(matchAppService).triggerMatchForJob(jobId);
+                verify(matchAppService).scheduleMatchPlanForJob(jobId);
                 verify(stringRedisTemplate).delete("match:job:trigger:" + jobId);
             }
         }
@@ -1059,7 +1059,7 @@ class CompanyControllerTest {
 
                 assertNotNull(result);
                 assertEquals(200, result.getCode());
-                verify(matchAppService, never()).triggerMatchForJob(jobId);
+                verify(matchAppService, never()).scheduleMatchPlanForJob(jobId);
             }
         }
     }

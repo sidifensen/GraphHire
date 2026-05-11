@@ -19,8 +19,14 @@ public interface MatchRecordMapper extends BaseMapper<MatchRecordPO> {
     @Insert("""
             INSERT INTO match_record (resume_id, job_id, match_direction, match_score, skill_score, requirement_score)
             VALUES (#{resumeId}, #{jobId}, #{matchDirection}, #{overallScore}, #{skillScore}, #{requirementScore})
+            ON CONFLICT (resume_id, job_id, match_direction)
+            DO UPDATE SET
+                match_score = EXCLUDED.match_score,
+                skill_score = EXCLUDED.skill_score,
+                requirement_score = EXCLUDED.requirement_score,
+                update_time = CURRENT_TIMESTAMP
             """)
-    int insertScores(@Param("resumeId") Long resumeId,
+    int upsertScores(@Param("resumeId") Long resumeId,
                      @Param("jobId") Long jobId,
                      @Param("matchDirection") Integer matchDirection,
                      @Param("overallScore") BigDecimal overallScore,
