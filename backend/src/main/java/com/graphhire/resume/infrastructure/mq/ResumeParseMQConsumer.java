@@ -45,7 +45,8 @@ public class ResumeParseMQConsumer implements RocketMQListener<String>, RocketMQ
     private static final Logger log = LoggerFactory.getLogger(ResumeParseMQConsumer.class);
 
     private static final String TOPIC_RESUME_PARSED = "resume-parsed";
-    private static final String TOPIC_RESUME_MATCH_TRIGGER = "resume-match-trigger";
+    // 解析成功后直接发送到匹配计划主题，避免额外 trigger 消费中转。
+    private static final String TOPIC_RESUME_MATCH_PLAN = "resume-match-plan";
     private static final int MAX_PARSE_RESULT_LOG_LENGTH = 5000;
 
     @Autowired
@@ -188,7 +189,7 @@ public class ResumeParseMQConsumer implements RocketMQListener<String>, RocketMQ
                 notificationRepository.save(notification);
 
                 if (Boolean.TRUE.equals(resume.getIsDefault()) && refreshAllMatches) {
-                    rocketMQTemplate.convertAndSend(TOPIC_RESUME_MATCH_TRIGGER, String.valueOf(resumeId));
+                    rocketMQTemplate.convertAndSend(TOPIC_RESUME_MATCH_PLAN, String.valueOf(resumeId));
                 }
 
                 // 步骤8：发布简历解析完成事件（仅传resumeId），触发技能图谱构建

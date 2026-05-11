@@ -169,7 +169,7 @@ class ResumeParseMQConsumerTest {
             assertEquals(resumeId, notification.getReferenceId());
 
             verify(skillGraphClient).clearPersonPositionTypeClassification(100L);
-            verify(rocketMQTemplate).convertAndSend(eq("resume-match-trigger"), eq(String.valueOf(resumeId)));
+            verify(rocketMQTemplate).convertAndSend(eq("resume-match-plan"), eq(String.valueOf(resumeId)));
             verify(matchAppService, never()).triggerMatchForResume(anyLong());
             verify(resumeParseLockService).forceUnlock(resumeId);
             verify(semaphore).release("permit-1");
@@ -206,7 +206,7 @@ class ResumeParseMQConsumerTest {
             consumer.onMessage(resumeId + "," + parseTaskId + ",true");
 
             verify(matchAppService, never()).triggerMatchForResume(anyLong());
-            verify(rocketMQTemplate, never()).convertAndSend(eq("resume-match-trigger"), anyString());
+            verify(rocketMQTemplate, never()).convertAndSend(eq("resume-match-plan"), anyString());
             verify(resumeParseLockService).forceUnlock(resumeId);
             verify(semaphore).release("permit-2");
         }
@@ -417,7 +417,7 @@ class ResumeParseMQConsumerTest {
 
             verify(matchAppService, never()).triggerMatchForResume(anyLong());
             verify(rocketMQTemplate).convertAndSend(eq(RESUME_PARSED_TOPIC), eq(String.valueOf(resumeId)));
-            verify(rocketMQTemplate, never()).convertAndSend(eq("resume-match-trigger"), anyString());
+            verify(rocketMQTemplate, never()).convertAndSend(eq("resume-match-plan"), anyString());
             verify(resumeParseLockService).forceUnlock(resumeId);
             verify(semaphore).release("permit-8");
         }
