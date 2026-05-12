@@ -16,8 +16,9 @@ export default defineConfig({
   },
   test: {
     environment: 'jsdom',
+    // Keep a single test root under frontend/tests to avoid split ownership.
     globals: true,
     setupFiles: ['tests/setup.tsx'],
-    include: ['tests/**/*.test.{ts,tsx}', 'src/tests/**/*.test.{ts,tsx}'],
+    include: ['tests/**/*.test.{ts,tsx}'],
   },
 })
