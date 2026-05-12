@@ -80,16 +80,16 @@ public class ResumeParseMQConsumer implements RocketMQListener<String>, RocketMQ
     @Value("${app.mq.resume-parse.consume-thread-max:64}")
     private int consumeThreadMax;
 
-    @Value("${app.concurrent.resume-parse.semaphore-name:resume:parse:permits}")
+    @Value("${app.semaphore.resume-parse.semaphore-name:${app.concurrent.resume-parse.semaphore-name:resume:parse:permits}}")
     private String semaphoreName;
 
-    @Value("${app.concurrent.resume-parse.max-permits:16}")
+    @Value("${app.semaphore.resume-parse.max-permits:${app.concurrent.resume-parse.max-permits:16}}")
     private int semaphoreMaxPermits;
 
-    @Value("${app.concurrent.resume-parse.acquire-wait-seconds:0}")
+    @Value("${app.semaphore.resume-parse.acquire-wait-seconds:${app.concurrent.resume-parse.acquire-wait-seconds:0}}")
     private long acquireWaitSeconds;
 
-    @Value("${app.concurrent.resume-parse.lease-seconds:600}")
+    @Value("${app.semaphore.resume-parse.lease-seconds:${app.concurrent.resume-parse.lease-seconds:600}}")
     private long leaseSeconds;
 
     /**

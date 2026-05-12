@@ -66,7 +66,6 @@
 - `docs/superpowers/specs/` — 设计规格文档（`YYYY-MM-DD-HHMMSS-<topic>-design.md`）
 - `docs/superpowers/plans/` — 实现计划（`YYYY-MM-DD-HHMMSS-<feature>.md`）
 - `docs/superpowers/acceptance/` — 验收标准文档（`YYYY-MM-DD-HHMMSS-<feature>-acceptance.md`）
-- `RELEASE-NOTES.md` — 版本历史记录
 
 ---
 ## 本地 MCP 服务
@@ -103,13 +102,24 @@ cd backend && mvn spring-boot:run
 提交/合并前按改动面验证：
 
 1. **仅后端改动**：执行 `mvn compile`、`mvn test`
-2. **仅前端改动**：执行 `npm run build`、`npm run test:run`
+2. **仅前端改动**：默认执行 `npm run build`、`npm run test:run`
+    - 若属于“简单任务豁免”且仅涉及样式/文案微调，可降级为：受影响测试文件定向执行 + CDP 视觉验证
 3. **前后端都有改动**：四项全部执行
 4. **浏览器验证（/web-access + CDP）**：仅在改动前端页面/交互，或用户明确要求时执行
+5. **视觉改动强制项**（弹窗/下拉/日期时间选择器/主题切换）：必须补充 CDP 证据（截图或计算样式），未提供证据不得声明“已修复”
 
 ## 浏览器测试
 
 使用浏览器进行测试时，必须通过 `/web-access` skill，并使用 CDP 打开和操作浏览器；禁止绕过 CDP 直接声称已完成浏览器验证。
+
+### 浏览器验证最小证据标准（强制）
+
+1. 给出复现路径：页面 URL + 关键点击路径。
+2. 给出结果证据：至少一张截图（保存到 `logs/`）或关键节点计算样式（如 `backgroundColor`、`opacity`）。
+3. 对“透明/可读性”问题，必须明确验证：
+    - 关键容器背景非透明，不会透出下层内容影响识别
+    - 文本、边框与交互控件在当前主题下清晰可读
+4. 验证失败时不得直接结束，必须继续定位并二次验证后再交付。
 
 ## 暗色主题可读性规范（通用）
 
@@ -118,3 +128,5 @@ cd backend && mvn spring-boot:run
 - 禁止硬编码浅色分隔线：标题线、列分隔线、底部分隔线统一使用主题边框 token（如 `border-surface-mid` / `border-outline-variant`）。
 - 可滚动区域必须使用主题化滚动条样式，避免在夜间出现白色滚动条或高亮滚动轨道。
 - 横向滚动区域同样必须主题化：凡 `overflow-x-auto` 容器（如 tab 条、标签条、横向列表）必须挂载主题滚动条类（如 `chat-scrollbar` / `filter-modal-scroll`），禁止出现系统默认浅色横向滚动条。
+- 跨主题组件禁止使用“未定义 token”：提交前必须确认所用 CSS 变量在当前端主题可解析（变量值非空），避免退化为透明背景。
+- 当 `surface-*` 在某端主题未定义时，优先使用该端已落地的 `surface-container-*` 体系，禁止以透明背景兜底。

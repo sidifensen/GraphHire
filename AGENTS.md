@@ -66,7 +66,6 @@
 - `docs/superpowers/specs/` — 设计规格文档（`YYYY-MM-DD-HHMMSS-<topic>-design.md`）
 - `docs/superpowers/plans/` — 实现计划（`YYYY-MM-DD-HHMMSS-<feature>.md`）
 - `docs/superpowers/acceptance/` — 验收标准文档（`YYYY-MM-DD-HHMMSS-<feature>-acceptance.md`）
-- `RELEASE-NOTES.md` — 版本历史记录
 
 ---
 ## 本地 MCP 服务

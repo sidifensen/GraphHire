@@ -57,16 +57,16 @@ public class ResumeUploadAsyncMQConsumer implements RocketMQListener<String>, Ro
     @Value("${app.mq.resume-upload.consume-thread-max:32}")
     private int consumeThreadMax;
 
-    @Value("${app.concurrent.resume-upload.semaphore-name:resume:upload:permits}")
+    @Value("${app.semaphore.resume-upload.semaphore-name:${app.concurrent.resume-upload.semaphore-name:resume:upload:permits}}")
     private String semaphoreName;
 
-    @Value("${app.concurrent.resume-upload.max-permits:8}")
+    @Value("${app.semaphore.resume-upload.max-permits:${app.concurrent.resume-upload.max-permits:8}}")
     private int semaphoreMaxPermits;
 
-    @Value("${app.concurrent.resume-upload.acquire-wait-seconds:0}")
+    @Value("${app.semaphore.resume-upload.acquire-wait-seconds:${app.concurrent.resume-upload.acquire-wait-seconds:0}}")
     private long acquireWaitSeconds;
 
-    @Value("${app.concurrent.resume-upload.lease-seconds:180}")
+    @Value("${app.semaphore.resume-upload.lease-seconds:${app.concurrent.resume-upload.lease-seconds:180}}")
     private long leaseSeconds;
 
     /**
