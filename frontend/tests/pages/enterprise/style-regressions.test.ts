@@ -24,9 +24,10 @@ describe('enterprise style regressions', () => {
   });
 
   it('does not cap enterprise mobile shell width to 375px', () => {
-    const shell = readFileSync(join(root, 'src/features/mock-enterprise/components/MockEnterpriseShell.tsx'), 'utf8');
-    const topNav = readFileSync(join(root, 'src/features/mock-enterprise/components/TopNav.tsx'), 'utf8');
-    const bottomNav = readFileSync(join(root, 'src/features/mock-enterprise/components/BottomNav.tsx'), 'utf8');
+    // The runtime enterprise prototype now lives under app/enterprise/_mock.
+    const shell = readFileSync(join(root, 'src/app/enterprise/_mock/components/MockEnterpriseShell.tsx'), 'utf8');
+    const topNav = readFileSync(join(root, 'src/app/enterprise/_mock/components/TopNav.tsx'), 'utf8');
+    const bottomNav = readFileSync(join(root, 'src/app/enterprise/_mock/components/BottomNav.tsx'), 'utf8');
 
     expect(shell).not.toContain('max-w-[375px]');
     expect(topNav).not.toContain('max-w-[375px]');
