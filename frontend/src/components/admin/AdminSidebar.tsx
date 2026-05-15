@@ -1,7 +1,8 @@
 ﻿'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { LayoutDashboard, ShieldCheck, Users, Tags, Activity, Building2, Network } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -22,6 +23,14 @@ const SIDEBAR_TRANSITION = { duration: 0.22, ease: 'easeOut' as const };
 
 export function AdminSidebar({ isCollapsed = false }: { isCollapsed?: boolean }) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    // 管理端常见跳转目标固定，挂载后主动预取以减少开发环境首跳等待。
+    navItems.forEach((item) => {
+      router.prefetch(item.path);
+    });
+  }, [router]);
 
   return (
     <motion.aside

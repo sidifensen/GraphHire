@@ -1,5 +1,4 @@
 import type { NextConfig } from 'next';
-import path from 'node:path';
 
 const isDev = process.env.NODE_ENV === 'development';
 const explicitApiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://127.0.0.1:7777';
@@ -20,6 +19,12 @@ if (apiOrigin) {
 const imgSrcDirective = `img-src ${Array.from(new Set(imgSrcParts)).join(' ')};`;
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    // 与 webpack 下的别名保持一致，避免开发模式切换后解析行为不一致。
+    resolveAlias: {
+      'motion/react': 'framer-motion',
+    },
+  },
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
@@ -59,7 +64,6 @@ const nextConfig: NextConfig = {
   webpack(config) {
     config.resolve.alias = {
       ...(config.resolve.alias ?? {}),
-      'react-router-dom': path.resolve(__dirname, 'src/shims/react-router-dom.tsx'),
       'motion/react': 'framer-motion',
     };
     return config;

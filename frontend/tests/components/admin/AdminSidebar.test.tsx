@@ -7,6 +7,10 @@ import { AdminSidebar } from '@/components/admin/AdminSidebar';
 const usePathname = vi.fn(() => '/admin/dashboard');
 
 vi.mock('next/navigation', () => ({
+  // AdminSidebar 会调用 useRouter().prefetch 进行路由预热，测试需提供同构 mock。
+  useRouter: () => ({
+    prefetch: vi.fn(),
+  }),
   usePathname: () => usePathname(),
 }));
 
