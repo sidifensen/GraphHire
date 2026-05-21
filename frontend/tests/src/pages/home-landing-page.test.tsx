@@ -34,4 +34,18 @@ describe('HomePage dual-funnel landing', () => {
     expect(enterpriseCtas[0]).toHaveAttribute('href', '/register?role=enterprise');
     expect(heroJobCta).toHaveAttribute('href', '/jobs');
   });
+
+  test('renders hero flip card with front image and back site intro copy', () => {
+    render(<HomePage />);
+
+    expect(screen.getByTestId('hero-flip-card')).toBeInTheDocument();
+    expect(screen.getByAltText('GraphHire 平台预览图')).toBeInTheDocument();
+    expect(screen.getByText('GraphHire 是什么？')).toBeInTheDocument();
+    expect(
+      screen.getByText('GraphHire 图谱智聘是一个基于能力图谱与语义匹配的双侧招聘平台。')
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('它帮助企业更快找到合适候选人，也帮助求职者更快命中匹配岗位。')
+    ).toBeInTheDocument();
+  });
 });

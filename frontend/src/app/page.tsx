@@ -95,6 +95,14 @@ const primaryBtnCls =
 const cardCls = 'rounded-2xl border border-surface-mid bg-surface-lowest p-6 shadow-sm';
 const flowCardOverlayCls = 'absolute inset-0 bg-[linear-gradient(160deg,rgba(7,17,36,0.46),rgba(3,11,26,0.72))]';
 const candidateFlowOverlayCls = 'absolute inset-0 bg-[linear-gradient(160deg,rgba(7,17,36,0.34),rgba(3,11,26,0.58))]';
+
+const heroFlipImage =
+  'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1600&q=80';
+
+const heroSiteIntro = [
+  'GraphHire 图谱智聘是一个基于能力图谱与语义匹配的双侧招聘平台。',
+  '它帮助企业更快找到合适候选人，也帮助求职者更快命中匹配岗位。',
+];
 export default function HomePage() {
   return (
     <MockUserShell>
@@ -111,7 +119,8 @@ export default function HomePage() {
             </div>
 
             <div className="relative z-10 mx-auto w-full max-w-7xl">
-              <div className="max-w-4xl text-center md:text-left">
+              {/* 业务意图：首屏右侧通过翻转卡补足视觉与介绍信息，避免仅文字布局导致的信息承载不足。 */}
+              <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(320px,390px)] lg:gap-12">
                 <div className="max-w-4xl text-center md:text-left">
                   <motion.div
                     initial={{ opacity: 0, y: 18 }}
@@ -164,6 +173,8 @@ export default function HomePage() {
                     <span className="rounded-full bg-surface-low px-3 py-1">面向求职者</span>
                   </div>
                 </div>
+
+                <HeroFlipCard />
               </div>
             </div>
           </section>
@@ -338,6 +349,39 @@ export default function HomePage() {
         <div className="h-24 md:hidden" />
       </div>
     </MockUserShell>
+  );
+}
+
+function HeroFlipCard() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 24 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: 0.2 }}
+      className="mx-auto w-full max-w-[390px]"
+    >
+      {/* 业务意图：按 tricky-cheetah-78 的交互还原，首面为图片，hover 后旋入介绍内容。 */}
+      <article
+        data-testid="hero-flip-card"
+        className="group relative h-[260px] w-full overflow-hidden rounded-2xl bg-white [backface-visibility:hidden] [contain:paint] transform-gpu transition-transform duration-[600ms] [transition-timing-function:cubic-bezier(0.23,1,0.32,1)] hover:[transform:rotate(-4deg)_scale(1.04)] hover:shadow-[0_14px_28px_rgba(0,0,0,0.24)]"
+      >
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(-45deg,#f89b29_0%,#ff0f7b_100%)] opacity-100 transition-opacity duration-[520ms] [transition-timing-function:cubic-bezier(0.23,1,0.32,1)] group-hover:opacity-0" />
+        <img
+          src={heroFlipImage}
+          alt="GraphHire 平台预览图"
+          className="h-full w-full object-cover transform-gpu [backface-visibility:hidden] transition-[transform,opacity] duration-[600ms] [transition-timing-function:cubic-bezier(0.23,1,0.32,1)] group-hover:opacity-0 group-hover:[transform:scale(0.03)_rotate(-45deg)]"
+        />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(160deg,rgba(5,15,35,0.12),rgba(5,15,35,0.42))] transition-opacity duration-[520ms] [transition-timing-function:cubic-bezier(0.23,1,0.32,1)] group-hover:opacity-0" />
+        <div className="absolute left-1/2 top-1/2 box-border h-[calc(100%+2px)] w-[calc(100%+2px)] -translate-x-1/2 -translate-y-1/2 -rotate-45 rounded-[15px] bg-white p-5 opacity-0 transform-gpu [backface-visibility:hidden] [will-change:transform,opacity] transition-[transform,opacity] duration-[600ms] [transition-timing-function:cubic-bezier(0.23,1,0.32,1)] group-hover:rotate-0 group-hover:opacity-100">
+          <p className="m-0 text-xl font-black text-[#202020]">GraphHire 是什么？</p>
+          <p className="mt-2 text-sm leading-6 text-[#595959]">{heroSiteIntro[0]}</p>
+          <p className="mt-2 text-sm leading-6 text-[#595959]">{heroSiteIntro[1]}</p>
+          <p className="mt-2 text-sm leading-6 text-[#595959]">
+            企业端与求职端共享同一能力图谱，让岗位发布、候选筛选与投递反馈在一个流程里闭环。
+          </p>
+        </div>
+      </article>
+    </motion.div>
   );
 }
 

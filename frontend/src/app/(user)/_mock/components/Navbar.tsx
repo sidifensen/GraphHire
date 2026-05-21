@@ -1,5 +1,6 @@
 import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { Home, Briefcase, Building2, User, Bell, Moon, Sun } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { userAuthStore } from '@/lib/stores/auth-store';
@@ -32,10 +33,10 @@ function isPathActive(currentPathname: string, navPath: string) {
 }
 
 export default function Navbar() {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
+  const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
-  const normalizedPathname = normalizePath(location.pathname);
+  const normalizedPathname = normalizePath(pathname);
   const [authState, setAuthState] = React.useState(() => userAuthStore.getState());
   const [avatarError, setAvatarError] = React.useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = React.useState(false);
@@ -63,6 +64,20 @@ export default function Navbar() {
       { left: activeNavIndex * (navItemWidth + navItemGap), width: navItemWidth },
     )
     : null;
+
+  React.useEffect(() => {
+    // 避免在路由器尚未初始化阶段触发 prefetch，降低首屏偶发报错与卡顿感知。
+    const timer = window.setTimeout(() => {
+      navItems.forEach((item) => {
+        try {
+          router.prefetch(item.path);
+        } catch {
+          // 开发模式下若路由器短暂未就绪，忽略本次预热，由后续交互触发。
+        }
+      });
+    }, 120);
+    return () => window.clearTimeout(timer);
+  }, [router]);
 
   React.useEffect(() => {
     setAvatarError(false);
@@ -124,7 +139,7 @@ export default function Navbar() {
     <nav className="hidden md:flex sticky top-0 z-[60] w-full h-16 bg-surface-lowest/80 backdrop-blur-md border-b border-surface-mid shadow-sm px-8 items-center justify-center">
       <div className="w-full flex items-center justify-between">
         <div className="flex items-center gap-12">
-          <Link to="/" className="text-2xl font-black text-primary tracking-tighter shrink-0 flex items-center">
+          <Link href="/" className="text-2xl font-black text-primary tracking-tighter shrink-0 flex items-center">
             GraphHire <span className="text-on-surface-variant text-base font-bold ml-3 border-l border-surface-mid pl-3 tracking-widest uppercase">图谱智聘</span>
           </Link>
           <div className="relative flex items-center gap-2">
@@ -148,7 +163,7 @@ export default function Navbar() {
                   key={item.path}
                 >
                   <Link
-                    to={item.path}
+                    href={item.path}
                     className={
                       `flex items-center justify-center gap-2 w-[102px] py-2.5 rounded-xl transition-all font-black text-sm relative group ${
                         isActive ? 'text-white' : 'text-on-surface-variant hover:text-on-surface'
@@ -175,7 +190,7 @@ export default function Navbar() {
             {theme === 'dark' ? <Sun size={22} /> : <Moon size={22} />}
           </button>
           <Link 
-            to="/notifications" 
+            href="/notifications" 
             className="p-2 text-on-surface-variant hover:bg-surface-low rounded-full transition-colors relative"
           >
             <Bell size={22} />
@@ -208,7 +223,7 @@ export default function Navbar() {
                     aria-label="退出登录"
                     onClick={() => {
                       setAccountMenuOpen(false);
-                      void logoutWithServerInvalidation(navigate, '/login', 'user');
+                      void logoutWithServerInvalidation((path) => router.push(path), '/login', 'user');
                     }}
                     className="w-full text-left text-sm font-semibold text-red-500 hover:bg-surface-low rounded-lg px-3 py-2"
                   >
@@ -219,7 +234,7 @@ export default function Navbar() {
             </div>
           ) : (
             <Link 
-              to="/login"
+              href="/login"
               className="px-6 py-2 bg-surface-low text-on-surface font-bold rounded-xl hover:bg-surface-mid transition-colors text-sm"
             >
               登录 / 注册
