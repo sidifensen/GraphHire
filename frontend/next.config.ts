@@ -19,6 +19,7 @@ if (apiOrigin) {
 const imgSrcDirective = `img-src ${Array.from(new Set(imgSrcParts)).join(' ')};`;
 
 const nextConfig: NextConfig = {
+  devIndicators: false,
   turbopack: {
     // 与 webpack 下的别名保持一致，避免开发模式切换后解析行为不一致。
     resolveAlias: {
