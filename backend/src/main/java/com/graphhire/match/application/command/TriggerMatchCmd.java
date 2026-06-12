@@ -22,7 +22,15 @@ public class TriggerMatchCmd {
         return resumeId;
     }
 
+    public void setResumeId(Long resumeId) {
+        this.resumeId = resumeId;
+    }
+
     public Long getJobId() {
         return jobId;
+    }
+
+    public void setJobId(Long jobId) {
+        this.jobId = jobId;
     }
 }

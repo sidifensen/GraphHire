@@ -99,8 +99,20 @@ public class MatchAppService {
 
     @Transactional
     public MatchRecord triggerMatchForCurrentUser(Long currentUserId, UserType userType, TriggerMatchCmd cmd) {
-        if (cmd == null || cmd.getResumeId() == null || cmd.getJobId() == null) {
-            throw new com.graphhire.common.vo.Exceptions.ValidationException("简历ID和职位ID不能为空");
+        if (cmd == null || cmd.getJobId() == null) {
+            throw new com.graphhire.common.vo.Exceptions.ValidationException("职位ID不能为空");
+        }
+        // resumeId 为空时自动使用当前用户的默认简历
+        if (cmd.getResumeId() == null && userType == UserType.PERSON) {
+            Long defaultResumeId = resumeRepository.findByUserId(currentUserId).stream()
+                .filter(r -> Boolean.TRUE.equals(r.getIsDefault()))
+                .map(com.graphhire.resume.domain.model.Resume::getId)
+                .findFirst()
+                .orElseThrow(() -> new com.graphhire.common.vo.Exceptions.ValidationException("请先上传并设置默认简历"));
+            cmd.setResumeId(defaultResumeId);
+        }
+        if (cmd.getResumeId() == null) {
+            throw new com.graphhire.common.vo.Exceptions.ValidationException("简历ID不能为空");
         }
         Resume resume = resumeRepository.findById(cmd.getResumeId())
             .orElseThrow(() -> new RuntimeException("Resume not found"));
