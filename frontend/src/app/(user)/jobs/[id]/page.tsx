@@ -179,9 +179,29 @@ export default function JobDetailPage() {
       const triggerResult = await matchApi.triggerMatch({ jobId });
       // 后端返回 MatchRecord，id 字段即为 matchId
       const matchId = (triggerResult as unknown as { id: number }).id ?? triggerResult.matchId;
-      const detail = await matchApi.getMatchDetail(matchId);
-      // detail 结构兼容 GraphScore 字段
-      setMatchModal({ open: true, loading: false, score: detail as GraphScore, error: null });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const detail = await matchApi.getMatchDetail(matchId) as any;
+      // MatchDetailResponse.score 是嵌套的 MatchScore 对象，需展平为 GraphScore 结构
+      const raw = detail?.score ?? {};
+      const levelStr: string = typeof detail?.level === 'string'
+        ? detail.level
+        : (detail?.level?.name ?? '');
+      const graphScore: GraphScore = {
+        personId: 0,
+        jobId: detail?.jobId ?? jobId,
+        totalScore: Math.round(raw.total ?? 0),
+        skillScore: Math.round(raw.skillScore ?? 0),
+        requirementScore: Math.round(raw.requirementScore ?? 0),
+        cityScore: Math.round(raw.cityScore ?? 0),
+        salaryScore: Math.round(raw.salaryScore ?? 0),
+        educationScore: Math.round(raw.educationScore ?? 0),
+        matchLevel: levelStr,
+        matchedSkills: [],
+        missingSkills: [],
+        matchRate: (raw.total ?? 0) / 100,
+        reason: detail?.matchReason ?? '',
+      };
+      setMatchModal({ open: true, loading: false, score: graphScore, error: null });
     } catch (err) {
       setMatchModal({ open: true, loading: false, score: null, error: err instanceof Error ? err.message : '匹配失败，请稍后重试' });
     }
