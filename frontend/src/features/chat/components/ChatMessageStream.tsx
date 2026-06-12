@@ -1,6 +1,20 @@
 import type { ChatConversationSummary, ChatMessage } from '@/lib/types/chat';
 import { ChatAvatar } from './ChatAvatar';
 
+/** ISO 或类 ISO 时间字符串格式化为 "YYYY/MM/DD HH:mm" */
+function formatInterviewTime(raw?: unknown): string {
+  if (!raw) return '-';
+  const str = String(raw);
+  try {
+    const d = new Date(str);
+    if (Number.isNaN(d.getTime())) return str;
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  } catch {
+    return str;
+  }
+}
+
 type ChatMessageStreamProps = {
   messages: ChatMessage[];
   loadingMessages: boolean;
@@ -64,7 +78,8 @@ export function ChatMessageStream({
         const resumeCanDownload = message.messageType === 3 ? canDownloadResume(ext) : false;
         const isResumeMessage = message.messageType === 3 && !!ext;
         const isImageMessage = message.messageType === 2 && !!ext;
-        const useFlatMessageContainer = isResumeMessage || isImageMessage;
+        const isInterviewMessage = message.messageType === 4 && !!ext;
+        const useFlatMessageContainer = isResumeMessage || isImageMessage || isInterviewMessage;
 
         return (
           <div key={message.id}>
@@ -144,12 +159,7 @@ export function ChatMessageStream({
                   </div>
                 ) : null}
                 {message.messageType === 4 && ext ? (
-                  <div>
-                    <p className="font-bold">面试通知</p>
-                    <p>时间：{String(ext.interviewTime ?? '-')}</p>
-                    <p>地点：{String(ext.location ?? '-')}</p>
-                    <p>备注：{String(ext.remark ?? '')}</p>
-                  </div>
+                  <InterviewNoticeCard ext={ext} self={self} />
                 ) : null}
                 {[2, 3, 4].includes(message.messageType) ? null : <p className="whitespace-pre-wrap">{message.content || ''}</p>}
               </div>
@@ -159,6 +169,73 @@ export function ChatMessageStream({
         );
       })}
       <div ref={messageEndRef} />
+    </div>
+  );
+}
+
+/** 面试通知专属卡片：区分发送方/接收方配色，带图标和格式化时间 */
+function InterviewNoticeCard({
+  ext,
+  self,
+}: {
+  ext: Record<string, unknown>;
+  self: boolean;
+}) {
+  const rows: { icon: string; label: string; value: string }[] = [
+    { icon: '🕐', label: '时间', value: formatInterviewTime(ext.interviewTime) },
+    { icon: '📍', label: '地点', value: ext.location ? String(ext.location) : '-' },
+  ];
+  const remark = ext.remark ? String(ext.remark) : '';
+
+  return (
+    <div
+      className={`w-64 overflow-hidden rounded-2xl shadow-[0_8px_24px_rgba(15,23,42,0.12)] ring-1 ${
+        self
+          ? 'bg-primary ring-primary/20 text-on-primary'
+          : 'bg-surface-container-high ring-outline-variant/55 text-on-surface'
+      }`}
+    >
+      {/* 标题栏 */}
+      <div
+        className={`flex items-center gap-2 px-4 py-3 border-b ${
+          self
+            ? 'border-white/15 bg-white/10'
+            : 'border-outline-variant/40 bg-surface-container-highest/60'
+        }`}
+      >
+        <span className="text-base leading-none">📋</span>
+        <span className="text-sm font-black tracking-wide">面试通知</span>
+      </div>
+
+      {/* 内容行 */}
+      <div className="px-4 py-3 space-y-2.5">
+        {rows.map((row) => (
+          <div key={row.label} className="flex items-start gap-2.5 text-sm">
+            <span className="mt-0.5 shrink-0 text-base leading-none">{row.icon}</span>
+            <div className="min-w-0">
+              <span
+                className={`text-[11px] font-bold uppercase tracking-wider ${
+                  self ? 'text-on-primary/60' : 'text-on-surface-variant'
+                }`}
+              >
+                {row.label}
+              </span>
+              <p className="font-bold leading-snug break-words">{row.value}</p>
+            </div>
+          </div>
+        ))}
+
+        {/* 备注（有内容才显示） */}
+        {remark ? (
+          <div
+            className={`mt-1 rounded-xl px-3 py-2 text-xs leading-relaxed ${
+              self ? 'bg-white/10 text-on-primary/90' : 'bg-surface-container text-on-surface-variant'
+            }`}
+          >
+            {remark}
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }

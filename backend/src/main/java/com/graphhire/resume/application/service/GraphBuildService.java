@@ -82,7 +82,33 @@ public class GraphBuildService {
     }
 
     /**
-     * 为职位构建技能图谱
+     * 仅重新应用职位类型分类，不重新解析简历。
+     * 当用户修改默认期望职位类型后调用，从 Memgraph 读取已有技能，
+     * 根据新职位类型重新分类并写回图谱。
+     * @param userId 用户ID
+     */
+    public void reapplyClassificationForUser(Long userId) {
+        if (userId == null) {
+            return;
+        }
+        try {
+            @SuppressWarnings("unchecked")
+            List<String> skills = (List<String>) skillGraphClient.getPersonSkillGraph(userId).getOrDefault("skills", List.of());
+            if (skills == null || skills.isEmpty()) {
+                log.info("用户{}在图谱中暂无技能，跳过重分类", userId);
+                return;
+            }
+            // 构造一个最小 Resume 对象，仅用于传递 userId 给 applyPositionTypeClassification
+            Resume proxy = new Resume();
+            proxy.setUserId(userId);
+            applyPositionTypeClassification(proxy, skills);
+            log.info("用户{}职位类型变更后重分类完成，技能数={}", userId, skills.size());
+        } catch (Exception e) {
+            log.error("用户{}职位类型重分类失败: {}", userId, e.getMessage());
+        }
+    }
+
+    /**
      * 【功能说明】从职位的必技能和偏好技能构建职位-技能关系。
      * @param job 职位实体
      */

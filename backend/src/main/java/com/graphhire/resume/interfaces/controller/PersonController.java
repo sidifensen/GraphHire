@@ -5,6 +5,7 @@ import com.graphhire.common.vo.Result;
 import com.graphhire.match.application.service.MatchAppService;
 import com.graphhire.match.interfaces.dto.response.MatchDetailResponse;
 import com.graphhire.positiontype.domain.model.PositionType;
+import com.graphhire.resume.application.service.GraphBuildService;
 import com.graphhire.resume.application.service.PersonAbilityAssessmentService;
 import com.graphhire.resume.domain.model.PersonInfo;
 import com.graphhire.resume.domain.repository.PersonInfoRepository;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 个人用户接口
@@ -43,6 +45,9 @@ public class PersonController {
 
     @Autowired
     private PositionTypeAppService positionTypeAppService;
+
+    @Autowired
+    private GraphBuildService graphBuildService;
 
     /**
      * 获取个人信息
@@ -91,6 +96,9 @@ public class PersonController {
                 return newInfo;
             });
 
+        // 记录旧的默认职位类型，用于判断是否需要重分类
+        Long oldDefaultPositionTypeId = personInfo.getDefaultPositionTypeId();
+
         // PUT 语义：请求中的字段按当前值覆盖，允许清空
         personInfo.setRealName(request.getRealName());
         personInfo.setGender(normalizeGender(request.getGender()));
@@ -108,6 +116,12 @@ public class PersonController {
         personInfo.setDefaultPositionTypeId(normalizedDefaultPositionTypeId);
 
         personInfoRepository.save(personInfo);
+
+        // 若默认职位类型发生变更，异步触发图谱技能重分类
+        if (!Objects.equals(oldDefaultPositionTypeId, normalizedDefaultPositionTypeId)) {
+            CompletableFuture.runAsync(() -> graphBuildService.reapplyClassificationForUser(userId));
+        }
+
         return Result.success();
     }
 
@@ -135,15 +149,13 @@ public class PersonController {
             personInfo == null || personInfo.getAvatarUrl() == null ? null : "/person/avatar/public/" + userId
         );
 
-        @SuppressWarnings("unchecked")
-        Map<String, Object> positionTypeMatch = classification == null
-            ? null
-            : (Map<String, Object>) classification.get("positionTypeMatch");
+        // positionTypeMatch 从 SQL 的 defaultPositionTypeId 读取，避免图数据库关系未同步的问题
+        Map<String, Object> positionTypeMatchFromSql = buildPositionTypeMatchFromPersonInfo(personInfo);
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> skillCategories = classification == null
             ? null
             : (List<Map<String, Object>>) classification.get("skillCategories");
-        graph.put("positionTypeMatch", normalizePositionTypeMatch(positionTypeMatch));
+        graph.put("positionTypeMatch", positionTypeMatchFromSql);
         graph.put("skillCategories", skillCategories == null ? List.of() : skillCategories);
 
         return Result.success(graph);
@@ -164,6 +176,32 @@ public class PersonController {
         normalized.put("positionTypeName", rawMatch.get("positionTypeName"));
         normalized.put("matched", matched);
         return normalized;
+    }
+
+    /**
+     * 从 SQL PersonInfo.defaultPositionTypeId 构建 positionTypeMatch，
+     * 避免依赖图数据库中可能未同步的 BELONGS_TO_POSITION_TYPE 关系。
+     */
+    private Map<String, Object> buildPositionTypeMatchFromPersonInfo(PersonInfo personInfo) {
+        Map<String, Object> result = new HashMap<>();
+        Long defaultId = personInfo == null ? null : personInfo.getDefaultPositionTypeId();
+        if (defaultId == null) {
+            result.put("positionTypeId", null);
+            result.put("positionTypeName", null);
+            result.put("matched", false);
+            return result;
+        }
+        try {
+            PositionType pt = positionTypeAppService.getById(defaultId);
+            result.put("positionTypeId", pt.getId());
+            result.put("positionTypeName", pt.getName());
+            result.put("matched", true);
+        } catch (Exception e) {
+            result.put("positionTypeId", defaultId);
+            result.put("positionTypeName", null);
+            result.put("matched", false);
+        }
+        return result;
     }
 
     private List<Long> normalizeExpectedPositionTypeIds(List<Long> rawIds) {
