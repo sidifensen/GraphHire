@@ -176,7 +176,9 @@ export default function JobDetailPage() {
     if (!Number.isFinite(jobId)) return;
     setMatchModal({ open: true, loading: true, score: null, error: null });
     try {
-      const { matchId } = await matchApi.triggerMatch({ jobId });
+      const triggerResult = await matchApi.triggerMatch({ jobId });
+      // 后端返回 MatchRecord，id 字段即为 matchId
+      const matchId = (triggerResult as unknown as { id: number }).id ?? triggerResult.matchId;
       const detail = await matchApi.getMatchDetail(matchId);
       // detail 结构兼容 GraphScore 字段
       setMatchModal({ open: true, loading: false, score: detail as GraphScore, error: null });
