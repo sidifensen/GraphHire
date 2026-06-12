@@ -97,7 +97,7 @@ const flowCardOverlayCls = 'absolute inset-0 bg-[linear-gradient(160deg,rgba(7,1
 const candidateFlowOverlayCls = 'absolute inset-0 bg-[linear-gradient(160deg,rgba(7,17,36,0.34),rgba(3,11,26,0.58))]';
 
 const heroFlipImage =
-  'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1600&q=80';
+  'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?auto=format&fit=crop&w=1600&q=80';
 
 const heroSiteIntro = [
   'GraphHire 图谱智聘是一个基于能力图谱与语义匹配的双侧招聘平台。',
