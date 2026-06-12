@@ -3,9 +3,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, Briefcase, ChevronRight, GraduationCap, MapPin, Share2, Zap } from 'lucide-react';
+import { ArrowLeft, Briefcase, CheckCircle, ChevronRight, GraduationCap, MapPin, Share2, X, XCircle, Zap } from 'lucide-react';
 import { publicApi, type Company, type Job } from '@/lib/api/public';
 import { chatApi } from '@/lib/api/chat';
+import { matchApi, type GraphScore } from '@/lib/api/match';
 import { formatCompanyScale } from '@/features/user-filters/constants';
 import { getApiBaseUrl } from '@/lib/api/base-url';
 import { useRouter } from 'next/navigation';
@@ -101,6 +102,9 @@ export default function JobDetailPage() {
   const [company, setCompany] = useState<Company | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [matchModal, setMatchModal] = useState<{ open: boolean; loading: boolean; score: GraphScore | null; error: string | null }>({
+    open: false, loading: false, score: null, error: null,
+  });
 
   useEffect(() => {
     if (!Number.isFinite(jobId)) {
@@ -168,9 +172,17 @@ export default function JobDetailPage() {
     }
   };
 
-  const handleSmartMatch = () => {
+  const handleSmartMatch = async () => {
     if (!Number.isFinite(jobId)) return;
-    router.push(`/skill-graph?jobId=${jobId}`);
+    setMatchModal({ open: true, loading: true, score: null, error: null });
+    try {
+      const { matchId } = await matchApi.triggerMatch({ jobId });
+      const detail = await matchApi.getMatchDetail(matchId);
+      // detail 结构兼容 GraphScore 字段
+      setMatchModal({ open: true, loading: false, score: detail as GraphScore, error: null });
+    } catch (err) {
+      setMatchModal({ open: true, loading: false, score: null, error: err instanceof Error ? err.message : '匹配失败，请稍后重试' });
+    }
   };
 
   if (loading) {
@@ -317,7 +329,7 @@ export default function JobDetailPage() {
                 <button onClick={() => void handleStartChat()} className="flex items-center justify-center gap-3 h-14 w-full rounded-2xl bg-primary text-white font-black text-lg shadow-xl shadow-primary/20 hover:bg-primary/90 hover:-translate-y-0.5 active:translate-y-0 transition-all">
                   立即沟通
                 </button>
-                <button onClick={handleSmartMatch} className="flex items-center justify-center gap-3 h-14 w-full rounded-2xl border-2 border-primary text-primary font-black text-lg hover:bg-primary/5 active:scale-[0.98] transition-all">
+                <button onClick={() => void handleSmartMatch()} className="flex items-center justify-center gap-3 h-14 w-full rounded-2xl border-2 border-primary text-primary font-black text-lg hover:bg-primary/5 active:scale-[0.98] transition-all">
                   <Zap size={20} fill="currentColor" />
                   智能匹配竞争力
                 </button>
@@ -328,7 +340,7 @@ export default function JobDetailPage() {
       </main>
 
       <div className="lg:hidden fixed bottom-0 left-0 w-full bg-surface-lowest flex gap-4 p-5 border-t border-surface-mid pb-safe z-50">
-        <button onClick={handleSmartMatch} className="flex-1 h-12 rounded-xl border border-primary text-primary font-bold flex items-center justify-center gap-2 active:bg-primary/5 transition-colors">
+        <button onClick={() => void handleSmartMatch()} className="flex-1 h-12 rounded-xl border border-primary text-primary font-bold flex items-center justify-center gap-2 active:bg-primary/5 transition-colors">
           <Zap size={18} fill="currentColor" />
           智能匹配
         </button>
@@ -336,6 +348,27 @@ export default function JobDetailPage() {
           立即沟通
         </button>
       </div>
+
+      {matchModal.open ? (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center px-4">
+          <button type="button" aria-label="关闭匹配弹窗" className="absolute inset-0 bg-black/45" onClick={() => setMatchModal((p) => ({ ...p, open: false }))} />
+          <div role="dialog" aria-modal="true" className="relative w-full max-w-lg rounded-2xl bg-surface-lowest border border-surface-mid shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-surface-mid">
+              <p className="font-black text-on-surface flex items-center gap-2"><Zap size={16} fill="currentColor" className="text-primary" />智能匹配竞争力</p>
+              <button type="button" onClick={() => setMatchModal((p) => ({ ...p, open: false }))} className="text-on-surface-variant hover:text-on-surface transition-colors"><X size={18} /></button>
+            </div>
+            <div className="p-5 max-h-[70vh] overflow-y-auto">
+              {matchModal.loading ? (
+                <div className="py-12 text-center text-on-surface-variant text-sm">匹配分析中，请稍候...</div>
+              ) : matchModal.error ? (
+                <div className="py-8 text-center text-error text-sm">{matchModal.error}</div>
+              ) : matchModal.score ? (
+                <MatchScorePanel score={matchModal.score} />
+              ) : null}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -345,6 +378,82 @@ function Tag({ icon: Icon, text }: { icon: React.ComponentType<{ size?: number }
     <div className="inline-flex items-center gap-1 px-3 py-1.5 bg-surface-low text-on-surface-variant rounded-full text-[10px] font-bold">
       <Icon size={14} />
       {text}
+    </div>
+  );
+}
+
+const LEVEL_LABEL: Record<string, string> = {
+  HIGH: '高度匹配', MEDIUM: '中等匹配', LOW: '低度匹配',
+};
+const LEVEL_COLOR: Record<string, string> = {
+  HIGH: 'bg-green-500/10 text-green-600 border-green-500/20',
+  MEDIUM: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
+  LOW: 'bg-red-500/10 text-red-500 border-red-500/20',
+};
+
+function ScoreBar({ label, score }: { label: string; score: number }) {
+  const pct = Math.min(100, Math.max(0, Math.round(score)));
+  return (
+    <div className="flex items-center gap-3">
+      <span className="w-14 text-xs font-bold text-on-surface-variant shrink-0">{label}</span>
+      <div className="flex-1 h-2 rounded-full bg-surface-mid overflow-hidden">
+        <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+      </div>
+      <span className="w-8 text-right text-xs font-black text-on-surface shrink-0">{score}</span>
+    </div>
+  );
+}
+
+function MatchScorePanel({ score }: { score: GraphScore }) {
+  const levelKey = (score.matchLevel ?? '').toUpperCase();
+  const levelLabel = LEVEL_LABEL[levelKey] ?? score.matchLevel;
+  const levelColor = LEVEL_COLOR[levelKey] ?? 'bg-surface-mid text-on-surface-variant border-surface-mid';
+  return (
+    <div className="space-y-5">
+      {/* 总分 */}
+      <div className="flex items-center gap-4">
+        <div className="text-5xl font-black text-primary leading-none">{score.totalScore}</div>
+        <div className="space-y-1">
+          <span className={`inline-block rounded-full border px-2.5 py-0.5 text-xs font-bold ${levelColor}`}>{levelLabel}</span>
+          <p className="text-xs text-on-surface-variant">匹配率 {Math.round((score.matchRate ?? 0) * 100)}%</p>
+        </div>
+      </div>
+      {/* 维度分 */}
+      <div className="space-y-2.5 rounded-xl bg-surface-low px-4 py-4">
+        <ScoreBar label="技能" score={score.skillScore} />
+        <ScoreBar label="要求" score={score.requirementScore} />
+        <ScoreBar label="薪资" score={score.salaryScore} />
+        <ScoreBar label="城市" score={score.cityScore} />
+        <ScoreBar label="学历" score={score.educationScore} />
+      </div>
+      {/* 已匹配技能 */}
+      {score.matchedSkills?.length > 0 ? (
+        <div>
+          <p className="mb-2 text-xs font-black text-on-surface flex items-center gap-1"><CheckCircle size={13} className="text-green-500" />已匹配技能</p>
+          <div className="flex flex-wrap gap-1.5">
+            {score.matchedSkills.map((s) => (
+              <span key={s} className="rounded-full border border-green-500/20 bg-green-500/10 px-2.5 py-0.5 text-xs font-bold text-green-600">{s}</span>
+            ))}
+          </div>
+        </div>
+      ) : null}
+      {/* 缺失技能 */}
+      {score.missingSkills?.length > 0 ? (
+        <div>
+          <p className="mb-2 text-xs font-black text-on-surface flex items-center gap-1"><XCircle size={13} className="text-red-400" />待补强技能</p>
+          <div className="flex flex-wrap gap-1.5">
+            {score.missingSkills.map((s) => (
+              <span key={s} className="rounded-full border border-red-400/20 bg-red-400/10 px-2.5 py-0.5 text-xs font-bold text-red-500">{s}</span>
+            ))}
+          </div>
+        </div>
+      ) : null}
+      {/* AI 分析 */}
+      {score.reason ? (
+        <div className="rounded-xl border border-surface-mid bg-surface-low px-4 py-3 text-sm text-on-surface-variant leading-relaxed">
+          {score.reason}
+        </div>
+      ) : null}
     </div>
   );
 }
