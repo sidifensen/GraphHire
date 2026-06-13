@@ -4,7 +4,7 @@
 -- 日期: 2026-04-17
 -- 说明: 所有字段均有中文注释，索引按业务查询需求设计
 -- 注意: 不使用外键约束，由应用层保证数据一致性
--- 更新: v1.1 新增投递/收藏/人才库/技能分类表，扩展通知类型
+-- 更新: v1.1 对齐当前行业、职位类型、职位技能画像等基线结构
 -- =============================================
 
 -- 开启 UUID 扩展
@@ -140,6 +140,43 @@ CREATE INDEX idx_company_user_id ON company (user_id);
 CREATE INDEX idx_company_auth_status ON company (auth_status) WHERE deleted = 0;
 CREATE INDEX idx_company_code ON company (code);
 CREATE INDEX idx_company_industry_id ON company (industry_id);
+
+-- =============================================
+-- 3.0 行业字典表 industry
+-- =============================================
+CREATE TABLE industry
+(
+    id          BIGSERIAL PRIMARY KEY,
+    name        VARCHAR(100) NOT NULL,
+    parent_id   BIGINT,
+    level       SMALLINT     NOT NULL DEFAULT 1,
+    enabled     SMALLINT     NOT NULL DEFAULT 1,
+    sort        INT          NOT NULL DEFAULT 0,
+    create_time TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted     SMALLINT     NOT NULL DEFAULT 0,
+
+    CONSTRAINT ck_industry_level CHECK (level IN (1, 2)),
+    CONSTRAINT chk_industry_enabled CHECK (enabled IN (0, 1)),
+    CONSTRAINT chk_industry_deleted CHECK (deleted IN (0, 1))
+);
+
+COMMENT ON TABLE industry IS '行业字典表：存储一级/二级行业树，用于公司行业归属和公开筛选';
+COMMENT ON COLUMN industry.id IS '主键ID';
+COMMENT ON COLUMN industry.name IS '行业名称';
+COMMENT ON COLUMN industry.parent_id IS '父级行业ID（一级行业为NULL）';
+COMMENT ON COLUMN industry.level IS '层级：1-一级行业 2-二级行业';
+COMMENT ON COLUMN industry.enabled IS '启用状态：0-停用 1-启用';
+COMMENT ON COLUMN industry.sort IS '同级排序值，越小越靠前';
+COMMENT ON COLUMN industry.create_time IS '创建时间';
+COMMENT ON COLUMN industry.update_time IS '更新时间';
+COMMENT ON COLUMN industry.deleted IS '软删除标记：0-未删除 1-已删除';
+
+CREATE INDEX idx_industry_enabled_sort ON industry (enabled, sort, id) WHERE deleted = 0;
+CREATE INDEX idx_industry_parent_sort ON industry (parent_id, sort, id) WHERE deleted = 0;
+CREATE UNIQUE INDEX uk_industry_parent_name_alive
+    ON industry ((COALESCE(parent_id, 0)), name)
+    WHERE deleted = 0;
 
 -- =============================================
 -- 3.1 职位类型技能分类配置表 position_type_skill_profile

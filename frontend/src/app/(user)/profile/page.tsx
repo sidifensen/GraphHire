@@ -44,7 +44,6 @@ export default function Profile() {
   const [stats, setStats] = useState({
     conversationCount: 0,
     unreadCount: 0,
-    favoriteCount: 0,
   });
   const [avatarError, setAvatarError] = useState(false);
   const displayName = profile?.realName?.trim() || authUser?.displayName || authUser?.username || '未登录用户';
@@ -74,7 +73,6 @@ export default function Profile() {
       setStats({
         conversationCount: 0,
         unreadCount: 0,
-        favoriteCount: 0,
       });
       return () => {
         active = false;
@@ -83,9 +81,8 @@ export default function Profile() {
     Promise.all([
       personApi.getProfile(),
       chatApi.listConversations(),
-      personApi.getFavorites(),
     ])
-      .then(([nextProfile, conversations, favorites]) => {
+      .then(([nextProfile, conversations]) => {
         if (!active) {
           return;
         }
@@ -113,8 +110,7 @@ export default function Profile() {
         const unreadCount = Array.isArray(conversations)
           ? conversations.reduce((total, item) => total + (item.unreadCount || 0), 0)
           : 0;
-        const favoriteCount = Array.isArray(favorites) ? favorites.length : 0;
-        setStats({ conversationCount, unreadCount, favoriteCount });
+        setStats({ conversationCount, unreadCount });
       })
       .catch(() => {
         if (!active) {
@@ -123,7 +119,6 @@ export default function Profile() {
         setStats({
           conversationCount: 0,
           unreadCount: 0,
-          favoriteCount: 0,
         });
       });
 
@@ -184,10 +179,6 @@ export default function Profile() {
               <div className="text-center group cursor-pointer">
                 <div data-testid="profile-stat-unread" className="text-xl font-bold text-on-surface group-hover:text-primary transition-colors">{stats.unreadCount}</div>
                 <div className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">未读</div>
-              </div>
-              <div className="text-center group cursor-pointer">
-                <div data-testid="profile-stat-favorite" className="text-xl font-bold text-on-surface group-hover:text-primary transition-colors">{stats.favoriteCount}</div>
-                <div className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">收藏</div>
               </div>
             </div>
           </section>

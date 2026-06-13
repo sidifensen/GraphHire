@@ -42,10 +42,9 @@ const { userAuthStore } = vi.hoisted(() => {
   };
 });
 
-const { getProfileMock, listConversationsMock, getFavoritesMock } = vi.hoisted(() => ({
+const { getProfileMock, listConversationsMock } = vi.hoisted(() => ({
   getProfileMock: vi.fn(),
   listConversationsMock: vi.fn(),
-  getFavoritesMock: vi.fn(),
 }));
 
 vi.mock('@/lib/stores/auth-store', () => ({
@@ -55,7 +54,6 @@ vi.mock('@/lib/stores/auth-store', () => ({
 vi.mock('@/lib/api/person', () => ({
   personApi: {
     getProfile: getProfileMock,
-    getFavorites: getFavoritesMock,
   },
 }));
 
@@ -86,14 +84,6 @@ describe('User Profile auth info', () => {
       { conversationId: 2, unreadCount: 1 },
       { conversationId: 3, unreadCount: 0 },
     ]);
-    getFavoritesMock.mockResolvedValue(
-      Array.from({ length: 7 }, (_, index) => ({
-        id: index + 1,
-        userId: 301,
-        jobId: 1000 + index,
-        createdAt: '2026-05-01T00:00:00.000Z',
-      })),
-    );
   });
 
   test('显示当前登录用户对应资料', async () => {
@@ -118,7 +108,7 @@ describe('User Profile auth info', () => {
     expect(screen.getByText('test-user@example.com')).toBeInTheDocument();
     expect(await screen.findByTestId('profile-stat-conversation')).toHaveTextContent('3');
     expect(screen.getByTestId('profile-stat-unread')).toHaveTextContent('3');
-    expect(screen.getByTestId('profile-stat-favorite')).toHaveTextContent('7');
+    expect(screen.queryByTestId('profile-stat-favorite')).not.toBeInTheDocument();
     expect(screen.getByText('男')).toBeInTheDocument();
     expect(screen.getByText('27 岁')).toBeInTheDocument();
     expect(screen.getByText('13800138000')).toBeInTheDocument();
@@ -150,8 +140,6 @@ describe('User Profile auth info', () => {
     expect(await screen.findByText('未登录用户')).toBeInTheDocument();
     expect(screen.getByTestId('profile-stat-conversation')).toHaveTextContent('0');
     expect(screen.getByTestId('profile-stat-unread')).toHaveTextContent('0');
-    expect(screen.getByTestId('profile-stat-favorite')).toHaveTextContent('0');
     expect(listConversationsMock).not.toHaveBeenCalled();
-    expect(getFavoritesMock).not.toHaveBeenCalled();
   });
 });

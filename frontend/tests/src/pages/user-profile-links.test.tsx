@@ -7,7 +7,6 @@ vi.mock('@/lib/api/person', () => ({
   personApi: {
     getProfile: vi.fn().mockResolvedValue(null),
     getApplications: vi.fn().mockResolvedValue([]),
-    getFavorites: vi.fn().mockResolvedValue([]),
   },
 }));
 

@@ -33,7 +33,6 @@ vi.mock('@/lib/api/person', () => ({
     getProfile: getProfileMock,
     updateProfile: vi.fn(),
     uploadAvatar: vi.fn(),
-    getFavorites: vi.fn().mockResolvedValue([]),
   },
 }));
 

@@ -97,18 +97,6 @@ export interface Application {
   resumeId?: number;
 }
 
-export interface FavoriteJob extends Job {
-  favoriteId: number;
-  favoritedAt: string;
-}
-
-export interface Favorite {
-  id: number;
-  userId: number;
-  jobId: number;
-  createdAt: string;
-}
-
 export const personApi = {
   getProfile: async (): Promise<PersonProfile | null> => {
     const response = await apiClient.get<PersonProfile | null>('/person/info');
@@ -159,6 +147,5 @@ export const personApi = {
     return toAbsoluteAvatarUrl(response.data);
   },
 
-  getFavorites: async (): Promise<Favorite[]> => [],
 };
 

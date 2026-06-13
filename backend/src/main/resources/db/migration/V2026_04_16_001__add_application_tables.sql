@@ -11,15 +11,6 @@ CREATE TABLE IF NOT EXISTS application (
     UNIQUE(resume_id, job_id)
 );
 
--- 收藏记录表
-CREATE TABLE IF NOT EXISTS favorite (
-    id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT NOT NULL,
-    job_id BIGINT NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(user_id, job_id)
-);
-
 -- 人才库表
 CREATE TABLE IF NOT EXISTS talent_pool (
     id BIGSERIAL PRIMARY KEY,
@@ -36,9 +27,6 @@ CREATE INDEX idx_application_user_id ON application(user_id);
 CREATE INDEX idx_application_job_id ON application(job_id);
 CREATE INDEX idx_application_company_id ON application(company_id);
 CREATE INDEX idx_application_status ON application(status);
-
-CREATE INDEX idx_favorite_user_id ON favorite(user_id);
-CREATE INDEX idx_favorite_job_id ON favorite(job_id);
 
 CREATE INDEX idx_talent_pool_company_id ON talent_pool(company_id);
 CREATE INDEX idx_talent_pool_resume_id ON talent_pool(resume_id);
